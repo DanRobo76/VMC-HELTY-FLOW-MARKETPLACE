@@ -1,0 +1,67 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Add a Helty Flow unit",
+        "description": "Unit name (lowercase letters only, 1 to 10 characters; the first unit is called «master») and the unit's IP address on port 5001.\n\nThe integration creates the folder packages/vmc_helty_flow/‹name› with the VMC Master package: after restarting Home Assistant, add the «VMC Master» card from the dashboard.",
+        "data": {
+          "nome": "Unit name",
+          "host": "Unit IP on port 5001"
+        },
+        "data_description": {
+          "nome": "Lowercase letters only, 1 to 10 characters.",
+          "host": "Set a static IP for the unit in your router."
+        }
+      },
+      "non_raggiungibile": {
+        "title": "Unit not reachable",
+        "description": "The unit at {ip} does not answer on port 5001.\n\nYou can add it anyway, for example to connect it to Wi-Fi with the First Installation window of the Master card, and change the IP later from «Configure»."
+      },
+      "migra": {
+        "title": "Manual installation found",
+        "description": "The folder packages/vmc_helty_flow/{nome} already holds a manual installation of unit {nome}.\n\nIf you continue, the folder is moved to /config/vmc_master_backup and replaced by the integration's package. Entity names stay the same, so history is kept. After the restart, delete the hand-pasted automation and the old manual card."
+      }
+    },
+    "error": {
+      "nome_non_valido": "Invalid name: lowercase letters only, 1 to 10 characters.",
+      "nome_in_uso": "Name already used by another unit.",
+      "ip_non_valido": "Invalid IP: four numbers from 0 to 255 separated by dots.",
+      "ip_in_uso": "IP already used by another unit."
+    },
+    "abort": {
+      "already_configured": "This unit is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Change unit IP",
+        "description": "New IP address of the unit. The package is updated and Home Assistant asks to restart.",
+        "data": {
+          "host": "Unit IP on port 5001"
+        }
+      }
+    },
+    "error": {
+      "ip_non_valido": "Invalid IP: four numbers from 0 to 255 separated by dots.",
+      "ip_in_uso": "IP already used by another unit."
+    }
+  },
+  "issues": {
+    "riavvio_necessario": {
+      "title": "VMC Master: restart Home Assistant",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Restart Home Assistant",
+            "description": "The VMC Master package files were installed or updated: a restart is needed to load them. Press Submit to restart now."
+          }
+        }
+      }
+    },
+    "packages_non_abilitati": {
+      "title": "VMC Master: packages not loaded",
+      "description": "The unit's files are installed but Home Assistant does not load them. configuration.yaml must contain:\n\nhomeassistant:\n  packages: !include_dir_named packages/\n\nAdd the line, save and restart Home Assistant."
+    }
+  }
+}

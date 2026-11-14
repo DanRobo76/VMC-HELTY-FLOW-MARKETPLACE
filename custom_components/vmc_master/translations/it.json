@@ -1,0 +1,67 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Aggiungi una VMC Helty Flow",
+        "description": "Nome della VMC (solo lettere minuscole, da 1 a 10 caratteri; la prima VMC si chiama «master») e indirizzo IP della VMC sulla porta 5001.\n\nL'integrazione crea la cartella packages/vmc_helty_flow/‹nome› con il package VMC Master: dopo il riavvio di Home Assistant aggiungere la scheda «VMC Master» dalla plancia.",
+        "data": {
+          "nome": "Nome VMC",
+          "host": "IP VMC su porta 5001"
+        },
+        "data_description": {
+          "nome": "Solo lettere minuscole, da 1 a 10 caratteri.",
+          "host": "Impostare nel router un IP statico per la VMC."
+        }
+      },
+      "non_raggiungibile": {
+        "title": "VMC non raggiungibile",
+        "description": "La VMC all'indirizzo {ip} non risponde sulla porta 5001.\n\nSi può aggiungere comunque, per esempio per collegarla al Wi-Fi con la Finestra Prima Installazione VMC della scheda Master, e cambiare l'IP più tardi da «Configura»."
+      },
+      "migra": {
+        "title": "Installazione manuale trovata",
+        "description": "Nella cartella packages/vmc_helty_flow/{nome} c'è già un'installazione manuale della VMC {nome}.\n\nContinuando, la cartella viene spostata in /config/vmc_master_backup e sostituita dal package dell'integrazione. I nomi delle entità restano uguali, quindi la cronologia si conserva. Dopo il riavvio eliminare l'automazione incollata a mano e la vecchia scheda manuale."
+      }
+    },
+    "error": {
+      "nome_non_valido": "Nome non valido: solo lettere minuscole, da 1 a 10 caratteri.",
+      "nome_in_uso": "Nome già usato da un'altra VMC.",
+      "ip_non_valido": "IP non valido: quattro numeri da 0 a 255 separati da punti.",
+      "ip_in_uso": "IP già usato da un'altra VMC."
+    },
+    "abort": {
+      "already_configured": "Questa VMC è già configurata."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Cambia IP VMC",
+        "description": "Nuovo indirizzo IP della VMC. Il package viene aggiornato e Home Assistant chiede di riavviarsi.",
+        "data": {
+          "host": "IP VMC su porta 5001"
+        }
+      }
+    },
+    "error": {
+      "ip_non_valido": "IP non valido: quattro numeri da 0 a 255 separati da punti.",
+      "ip_in_uso": "IP già usato da un'altra VMC."
+    }
+  },
+  "issues": {
+    "riavvio_necessario": {
+      "title": "VMC Master: riavviare Home Assistant",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Riavviare Home Assistant",
+            "description": "I file del package VMC Master sono stati installati o aggiornati: servono un riavvio per essere caricati. Premere Invia per riavviare ora."
+          }
+        }
+      }
+    },
+    "packages_non_abilitati": {
+      "title": "VMC Master: package non caricati",
+      "description": "I file della VMC sono installati ma Home Assistant non li carica. Nel file configuration.yaml deve esserci:\n\nhomeassistant:\n  packages: !include_dir_named packages/\n\nAggiungere la riga, salvare e riavviare Home Assistant."
+    }
+  }
+}
