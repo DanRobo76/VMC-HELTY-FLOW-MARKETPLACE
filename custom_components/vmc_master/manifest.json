@@ -1,9 +1,18 @@
 {
   "domain": "vmc_master",
   "name": "VMC Master",
-  "codeowners": ["@DanRobo76"],
+  "categories": [
+    "climate.fans_ventilation"
+  ],
+  "codeowners": [
+    "@DanRobo76"
+  ],
   "config_flow": true,
-  "dependencies": ["frontend", "http", "repairs"],
+  "dependencies": [
+    "frontend",
+    "http",
+    "repairs"
+  ],
   "documentation": "https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE",
   "integration_type": "device",
   "iot_class": "local_polling",
