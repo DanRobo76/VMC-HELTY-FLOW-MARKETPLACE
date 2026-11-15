@@ -1,11 +1,9 @@
 <p align="center">
-  <video src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/Video/VMC_MASTER_promo_IT.mp4" poster="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/Video/anteprima_scene_IT.webp" controls preload="none" width="100%">
-    <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW/raw/main/Video/VMC_MASTER_promo_IT.mp4">
-      <img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/Video/anteprima_scene_IT.webp" alt="Video di presentazione di VMC MASTER (50 secondi)" width="100%">
-    </a>
-  </video>
+  <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW/raw/main/Video/VMC_MASTER_promo_IT.mp4">
+    <img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/Video/anteprima_scene_IT.webp" alt="Video di presentazione di VMC MASTER (50 secondi)" width="100%">
+  </a>
   <br>
-  <sub>Video di presentazione · 50 secondi</sub>
+  <sub>Video di presentazione · 50 secondi · clicca per scaricarlo</sub>
 </p>
 
 ---
@@ -441,13 +439,11 @@ Il ritorno non è automatico. Ci sono due strade:
 </p>
 
 <p align="center">
-  <video src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/Video/VMC_MASTER_promo_EN.mp4" poster="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/Video/anteprima_scene_EN.webp" controls preload="none" width="720">
-    <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW/raw/main/Video/VMC_MASTER_promo_EN.mp4">
-      <img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/Video/anteprima_scene_EN.webp" alt="VMC MASTER presentation video (50 seconds)" width="720">
-    </a>
-  </video>
+  <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW/raw/main/Video/VMC_MASTER_promo_EN.mp4">
+    <img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/Video/anteprima_scene_EN.webp" alt="VMC MASTER presentation video (50 seconds)" width="720">
+  </a>
   <br>
-  <sub>Presentation video · 50 seconds</sub>
+  <sub>Presentation video · 50 seconds · click to download</sub>
 </p>
 
 <p align="center">
