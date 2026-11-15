@@ -157,47 +157,35 @@ def sostituisci_ip_nc(testo: str, ip: str) -> str:
     )
 
 
-_URL_RELEASE_8 = "https://api.github.com/repos/DanRobo76/VMC-HELTY-FLOW/releases/latest"
-_URL_RELEASE_9 = "https://api.github.com/repos/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/releases/latest"
 _RE_VERSIONE = re.compile(r'^(\s+state: )"v\.8\.6\.0"(\s*)$')
 
 
 def adatta_versione(yaml_vmc: str, versione: str) -> str:
-    """Il sensore «Package Ver.» mostra la versione dell'integrazione e il sensore
-    «versione repository» legge le release del repository dell'integrazione,
-    cosi' l'avviso di aggiornamento confronta versioni dello stesso prodotto.
-    Cambiano solo queste due righe del package.
+    """Il sensore «Package Ver.» mostra la versione dell'integrazione, cosi' l'avviso di
+    aggiornamento confronta versioni dello stesso prodotto. Cambia solo questa riga
+    del package (il link delle release lo cambia adatta_link_repository).
     """
-    uscita: list[str] = []
-    for riga in _dividi_righe(yaml_vmc):
-        corpo = _corpo(riga)
-        if _URL_RELEASE_8 in corpo:
-            corpo = corpo.replace(_URL_RELEASE_8, _URL_RELEASE_9)
-        else:
-            corpo = _RE_VERSIONE.sub(lambda m: f'{m.group(1)}"v.{versione}"{m.group(2)}', corpo)
-        uscita.append(_ricomponi(corpo, riga))
-    return "".join(uscita)
+    return "".join(
+        _ricomponi(
+            _RE_VERSIONE.sub(lambda m: f'{m.group(1)}"v.{versione}"{m.group(2)}', _corpo(riga)),
+            riga,
+        )
+        for riga in _dividi_righe(yaml_vmc)
+    )
 
 
-_LINK_AGGIORNAMENTO_8 = "[Link](https://github.com/DanRobo76/VMC-HELTY-FLOW)"
-_LINK_AGGIORNAMENTO_9 = "[Link](https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE)"
+# Ogni link al repository della release manuale (pagina, release, immagini, video)
+# punta al repository dell'integrazione, che contiene gli stessi file negli stessi
+# percorsi. Il nome «VMC-HELTY-FLOW» senza «DanRobo76/» (testo, nomi delle
+# automazioni) resta com'e'.
+_RE_LINK_REPOSITORY_8 = re.compile(r"DanRobo76/VMC-HELTY-FLOW(?![-\w])")
+REPOSITORY_INTEGRAZIONE = "DanRobo76/VMC-HELTY-FLOW-MARKETPLACE"
 
 
-def adatta_link_aggiornamento(automazione: str) -> str:
-    """La notifica «nuova revisione rilasciata» dell'automazione apre il repository
-    dell'integrazione. Cambia solo la riga del link."""
-    return automazione.replace(_LINK_AGGIORNAMENTO_8, _LINK_AGGIORNAMENTO_9)
-
-
-_LINK_GITHUB_8 = 'href="https://github.com/DanRobo76/VMC-HELTY-FLOW">GitHub</a>'
-_LINK_GITHUB_9 = 'href="https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE">GitHub</a>'
-
-
-def adatta_link_github(scheda: str) -> str:
-    """Il link «GitHub» del Pannello Informazioni apre il repository dell'integrazione.
-    Cambia solo quella riga della scheda (i link del video restano sul repository
-    VMC-HELTY-FLOW, dove si trovano i file)."""
-    return scheda.replace(_LINK_GITHUB_8, _LINK_GITHUB_9)
+def adatta_link_repository(testo: str) -> str:
+    """Tutti i link a github.com/DanRobo76/VMC-HELTY-FLOW (anche api.github.com e
+    raw.githubusercontent.com) diventano link a VMC-HELTY-FLOW-MARKETPLACE."""
+    return _RE_LINK_REPOSITORY_8.sub(REPOSITORY_INTEGRAZIONE, testo)
 
 
 def per_vmc(testo_master: str, nome: str, ip: str) -> str:

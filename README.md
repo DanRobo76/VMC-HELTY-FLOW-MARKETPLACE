@@ -1,6 +1,6 @@
 <p align="center">
-  <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW/raw/main/Video/VMC_MASTER_promo_IT.mp4">
-    <img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/Video/anteprima_scene_IT.webp" alt="Video di presentazione di VMC MASTER (50 secondi)" width="100%">
+  <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/raw/main/Video/VMC_MASTER_promo_IT.mp4">
+    <img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/main/Video/anteprima_scene_IT.webp" alt="Video di presentazione di VMC MASTER (50 secondi)" width="100%">
   </a>
   <br>
   <sub>Video di presentazione · 50 secondi · clicca per scaricarlo</sub>
@@ -31,7 +31,7 @@
 </p>
 
 <p align="center">
-  <sub>Versione beta 9.0.0b8: stessa logica e stessa scheda della release manuale <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW">8.6.0</a>, che resta disponibile per chi preferisce installare a mano.</sub>
+  <sub>Versione beta 9.0.0b9: stessa logica e stessa scheda della release manuale <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW">8.6.0</a>, che resta disponibile per chi preferisce installare a mano.</sub>
 </p>
 
 <p align="center">
@@ -131,7 +131,7 @@
 
 <br>
 
-<img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/README/punto_rugiada_it.png" alt="Controllo del punto di rugiada" width="100%">
+<img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/main/immagini/README/punto_rugiada_it.png" alt="Controllo del punto di rugiada" width="100%">
 
 <sub>Il software calcola il Punto di Rugiada Esterno (PdR Ext.) e il Punto di Rugiada Interno (PdR Int.). Se la differenza tra il PdR Ext. e il PdR Int. è inferiore al "Set Lim. Δ Punto di Rugiada" (valore impostato dall'utente), la VMC garantirà un adeguato trasporto dell'umidità dall'interno all'esterno dell'edificio. Al contrario, se la differenza tra il PdR Ext. e il PdR Int. sarà maggiore o uguale al "Set Lim. Δ Punto di Rugiada", la VMC si arresterà per evitare il trasporto dell'umidità dall'esterno all'interno dell'edificio; la ripresa automatica sull'ultima velocità impostata è garantita non appena la differenza tra il PdR Ext. e il PdR Int. è inferiore al "Set Lim. Δ Punto di Rugiada". Le allerte con priorità maggiore (congelamento, Δ temperatura, inquinanti) prevalgono sul punto di rugiada: vedere "Logiche di funzionamento".</sub>
 
@@ -139,7 +139,7 @@
 
 <sub>Permette l'utilizzo dei seguenti Servizi, da impiegare in qualsiasi Automazione, Script, etc.:</sub>
 
-<img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/README/servizi_it.png" alt="Servizi" width="100%">
+<img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/main/immagini/README/servizi_it.png" alt="Servizi" width="100%">
 </details>
 
 <details>
@@ -186,7 +186,7 @@
 - <sub>Package abilitati nel file `configuration.yaml` (passo 1 dell'installazione). Se manca la riga, l'integrazione lo segnala in *Impostazioni → Riparazioni*.</sub>
 - <sub>**Solo per gli Avvisi audio:** l'integrazione **Google Translate Text-to-Speech** configurata in YAML nel file <strong>configuration.yaml</strong> della cartella <strong>config</strong>, con la sintassi riportata nell'immagine. Questa configurazione crea l'azione `tts.google_translate_say` usata dagli script audio del Package; se l'integrazione viene aggiunta soltanto dall'interfaccia (Impostazioni → Dispositivi e servizi) l'azione non viene creata e gli avvisi audio non vengono riprodotti. Dopo la modifica salvare il file e riavviare Home Assistant.</sub>
 
-  <img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/README/configurazione_tts.png" alt="configuration.yaml: tts / google_translate" width="60%">
+  <img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/main/immagini/README/configurazione_tts.png" alt="configuration.yaml: tts / google_translate" width="60%">
 
 - <sub>**Solo per la Prima Installazione VMC** (collegamento della VMC al Wi-Fi di casa senza l'App Air Guard): Home Assistant OS con il Supervisor, installato su un computer dotato di scheda Wi-Fi integrata oppure con una chiavetta USB Wi-Fi compatibile collegata; la scheda deve risultare tra le interfacce di rete di Home Assistant (Impostazioni → Sistema → Rete).</sub>
 - <sub>**Consigliata:** l'app **File editor** di Home Assistant, con cui si modifica <strong>configuration.yaml</strong> [Impostazioni → Applicazioni → Installa app → File editor → Installa]</sub>
@@ -347,7 +347,7 @@ Conviene aggiungere prima la scheda nuova e togliere la vecchia solo dopo aver v
 5. ripetere i passi 3 e 4 per ogni VMC, poi **Fatto** in alto a destra.
 
 ### B8. Controllo finale
-- Nel **Pannello Informazioni** della scheda, «Package Ver.» indica la versione dell'integrazione (per esempio `v.9.0.0b8`).
+- Nel **Pannello Informazioni** della scheda, «Package Ver.» indica la versione dell'integrazione (per esempio `v.9.0.0b9`).
 - Il Profilo Inizializzazione **non va rifatto**: le impostazioni restano quelle di prima.
 - Le automazioni principali «Automazione VMC ‹nome›» del package conservano area, etichette e categoria di quelle incollate.
 - Le 18 entità della Finestra Clona della VMC master, che non esiste più, vengono tolte da sole al riavvio.
@@ -373,7 +373,7 @@ Il ritorno non è automatico. Ci sono due strade:
 
 <sub>La tabella riassume priorità, comportamento della VMC e tempi di intervento di ogni allerta. Il dettaglio completo è nel Pannello Informazioni, voce 17.</sub>
 
-<img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/README/logiche_it.png" alt="Logiche di funzionamento" width="100%">
+<img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/main/immagini/README/logiche_it.png" alt="Logiche di funzionamento" width="100%">
 </details>
 
 <details>
@@ -381,7 +381,7 @@ Il ritorno non è automatico. Ci sono due strade:
 
 <sub>Le schermate possono variare in funzione dell'ultima versione rilasciata. Con l'integrazione la Finestra Clona non c'è più.</sub>
 
-<img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/README/schermate_it.png" alt="Schermate VMC MASTER" width="100%">
+<img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/main/immagini/README/schermate_it.png" alt="Schermate VMC MASTER" width="100%">
 </details>
 
 <details>
@@ -412,7 +412,7 @@ Il ritorno non è automatico. Ci sono due strade:
   Clicca sul link oppure scansiona il QR code qui sotto.
   <br><br>
   <a href="https://www.paypal.com/ncp/payment/8LT4JJW7MHW6U">
-    <img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/Informazioni/VMC-HELTY-FLOW-qrcode.png"
+    <img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/main/immagini/Informazioni/VMC-HELTY-FLOW-qrcode.png"
          alt="QR code PayPal per sostenere VMC MASTER"
          width="200">
   </a>
@@ -441,15 +441,15 @@ Il ritorno non è automatico. Ci sono due strade:
 </p>
 
 <p align="center">
-  <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW/raw/main/Video/VMC_MASTER_promo_EN.mp4">
-    <img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/Video/anteprima_scene_EN.webp" alt="VMC MASTER presentation video (50 seconds)" width="720">
+  <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/raw/main/Video/VMC_MASTER_promo_EN.mp4">
+    <img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/main/Video/anteprima_scene_EN.webp" alt="VMC MASTER presentation video (50 seconds)" width="720">
   </a>
   <br>
   <sub>Presentation video · 50 seconds · click to download</sub>
 </p>
 
 <p align="center">
-  <sub>Beta version 9.0.0b8: same logic and same card as the manual release <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW">8.6.0</a>, which stays available for manual installs.</sub>
+  <sub>Beta version 9.0.0b9: same logic and same card as the manual release <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW">8.6.0</a>, which stays available for manual installs.</sub>
 </p>
 
 <p align="center">
@@ -495,7 +495,7 @@ Il ritorno non è automatico. Ci sono due strade:
 - <sub>Packages enabled in `configuration.yaml` (installation step 1)</sub>
 - <sub>**Only for audio alerts:** the **Google Translate Text-to-Speech** integration configured in YAML in `configuration.yaml`, with the syntax shown in the image, then restart Home Assistant.</sub>
 
-  <img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/README/configurazione_tts.png" alt="configuration.yaml: tts / google_translate" width="60%">
+  <img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/main/immagini/README/configurazione_tts.png" alt="configuration.yaml: tts / google_translate" width="60%">
 
 - <sub>**Only for the First Installation:** Home Assistant OS with the Supervisor, on a computer with a built-in Wi-Fi card or a compatible USB Wi-Fi dongle.</sub>
 
@@ -565,7 +565,7 @@ The guide covers the `master` unit and every unit created with the Clone window,
 
 <sub>The table summarises priority, unit behaviour and reaction time of each alert. Full details are in the Information Panel, item 17.</sub>
 
-<img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/README/logiche_en.png" alt="Operating logic" width="100%">
+<img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/main/immagini/README/logiche_en.png" alt="Operating logic" width="100%">
 </details>
 
 <details>
@@ -573,7 +573,7 @@ The guide covers the `master` unit and every unit created with the Clone window,
 
 <sub>Screenshots may change with the latest release. The interface of the card is in Italian. With the integration there is no Clone window.</sub>
 
-<img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/README/schermate_en.png" alt="VMC MASTER screenshots" width="100%">
+<img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/main/immagini/README/schermate_en.png" alt="VMC MASTER screenshots" width="100%">
 </details>
 
 <details>
@@ -602,7 +602,7 @@ The guide covers the `master` unit and every unit created with the Clone window,
   Click the link or scan the QR code below.
   <br><br>
   <a href="https://www.paypal.com/ncp/payment/8LT4JJW7MHW6U">
-    <img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/Informazioni/VMC-HELTY-FLOW-qrcode.png"
+    <img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/main/immagini/Informazioni/VMC-HELTY-FLOW-qrcode.png"
          alt="PayPal QR code to support VMC MASTER"
          width="200">
   </a>

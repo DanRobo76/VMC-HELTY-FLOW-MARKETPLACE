@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
+from urllib.parse import unquote
 from unittest.mock import patch
 
 from homeassistant import config_entries
@@ -17,6 +19,27 @@ from custom_components.vmc_master.const import DOMAIN
 
 PROVA_VMC = "custom_components.vmc_master.config_flow.async_prova_vmc"
 MANIFEST = Path(__file__).parent.parent / "custom_components" / "vmc_master" / "manifest.json"
+RADICE = Path(__file__).parent.parent
+# Link a immagini e video, contati uno per uno: 77 nella scheda (51 file diversi)
+# piu' il link «GitHub» del Pannello Informazioni; 14 nel README
+FILE_COLLEGATI_SCHEDA = 77
+FILE_COLLEGATI_README = 14
+# Link al repository della release manuale (non seguito da «-MARKETPLACE»)
+RE_LINK_8 = re.compile(r"DanRobo76/VMC-HELTY-FLOW(?![-\w])")
+# File letti dal repository dell'integrazione (immagini, video)
+RE_FILE_9 = re.compile(
+    r"DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/(?:main|raw/main)/([^\s\"'<>?]+)"
+)
+
+
+def _controlla_link(testo: str) -> int:
+    """Nessun link al repository VMC-HELTY-FLOW; ogni file collegato esiste nel
+    repository dell'integrazione. Restituisce quanti file collegati ci sono."""
+    assert RE_LINK_8.findall(testo) == []
+    percorsi = [unquote(p) for p in RE_FILE_9.findall(testo)]
+    mancanti = [p for p in percorsi if not (RADICE / p).is_file()]
+    assert mancanti == []
+    return len(percorsi)
 
 
 async def _aggiungi(hass: HomeAssistant, nome: str, ip: str, risponde: bool = True):
@@ -45,10 +68,12 @@ async def test_aggiungi_master_e_sala(hass: HomeAssistant, hass_client) -> None:
     package = (cartella / "vmc_master.yaml").read_text(encoding="utf-8")
     assert f'state: "v.{versione}"' in package and '"v.8.6.0"' not in package
     assert "repos/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/releases/latest" in package
-    assert "repos/DanRobo76/VMC-HELTY-FLOW/releases" not in package
     automazione = (cartella / "vmc_master_automazione.yaml").read_text(encoding="utf-8")
     assert "[Link](https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE)" in automazione
-    assert "[Link](https://github.com/DanRobo76/VMC-HELTY-FLOW)" not in automazione
+    # tutti i file del package: nessun link al repository VMC-HELTY-FLOW
+    for file in sorted(cartella.iterdir()):
+        if file.is_file():
+            assert _controlla_link(file.read_text(encoding="utf-8")) == 0
     assert ir.async_get(hass).async_get_issue(DOMAIN, "riavvio_necessario") is not None
 
     # Seconda VMC, non raggiungibile: si aggiunge dopo la conferma
@@ -74,8 +99,9 @@ async def test_aggiungi_master_e_sala(hass: HomeAssistant, hass_client) -> None:
             assert "vmc_master" not in testo and "vmc_sala_" in testo
         # Pannello Informazioni: «GitHub» apre il repository dell'integrazione
         assert testo.count('href="https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE">GitHub</a>') == 1
-        assert 'href="https://github.com/DanRobo76/VMC-HELTY-FLOW">GitHub</a>' not in testo
-        assert testo.count("VMC-HELTY-FLOW/raw/main/Video/VMC_MASTER_promo_IT.mp4") == 2
+        assert testo.count("VMC-HELTY-FLOW-MARKETPLACE/raw/main/Video/VMC_MASTER_promo_IT.mp4") == 2
+        # immagini e video: tutti dal repository dell'integrazione, e ci sono tutti
+        assert _controlla_link(testo) == FILE_COLLEGATI_SCHEDA
     risposta = await client.get("/api/vmc_master/scheda/inesistente")
     assert risposta.status == 404
     risposta = await client.get("/vmc_master_frontend/vmc-master-card.js")
@@ -257,3 +283,13 @@ async def test_modelli_della_scheda_senza_errori(hass: HomeAssistant) -> None:
             except TemplateError as errore:
                 errori.append(str(errore)[:120])
         assert errori == [], (nome, errori)
+
+
+
+def test_link_del_readme() -> None:
+    """Immagini e video del README vengono dal repository dell'integrazione e ci sono."""
+    readme = (RADICE / "README.md").read_text(encoding="utf-8")
+    percorsi = [unquote(p) for p in RE_FILE_9.findall(readme)]
+    assert len(percorsi) == FILE_COLLEGATI_README
+    assert [p for p in percorsi if not (RADICE / p).is_file()] == []
+    assert "VMC-HELTY-FLOW/main/" not in readme and "VMC-HELTY-FLOW/raw/main/" not in readme
