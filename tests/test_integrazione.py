@@ -72,6 +72,10 @@ async def test_aggiungi_master_e_sala(hass: HomeAssistant, hass_client) -> None:
         assert "opzione_finestra_clona" not in testo
         if voce.data["nome"] == "sala":
             assert "vmc_master" not in testo and "vmc_sala_" in testo
+        # Pannello Informazioni: «GitHub» apre il repository dell'integrazione
+        assert testo.count('href="https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE">GitHub</a>') == 1
+        assert 'href="https://github.com/DanRobo76/VMC-HELTY-FLOW">GitHub</a>' not in testo
+        assert testo.count("VMC-HELTY-FLOW/raw/main/Video/VMC_MASTER_promo_IT.mp4") == 2
     risposta = await client.get("/api/vmc_master/scheda/inesistente")
     assert risposta.status == 404
     risposta = await client.get("/vmc_master_frontend/vmc-master-card.js")
