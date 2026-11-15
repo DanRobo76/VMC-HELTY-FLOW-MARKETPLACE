@@ -62,12 +62,12 @@ homeassistant:
    Se nel file c'è già una riga `homeassistant:`, non scriverla una seconda volta: aggiungere solo la riga `  packages: !include_dir_named packages/` subito sotto, con due spazi davanti.
 3. Salvare con l'icona del **dischetto** in alto a destra.
 
-### A2. Scaricare l'integrazione dal Marketplace
+### A2. Installare l'integrazione dal Marketplace
 Finché l'integrazione non è nel catalogo pubblico, si aggiunge come repository personalizzato:
 
 1. **Impostazioni → Marketplace**, menu **⋮** in alto a destra → **Repository personalizzati**;
 2. nel campo del repository scrivere `https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE`, come tipo scegliere **Integrazione** e premere **Aggiungi**, poi chiudere la finestra;
-3. cercare **VMC Master** nel Marketplace, aprirla, premere **Scarica** e confermare.
+3. cercare **VMC Master** nel Marketplace e aprirla: compare «Non installata» con il pulsante **Installa** a destra; premerlo e, se compare una finestra di conferma, premere di nuovo **Installa**.
 
 ### A3. Riavviare Home Assistant
 *Impostazioni → Strumenti → YAML → Riavvia → Riavvia Home Assistant*. Attendere che l'interfaccia torni disponibile.
@@ -112,7 +112,7 @@ La guida vale per la VMC `master` e per tutte le VMC create con la Finestra Clon
 
 I package sono già abilitati dalla 8.6.0: il punto **A1** non serve.
 
-### B2. Scaricare l'integrazione e riavviare
+### B2. Installare l'integrazione e riavviare
 Eseguire i punti **A2** e **A3**.
 
 ### B3. Aggiungere la VMC master
@@ -185,7 +185,7 @@ Integration for **Helty Flow Plus/Elite** ventilation units that installs and up
 
 **A. First installation**
 1. Enable packages in `configuration.yaml` (File editor app).
-2. *Settings → Marketplace → ⋮ → Custom repositories*, URL `https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE`, type **Integration**; search **VMC Master** and **Download**.
+2. *Settings → Marketplace → ⋮ → Custom repositories*, URL `https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE`, type **Integration**; search **VMC Master** and press **Install**.
 3. Restart Home Assistant.
 4. *Settings → Devices & services → + Add integration → VMC Master*: name (`master` for the first unit) and IP, then **Submit**.
 5. Restart from the repair «VMC Master: riavviare Home Assistant».
