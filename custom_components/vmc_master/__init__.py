@@ -89,9 +89,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         persistent_notification.async_create(
             hass,
             (
-                f"La precedente installazione manuale della VMC {nome} e' stata spostata in "
+                f"La precedente installazione manuale della VMC {nome} è stata spostata in "
                 f"`{esito.backup}` e sostituita dal package dell'integrazione (stessi nomi delle "
-                "entita', la cronologia resta).\n\n"
+                "entità, la cronologia resta).\n\n"
                 f"PRIMA di riavviare eliminare l'automazione incollata a mano «Automazione VMC {nome_automazione}» "
                 "(Impostazioni → Automazioni e scenari), altrimenti dopo il riavvio girano due "
                 "automazioni uguali. Poi riavviare, togliere la vecchia scheda manuale e aggiungere "

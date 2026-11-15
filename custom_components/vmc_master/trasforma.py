@@ -35,14 +35,22 @@ def _ricomponi(corpo: str, riga_originale: str) -> str:
     return corpo + "\n" if riga_originale.endswith("\n") else corpo
 
 
+_IS_STATE_FINESTRA_CLONA = "is_state('input_boolean.vmc_master_opzione_finestra_clona'"
+
+
 def rimuovi_clona(testo: str) -> str:
     """Prima meta' dello script sed del ciclo «for file_clone» di vmc_script_clona.sh.
 
     Comandi, nell'ordine, applicati a ogni riga:
       /INIZIO CLONA/,/FINE CLONA/d
+      /is_state('input_boolean.vmc_master_opzione_finestra_clona'/d   (correzione, vedi sotto)
       s/'input_boolean.vmc_master_opzione_finestra_clona', //g
       /vmc_master_opzione_finestra_clona/d
       /vmc_master_clona_/d
+
+    Correzione rispetto alla 8.6.0: la riga «or is_state('input_boolean.vmc_master_opzione_
+    finestra_clona', 'on')» della scheda si toglie intera. Con la sola sostituzione restava
+    «or is_state('on')», che fa fallire il modello del Pannello Informazioni.
     """
     uscita: list[str] = []
     in_clona = False
@@ -55,6 +63,8 @@ def rimuovi_clona(testo: str) -> str:
             continue
         if _INIZIO_CLONA in corpo:
             in_clona = True
+            continue
+        if _IS_STATE_FINESTRA_CLONA in corpo:
             continue
         corpo = corpo.replace(_VOCE_FINESTRA_CLONA, "")
         if "vmc_master_opzione_finestra_clona" in corpo or "vmc_master_clona_" in corpo:
@@ -118,9 +128,18 @@ def rimuovi_sezioni_solo_master(testo: str) -> str:
     return rimuovi_installa(rimuovi_clona(testo))
 
 
+# Nome del file del video nel repository VMC-HELTY-FLOW: non va rinominato, altrimenti
+# nelle VMC clonate il link punta a «VMC_‹nome›_promo_IT.mp4», che non esiste
+_VIDEO_PROMO = "VMC_MASTER_promo_"
+_SEGNAPOSTO_VIDEO = "\x00VIDEO_PROMO\x00"
+
+
 def rinomina(testo: str, nome: str) -> str:
-    """s/master/nome/g, poi s/Master/nome/g, poi s/MASTER/nome/g."""
-    return testo.replace("master", nome).replace("Master", nome).replace("MASTER", nome)
+    """s/master/nome/g, poi s/Master/nome/g, poi s/MASTER/nome/g (come vmc_script_clona.sh),
+    lasciando intatto il nome del file del video promozionale."""
+    testo = testo.replace(_VIDEO_PROMO, _SEGNAPOSTO_VIDEO)
+    testo = testo.replace("master", nome).replace("Master", nome).replace("MASTER", nome)
+    return testo.replace(_SEGNAPOSTO_VIDEO, _VIDEO_PROMO)
 
 
 def sostituisci_ip(testo: str, ip: str) -> str:

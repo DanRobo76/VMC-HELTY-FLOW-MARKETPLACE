@@ -6,7 +6,7 @@
 
 Integrazione per **VMC Helty Flow Plus/Elite** che installa e aggiorna il package **VMC Master** dal Marketplace di Home Assistant (HACS integrato da Home Assistant 2026.11).
 
-> **Versione beta (9.0.0b2).** La logica di funzionamento è quella della release manuale **8.6.0** del repository [VMC-HELTY-FLOW](https://github.com/DanRobo76/VMC-HELTY-FLOW), senza modifiche: l'integrazione genera gli stessi file che oggi creano a mano gli script Clona e Cambia IP. Chi preferisce l'installazione manuale continua a usare la 8.6.0, che non cambia.
+> **Versione beta (9.0.0b4).** La logica di funzionamento è quella della release manuale **8.6.0** del repository [VMC-HELTY-FLOW](https://github.com/DanRobo76/VMC-HELTY-FLOW), senza modifiche: l'integrazione genera gli stessi file che oggi creano a mano gli script Clona e Cambia IP, con due sole correzioni alla scheda (vedi sotto). Chi preferisce l'installazione manuale continua a usare la 8.6.0, che non cambia.
 
 <sub>[English below](#english)</sub>
 
@@ -33,6 +33,10 @@ Integrazione per **VMC Helty Flow Plus/Elite** che installa e aggiorna il packag
 | Nomi delle entità | `vmc_master_…`, `vmc_‹nome›_…` | Identici: la cronologia resta |
 
 La Finestra Clona non c'è più: nella scheda e nel package viene tolto solo il blocco fra i segnaposto «SEZIONE CLONA VMC», lo stesso che la 8.6.0 toglie già alle VMC clonate.
+
+Correzioni rispetto allo script Clona della 8.6.0, solo nella scheda:
+- la riga `or is_state('input_boolean.vmc_master_opzione_finestra_clona', 'on')` viene tolta intera. Lo script Clona lasciava `or is_state('on')`, che faceva andare in errore il riquadro grande del Pannello Informazioni;
+- il link del video resta `VMC_MASTER_promo_IT.mp4`. Nelle VMC clonate lo script Clona lo rinominava in `VMC_‹nome›_promo_IT.mp4`, un file che non esiste.
 
 ---
 
@@ -79,17 +83,20 @@ Finché l'integrazione non è nel catalogo pubblico, si aggiunge come repository
    - **Nome VMC**: la prima si chiama `master` (è già scritto); le altre con un nome a scelta: sole lettere minuscole, da 1 a 10 caratteri, senza spazi né numeri;
    - **IP VMC su porta 5001**: l'IP statico della VMC, per esempio `192.168.1.160`;
    - premere **Invia**;
-4. se compare **«VMC non raggiungibile»** (VMC spenta o non ancora collegata al Wi-Fi) premere **Invia** per aggiungerla comunque: l'IP si cambia più tardi con *Configura*;
+4. se compare **«VMC non raggiungibile»** (VMC spenta o non ancora collegata al Wi-Fi) premere **Invia** per aggiungerla comunque: l'IP si cambia più tardi con l'**icona ingranaggio** sulla riga della VMC;
 5. nella finestra finale premere **Fine**.
 
+Dopo la prima VMC, la pagina *Impostazioni → Dispositivi e servizi → VMC Master* mostra una riga per ogni VMC e il pulsante **Aggiungi dispositivo** in alto a destra: per le VMC successive si può usare anche quello.
+
 ### A5. Riavviare Home Assistant
-In *Impostazioni*, in cima alla pagina, compare **«VMC Master: riavviare Home Assistant»**: cliccarla e premere **Invia**. In alternativa: *Impostazioni → Strumenti → YAML → Riavvia → Riavvia Home Assistant*.
+In *Impostazioni*, in cima alla pagina, compare **«VMC Master: riavviare Home Assistant»**: cliccarla e premere **Invia**. Home Assistant si riavvia da solo. In alternativa: *Impostazioni → Strumenti → YAML → Riavvia → Riavvia Home Assistant*.
 
 ### A6. Aggiungere la scheda
-1. Aprire la plancia. Nelle installazioni nuove la plancia **Panoramica** è generata in automatico: in questo caso creare prima una plancia da *Impostazioni → Plance → Aggiungi plancia → Nuova plancia da zero*;
-2. **icona matita** (Modifica la plancia) in alto a destra → **Aggiungi scheda**;
-3. cercare **VMC Master** e cliccarla;
-4. nel campo **VMC** scegliere la VMC (per esempio «VMC master») e premere **Salva**, poi **Fatto** in alto a destra.
+1. Premere **Ctrl+F5** sulla pagina di Home Assistant, così il browser carica la scheda nuova;
+2. aprire la plancia. Nelle installazioni nuove la plancia **Panoramica** è generata in automatico: in questo caso creare prima una plancia da *Impostazioni → Plance → Aggiungi plancia → Nuova plancia da zero*;
+3. **icona matita** (Modifica la plancia) in alto a destra → **Aggiungi scheda**;
+4. cercare **VMC Master** e cliccarla. C'è una sola scheda per tutte le VMC: la VMC si sceglie nel passo seguente;
+5. nel campo **VMC** scegliere la VMC (per esempio «VMC master») e premere **Salva**, poi **Fatto** in alto a destra.
 
 ### A7. Profilo Inizializzazione
 Come nella 8.6.0, solo la prima volta: nel pannello **Impostazioni** della scheda premere **Esegui** su **«VMC ‹nome› - Profilo Inizializzazione»** e confermare con **OK** nel popup «Vuoi Procedere?». Al riavvio aprire la finestra **«Opzioni - Sensori da Selezionare»** e scegliere le entità dei sensori.
@@ -124,7 +131,7 @@ Eseguire i punti **A2** e **A3**.
 La cartella manuale viene spostata in `config/vmc_master_backup/master_‹data›` e sostituita da quella dell'integrazione. I nomi delle entità restano uguali, quindi la cronologia e le impostazioni si conservano. **Non riavviare ancora**, anche se compare la richiesta di riavvio.
 
 ### B4. Aggiungere le VMC clonate
-Ripetere il punto **B3** per ogni VMC clonata, scrivendo a mano il suo nome (lo stesso della sua cartella) e il suo IP. Se la cartella di una VMC clonata non c'è più, la finestra «Installazione manuale trovata» non compare e l'integrazione la installa da zero: va bene così.
+Ripetere il punto **B3** per ogni VMC clonata, scrivendo a mano il suo nome (lo stesso della sua cartella) e il suo IP. Si può partire anche dal pulsante **Aggiungi dispositivo** nella pagina *Impostazioni → Dispositivi e servizi → VMC Master*. Se la cartella di una VMC clonata non c'è più, la finestra «Installazione manuale trovata» non compare e l'integrazione la installa da zero: va bene così.
 
 ### B5. Eliminare le automazioni incollate a mano, prima del riavvio
 Le automazioni principali ora sono nel package. Se restano anche quelle incollate, dopo il riavvio girano due automazioni uguali.
@@ -136,28 +143,43 @@ Le automazioni principali ora sono nel package. Se restano anche quelle incollat
 Eliminare solo le automazioni che si chiamano «Automazione VMC ‹nome›». Le altre automazioni «VMC Master - …» e «VMC ‹nome› - …» fanno parte del package e restano.
 
 ### B6. Riavviare Home Assistant
-Come al punto **A5**: in *Impostazioni* cliccare **«VMC Master: riavviare Home Assistant»** e premere **Invia**.
+Come al punto **A5**: in *Impostazioni* cliccare **«VMC Master: riavviare Home Assistant»** e premere **Invia**. Home Assistant si riavvia da solo: non serve riavviarlo di nuovo.
 
 ### B7. Sostituire le schede
-1. Aprire la plancia con le vecchie schede → **icona matita** in alto a destra;
-2. sulla vecchia scheda della VMC: **tre puntini** → **Elimina**;
-3. **Aggiungi scheda** → **VMC Master** → nel campo **VMC** scegliere la stessa VMC → **Salva**;
-4. ripetere per ogni VMC, poi **Fatto** in alto a destra.
+Conviene aggiungere prima la scheda nuova e togliere la vecchia solo dopo aver visto che funziona.
+
+1. Premere **Ctrl+F5** sulla pagina di Home Assistant, così il browser carica la scheda nuova;
+2. aprire la plancia con le vecchie schede → **icona matita** in alto a destra;
+3. **Aggiungi scheda** → **VMC Master** (una sola scheda per tutte le VMC) → nel campo **VMC** scegliere la VMC → **Salva**;
+4. controllata la scheda nuova, sulla vecchia scheda della stessa VMC: **tre puntini** → **Elimina**;
+5. ripetere i passi 3 e 4 per ogni VMC, poi **Fatto** in alto a destra.
 
 ### B8. Controllo finale
-- Nel **Pannello Informazioni** della scheda, «Package Ver.» indica la versione dell'integrazione (per esempio `v.9.0.0b2`).
+- Nel **Pannello Informazioni** della scheda, «Package Ver.» indica la versione dell'integrazione (per esempio `v.9.0.0b4`).
 - Il Profilo Inizializzazione **non va rifatto**: le impostazioni restano quelle di prima.
+- Le automazioni principali «Automazione VMC ‹nome›» del package conservano area, etichette e categoria di quelle incollate.
 - Le 18 entità della Finestra Clona della VMC master, che non esiste più, vengono tolte da sole al riavvio.
-- La cartella `config/vmc_master_backup` contiene le vecchie installazioni manuali: si può cancellare quando tutto funziona.
+- Le cartelle in `config/packages/vmc_helty_flow` (una per VMC) sono quelle dell'integrazione: **non vanno cancellate**.
+- La cartella `config/vmc_master_backup` contiene le vecchie installazioni manuali: conviene tenerla qualche giorno, perché serve per tornare alla 8.6.0, e cancellarla quando tutto funziona.
 
 ---
 
 ## Dopo l'installazione
 
 - **Aggiungere un'altra VMC**: punti **A4**, **A5**, **A6** e **A7**.
-- **Eliminare una VMC**: *Impostazioni → Dispositivi e servizi → VMC Master*, sulla voce della VMC **tre puntini → Elimina**. La cartella va in `config/vmc_master_backup`; poi riavviare e togliere la sua scheda.
-- **Cambiare IP**: campo «Cambia IP VMC» della scheda, come nella 8.6.0, oppure **Configura** sulla voce della VMC.
+- **Eliminare una VMC**: *Impostazioni → Dispositivi e servizi → VMC Master*, sulla riga della VMC **tre puntini → Elimina**. La cartella va in `config/vmc_master_backup`; poi riavviare e togliere la sua scheda.
+- **Cambiare IP**: campo «Cambia IP VMC» della scheda, come nella 8.6.0, oppure l'**icona ingranaggio** sulla riga della VMC.
 - **Aggiornare**: quando il Marketplace segnala una nuova versione premere **Aggiorna**, poi riavviare dalla riparazione «VMC Master: riavviare Home Assistant».
+
+## Tornare alla 8.6.0 manuale
+
+Il ritorno non è automatico. Ci sono due strade:
+
+1. **Ripristinare il backup** fatto al punto **B1** (*Impostazioni → Sistema → Backup*, scegliere il backup e ripristinarlo). Torna tutto com'era, ma si perde ciò che è cambiato dopo il backup, per esempio la cronologia.
+2. **A mano**, senza perdere la cronologia:
+   - in *Impostazioni → Dispositivi e servizi → VMC Master*, su ogni VMC **tre puntini → Elimina**: l'integrazione sposta le sue cartelle in `config/vmc_master_backup`;
+   - riportare le vecchie cartelle manuali da `config/vmc_master_backup` a `config/packages/vmc_helty_flow`, rinominandole con il solo nome della VMC (per esempio da `master_‹data›` a `master`);
+   - incollare di nuovo le automazioni e le schede manuali della 8.6.0, poi riavviare.
 
 ---
 
@@ -198,5 +220,6 @@ Integration for **Helty Flow Plus/Elite** ventilation units that installs and up
 3. Add each unit with the same name and its IP; confirm «Installazione manuale trovata» if both IPs match. The manual folder is moved to `config/vmc_master_backup`; entity names, history and settings stay. Do not restart yet.
 4. **Before restarting**, delete the hand-pasted automations «Automazione VMC Master» and «Automazione VMC ‹name›» of each cloned unit, with the name in lowercase (otherwise two identical automations run). The «VMC ‹name› - …» automations belong to the package and stay.
 5. Restart from the repair, then replace each old card with a **VMC Master** card. No Profilo Inizializzazione needed; the 18 Clone-window entities of `master` are removed automatically.
+6. Going back to manual 8.6.0 is not automatic: restore the backup, or delete the units from the integration, move the old folders back from `config/vmc_master_backup` and paste the automations and cards again.
 
 Licence: **GPL-3.0**. Copyright © 2023-2026 Ing. Danilo Robotti.

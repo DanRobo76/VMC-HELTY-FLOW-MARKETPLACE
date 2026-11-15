@@ -210,3 +210,46 @@ async def test_toglie_entita_finestra_clona(hass: HomeAssistant) -> None:
     await hass.async_block_till_done()
     rimaste = [e for e in ENTITA_FINESTRA_CLONA if registro.async_get(e) is not None]
     assert rimaste == [fornita]
+
+
+async def test_modelli_della_scheda_senza_errori(hass: HomeAssistant) -> None:
+    """Ogni modello della scheda (master e VMC clonata) si calcola senza errori e il link
+    del video resta quello del repository."""
+    import yaml
+
+    from homeassistant.exceptions import TemplateError
+    from homeassistant.helpers.template import Template
+
+    from custom_components.vmc_master.trasforma import per_vmc
+
+    sorgente = (
+        Path(__file__).parent.parent
+        / "custom_components" / "vmc_master" / "package"
+        / "vmc_master_scheda_manuale_interfaccia.txt"
+    )
+    scheda = sorgente.read_text(encoding="utf-8")
+
+    def modelli(nodo, uscita):
+        if isinstance(nodo, dict):
+            for valore in nodo.values():
+                modelli(valore, uscita)
+        elif isinstance(nodo, list):
+            for valore in nodo:
+                modelli(valore, uscita)
+        elif isinstance(nodo, str) and ("{{" in nodo or "{%" in nodo):
+            uscita.append(nodo)
+        return uscita
+
+    for nome, ip in (("master", "192.168.1.160"), ("sala", "192.168.1.161")):
+        testo = per_vmc(scheda, nome, ip)
+        assert "is_state('on')" not in testo
+        assert testo.count("VMC-HELTY-FLOW/raw/main/Video/VMC_MASTER_promo_IT.mp4") == 2
+        elenco = modelli(yaml.safe_load(testo), [])
+        assert elenco
+        errori = []
+        for modello in elenco:
+            try:
+                Template(modello, hass).async_render(parse_result=False)
+            except TemplateError as errore:
+                errori.append(str(errore)[:120])
+        assert errori == [], (nome, errori)
