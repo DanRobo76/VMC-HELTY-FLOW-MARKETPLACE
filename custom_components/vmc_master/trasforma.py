@@ -138,6 +138,38 @@ def sostituisci_ip_nc(testo: str, ip: str) -> str:
     )
 
 
+_URL_RELEASE_8 = "https://api.github.com/repos/DanRobo76/VMC-HELTY-FLOW/releases/latest"
+_URL_RELEASE_9 = "https://api.github.com/repos/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/releases/latest"
+_RE_VERSIONE = re.compile(r'^(\s+state: )"v\.8\.6\.0"(\s*)$')
+
+
+def adatta_versione(yaml_vmc: str, versione: str) -> str:
+    """Il sensore «Package Ver.» mostra la versione dell'integrazione e il sensore
+    «versione repository» legge le release del repository dell'integrazione,
+    cosi' l'avviso di aggiornamento confronta versioni dello stesso prodotto.
+    Cambiano solo queste due righe del package.
+    """
+    uscita: list[str] = []
+    for riga in _dividi_righe(yaml_vmc):
+        corpo = _corpo(riga)
+        if _URL_RELEASE_8 in corpo:
+            corpo = corpo.replace(_URL_RELEASE_8, _URL_RELEASE_9)
+        else:
+            corpo = _RE_VERSIONE.sub(lambda m: f'{m.group(1)}"v.{versione}"{m.group(2)}', corpo)
+        uscita.append(_ricomponi(corpo, riga))
+    return "".join(uscita)
+
+
+_LINK_AGGIORNAMENTO_8 = "[Link](https://github.com/DanRobo76/VMC-HELTY-FLOW)"
+_LINK_AGGIORNAMENTO_9 = "[Link](https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE)"
+
+
+def adatta_link_aggiornamento(automazione: str) -> str:
+    """La notifica «nuova revisione rilasciata» dell'automazione apre il repository
+    dell'integrazione. Cambia solo la riga del link."""
+    return automazione.replace(_LINK_AGGIORNAMENTO_8, _LINK_AGGIORNAMENTO_9)
+
+
 def per_vmc(testo_master: str, nome: str, ip: str) -> str:
     """Scheda o automazione della VMC indicata, come la produce la release 8.6.0,
     ma senza la Finestra Clona (sostituita da «Aggiungi voce» dell'integrazione).

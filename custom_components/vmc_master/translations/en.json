@@ -19,7 +19,7 @@
       },
       "migra": {
         "title": "Manual installation found",
-        "description": "The folder packages/vmc_helty_flow/{nome} already holds a manual installation of unit {nome}.\n\nIf you continue, the folder is moved to /config/vmc_master_backup and replaced by the integration's package. Entity names stay the same, so history is kept. After the restart, delete the hand-pasted automation and the old manual card."
+        "description": "The folder packages/vmc_helty_flow/{nome} already holds a manual installation of unit {nome}.\n\nIP entered: {ip}. IP in the manual installation: {ip_trovato}. If they differ, close this dialog and start again with the right IP.\n\nIf you continue, the folder is moved to /config/vmc_master_backup and replaced by the integration's package. Entity names stay the same, so history is kept. Before restarting, delete the hand-pasted automation (otherwise two identical automations run after the restart); after the restart, remove the old manual card."
       }
     },
     "error": {

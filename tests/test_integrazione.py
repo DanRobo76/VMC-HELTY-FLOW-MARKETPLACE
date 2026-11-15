@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from unittest.mock import patch
 
@@ -15,6 +16,7 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 from custom_components.vmc_master.const import DOMAIN
 
 PROVA_VMC = "custom_components.vmc_master.config_flow.async_prova_vmc"
+MANIFEST = Path(__file__).parent.parent / "custom_components" / "vmc_master" / "manifest.json"
 
 
 async def _aggiungi(hass: HomeAssistant, nome: str, ip: str, risponde: bool = True):
@@ -38,6 +40,15 @@ async def test_aggiungi_master_e_sala(hass: HomeAssistant, hass_client) -> None:
     assert (cartella / "vmc_master.yaml").is_file()
     assert (cartella / "vmc_master_automazione.yaml").is_file()
     assert "192.168.1.160" in (cartella / "vmc_master.yaml").read_text(encoding="utf-8")
+    # versione dell'integrazione e release del repository dell'integrazione
+    versione = json.loads(MANIFEST.read_text(encoding="utf-8"))["version"]
+    package = (cartella / "vmc_master.yaml").read_text(encoding="utf-8")
+    assert f'state: "v.{versione}"' in package and '"v.8.6.0"' not in package
+    assert "repos/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/releases/latest" in package
+    assert "repos/DanRobo76/VMC-HELTY-FLOW/releases" not in package
+    automazione = (cartella / "vmc_master_automazione.yaml").read_text(encoding="utf-8")
+    assert "[Link](https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE)" in automazione
+    assert "[Link](https://github.com/DanRobo76/VMC-HELTY-FLOW)" not in automazione
     assert ir.async_get(hass).async_get_issue(DOMAIN, "riavvio_necessario") is not None
 
     # Seconda VMC, non raggiungibile: si aggiunge dopo la conferma
@@ -130,12 +141,30 @@ async def test_migrazione_da_installazione_manuale(hass: HomeAssistant) -> None:
             risultato["flow_id"], {"nome": "master", "host": "192.168.1.150"}
         )
     assert risultato["step_id"] == "migra"
+    assert risultato["description_placeholders"]["ip_trovato"] == "192.168.1.150"
     risultato = await hass.config_entries.flow.async_configure(risultato["flow_id"], {})
     assert risultato["type"] is FlowResultType.CREATE_ENTRY
     await hass.async_block_till_done()
     backup = list(Path(hass.config.path("vmc_master_backup")).iterdir())
     assert len(backup) == 1 and (backup[0] / "vmc_master.yaml").is_file()
     assert (cartella / ".vmc_master_integrazione.json").is_file()
+
+
+async def test_migrazione_vmc_clonata(hass: HomeAssistant) -> None:
+    """Una VMC clonata a mano non va cancellata prima: la sposta in backup l'integrazione."""
+    cartella = Path(hass.config.path("packages", "vmc_helty_flow", "sala"))
+    cartella.mkdir(parents=True)
+    (cartella / "vmc_sala.yaml").write_text("sensor:\n  - platform: tcp\n    host: 192.168.1.161\n", encoding="utf-8")
+    risultato = await _aggiungi(hass, "sala", "192.168.1.171")
+    assert risultato["step_id"] == "migra"
+    segnaposto = risultato["description_placeholders"]
+    assert segnaposto["ip"] == "192.168.1.171" and segnaposto["ip_trovato"] == "192.168.1.161"
+    risultato = await hass.config_entries.flow.async_configure(risultato["flow_id"], {})
+    assert risultato["type"] is FlowResultType.CREATE_ENTRY
+    await hass.async_block_till_done()
+    backup = list(Path(hass.config.path("vmc_master_backup")).iterdir())
+    assert len(backup) == 1 and backup[0].name.startswith("sala_")
+    assert "192.168.1.171" in (cartella / "vmc_sala.yaml").read_text(encoding="utf-8")
 
 
 async def test_rimozione_sposta_in_backup(hass: HomeAssistant) -> None:
@@ -149,3 +178,35 @@ async def test_rimozione_sposta_in_backup(hass: HomeAssistant) -> None:
     await hass.async_block_till_done()
     assert not Path(hass.config.path("packages", "vmc_helty_flow", "sala")).exists()
     assert len(list(Path(hass.config.path("vmc_master_backup")).iterdir())) == 1
+
+
+async def test_toglie_entita_finestra_clona(hass: HomeAssistant) -> None:
+    """Dopo la migrazione della Master le 18 entita' della Finestra Clona non piu' fornite
+    vengono tolte dal registro; quelle ancora fornite restano."""
+    from homeassistant.helpers import entity_registry as er
+
+    from custom_components.vmc_master.const import ENTITA_FINESTRA_CLONA
+
+    assert len(ENTITA_FINESTRA_CLONA) == 18
+    voce = MockConfigEntry(
+        domain=DOMAIN, unique_id="master", data={"nome": "master", "host": "192.168.1.160"}
+    )
+    voce.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(voce.entry_id)
+    await hass.async_block_till_done()
+
+    registro = er.async_get(hass)
+    for entity_id in ENTITA_FINESTRA_CLONA:
+        dominio, oggetto = entity_id.split(".")
+        creata = registro.async_get_or_create(dominio, dominio, oggetto, suggested_object_id=oggetto)
+        assert creata.entity_id == entity_id
+    fornita = "input_boolean.vmc_master_clona_eseguita"
+    hass.states.async_set(fornita, "off")
+    hass.states.async_set("input_text.vmc_master_clona_ip", "unavailable", {"restored": True})
+    # package caricato dopo il riavvio
+    hass.states.async_set("sensor.vmc_master_status_ip", "ON-Line")
+
+    assert await hass.config_entries.async_reload(voce.entry_id)
+    await hass.async_block_till_done()
+    rimaste = [e for e in ENTITA_FINESTRA_CLONA if registro.async_get(e) is not None]
+    assert rimaste == [fornita]

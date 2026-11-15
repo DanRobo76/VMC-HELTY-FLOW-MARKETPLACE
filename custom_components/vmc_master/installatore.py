@@ -19,6 +19,8 @@ from pathlib import Path
 
 from .const import NOME_MASTER
 from .trasforma import (
+    adatta_link_aggiornamento,
+    adatta_versione,
     package_per_vmc,
     per_vmc,
     script_cambio_ip_per_vmc,
@@ -74,7 +76,7 @@ def automazione_come_package(testo: str, nome: str) -> str:
     )
 
 
-def genera_file(nome: str, ip: str) -> dict[str, str]:
+def genera_file(nome: str, ip: str, versione: str) -> dict[str, str]:
     """Contenuto di tutti i file del package della VMC indicata."""
     yaml_master = _leggi(_SORGENTI / "vmc_master.yaml")
     automazione = _leggi(_SORGENTI / "vmc_master_automazione.txt")
@@ -82,9 +84,9 @@ def genera_file(nome: str, ip: str) -> dict[str, str]:
     script_ip = _leggi(_SORGENTI / "vmc_master_script_cambio_ip.sh").replace("\r\n", "\n")
     script_nome = _leggi(_SORGENTI / "vmc_master_script_cambio_nome.sh").replace("\r\n", "\n")
     return {
-        f"vmc_{nome}.yaml": package_per_vmc(yaml_master, nome, ip),
+        f"vmc_{nome}.yaml": adatta_versione(package_per_vmc(yaml_master, nome, ip), versione),
         f"vmc_{nome}_automazione.yaml": automazione_come_package(
-            per_vmc(automazione, nome, ip), nome
+            adatta_link_aggiornamento(per_vmc(automazione, nome, ip)), nome
         ),
         f"vmc_{nome}_script_cambio_ip.sh": script_cambio_ip_per_vmc(script_ip, nome, ip),
         f"vmc_{nome}_script_cambio_nome.sh": script_cambio_nome_per_vmc(script_nome, nome, ip),
@@ -149,7 +151,7 @@ def installa(config_dir: str, nome: str, ip: str, versione: str) -> EsitoInstall
         esito.backup = sposta_in_backup(config_dir, nome)
     cartella = cartella_vmc(config_dir, nome)
     cartella.mkdir(parents=True, exist_ok=True)
-    nuovi = genera_file(nome, ip)
+    nuovi = genera_file(nome, ip, versione)
     for nome_file, testo in nuovi.items():
         percorso = cartella / nome_file
         if percorso.is_file() and _leggi(percorso) == testo:

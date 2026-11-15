@@ -32,3 +32,26 @@ FILE_SCHEDA_JS: Final = "vmc-master-card.js"
 FILE_SCHEDA: Final = "vmc_master_scheda_manuale_interfaccia.txt"
 
 URL_REPOSITORY: Final = "https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE"
+
+# Entita' della Finestra Clona della VMC Master 8.6.0 (18): l'integrazione toglie la Finestra
+# Clona, quindi dopo la migrazione restano «non piu' fornite» e vengono tolte dal registro
+ENTITA_FINESTRA_CLONA: Final = (
+    "automation.vmc_master_clona_annulla_conferma_cancellazione",
+    "automation.vmc_master_clona_rimuovi_file_obsoleti",
+    "button.vmc_master_clona_pulsante_cancella",
+    "button.vmc_master_clona_pulsante_clona",
+    "button.vmc_master_clona_pulsante_conferma_cancella",
+    "input_boolean.vmc_master_clona_conferma_cancellazione",
+    "input_boolean.vmc_master_clona_eseguita",
+    "input_boolean.vmc_master_opzione_finestra_clona",
+    "input_text.vmc_master_clona_ip",
+    "input_text.vmc_master_clona_nome",
+    "input_text.vmc_master_clona_vmc_cancellate",
+    "input_text.vmc_master_clona_vmc_clonate",
+    "script.vmc_master_clona_cancella_vmc",
+    "script.vmc_master_clona_nuova_clonazione",
+    "script.vmc_master_clona_riavvio_ha",
+    "script.vmc_master_clona_vmc",
+    "sensor.vmc_master_clona_verifica_ip",
+    "sensor.vmc_master_clona_verifica_nome",
+)

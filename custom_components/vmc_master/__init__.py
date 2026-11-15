@@ -21,7 +21,11 @@ from homeassistant.components.frontend import add_extra_js_url
 from homeassistant.components.http import HomeAssistantView, StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers import config_validation as cv, issue_registry as ir
+from homeassistant.helpers import (
+    config_validation as cv,
+    entity_registry as er,
+    issue_registry as ir,
+)
 from homeassistant.helpers.http import KEY_HASS
 from homeassistant.helpers.start import async_at_started
 from homeassistant.helpers.typing import ConfigType
@@ -31,8 +35,10 @@ from .const import (
     CONF_HOST,
     CONF_NOME,
     DOMAIN,
+    ENTITA_FINESTRA_CLONA,
     FILE_SCHEDA,
     FILE_SCHEDA_JS,
+    NOME_MASTER,
     URL_FRONTEND,
 )
 from .installatore import installa, ip_nel_package, leggi_marcatore, sposta_in_backup
@@ -78,14 +84,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         installa, config_dir, nome, ip, str(integrazione.version)
     )
     if esito.backup is not None:
+        # la 8.6.0 chiama «Automazione VMC Master» la principale e «Automazione VMC ‹nome›» le clonate
+        nome_automazione = "Master" if nome == NOME_MASTER else nome
         persistent_notification.async_create(
             hass,
             (
                 f"La precedente installazione manuale della VMC {nome} e' stata spostata in "
                 f"`{esito.backup}` e sostituita dal package dell'integrazione (stessi nomi delle "
                 "entita', la cronologia resta).\n\n"
-                f"Dopo il riavvio eliminare l'automazione incollata a mano «Automazione VMC {nome}» "
-                "(Impostazioni → Automazioni e scenari) e la vecchia scheda manuale, poi aggiungere "
+                f"PRIMA di riavviare eliminare l'automazione incollata a mano «Automazione VMC {nome_automazione}» "
+                "(Impostazioni → Automazioni e scenari), altrimenti dopo il riavvio girano due "
+                "automazioni uguali. Poi riavviare, togliere la vecchia scheda manuale e aggiungere "
                 "la scheda «VMC Master» dalla plancia."
             ),
             title=f"VMC Master: VMC {nome} passata all'integrazione",
@@ -151,8 +160,23 @@ def _controlla_packages_dopo_avvio(hass: HomeAssistant, entry: ConfigEntry, nome
             )
         else:
             ir.async_delete_issue(hass, DOMAIN, ISSUE_PACKAGES)
+            if nome == NOME_MASTER:
+                _togli_entita_finestra_clona(hass)
 
     entry.async_on_unload(async_at_started(hass, _controlla))
+
+
+@callback
+def _togli_entita_finestra_clona(hass: HomeAssistant) -> None:
+    """Dopo la migrazione della Master 8.6.0 le entita' della Finestra Clona non sono piu'
+    fornite: si tolgono dal registro, solo se nessuno le fornisce."""
+    registro = er.async_get(hass)
+    for entity_id in ENTITA_FINESTRA_CLONA:
+        if registro.async_get(entity_id) is None:
+            continue
+        stato = hass.states.get(entity_id)
+        if stato is None or stato.attributes.get("restored"):
+            registro.async_remove(entity_id)
 
 
 @lru_cache(maxsize=1)

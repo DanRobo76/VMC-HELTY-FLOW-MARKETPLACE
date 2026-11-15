@@ -19,7 +19,7 @@
       },
       "migra": {
         "title": "Installazione manuale trovata",
-        "description": "Nella cartella packages/vmc_helty_flow/{nome} c'è già un'installazione manuale della VMC {nome}.\n\nContinuando, la cartella viene spostata in /config/vmc_master_backup e sostituita dal package dell'integrazione. I nomi delle entità restano uguali, quindi la cronologia si conserva. Dopo il riavvio eliminare l'automazione incollata a mano e la vecchia scheda manuale."
+        "description": "Nella cartella packages/vmc_helty_flow/{nome} c'è già un'installazione manuale della VMC {nome}.\n\nIP scritto: {ip}. IP nell'installazione manuale: {ip_trovato}. Se sono diversi, chiudere questa finestra e ripetere con l'IP giusto.\n\nContinuando, la cartella viene spostata in /config/vmc_master_backup e sostituita dal package dell'integrazione. I nomi delle entità restano uguali, quindi la cronologia si conserva. Prima di riavviare eliminare l'automazione incollata a mano (altrimenti dopo il riavvio girano due automazioni uguali); dopo il riavvio togliere la vecchia scheda manuale."
       }
     },
     "error": {
@@ -54,7 +54,7 @@
         "step": {
           "confirm": {
             "title": "Riavviare Home Assistant",
-            "description": "I file del package VMC Master sono stati installati o aggiornati: servono un riavvio per essere caricati. Premere Invia per riavviare ora."
+            "description": "I file del package VMC Master sono stati installati o aggiornati: serve un riavvio per caricarli. Premere Invia per riavviare ora."
           }
         }
       }

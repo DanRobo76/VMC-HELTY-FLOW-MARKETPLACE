@@ -131,9 +131,16 @@ class VmcMasterConfigFlow(ConfigFlow, domain=DOMAIN):
         """Trovata un'installazione manuale: la cartella va in backup e la sostituisce l'integrazione."""
         if user_input is not None:
             return self._crea_voce()
+        ip_trovato = await self.hass.async_add_executor_job(
+            ip_nel_package, self.hass.config.config_dir, self._dati[CONF_NOME]
+        )
         return self.async_show_form(
             step_id="migra",
-            description_placeholders={"nome": self._dati[CONF_NOME]},
+            description_placeholders={
+                "nome": self._dati[CONF_NOME],
+                "ip": self._dati[CONF_HOST],
+                "ip_trovato": ip_trovato or "-",
+            },
         )
 
     async def async_step_non_raggiungibile(

@@ -6,7 +6,7 @@
 
 Integrazione per **VMC Helty Flow Plus/Elite** che installa e aggiorna il package **VMC Master** dal Marketplace di Home Assistant (HACS integrato da Home Assistant 2026.11).
 
-> **Versione beta (9.0.0b1).** La logica di funzionamento è quella della release manuale **8.6.0** del repository [VMC-HELTY-FLOW](https://github.com/DanRobo76/VMC-HELTY-FLOW), senza modifiche: l'integrazione genera gli stessi file che oggi creano a mano gli script Clona e Cambia IP. Chi preferisce l'installazione manuale continua a usare la 8.6.0, che non cambia.
+> **Versione beta (9.0.0b2).** La logica di funzionamento è quella della release manuale **8.6.0** del repository [VMC-HELTY-FLOW](https://github.com/DanRobo76/VMC-HELTY-FLOW), senza modifiche: l'integrazione genera gli stessi file che oggi creano a mano gli script Clona e Cambia IP. Chi preferisce l'installazione manuale continua a usare la 8.6.0, che non cambia.
 
 <sub>[English below](#english)</sub>
 
@@ -18,6 +18,7 @@ Integrazione per **VMC Helty Flow Plus/Elite** che installa e aggiorna il packag
 - **Installa il package** in `config/packages/vmc_helty_flow/‹nome›`: `vmc_‹nome›.yaml`, l'automazione principale (ora nel package, non va più incollata) e gli script Cambia IP e Cambia Nome.
 - **Scheda «VMC Master» inclusa**: si aggiunge dalla plancia con *Aggiungi scheda → VMC Master* e si sceglie la VMC. È la stessa scheda della 8.6.0, con le stesse schede native di Home Assistant e le stesse immagini; si aggiorna insieme all'integrazione.
 - **Aggiornamenti dal Marketplace**: a ogni nuova versione i file del package vengono riscritti e Home Assistant chiede il riavvio con una riparazione (*Impostazioni → Riparazioni*). L'IP impostato resta quello.
+- **Versione nel pannello Informazioni**: «Package Ver.» mostra la versione dell'integrazione e l'avviso di aggiornamento della scheda legge le release di questo repository. Durante le beta (versioni con la «b», per esempio 9.0.0b2) l'avviso della scheda resta su «Nessun aggiornamento»: l'aggiornamento lo segnala il Marketplace.
 
 ### Differenze rispetto all'installazione manuale 8.6.0
 
@@ -37,56 +38,126 @@ La Finestra Clona non c'è più: nella scheda e nel package viene tolto solo il 
 
 ## Requisiti
 
-- Home Assistant **2026.11** o successivo (Marketplace integrato).
-- Package abilitati nel file `configuration.yaml` (come per la 8.6.0):
+- Home Assistant **2026.11** o successivo (Marketplace integrato). La versione si legge in *Impostazioni → Informazioni*.
+- IP statico della VMC impostato nel router; la VMC risponde sulla porta **5001**.
+- Package abilitati nel file `configuration.yaml` (come per la 8.6.0). Se manca la riga, l'integrazione lo segnala in *Impostazioni → Riparazioni*.
+
+Ci sono due guide: **A** per chi non ha mai installato VMC Master, **B** per chi usa oggi la 8.6.0 manuale (anche con più VMC). I passi delle due guide sono gli stessi dove coincidono.
+
+---
+
+## Guida A: prima installazione
+
+### A1. Abilitare i package
+Serve l'app **File editor**: *Impostazioni → Applicazioni → Installa app → File editor → Installa*, poi **Avvia** e **Apri l'interfaccia web**.
+
+1. In File editor premere l'icona della **cartella** in alto a sinistra e aprire `configuration.yaml`.
+2. Aggiungere in fondo al file:
 
 ```yaml
 homeassistant:
   packages: !include_dir_named packages/
 ```
 
-Se la riga manca, l'integrazione lo segnala in *Impostazioni → Riparazioni*.
-- IP statico della VMC impostato nel router; la VMC risponde sulla porta **5001**.
+   Se nel file c'è già una riga `homeassistant:`, non scriverla una seconda volta: aggiungere solo la riga `  packages: !include_dir_named packages/` subito sotto, con due spazi davanti.
+3. Salvare con l'icona del **dischetto** in alto a destra.
 
----
-
-## Installazione
-
-### 1. Aggiungere il repository al Marketplace
+### A2. Scaricare l'integrazione dal Marketplace
 Finché l'integrazione non è nel catalogo pubblico, si aggiunge come repository personalizzato:
 
 1. **Impostazioni → Marketplace**, menu **⋮** in alto a destra → **Repository personalizzati**;
-2. indirizzo: `https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE`, tipo **Integrazione** → **Aggiungi**;
-3. cercare **VMC Master** e premere **Scarica**;
-4. riavviare Home Assistant se il Marketplace lo chiede.
+2. nel campo del repository scrivere `https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE`, come tipo scegliere **Integrazione** e premere **Aggiungi**, poi chiudere la finestra;
+3. cercare **VMC Master** nel Marketplace, aprirla, premere **Scarica** e confermare.
 
-### 2. Aggiungere la VMC
-**Impostazioni → Dispositivi e servizi → Aggiungi integrazione → VMC Master**:
-- **Nome VMC**: la prima si chiama `master`; le altre con sole lettere minuscole, da 1 a 10 caratteri;
-- **IP VMC su porta 5001**.
+### A3. Riavviare Home Assistant
+*Impostazioni → Strumenti → YAML → Riavvia → Riavvia Home Assistant*. Attendere che l'interfaccia torni disponibile.
 
-Se la VMC non risponde si può aggiungere comunque (per esempio per collegarla al Wi-Fi con la Finestra Prima Installazione VMC) e cambiare l'IP più tardi da *Configura*.
+### A4. Aggiungere la VMC
+1. *Impostazioni → Dispositivi e servizi*, pulsante **+ Aggiungi integrazione** in basso a destra;
+2. scrivere **VMC Master** e cliccarla;
+3. nella finestra **«Aggiungi una VMC Helty Flow»**:
+   - **Nome VMC**: la prima si chiama `master` (è già scritto); le altre con sole lettere minuscole, da 1 a 10 caratteri (per esempio `sala`, `camera`);
+   - **IP VMC su porta 5001**: l'IP statico della VMC, per esempio `192.168.1.160`;
+   - premere **Invia**;
+4. se compare **«VMC non raggiungibile»** (VMC spenta o non ancora collegata al Wi-Fi) premere **Invia** per aggiungerla comunque: l'IP si cambia più tardi con *Configura*;
+5. nella finestra finale premere **Fine**.
 
-### 3. Riavviare Home Assistant
-In *Impostazioni → Riparazioni* compare **«VMC Master: riavviare Home Assistant»**: aprirla e confermare.
+### A5. Riavviare Home Assistant
+In *Impostazioni*, in cima alla pagina, compare **«VMC Master: riavviare Home Assistant»**: cliccarla e premere **Invia**. In alternativa: *Impostazioni → Strumenti → YAML → Riavvia → Riavvia Home Assistant*.
 
-### 4. Aggiungere la scheda
-Nella plancia: **icona matita → Aggiungi scheda → VMC Master**, scegliere la VMC e salvare. Su una plancia nuova creare prima una plancia da zero (*Impostazioni → Plance → Aggiungi plancia*).
+### A6. Aggiungere la scheda
+1. Aprire la plancia. Nelle installazioni nuove la plancia **Panoramica** è generata in automatico: in questo caso creare prima una plancia da *Impostazioni → Plance → Aggiungi plancia → Nuova plancia da zero*;
+2. **icona matita** (Modifica la plancia) in alto a destra → **Aggiungi scheda**;
+3. cercare **VMC Master** e cliccarla;
+4. nel campo **VMC** scegliere la VMC (per esempio «VMC master») e premere **Salva**, poi **Fatto** in alto a destra.
 
-### 5. Profilo Inizializzazione
-Come nella 8.6.0: nel pannello **Impostazioni** della scheda premere **Esegui** su **«VMC ‹nome› - Profilo Inizializzazione»** e scegliere le entità dei sensori in **«Opzioni - Sensori da Selezionare»**.
+### A7. Profilo Inizializzazione
+Come nella 8.6.0, solo la prima volta: nel pannello **Impostazioni** della scheda premere **Esegui** su **«VMC ‹nome› - Profilo Inizializzazione»** e confermare con **OK** nel popup «Vuoi Procedere?». Al riavvio aprire la finestra **«Opzioni - Sensori da Selezionare»** e scegliere le entità dei sensori.
+
+Se la VMC non è ancora collegata al Wi-Fi di casa, si collega dalla **Finestra Prima Installazione VMC** della scheda Master, come descritto nel [README della 8.6.0](https://github.com/DanRobo76/VMC-HELTY-FLOW#readme).
 
 ### Altre VMC
-Ripetere i punti 2-5 con un nome diverso. Per eliminare una VMC eliminare la sua voce in *Dispositivi e servizi*, togliere la sua scheda e riavviare.
+Ripetere i punti **A4**, **A5**, **A6** e **A7** con un nome diverso. Si possono aggiungere più VMC di seguito e riavviare una volta sola.
 
 ---
 
-## Passare dalla 8.6.0 manuale all'integrazione
+## Guida B: passare dalla 8.6.0 manuale all'integrazione
 
-1. Installare l'integrazione (punto 1).
-2. Aggiungere la VMC con **lo stesso nome** di prima (`master`, poi le clonate): l'integrazione trova la cartella manuale, propone l'IP già impostato e chiede conferma.
-3. Confermando, la cartella manuale viene spostata in `config/vmc_master_backup/‹nome›_‹data›` e sostituita da quella dell'integrazione. I nomi delle entità restano uguali, quindi la cronologia si conserva.
-4. Riavviare, poi eliminare l'automazione incollata a mano **«Automazione VMC ‹nome›»** (*Impostazioni → Automazioni e scenari*) e la vecchia scheda manuale, e aggiungere la scheda **VMC Master**.
+Esempio con tre VMC installate a mano: `master`, `camera` e `sala`. Le VMC clonate **non vanno cancellate prima**, né con la Finestra Clona né a mano: le sposta l'integrazione.
+
+### B1. Prima di iniziare
+1. Creare un backup completo: *Impostazioni → Sistema → Backup*, pulsante in basso a destra, e attendere che il backup compaia nell'elenco.
+2. Controllare la versione di Home Assistant: *Impostazioni → Informazioni* deve indicare **2026.11** o successiva.
+3. Annotare nome e IP di ogni VMC. I nomi sono quelli delle cartelle in `config/packages/vmc_helty_flow` (`master`, `camera`, `sala`); l'IP è quello statico impostato nel router. Per ogni VMC con la cartella presente l'integrazione mostra anche l'IP trovato, quindi si può controllare.
+
+I package sono già abilitati dalla 8.6.0: il punto **A1** non serve.
+
+### B2. Scaricare l'integrazione e riavviare
+Eseguire i punti **A2** e **A3**.
+
+### B3. Aggiungere la VMC master
+1. Come al punto **A4**: *Impostazioni → Dispositivi e servizi → + Aggiungi integrazione → VMC Master*;
+2. **Nome VMC** `master` e **IP** sono già scritti: controllarli e premere **Invia**;
+3. compare **«Installazione manuale trovata»** con *IP scritto* e *IP nell'installazione manuale*: se sono uguali premere **Invia**; se sono diversi chiudere la finestra e ripetere con l'IP giusto;
+4. nella finestra finale premere **Fine**.
+
+La cartella manuale viene spostata in `config/vmc_master_backup/master_‹data›` e sostituita da quella dell'integrazione. I nomi delle entità restano uguali, quindi la cronologia e le impostazioni si conservano. **Non riavviare ancora**, anche se compare la richiesta di riavvio.
+
+### B4. Aggiungere le VMC clonate
+Ripetere il punto **B3** per ogni VMC clonata, scrivendo a mano il nome (`camera`, poi `sala`) e il suo IP. Se la cartella di una VMC clonata non c'è più, la finestra «Installazione manuale trovata» non compare e l'integrazione la installa da zero: va bene così.
+
+### B5. Eliminare le automazioni incollate a mano, prima del riavvio
+Le automazioni principali ora sono nel package. Se restano anche quelle incollate, dopo il riavvio girano due automazioni uguali.
+
+1. *Impostazioni → Automazioni e scenari*;
+2. cliccare **«Automazione VMC Master»**, poi i **tre puntini** in alto a destra → **Elimina** e confermare;
+3. ripetere per **«Automazione VMC camera»** e **«Automazione VMC sala»** (le VMC clonate hanno il nome in minuscolo).
+
+Eliminare solo le automazioni che si chiamano «Automazione VMC ‹nome›». Le altre automazioni «VMC Master - …», «VMC camera - …», «VMC sala - …» fanno parte del package e restano.
+
+### B6. Riavviare Home Assistant
+Come al punto **A5**: in *Impostazioni* cliccare **«VMC Master: riavviare Home Assistant»** e premere **Invia**.
+
+### B7. Sostituire le schede
+1. Aprire la plancia con le vecchie schede → **icona matita** in alto a destra;
+2. sulla vecchia scheda della VMC: **tre puntini** → **Elimina**;
+3. **Aggiungi scheda** → **VMC Master** → nel campo **VMC** scegliere la stessa VMC → **Salva**;
+4. ripetere per ogni VMC, poi **Fatto** in alto a destra.
+
+### B8. Controllo finale
+- Nel **Pannello Informazioni** della scheda, «Package Ver.» indica la versione dell'integrazione (per esempio `v.9.0.0b2`).
+- Il Profilo Inizializzazione **non va rifatto**: le impostazioni restano quelle di prima.
+- Le 18 entità della Finestra Clona della VMC master, che non esiste più, vengono tolte da sole al riavvio.
+- La cartella `config/vmc_master_backup` contiene le vecchie installazioni manuali: si può cancellare quando tutto funziona.
+
+---
+
+## Dopo l'installazione
+
+- **Aggiungere un'altra VMC**: punti **A4**, **A5**, **A6** e **A7**.
+- **Eliminare una VMC**: *Impostazioni → Dispositivi e servizi → VMC Master*, sulla voce della VMC **tre puntini → Elimina**. La cartella va in `config/vmc_master_backup`; poi riavviare e togliere la sua scheda.
+- **Cambiare IP**: campo «Cambia IP VMC» della scheda, come nella 8.6.0, oppure **Configura** sulla voce della VMC.
+- **Aggiornare**: quando il Marketplace segnala una nuova versione premere **Aggiorna**, poi riavviare dalla riparazione «VMC Master: riavviare Home Assistant».
 
 ---
 
@@ -108,10 +179,24 @@ La release manuale 8.6.0 del repository [VMC-HELTY-FLOW](https://github.com/DanR
 Integration for **Helty Flow Plus/Elite** ventilation units that installs and updates the **VMC Master** package from the Home Assistant Marketplace (HACS built in since Home Assistant 2026.11).
 
 - The logic is the unchanged manual release **8.6.0** of [VMC-HELTY-FLOW](https://github.com/DanRobo76/VMC-HELTY-FLOW): the integration writes the same files the Clone and Change IP scripts create by hand.
-- **One entry per unit** (name + IP) from *Settings → Devices & services → Add integration → VMC Master*. The package goes to `config/packages/vmc_helty_flow/‹name›`, including the main automation (no more pasting).
+- **One entry per unit** (name + IP). The package goes to `config/packages/vmc_helty_flow/‹name›`, including the main automation (no more pasting).
 - **«VMC Master» card included**: *Add card → VMC Master*, then pick the unit. Same card as 8.6.0, updated with the integration.
-- Requirements: Home Assistant 2026.11+, `packages: !include_dir_named packages/` in `configuration.yaml`, static IP for the unit (port 5001).
-- Install as a custom repository: *Settings → Marketplace → ⋮ → Custom repositories*, URL `https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE`, type **Integration**.
-- Moving from manual 8.6.0: add the unit with the same name; the manual folder is moved to `config/vmc_master_backup` and entity names (and history) stay the same. Then delete the hand-pasted automation and old card.
+- Requirements: Home Assistant 2026.11+, `packages: !include_dir_named packages/` under `homeassistant:` in `configuration.yaml`, static IP for the unit (port 5001).
+
+**A. First installation**
+1. Enable packages in `configuration.yaml` (File editor app).
+2. *Settings → Marketplace → ⋮ → Custom repositories*, URL `https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE`, type **Integration**; search **VMC Master** and **Download**.
+3. Restart Home Assistant.
+4. *Settings → Devices & services → + Add integration → VMC Master*: name (`master` for the first unit) and IP, then **Submit**.
+5. Restart from the repair «VMC Master: riavviare Home Assistant».
+6. Dashboard: pencil → **Add card → VMC Master**, pick the unit, **Save**.
+7. Run «VMC ‹name› - Profilo Inizializzazione» once and pick the sensors.
+
+**B. Moving from manual 8.6.0** (e.g. `master`, `camera`, `sala`; do not delete cloned units first)
+1. Make a full backup; check Home Assistant is 2026.11+.
+2. Steps A2 and A3.
+3. Add each unit with the same name and its IP; confirm «Installazione manuale trovata» if both IPs match. The manual folder is moved to `config/vmc_master_backup`; entity names, history and settings stay. Do not restart yet.
+4. **Before restarting**, delete the hand-pasted automations «Automazione VMC Master», «Automazione VMC camera», «Automazione VMC sala» (otherwise two identical automations run). The «VMC ‹name› - …» automations belong to the package and stay.
+5. Restart from the repair, then replace each old card with a **VMC Master** card. No Profilo Inizializzazione needed; the 18 Clone-window entities of `master` are removed automatically.
 
 Licence: **GPL-3.0**. Copyright © 2023-2026 Ing. Danilo Robotti.
