@@ -6,7 +6,7 @@
 
 Integrazione per **VMC Helty Flow Plus/Elite** che installa e aggiorna il package **VMC Master** dal Marketplace di Home Assistant (HACS integrato da Home Assistant 2026.11).
 
-> **Versione beta (9.0.0b3).** La logica di funzionamento è quella della release manuale **8.6.0** del repository [VMC-HELTY-FLOW](https://github.com/DanRobo76/VMC-HELTY-FLOW), senza modifiche: l'integrazione genera gli stessi file che oggi creano a mano gli script Clona e Cambia IP, con due sole correzioni alla scheda (vedi sotto). Chi preferisce l'installazione manuale continua a usare la 8.6.0, che non cambia.
+> **Versione beta (9.0.0b4).** La logica di funzionamento è quella della release manuale **8.6.0** del repository [VMC-HELTY-FLOW](https://github.com/DanRobo76/VMC-HELTY-FLOW), senza modifiche: l'integrazione genera gli stessi file che oggi creano a mano gli script Clona e Cambia IP, con due sole correzioni alla scheda (vedi sotto). Chi preferisce l'installazione manuale continua a usare la 8.6.0, che non cambia.
 
 <sub>[English below](#english)</sub>
 
@@ -155,7 +155,7 @@ Conviene aggiungere prima la scheda nuova e togliere la vecchia solo dopo aver v
 5. ripetere i passi 3 e 4 per ogni VMC, poi **Fatto** in alto a destra.
 
 ### B8. Controllo finale
-- Nel **Pannello Informazioni** della scheda, «Package Ver.» indica la versione dell'integrazione (per esempio `v.9.0.0b3`).
+- Nel **Pannello Informazioni** della scheda, «Package Ver.» indica la versione dell'integrazione (per esempio `v.9.0.0b4`).
 - Il Profilo Inizializzazione **non va rifatto**: le impostazioni restano quelle di prima.
 - Le automazioni principali «Automazione VMC ‹nome›» del package conservano area, etichette e categoria di quelle incollate.
 - Le 18 entità della Finestra Clona della VMC master, che non esiste più, vengono tolte da sole al riavvio.
