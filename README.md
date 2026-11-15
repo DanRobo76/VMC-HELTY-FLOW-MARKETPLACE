@@ -198,23 +198,23 @@
 <details>
 <summary><strong>Configurazione</strong></summary>
 
-<sub>Dopo l'installazione tutto si regola dall'interfaccia, senza modificare lo YAML.</sub>
+Dopo l'installazione tutto si regola dall'interfaccia, senza modificare lo YAML.
 
-<sub>**Dalla scheda «VMC Master»:**</sub>
-- <sub>indirizzo IP e nome della VMC («Cambia IP VMC (Riavvio di H.A.)» e «Cambia Nome VMC»);</sub>
-- <sub>selezione delle entità: Temperatura (interna ed esterna), Umidità (interna ed esterna), CO₂ interna, Dispositivo Mobile e Media Player;</sub>
-- <sub>offset dei sensori;</sub>
-- <sub>`Set Lim. Δ Punto di Rugiada` e Condizione Climatica Esterna;</sub>
-- <sub>calendario (2 fasce orarie per ogni giorno) e mesi di Free Heating / Free Cooling;</sub>
-- <sub>interruttori ON/OFF di ogni funzione: inquinanti, punto di rugiada, Free Cooling, Free Heating, umidità, calendario;</sub>
-- <sub>notifiche audio: Media Player, volume, orari e categorie di allerta.</sub>
+**Dalla scheda «VMC Master»:**
+- indirizzo IP e nome della VMC («Cambia IP VMC (Riavvio di H.A.)» e «Cambia Nome VMC»);
+- selezione delle entità: Temperatura (interna ed esterna), Umidità (interna ed esterna), CO₂ interna, Dispositivo Mobile e Media Player;
+- offset dei sensori;
+- `Set Lim. Δ Punto di Rugiada` e Condizione Climatica Esterna;
+- calendario (2 fasce orarie per ogni giorno) e mesi di Free Heating / Free Cooling;
+- interruttori ON/OFF di ogni funzione: inquinanti, punto di rugiada, Free Cooling, Free Heating, umidità, calendario;
+- notifiche audio: Media Player, volume, orari e categorie di allerta.
 
-<sub>Ogni script chiede conferma con il popup «Vuoi Procedere?». Per i dettagli aprire il **Pannello Informazioni** della scheda.</sub>
+Ogni script chiede conferma con il popup «Vuoi Procedere?». Per i dettagli aprire il **Pannello Informazioni** della scheda.
 
-<sub>**Da *Impostazioni → Dispositivi e servizi → VMC Master*:**</sub>
-- <sub>**aggiungere un'altra VMC**: pulsante **Aggiungi dispositivo**, nome e IP, poi i passi 4, 5 e 6 dell'Installazione;</sub>
-- <sub>**cambiare l'IP**: icona ingranaggio sulla riga della VMC, in alternativa al campo della scheda;</sub>
-- <sub>**eliminare una VMC**: tre puntini → **Elimina**; la cartella va in `config/vmc_master_backup`, poi riavviare e togliere la sua scheda.</sub>
+**Da *Impostazioni → Dispositivi e servizi → VMC Master*:**
+- **aggiungere un'altra VMC**: pulsante **Aggiungi dispositivo**, nome e IP, poi i passi 4, 5 e 6 dell'Installazione;
+- **cambiare l'IP**: icona ingranaggio sulla riga della VMC, in alternativa al campo della scheda;
+- **eliminare una VMC**: tre puntini → **Elimina**; la cartella va in `config/vmc_master_backup`, poi riavviare e togliere la sua scheda.
 </details>
 
 <details>
@@ -505,23 +505,23 @@ Il ritorno non è automatico. Ci sono due strade:
 <details>
 <summary><strong>Configuration</strong></summary>
 
-<sub>After installation everything is set from the interface, without editing YAML.</sub>
+After installation everything is set from the interface, without editing YAML.
 
-<sub>**From the «VMC Master» card:**</sub>
-- <sub>unit IP address and name («Cambia IP VMC (Riavvio di H.A.)» and «Cambia Nome VMC»);</sub>
-- <sub>entity selection: Temperature (indoor and outdoor), Humidity (indoor and outdoor), indoor CO₂, Mobile Device and Media Player;</sub>
-- <sub>sensor offsets;</sub>
-- <sub>`Dew Point Δ Limit` set and Outdoor Climate Condition;</sub>
-- <sub>calendar (2 time slots per day) and Free Heating / Free Cooling months;</sub>
-- <sub>ON/OFF switches for each function: pollutants, dew point, Free Cooling, Free Heating, humidity, calendar;</sub>
-- <sub>audio notifications: Media Player, volume, time window and alert categories.</sub>
+**From the «VMC Master» card:**
+- unit IP address and name («Cambia IP VMC (Riavvio di H.A.)» and «Cambia Nome VMC»);
+- entity selection: Temperature (indoor and outdoor), Humidity (indoor and outdoor), indoor CO₂, Mobile Device and Media Player;
+- sensor offsets;
+- `Dew Point Δ Limit` set and Outdoor Climate Condition;
+- calendar (2 time slots per day) and Free Heating / Free Cooling months;
+- ON/OFF switches for each function: pollutants, dew point, Free Cooling, Free Heating, humidity, calendar;
+- audio notifications: Media Player, volume, time window and alert categories.
 
-<sub>Every script asks for confirmation with the «Vuoi Procedere?» popup. For details open the card's **Information Panel**.</sub>
+Every script asks for confirmation with the «Vuoi Procedere?» popup. For details open the card's **Information Panel**.
 
-<sub>**From *Settings → Devices & services → VMC Master*:**</sub>
-- <sub>**add another unit**: **Add device** button, name and IP, then steps 4, 5 and 6 of the Installation;</sub>
-- <sub>**change the IP**: gear icon on the unit's row, as an alternative to the card field;</sub>
-- <sub>**delete a unit**: three dots → **Delete**; the folder goes to `config/vmc_master_backup`, then restart and remove its card.</sub>
+**From *Settings → Devices & services → VMC Master*:**
+- **add another unit**: **Add device** button, name and IP, then steps 4, 5 and 6 of the Installation;
+- **change the IP**: gear icon on the unit's row, as an alternative to the card field;
+- **delete a unit**: three dots → **Delete**; the folder goes to `config/vmc_master_backup`, then restart and remove its card.
 </details>
 
 <details>
