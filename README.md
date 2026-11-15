@@ -76,7 +76,7 @@ Finché l'integrazione non è nel catalogo pubblico, si aggiunge come repository
 1. *Impostazioni → Dispositivi e servizi*, pulsante **+ Aggiungi integrazione** in basso a destra;
 2. scrivere **VMC Master** e cliccarla;
 3. nella finestra **«Aggiungi una VMC Helty Flow»**:
-   - **Nome VMC**: la prima si chiama `master` (è già scritto); le altre con sole lettere minuscole, da 1 a 10 caratteri (per esempio `sala`, `camera`);
+   - **Nome VMC**: la prima si chiama `master` (è già scritto); le altre con un nome a scelta: sole lettere minuscole, da 1 a 10 caratteri, senza spazi né numeri;
    - **IP VMC su porta 5001**: l'IP statico della VMC, per esempio `192.168.1.160`;
    - premere **Invia**;
 4. se compare **«VMC non raggiungibile»** (VMC spenta o non ancora collegata al Wi-Fi) premere **Invia** per aggiungerla comunque: l'IP si cambia più tardi con *Configura*;
@@ -103,12 +103,12 @@ Ripetere i punti **A4**, **A5**, **A6** e **A7** con un nome diverso. Si possono
 
 ## Guida B: passare dalla 8.6.0 manuale all'integrazione
 
-Esempio con tre VMC installate a mano: `master`, `camera` e `sala`. Le VMC clonate **non vanno cancellate prima**, né con la Finestra Clona né a mano: le sposta l'integrazione.
+La guida vale per la VMC `master` e per tutte le VMC create con la Finestra Clona, qualunque nome abbiano. Le VMC clonate **non vanno cancellate prima**, né con la Finestra Clona né a mano: le sposta l'integrazione.
 
 ### B1. Prima di iniziare
 1. Creare un backup completo: *Impostazioni → Sistema → Backup*, pulsante in basso a destra, e attendere che il backup compaia nell'elenco.
 2. Controllare la versione di Home Assistant: *Impostazioni → Informazioni* deve indicare **2026.11** o successiva.
-3. Annotare nome e IP di ogni VMC. I nomi sono quelli delle cartelle in `config/packages/vmc_helty_flow` (`master`, `camera`, `sala`); l'IP è quello statico impostato nel router. Per ogni VMC con la cartella presente l'integrazione mostra anche l'IP trovato, quindi si può controllare.
+3. Annotare nome e IP di ogni VMC. I nomi sono quelli delle cartelle in `config/packages/vmc_helty_flow`: `master` e una cartella per ogni VMC clonata; l'IP è quello statico impostato nel router. Per ogni VMC con la cartella presente l'integrazione mostra anche l'IP trovato, quindi si può controllare.
 
 I package sono già abilitati dalla 8.6.0: il punto **A1** non serve.
 
@@ -124,16 +124,16 @@ Eseguire i punti **A2** e **A3**.
 La cartella manuale viene spostata in `config/vmc_master_backup/master_‹data›` e sostituita da quella dell'integrazione. I nomi delle entità restano uguali, quindi la cronologia e le impostazioni si conservano. **Non riavviare ancora**, anche se compare la richiesta di riavvio.
 
 ### B4. Aggiungere le VMC clonate
-Ripetere il punto **B3** per ogni VMC clonata, scrivendo a mano il nome (`camera`, poi `sala`) e il suo IP. Se la cartella di una VMC clonata non c'è più, la finestra «Installazione manuale trovata» non compare e l'integrazione la installa da zero: va bene così.
+Ripetere il punto **B3** per ogni VMC clonata, scrivendo a mano il suo nome (lo stesso della sua cartella) e il suo IP. Se la cartella di una VMC clonata non c'è più, la finestra «Installazione manuale trovata» non compare e l'integrazione la installa da zero: va bene così.
 
 ### B5. Eliminare le automazioni incollate a mano, prima del riavvio
 Le automazioni principali ora sono nel package. Se restano anche quelle incollate, dopo il riavvio girano due automazioni uguali.
 
 1. *Impostazioni → Automazioni e scenari*;
 2. cliccare **«Automazione VMC Master»**, poi i **tre puntini** in alto a destra → **Elimina** e confermare;
-3. ripetere per **«Automazione VMC camera»** e **«Automazione VMC sala»** (le VMC clonate hanno il nome in minuscolo).
+3. ripetere per ogni VMC clonata: la sua automazione si chiama **«Automazione VMC ‹nome›»**, con il nome in minuscolo come lo ha scritto la Finestra Clona.
 
-Eliminare solo le automazioni che si chiamano «Automazione VMC ‹nome›». Le altre automazioni «VMC Master - …», «VMC camera - …», «VMC sala - …» fanno parte del package e restano.
+Eliminare solo le automazioni che si chiamano «Automazione VMC ‹nome›». Le altre automazioni «VMC Master - …» e «VMC ‹nome› - …» fanno parte del package e restano.
 
 ### B6. Riavviare Home Assistant
 Come al punto **A5**: in *Impostazioni* cliccare **«VMC Master: riavviare Home Assistant»** e premere **Invia**.
@@ -192,11 +192,11 @@ Integration for **Helty Flow Plus/Elite** ventilation units that installs and up
 6. Dashboard: pencil → **Add card → VMC Master**, pick the unit, **Save**.
 7. Run «VMC ‹name› - Profilo Inizializzazione» once and pick the sensors.
 
-**B. Moving from manual 8.6.0** (e.g. `master`, `camera`, `sala`; do not delete cloned units first)
+**B. Moving from manual 8.6.0** (the `master` unit and every unit created with the Clone window, whatever its name; do not delete cloned units first)
 1. Make a full backup; check Home Assistant is 2026.11+.
 2. Steps A2 and A3.
 3. Add each unit with the same name and its IP; confirm «Installazione manuale trovata» if both IPs match. The manual folder is moved to `config/vmc_master_backup`; entity names, history and settings stay. Do not restart yet.
-4. **Before restarting**, delete the hand-pasted automations «Automazione VMC Master», «Automazione VMC camera», «Automazione VMC sala» (otherwise two identical automations run). The «VMC ‹name› - …» automations belong to the package and stay.
+4. **Before restarting**, delete the hand-pasted automations «Automazione VMC Master» and «Automazione VMC ‹name›» of each cloned unit, with the name in lowercase (otherwise two identical automations run). The «VMC ‹name› - …» automations belong to the package and stay.
 5. Restart from the repair, then replace each old card with a **VMC Master** card. No Profilo Inizializzazione needed; the 18 Clone-window entities of `master` are removed automatically.
 
 Licence: **GPL-3.0**. Copyright © 2023-2026 Ing. Danilo Robotti.
