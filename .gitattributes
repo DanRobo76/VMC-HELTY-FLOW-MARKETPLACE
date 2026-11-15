@@ -1,5 +1,5 @@
 # Immagini e video della scheda e del README: restano nel repository, perché i link
 # della scheda li leggono da qui, ma non entrano nell'archivio che il Marketplace
 # scarica per installare l'integrazione (limite di 100 MiB).
-immagini/** export-ignore
-Video/** export-ignore
+/immagini export-ignore
+/Video export-ignore
