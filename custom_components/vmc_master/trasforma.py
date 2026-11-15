@@ -189,6 +189,17 @@ def adatta_link_aggiornamento(automazione: str) -> str:
     return automazione.replace(_LINK_AGGIORNAMENTO_8, _LINK_AGGIORNAMENTO_9)
 
 
+_LINK_GITHUB_8 = 'href="https://github.com/DanRobo76/VMC-HELTY-FLOW">GitHub</a>'
+_LINK_GITHUB_9 = 'href="https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE">GitHub</a>'
+
+
+def adatta_link_github(scheda: str) -> str:
+    """Il link «GitHub» del Pannello Informazioni apre il repository dell'integrazione.
+    Cambia solo quella riga della scheda (i link del video restano sul repository
+    VMC-HELTY-FLOW, dove si trovano i file)."""
+    return scheda.replace(_LINK_GITHUB_8, _LINK_GITHUB_9)
+
+
 def per_vmc(testo_master: str, nome: str, ip: str) -> str:
     """Scheda o automazione della VMC indicata, come la produce la release 8.6.0,
     ma senza la Finestra Clona (sostituita da «Aggiungi voce» dell'integrazione).
