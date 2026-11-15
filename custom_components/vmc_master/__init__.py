@@ -42,7 +42,7 @@ from .const import (
     URL_FRONTEND,
 )
 from .installatore import installa, ip_nel_package, leggi_marcatore, sposta_in_backup
-from .trasforma import adatta_link_github, per_vmc
+from .trasforma import adatta_link_repository, per_vmc
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -188,7 +188,7 @@ def _leggi_scheda_master() -> str:
 
 @lru_cache(maxsize=16)
 def _configurazione_scheda(nome: str, ip: str) -> dict[str, Any]:
-    return yaml.safe_load(adatta_link_github(per_vmc(_leggi_scheda_master(), nome, ip)))
+    return yaml.safe_load(adatta_link_repository(per_vmc(_leggi_scheda_master(), nome, ip)))
 
 
 class VmcSchedaView(HomeAssistantView):

@@ -19,7 +19,7 @@ from pathlib import Path
 
 from .const import NOME_MASTER
 from .trasforma import (
-    adatta_link_aggiornamento,
+    adatta_link_repository,
     adatta_versione,
     package_per_vmc,
     per_vmc,
@@ -84,9 +84,11 @@ def genera_file(nome: str, ip: str, versione: str) -> dict[str, str]:
     script_ip = _leggi(_SORGENTI / "vmc_master_script_cambio_ip.sh").replace("\r\n", "\n")
     script_nome = _leggi(_SORGENTI / "vmc_master_script_cambio_nome.sh").replace("\r\n", "\n")
     return {
-        f"vmc_{nome}.yaml": adatta_versione(package_per_vmc(yaml_master, nome, ip), versione),
+        f"vmc_{nome}.yaml": adatta_link_repository(
+            adatta_versione(package_per_vmc(yaml_master, nome, ip), versione)
+        ),
         f"vmc_{nome}_automazione.yaml": automazione_come_package(
-            adatta_link_aggiornamento(per_vmc(automazione, nome, ip)), nome
+            adatta_link_repository(per_vmc(automazione, nome, ip)), nome
         ),
         f"vmc_{nome}_script_cambio_ip.sh": script_cambio_ip_per_vmc(script_ip, nome, ip),
         f"vmc_{nome}_script_cambio_nome.sh": script_cambio_nome_per_vmc(script_nome, nome, ip),
