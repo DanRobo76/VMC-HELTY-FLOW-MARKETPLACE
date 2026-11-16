@@ -1,6 +1,6 @@
 ###########################################################################################################################################################################################################################
 #                                                                                                                                                                                                                         #
-#                                                          SCHEDA MANUALE INTERFACCIA VMC HELTY FLOW PLUS RELEASE [VER. 8.6.0]                                                                                            #
+#                                                          SCHEDA MANUALE INTERFACCIA VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b11]                                                                                         #
 #                                                                                                                                                                                                                         #
 # SVILUPPATO DA ING. DANILO ROBOTTI, ALLE PRIME ARMI CON HOME ASSISTANT :)                                                                                                                                                #
 #                                                                                                                                                                                                                         #
@@ -12705,6 +12705,16 @@ cards:
                   Δ Temp. leggono sempre entrambe le fonti e, se ne manca una,
                   usano quella disponibile.
 
+                  Per questo nei grafici possono comparire brevi picchi (o
+                  salti) verso il valore della sonda della VMC: non sono errori
+                  di lettura. Succedono quando l'entità scelta resta non
+                  disponibile per pochi secondi o minuti, di solito a ogni
+                  riavvio di Home Assistant finché la sua integrazione non si
+                  ricollega, oppure per un calo del segnale (sensori Bluetooth
+                  o Wi-Fi). Nei grafici dell'entità scelta questi buchi brevi
+                  non si vedono se il grafico mostra le statistiche a lungo
+                  termine (medie orarie): si vedono nella sua Cronologia.
+
                   <br>
 
                   <strong>Nota VMC Master - Agg. Sensori</strong>
@@ -12721,7 +12731,9 @@ cards:
                   «Sensori - Extra» e «Sensori VMC Interni» si apre il grafico
                   della cronologia del sensore. Quando il dato non è
                   disponibile («Non disponibile», «[Non Calcolabile]» o «-»)
-                  il grafico mostra un buco e non 0. Lo storico del grafico
+                  il grafico mostra un buco e non 0. I brevi picchi verso il
+                  valore della sonda della VMC sono spiegati nella Nota Entità
+                  Scelte non Disponibili. Lo storico del grafico
                   parte dal primo avvio di Home Assistant con i sensori dei
                   grafici (sensor.vmc_master_..._grafico).
 
