@@ -36,11 +36,13 @@ from .const import (
     CONF_NOME,
     DOMAIN,
     ENTITA_FINESTRA_CLONA,
+    ENTITA_PRIMA_INSTALLAZIONE,
     FILE_SCHEDA,
     FILE_SCHEDA_JS,
     NOME_MASTER,
     URL_FRONTEND,
 )
+from . import prima_installazione
 from .installatore import installa, ip_nel_package, leggi_marcatore, sposta_in_backup
 from .trasforma import adatta_link_repository, per_vmc
 
@@ -81,7 +83,29 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     # Il numero di versione nell'indirizzo fa ricaricare la scheda dopo ogni aggiornamento
     add_extra_js_url(hass, f"{URL_FRONTEND}/{FILE_SCHEDA_JS}?v={integrazione.version}")
     hass.http.register_view(VmcSchedaView())
+    async_at_started(hass, _ripristina_wifi_server)
     return True
+
+
+async def _ripristina_wifi_server(hass: HomeAssistant) -> None:
+    """Home Assistant riavviato durante il collegamento di una VMC al Wi-Fi: il Wi-Fi
+    del server si riporta alla rete di prima (come faceva l'avvio della Finestra
+    Prima Installazione VMC della release 8.6.0)."""
+    config_dir = hass.config.config_dir
+    if not await hass.async_add_executor_job(prima_installazione.ripristino_in_sospeso, config_dir):
+        return
+    try:
+        await hass.async_add_executor_job(prima_installazione.esegui, config_dir, "recover")
+    except prima_installazione.Failure as errore:
+        _LOGGER.warning("Ripristino del Wi-Fi del server non riuscito: %s", errore.message)
+        persistent_notification.async_create(
+            hass,
+            f"{errore.message}\n\nIl Wi-Fi del server potrebbe essere ancora sulla rete della VMC: "
+            "controllarlo in Impostazioni → Sistema → Rete, oppure riavviare Home Assistant per "
+            "riprovare il ripristino.",
+            title="VMC Master: ripristino del Wi-Fi del server non riuscito",
+            notification_id=f"{DOMAIN}_ripristino_wifi",
+        )
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -214,17 +238,18 @@ def _controlla_packages_dopo_avvio(hass: HomeAssistant, entry: ConfigEntry, nome
         else:
             ir.async_delete_issue(hass, DOMAIN, ISSUE_PACKAGES)
             if nome == NOME_MASTER:
-                _togli_entita_finestra_clona(hass)
+                _togli_entita_non_piu_fornite(hass)
 
     entry.async_on_unload(async_at_started(hass, _controlla))
 
 
 @callback
-def _togli_entita_finestra_clona(hass: HomeAssistant) -> None:
-    """Dopo la migrazione della Master 8.6.0 le entita' della Finestra Clona non sono piu'
+def _togli_entita_non_piu_fornite(hass: HomeAssistant) -> None:
+    """Dopo la migrazione della Master 8.6.0 (o l'aggiornamento dell'integrazione) le
+    entita' della Finestra Clona e della Finestra Prima Installazione VMC non sono piu'
     fornite: si tolgono dal registro, solo se nessuno le fornisce."""
     registro = er.async_get(hass)
-    for entity_id in ENTITA_FINESTRA_CLONA:
+    for entity_id in (*ENTITA_FINESTRA_CLONA, *ENTITA_PRIMA_INSTALLAZIONE):
         if registro.async_get(entity_id) is None:
             continue
         stato = hass.states.get(entity_id)

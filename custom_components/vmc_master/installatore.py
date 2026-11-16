@@ -19,7 +19,7 @@ from pathlib import Path
 
 import yaml
 
-from .const import NOME_MASTER
+from .const import NOME_MASTER, NOME_RE
 from .trasforma import (
     adatta_link_repository,
     adatta_versione,
@@ -137,6 +137,22 @@ def installazione_manuale(config_dir: str, nome: str) -> bool:
     return cartella.is_dir() and any(cartella.iterdir()) and not (cartella / FILE_MARCATORE).is_file()
 
 
+def nome_manuale_con_ip(config_dir: str, ip: str) -> str | None:
+    """Nome della VMC installata a mano (release 8.6.0) che usa questo IP, se c'e'."""
+    radice = Path(config_dir) / "packages" / "vmc_helty_flow"
+    if not radice.is_dir():
+        return None
+    for cartella in sorted(radice.iterdir()):
+        nome = cartella.name
+        if (
+            NOME_RE.fullmatch(nome)
+            and installazione_manuale(config_dir, nome)
+            and ip_nel_package(config_dir, nome) == ip
+        ):
+            return nome
+    return None
+
+
 def leggi_marcatore(config_dir: str, nome: str) -> dict:
     percorso = cartella_vmc(config_dir, nome) / FILE_MARCATORE
     try:
@@ -186,6 +202,34 @@ def _ricariche_sensori(prima: object, dopo: object) -> set[str] | None:
     return servizi
 
 
+def _solo_esclusioni_tolte(prima: object, dopo: object, nuovo: str) -> bool:
+    """«recorder:» cambiato solo perche' dall'elenco delle entita' escluse sono uscite
+    entita' che il package non definisce piu' (per esempio la Finestra Prima Installazione
+    VMC): non c'e' niente da applicare, quindi non serve il riavvio."""
+    if not isinstance(prima, dict) or not isinstance(dopo, dict):
+        return False
+    escl_prima, escl_dopo = prima.get("exclude"), dopo.get("exclude")
+    if not isinstance(escl_prima, dict) or not isinstance(escl_dopo, dict):
+        return False
+    entita_prima = escl_prima.get("entities") or []
+    entita_dopo = escl_dopo.get("entities") or []
+    if not isinstance(entita_prima, list) or not isinstance(entita_dopo, list):
+        return False
+    tolte = [e for e in entita_prima if e not in entita_dopo]
+    if [e for e in entita_prima if e in entita_dopo] != entita_dopo:
+        return False  # entita' aggiunte o riordinate
+    if {k: v for k, v in prima.items() if k != "exclude"} != {
+        k: v for k, v in dopo.items() if k != "exclude"
+    }:
+        return False
+    if {k: v for k, v in escl_prima.items() if k != "entities"} != {
+        k: v for k, v in escl_dopo.items() if k != "entities"
+    }:
+        return False
+    # le entita' tolte non devono comparire da nessun'altra parte del nuovo package
+    return all(isinstance(e, str) and e.split(".", 1)[-1] not in nuovo for e in tolte)
+
+
 def ricariche_necessarie(vecchio: str, nuovo: str) -> set[str] | None:
     """Servizi che applicano le modifiche di un file del package senza riavvio.
 
@@ -205,6 +249,10 @@ def ricariche_necessarie(vecchio: str, nuovo: str) -> set[str] | None:
             continue
         if chiave in SERVIZI_RICARICA:
             servizi.add(SERVIZI_RICARICA[chiave])
+        elif chiave == "recorder" and _solo_esclusioni_tolte(
+            prima.get(chiave), dopo.get(chiave), nuovo
+        ):
+            continue
         elif chiave == "sensor":
             sensori = _ricariche_sensori(prima.get(chiave), dopo.get(chiave))
             if sensori is None:
