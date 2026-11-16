@@ -1,6 +1,6 @@
 ###########################################################################################################################################################################################################################
 #                                                                                                                                                                                                                         #
-#                                                          SCHEDA MANUALE INTERFACCIA VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b11]                                                                                         #
+#                                                          SCHEDA MANUALE INTERFACCIA VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b12]                                                                                         #
 #                                                                                                                                                                                                                         #
 # SVILUPPATO DA ING. DANILO ROBOTTI, ALLE PRIME ARMI CON HOME ASSISTANT :)                                                                                                                                                #
 #                                                                                                                                                                                                                         #
@@ -336,7 +336,7 @@ cards:
                   target:
                     entity_id: script.vmc_master_installa_vmc_usa_ip
                   confirmation:
-                    text: "L'IP verificato viene scritto in Cambia IP VMC: la scheda Master comanderà questa VMC. Home Assistant si riavvia (1-3 minuti). Non usarlo per una VMC da clonare: il suo IP va nella Finestra Clona. Vuoi procedere?"
+                    text: "L'IP verificato viene scritto in Cambia IP VMC: la scheda Master comanderà questa VMC. Home Assistant si riavvia (1-3 minuti). Non usarlo per un'altra VMC: il suo IP va in Impostazioni → Dispositivi e servizi → VMC Master → Aggiungi dispositivo. Vuoi procedere?"
             - type: conditional
               conditions:
                 - entity: binary_sensor.vmc_master_installa_vmc_configurata
@@ -354,7 +354,7 @@ cards:
                   target:
                     entity_id: script.vmc_master_installa_vmc_nuova_vmc
                   confirmation:
-                    text: "La finestra torna ai passi 1 e 2 per collegare al Wi-Fi un'altra VMC (per esempio una da clonare). La VMC appena collegata resta in rete e non cambia. Vuoi procedere?"
+                    text: "La finestra torna ai passi 1 e 2 per collegare al Wi-Fi un'altra VMC. La VMC appena collegata resta in rete e non cambia. Vuoi procedere?"
           footer:
             type: buttons
             entities:
@@ -483,7 +483,7 @@ cards:
             1. Nel router prenota un IP fisso per il MAC della VMC.
             2. Se l'IP prenotato è diverso, scrivilo in «IP Fisso della VMC (prenotato sul router)»: la verifica parte da sola.
             3. Se è la VMC della scheda Master, premi «Imposta questo IP nella VMC Master»: Home Assistant si riavvia (1-3 minuti).
-            4. Se è una VMC da clonare, annota l'IP per la Finestra Clona e premi «Collega un'Altra VMC» per la prossima.
+            4. Se è un'altra VMC, annota l'IP e aggiungila in Impostazioni → Dispositivi e servizi → VMC Master → Aggiungi dispositivo, con un nome nuovo e questo IP; per collegare la prossima premi «Collega un'Altra VMC». Alla fine riavvia Home Assistant una volta sola.
             {%- if v == 'in uso' %}
 
             <font color="#e53935"><ha-icon icon="mdi:alert-circle"></ha-icon></font> **IP già usato dalla VMC {{ state_attr('sensor.vmc_master_installa_vmc_verifica_ip', 'vmc') }}:** non può diventare l'IP della VMC Master, per questo il pulsante non compare. Se l'IP è giusto, la VMC appena collegata è quella: non serve fare altro.
@@ -11511,7 +11511,7 @@ cards:
                               target:
                                 entity_id: script.vmc_master_installa_vmc_usa_ip
                               confirmation:
-                                text: "L'IP verificato viene scritto in Cambia IP VMC: la scheda Master comanderà questa VMC. Home Assistant si riavvia (1-3 minuti). Non usarlo per una VMC da clonare: il suo IP va nella Finestra Clona. Vuoi procedere?"
+                                text: "L'IP verificato viene scritto in Cambia IP VMC: la scheda Master comanderà questa VMC. Home Assistant si riavvia (1-3 minuti). Non usarlo per un'altra VMC: il suo IP va in Impostazioni → Dispositivi e servizi → VMC Master → Aggiungi dispositivo. Vuoi procedere?"
                         - type: conditional
                           conditions:
                             - entity: binary_sensor.vmc_master_installa_vmc_configurata
@@ -11529,7 +11529,7 @@ cards:
                               target:
                                 entity_id: script.vmc_master_installa_vmc_nuova_vmc
                               confirmation:
-                                text: "La finestra torna ai passi 1 e 2 per collegare al Wi-Fi un'altra VMC (per esempio una da clonare). La VMC appena collegata resta in rete e non cambia. Vuoi procedere?"
+                                text: "La finestra torna ai passi 1 e 2 per collegare al Wi-Fi un'altra VMC. La VMC appena collegata resta in rete e non cambia. Vuoi procedere?"
                       footer:
                         type: buttons
                         entities:
@@ -11658,7 +11658,7 @@ cards:
                         1. Nel router prenota un IP fisso per il MAC della VMC.
                         2. Se l'IP prenotato è diverso, scrivilo in «IP Fisso della VMC (prenotato sul router)»: la verifica parte da sola.
                         3. Se è la VMC della scheda Master, premi «Imposta questo IP nella VMC Master»: Home Assistant si riavvia (1-3 minuti).
-                        4. Se è una VMC da clonare, annota l'IP per la Finestra Clona e premi «Collega un'Altra VMC» per la prossima.
+                        4. Se è un'altra VMC, annota l'IP e aggiungila in Impostazioni → Dispositivi e servizi → VMC Master → Aggiungi dispositivo, con un nome nuovo e questo IP; per collegare la prossima premi «Collega un'Altra VMC». Alla fine riavvia Home Assistant una volta sola.
                         {%- if v == 'in uso' %}
 
                         <font color="#e53935"><ha-icon icon="mdi:alert-circle"></ha-icon></font> **IP già usato dalla VMC {{ state_attr('sensor.vmc_master_installa_vmc_verifica_ip', 'vmc') }}:** non può diventare l'IP della VMC Master, per questo il pulsante non compare. Se l'IP è giusto, la VMC appena collegata è quella: non serve fare altro.
@@ -14153,8 +14153,8 @@ cards:
                   <b>Che cos'è.</b> La Finestra Prima Installazione VMC collega una VMC Helty Flow appena installata alla rete Wi-Fi
                   di casa senza l'App Air Guard, con gli stessi passaggi del manuale Helty (Configurazione rete › Infrastruttura,
                   Cambia password VMC, Access Point, Errori connessione). Si apre con l'icona <ha-icon icon="mdi:wifi-cog"></ha-icon>
-                  sotto il Panic Button della scheda OFF-Line (VMC non raggiungibile) oppure nel pannello Impostazioni, accanto alla
-                  Finestra Clona. È presente solo nella VMC Master: con essa si collegano anche le VMC da clonare.
+                  sotto il Panic Button della scheda OFF-Line (VMC non raggiungibile) oppure nel pannello Impostazioni.
+                  È presente solo nella VMC Master: con essa si collegano al Wi-Fi anche le altre VMC, che poi si aggiungono all'integrazione.
                   <br><br>
                   <b>Occorrente.</b> Home Assistant OS con il Supervisor, installato su un computer con scheda Wi-Fi integrata
                   oppure con una chiavetta USB Wi-Fi compatibile collegata; la scheda deve comparire tra le interfacce di rete di
@@ -14174,12 +14174,15 @@ cards:
                   <br>• Se è la VMC della scheda Master: «Imposta questo IP nella VMC Master» scrive l'IP verificato in «Cambia IP VMC
                   (Riavvio di H.A.)», l'IP viene aggiornato in tutti i file del Package e Home Assistant si riavvia (1-3 minuti); da quel
                   momento la scheda Master comanda questa VMC.
-                  <br>• Se è una VMC da clonare: non premere «Imposta questo IP nella VMC Master», altrimenti la scheda Master passa a
-                  comandare lei. Annotare l'IP per la Finestra Clona e premere «Collega un'Altra VMC», che riporta la finestra ai passi 1
-                  e 2 per la VMC successiva; la VMC appena collegata resta in rete e non cambia.
-                  <br>• <b>Controllo dell'IP</b>: se l'IP è già usato da una VMC clonata (anche in attesa di riavvio) il pulsante non
+                  <br>• Se è un'altra VMC: non premere «Imposta questo IP nella VMC Master», altrimenti la scheda Master passa a
+                  comandare lei. Annotare l'IP e aggiungere la VMC all'integrazione: Impostazioni › Dispositivi e servizi › VMC Master ›
+                  Aggiungi dispositivo, con un nome nuovo e quell'IP, poi riavviare dalla riparazione «VMC Master: riavviare Home
+                  Assistant» (con più VMC basta un riavvio alla fine). «Collega un'Altra VMC» riporta la finestra ai passi 1 e 2 per la
+                  VMC successiva; la VMC appena collegata resta in rete e non cambia.
+                  <br>• <b>Controllo dell'IP</b>: se l'IP è già usato da un'altra VMC il pulsante non
                   compare e la finestra indica quale VMC lo usa; se è già l'IP della VMC Master la finestra lo segnala e non serve fare
-                  altro. Lo stesso controllo vale per «Cambia IP VMC» (vedere la Nota Cambia IP VMC) e per l'IP della Finestra Clona.
+                  altro. Lo stesso controllo vale per «Cambia IP VMC» (vedere la Nota Cambia IP VMC); «Aggiungi dispositivo» non accetta
+                  un IP già usato da un'altra VMC dell'integrazione.
                   <br><br>
                   <b>Gli strumenti.</b> Tre icone in fondo alla finestra aprono un riquadro sotto; ne resta aperto uno solo.
                   <br>• <b>Cambia Password VMC</b>: cambia la password della rete VMC_xxxxxxxx, solo con la VMC in Access Point.

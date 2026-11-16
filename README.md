@@ -31,7 +31,7 @@
 </p>
 
 <p align="center">
-  <sub>Versione beta 9.0.0b11: stessa logica e stessa scheda della release manuale <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW">8.6.0</a>, che resta disponibile per chi preferisce installare a mano.</sub>
+  <sub>Versione beta 9.0.0b12: stessa logica e stessa scheda della release manuale <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW">8.6.0</a>, che resta disponibile per chi preferisce installare a mano.</sub>
 </p>
 
 <p align="center">
@@ -275,7 +275,7 @@ Finché l'integrazione non è nel catalogo pubblico, si aggiunge come repository
    - **Nome VMC**: la prima si chiama `master` (è già scritto); le altre con un nome a scelta: sole lettere minuscole, da 1 a 10 caratteri, senza spazi né numeri;
    - **IP VMC su porta 5001**: l'IP statico della VMC, per esempio `192.168.1.160`;
    - premere **Invia**;
-4. se compare **«VMC non raggiungibile»** (VMC spenta o non ancora collegata al Wi-Fi) premere **Invia** per aggiungerla comunque: l'IP si cambia più tardi con l'**icona ingranaggio** sulla riga della VMC;
+4. se compare **«VMC non raggiungibile»** (VMC spenta o non ancora collegata al Wi-Fi) premere **Invia** per aggiungerla comunque: l'IP si cambia più tardi con l'**icona ingranaggio** sulla riga della VMC. Per collegare al Wi-Fi una VMC nuova senza l'App Air Guard vedere **«VMC nuova senza l'App Air Guard»** più sotto;
 5. nella finestra finale premere **Fine**.
 
 Dopo la prima VMC, la pagina *Impostazioni → Dispositivi e servizi → VMC Master* mostra una riga per ogni VMC e il pulsante **Aggiungi dispositivo** in alto a destra: per le VMC successive si può usare anche quello.
@@ -293,10 +293,26 @@ In *Impostazioni*, in cima alla pagina, compare **«VMC Master: riavviare Home A
 ### A7. Profilo Inizializzazione
 Come nella 8.6.0, solo la prima volta: nel pannello **Impostazioni** della scheda premere **Esegui** su **«VMC ‹nome› - Profilo Inizializzazione»** e confermare con **OK** nel popup «Vuoi Procedere?». Al riavvio aprire la finestra **«Opzioni - Sensori da Selezionare»** e scegliere le entità dei sensori.
 
-Se la VMC non è ancora collegata al Wi-Fi di casa, si collega dalla **Finestra Prima Installazione VMC** della scheda Master, come descritto nel [README della 8.6.0](https://github.com/DanRobo76/VMC-HELTY-FLOW#readme).
-
 ### Altre VMC
 Ripetere i punti **A4**, **A5**, **A6** e **A7** con un nome diverso. Si possono aggiungere più VMC di seguito e riavviare una volta sola.
+
+### VMC nuova senza l'App Air Guard
+Una VMC appena installata, non ancora collegata al Wi-Fi di casa, si collega da Home Assistant con la finestra **Prima Installazione VMC** (icona Wi-Fi con l'ingranaggio), che c'è solo nella scheda della VMC `master`. Serve Home Assistant OS con una scheda Wi-Fi sul server, integrata oppure una chiavetta USB (vedere *Requisiti*); altrimenti la VMC si collega una volta con l'App Air Guard.
+
+**Se la VMC master c'è già e si collega un'altra VMC**
+1. Accendere la VMC nuova: crea la sua rete `VMC_xxxxxxxx`.
+2. Nella scheda della VMC master aprire il pannello **Impostazioni** e premere l'icona Wi-Fi con l'ingranaggio.
+3. **1 · Trova la VMC**: premere **Cerca**; la password di fabbrica della rete VMC è `12345678`.
+4. **2 · Collega al Wi-Fi di casa**: scrivere nome e password del Wi-Fi di casa e premere **Collega VMC alla Rete**. Al termine compaiono IP, nome e MAC della VMC.
+5. **3 · IP fisso e IP della VMC Master**: prenotare sul router un IP fisso per quel MAC; se è diverso da quello mostrato, scriverlo in «IP Fisso della VMC (prenotato sul router)» e la finestra verifica da sola che risponda la stessa VMC. **Non premere «Imposta questo IP nella VMC Master»**, altrimenti la scheda master passa a comandare la VMC nuova. Annotare l'IP.
+6. Aggiungere la VMC come al punto **A4** (*Impostazioni → Dispositivi e servizi → VMC Master → Aggiungi dispositivo*), con un nome nuovo e l'IP annotato.
+7. Continuare con **A5**, **A6** e **A7**. Per collegare altre VMC, nella finestra premere **Collega un'Altra VMC** e ripetere dal punto 3; alla fine basta un riavvio.
+
+**Se è la prima VMC in assoluto**
+1. Seguire i punti da **A1** ad **A6** con il nome `master` e l'IP che si prenoterà sul router: a «VMC non raggiungibile» premere **Invia** per aggiungerla comunque.
+2. La scheda è OFF-Line: premere l'icona Wi-Fi con l'ingranaggio sotto il **Panic Button**.
+3. Fare i passi **1** e **2** come sopra; al passo **3** premere **«Imposta questo IP nella VMC Master»**: Home Assistant si riavvia (1-3 minuti) e da quel momento la scheda comanda la VMC. Se l'IP è già quello della VMC master, la finestra lo segnala e non serve fare altro.
+4. Continuare con **A7**.
 </details>
 
 <details>
@@ -347,7 +363,7 @@ Conviene aggiungere prima la scheda nuova e togliere la vecchia solo dopo aver v
 5. ripetere i passi 3 e 4 per ogni VMC, poi **Fatto** in alto a destra.
 
 ### B8. Controllo finale
-- Nel **Pannello Informazioni** della scheda, «Package Ver.» indica la versione dell'integrazione (per esempio `v.9.0.0b11`).
+- Nel **Pannello Informazioni** della scheda, «Package Ver.» indica la versione dell'integrazione (per esempio `v.9.0.0b12`).
 - Il Profilo Inizializzazione **non va rifatto**: le impostazioni restano quelle di prima.
 - Le automazioni principali «Automazione VMC ‹nome›» del package conservano area, etichette e categoria di quelle incollate.
 - Le 18 entità della Finestra Clona della VMC master, che non esiste più, vengono tolte da sole al riavvio.
@@ -449,7 +465,7 @@ Il ritorno non è automatico. Ci sono due strade:
 </p>
 
 <p align="center">
-  <sub>Beta version 9.0.0b11: same logic and same card as the manual release <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW">8.6.0</a>, which stays available for manual installs.</sub>
+  <sub>Beta version 9.0.0b12: same logic and same card as the manual release <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW">8.6.0</a>, which stays available for manual installs.</sub>
 </p>
 
 <p align="center">
@@ -541,6 +557,13 @@ Requires Home Assistant **2026.11** or later.
 4. **Restart**: in *Settings* click **«VMC Master: riavviare Home Assistant»** and press **Submit**.
 5. **Add the card**: press **Ctrl+F5**, then on the dashboard **pencil → Add card → VMC Master** and pick the unit.
 6. **First time only**: in the card run **«VMC ‹name› - Profilo Inizializzazione»**, then pick the sensors (see *Configuration*).
+
+**New unit without the Air Guard app**: a unit that is not yet on the home Wi-Fi is connected from Home Assistant with the **Prima Installazione VMC** window (Wi-Fi icon with a cog), only in the card of the `master` unit: under the **Panic Button** while the card is OFF-Line, otherwise in the **Impostazioni** panel. It needs Home Assistant OS with a Wi-Fi adapter on the server (built-in or a USB dongle); without it, connect the unit once with the Air Guard app.
+1. Power on the new unit: it creates its own `VMC_xxxxxxxx` network.
+2. **1 · Trova la VMC**: press **Cerca** (factory password of the unit network: `12345678`).
+3. **2 · Collega al Wi-Fi di casa**: type the home Wi-Fi name and password and press **Collega VMC alla Rete**; the unit IP, name and MAC appear.
+4. **3 · IP fisso e IP della VMC Master**: reserve a fixed IP for that MAC on the router; if it differs from the one shown, type it in the field and the window checks that the same unit answers.
+5. For the `master` unit press **«Imposta questo IP nella VMC Master»** (Home Assistant restarts). For any other unit do **not** press it: note the IP, add the unit with *Settings → Devices & services → VMC Master → Add device*, then restart.
 
 If VMC Master does not show up in the Marketplace: **⋮ → Custom repositories**, URL `https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE`, type **Integration**.
 
