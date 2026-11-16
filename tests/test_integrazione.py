@@ -8,6 +8,7 @@ from pathlib import Path
 from urllib.parse import unquote
 from unittest.mock import patch
 
+import pytest
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
@@ -23,6 +24,16 @@ HASSIO = "custom_components.vmc_master.config_flow.is_hassio"
 PI = "custom_components.vmc_master.prima_installazione"
 MANIFEST = Path(__file__).parent.parent / "custom_components" / "vmc_master" / "manifest.json"
 RADICE = Path(__file__).parent.parent
+
+
+@pytest.fixture(autouse=True)
+def _nessuna_vmc_in_rete():
+    """Nei test non c'e' nessuna VMC vera: all'avvio il nome non si legge e il titolo
+    della voce resta quello scritto. I test che leggono il nome lo impostano da se'."""
+    with patch(NOME_VMC, return_value=None):
+        yield
+
+
 # Link a immagini e video, contati uno per uno: 77 nella scheda (51 file diversi)
 # piu' il link «GitHub» del Pannello Informazioni; 14 nel README
 FILE_COLLEGATI_SCHEDA = 77
@@ -162,7 +173,11 @@ async def test_vmc_in_rete_basta_l_ip(hass: HomeAssistant) -> None:
         risultato["flow_id"], {"nome": "salagrande"}
     )
     assert risultato["type"] is FlowResultType.CREATE_ENTRY
-    assert risultato["data"] == {"nome": "salagrande", "host": "192.168.1.161"}
+    # il titolo della voce e' il nome della VMC; il nome interno resta «salagrande»
+    assert risultato["title"] == "VMC Sala Grande"
+    assert risultato["data"] == {
+        "nome": "salagrande", "host": "192.168.1.161", "titolo": "VMC Sala Grande"
+    }
 
     # VMC che non risponde: il nome si scrive a mano e si conferma l'aggiunta
     risultato = await hass.config_entries.flow.async_init(
@@ -182,7 +197,8 @@ async def test_vmc_in_rete_basta_l_ip(hass: HomeAssistant) -> None:
     assert risultato["step_id"] == "non_raggiungibile"
     risultato = await hass.config_entries.flow.async_configure(risultato["flow_id"], {})
     assert risultato["type"] is FlowResultType.CREATE_ENTRY
-    assert risultato["data"] == {"nome": "camera", "host": "192.168.1.162"}
+    assert risultato["title"] == "VMC camera"
+    assert risultato["data"] == {"nome": "camera", "host": "192.168.1.162", "titolo": "VMC camera"}
 
 
 def test_nome_da_vmc() -> None:
@@ -204,6 +220,12 @@ async def test_cambia_ip_da_configura(hass: HomeAssistant) -> None:
     assert await hass.config_entries.async_setup(voce.entry_id)
     await hass.async_block_till_done()
     risultato = await hass.config_entries.options.async_init(voce.entry_id)
+    assert risultato["type"] is FlowResultType.MENU
+    assert risultato["menu_options"] == ["cambia_ip", "elimina"]
+    risultato = await hass.config_entries.options.async_configure(
+        risultato["flow_id"], {"next_step_id": "cambia_ip"}
+    )
+    assert risultato["step_id"] == "cambia_ip"
     risultato = await hass.config_entries.options.async_configure(
         risultato["flow_id"], {"host": "192.168.1.170"}
     )
@@ -307,6 +329,179 @@ async def test_rimozione_sposta_in_backup(hass: HomeAssistant) -> None:
     await hass.async_block_till_done()
     assert not Path(hass.config.path("packages", "vmc_helty_flow", "sala")).exists()
     assert len(list(Path(hass.config.path("vmc_master_backup")).iterdir())) == 1
+
+
+def test_titolo_voce() -> None:
+    from custom_components.vmc_master.config_flow import titolo_voce
+
+    assert titolo_voce("VMC Soggiorno", "master") == "VMC Soggiorno"
+    assert titolo_voce("vmc studio", "studio") == "vmc studio"
+    assert titolo_voce("Soggiorno", "master") == "VMC Soggiorno"
+    assert titolo_voce("", "master") == "VMC master"
+    assert titolo_voce(None, "camera") == "VMC camera"
+
+
+async def test_titolo_delle_voci_gia_aggiunte(hass: HomeAssistant) -> None:
+    """Le VMC aggiunte prima della 9.0.0b13 («VMC master») prendono il nome della VMC
+    all'avvio, senza ricaricare il package; un nome scelto dall'utente resta."""
+    voce = MockConfigEntry(
+        domain=DOMAIN, unique_id="master", title="VMC master",
+        data={"nome": "master", "host": "192.168.1.160"},
+    )
+    rinominata = MockConfigEntry(
+        domain=DOMAIN, unique_id="sala", title="Il mio salotto",
+        data={"nome": "sala", "host": "192.168.1.161"},
+    )
+    voce.add_to_hass(hass)
+    rinominata.add_to_hass(hass)
+    with patch(NOME_VMC, return_value="VMC Soggiorno"), patch(
+        "custom_components.vmc_master.installa", wraps=__import__(
+            "custom_components.vmc_master.installatore", fromlist=["installa"]
+        ).installa,
+    ) as installa:
+        assert await async_setup_component(hass, DOMAIN, {})
+        await hass.async_block_till_done()
+        assert installa.call_count == 2  # nessuna ricarica dopo il cambio del titolo
+    assert voce.title == "VMC Soggiorno"
+    assert voce.data == {"nome": "master", "host": "192.168.1.160", "titolo": "VMC Soggiorno"}
+    assert rinominata.title == "Il mio salotto" and "titolo" not in rinominata.data
+    # nome cambiato nell'App Air Guard: al prossimo avvio cambia anche il titolo
+    assert await hass.config_entries.async_unload(voce.entry_id)
+    with patch(NOME_VMC, return_value="VMC Studio"):
+        assert await hass.config_entries.async_setup(voce.entry_id)
+        await hass.async_block_till_done()
+    assert voce.title == "VMC Studio" and voce.data["nome"] == "master"
+
+
+async def _apri_elimina(hass: HomeAssistant, voce: MockConfigEntry):
+    risultato = await hass.config_entries.options.async_init(voce.entry_id)
+    risultato = await hass.config_entries.options.async_configure(
+        risultato["flow_id"], {"next_step_id": "elimina"}
+    )
+    assert risultato["type"] is FlowResultType.MENU and risultato["step_id"] == "elimina"
+    assert risultato["menu_options"] == ["elimina_solo_ha", "elimina_dalla_rete"]
+    return risultato
+
+
+async def _voce_sala(hass: HomeAssistant) -> MockConfigEntry:
+    voce = MockConfigEntry(
+        domain=DOMAIN, unique_id="sala", title="VMC Sala",
+        data={"nome": "sala", "host": "192.168.1.161", "titolo": "VMC Sala"},
+    )
+    voce.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(voce.entry_id)
+    await hass.async_block_till_done()
+    return voce
+
+
+async def test_elimina_solo_da_home_assistant(hass: HomeAssistant) -> None:
+    voce = await _voce_sala(hass)
+    risultato = await _apri_elimina(hass, voce)
+    with patch(f"{PI}.rimanda_in_access_point") as access_point:
+        risultato = await hass.config_entries.options.async_configure(
+            risultato["flow_id"], {"next_step_id": "elimina_solo_ha"}
+        )
+        await hass.async_block_till_done()
+    assert risultato["type"] is FlowResultType.ABORT and risultato["reason"] == "eliminata"
+    assert risultato["description_placeholders"]["titolo"] == "VMC Sala"
+    access_point.assert_not_called()
+    assert hass.config_entries.async_get_entry(voce.entry_id) is None
+    assert not Path(hass.config.path("packages", "vmc_helty_flow", "sala")).exists()
+    assert len(list(Path(hass.config.path("vmc_master_backup")).iterdir())) == 1
+
+
+async def _avanza_opzioni(hass: HomeAssistant, risultato):
+    if risultato["type"] is not FlowResultType.SHOW_PROGRESS:
+        return risultato
+    await hass.async_block_till_done()
+    return await hass.config_entries.options.async_configure(risultato["flow_id"])
+
+
+async def test_elimina_anche_dalla_rete(hass: HomeAssistant) -> None:
+    """La VMC torna in Access Point (lascia il Wi-Fi di casa), poi si elimina la voce."""
+    voce = await _voce_sala(hass)
+    risultato = await _apri_elimina(hass, voce)
+    with patch(f"{PI}.rimanda_in_access_point", return_value="VMC Sala") as access_point:
+        risultato = await hass.config_entries.options.async_configure(
+            risultato["flow_id"], {"next_step_id": "elimina_dalla_rete"}
+        )
+        assert risultato["type"] is FlowResultType.SHOW_PROGRESS
+        assert risultato["progress_action"] == "access_point"
+        risultato = await _avanza_opzioni(hass, risultato)
+        await hass.async_block_till_done()
+    assert access_point.call_args.args[:2] == (hass.config.config_dir, "192.168.1.161")
+    assert risultato["type"] is FlowResultType.ABORT
+    assert risultato["reason"] == "eliminata_dalla_rete"
+    assert hass.config_entries.async_get_entry(voce.entry_id) is None
+    assert not Path(hass.config.path("packages", "vmc_helty_flow", "sala")).exists()
+
+
+async def test_elimina_dalla_rete_non_riuscita(hass: HomeAssistant) -> None:
+    """VMC che non risponde: la voce resta; si puo' riprovare o eliminarla solo da HA."""
+    from custom_components.vmc_master.prima_installazione import Failure
+
+    voce = await _voce_sala(hass)
+    risultato = await _apri_elimina(hass, voce)
+    errore = Failure("vmc_unreachable", "La VMC non risponde all'indirizzo 192.168.1.161.")
+    with patch(f"{PI}.rimanda_in_access_point", side_effect=errore):
+        risultato = await hass.config_entries.options.async_configure(
+            risultato["flow_id"], {"next_step_id": "elimina_dalla_rete"}
+        )
+        risultato = await _avanza_opzioni(hass, risultato)
+    assert risultato["type"] is FlowResultType.MENU and risultato["step_id"] == "errore_rete"
+    assert risultato["menu_options"] == ["elimina_dalla_rete", "elimina_solo_ha"]
+    assert risultato["description_placeholders"]["errore"] == errore.message
+    assert hass.config_entries.async_get_entry(voce.entry_id) is not None
+    # riprova: la seconda volta riesce
+    with patch(f"{PI}.rimanda_in_access_point", return_value="VMC Sala"):
+        risultato = await hass.config_entries.options.async_configure(
+            risultato["flow_id"], {"next_step_id": "elimina_dalla_rete"}
+        )
+        risultato = await _avanza_opzioni(hass, risultato)
+        await hass.async_block_till_done()
+    assert risultato["reason"] == "eliminata_dalla_rete"
+    assert hass.config_entries.async_get_entry(voce.entry_id) is None
+
+
+class TrasportoFinto:
+    """Al posto di motore.Transport: la VMC risponde finche' non riceve l'Access Point."""
+
+    def __init__(self, applica: bool = True) -> None:
+        self.inviati: list[tuple[str, bytes]] = []
+        self.applica = applica
+
+    def identify(self, ip, interface=""):
+        if self.inviati and self.applica:
+            raise OSError("la VMC non e' piu' sulla rete di casa")
+        return "VMC Sala"
+
+    def send(self, ip, packet, interface=""):
+        self.inviati.append((ip, packet))
+
+
+def test_rimanda_in_access_point(tmp_path: Path) -> None:
+    from custom_components.vmc_master import prima_installazione as pi
+
+    cartella = pi.cartella(str(tmp_path))
+    cartella.mkdir()
+    (cartella / "identity.json").write_text(json.dumps({"ip": "192.168.1.161"}), encoding="utf-8")
+    trasporto = TrasportoFinto()
+    passi: list[int] = []
+    with patch.object(pi.motore, "Transport", return_value=trasporto):
+        nome = pi.rimanda_in_access_point(
+            str(tmp_path), "192.168.1.161", passi.append, attesa=5, pausa=0
+        )
+    assert nome == "VMC Sala"
+    # stesso pacchetto della funzione «Access Point» della Finestra Prima Installazione VMC
+    assert trasporto.inviati == [("192.168.1.161", pi.motore.access_point_packet())]
+    assert passi[0] == 10 and passi[-1] == 100
+    assert not (cartella / "identity.json").exists()
+
+    # la VMC risponde ancora: errore e nessuna eliminazione
+    with patch.object(pi.motore, "Transport", return_value=TrasportoFinto(applica=False)):
+        with pytest.raises(pi.Failure) as errore:
+            pi.rimanda_in_access_point(str(tmp_path), "192.168.1.161", attesa=0.05, pausa=0.01)
+    assert errore.value.code == "ap_not_applied"
 
 
 async def test_toglie_entita_finestra_clona(hass: HomeAssistant) -> None:
@@ -640,7 +835,7 @@ async def test_da_installare_completo(hass: HomeAssistant) -> None:
             risultato["flow_id"], {"nome": "bagno"}
         )
     assert risultato["type"] is FlowResultType.CREATE_ENTRY
-    assert risultato["data"] == {"nome": "bagno", "host": "192.168.1.60"}
+    assert risultato["data"] == {"nome": "bagno", "host": "192.168.1.60", "titolo": "VMC Bagno"}
 
 
 async def test_prima_vmc_da_installare_diventa_master(hass: HomeAssistant) -> None:
@@ -661,7 +856,9 @@ async def test_prima_vmc_da_installare_diventa_master(hass: HomeAssistant) -> No
             risultato["flow_id"], {"host": "192.168.1.50"}
         )
     assert risultato["type"] is FlowResultType.CREATE_ENTRY
-    assert risultato["data"] == {"nome": "master", "host": "192.168.1.50"}
+    # la prima VMC si chiama «master», ma la voce mostra il nome della VMC
+    assert risultato["title"] == "VMC Bagno"
+    assert risultato["data"] == {"nome": "master", "host": "192.168.1.50", "titolo": "VMC Bagno"}
 
 
 async def test_ripristino_wifi_all_avvio(hass: HomeAssistant) -> None:

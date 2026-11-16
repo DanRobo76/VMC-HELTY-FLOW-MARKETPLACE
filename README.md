@@ -31,7 +31,7 @@
 </p>
 
 <p align="center">
-  <sub>Versione beta 9.0.0b12: stessa logica e stessa scheda della release manuale <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW">8.6.0</a>, che resta disponibile per chi preferisce installare a mano.</sub>
+  <sub>Versione beta 9.0.0b13: stessa logica e stessa scheda della release manuale <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW">8.6.0</a>, che resta disponibile per chi preferisce installare a mano.</sub>
 </p>
 
 <p align="center">
@@ -102,7 +102,7 @@
 - <sub>Avvisa l'utente tramite notifica sul Dispositivo Mobile in caso di Avvio, Arresto, Errori o cambio filtro della VMC.</sub>
 - <sub>Permette l'accensione e lo spegnimento automatico in funzione degli inquinanti (CO₂ e/o VOC) [sensori della VMC presenti solo nella VMC HELTY FLOW ELITE; per la CO₂ si può selezionare anche un'entità di Home Assistant].</sub>
 - <sub>Permette l'accensione e lo spegnimento automatico in funzione dell'Umidità Interna Settata (sopra il valore impostato, oppure con aria secca ≤ 35% per far entrare aria dall'esterno).</sub>
-- <sub>Se si dispone di più VMC, ognuna si aggiunge da *Impostazioni → Dispositivi e servizi → VMC Master → Aggiungi dispositivo* (se è già collegata al Wi-Fi basta l'IP: il nome si legge dalla VMC) e si elimina dalla stessa pagina (la sua cartella va in `config/vmc_master_backup`); una sola scheda «VMC Master» per tutte le VMC.</sub>
+- <sub>Se si dispone di più VMC, ognuna si aggiunge da *Impostazioni → Dispositivi e servizi → VMC Master → Aggiungi dispositivo* (se è già collegata al Wi-Fi basta l'IP: il nome si legge dalla VMC) e si elimina dalla stessa pagina con l'icona ingranaggio, scegliendo se lasciarla sulla rete di casa o rimandarla in Access Point (la sua cartella va in `config/vmc_master_backup`); una sola scheda «VMC Master» per tutte le VMC.</sub>
 - <sub>Collega una VMC appena installata al Wi-Fi di casa senza l'App Air Guard, con gli stessi passaggi del manuale Helty, direttamente da *Aggiungi dispositivo* (risposta «No, va installata da zero»): ricerca della rete VMC_xxxxxxxx, invio della rete di casa, IP e MAC da prenotare sul router e, se qualcosa non va, la tabella dei lampeggi del LED. Richiede Home Assistant OS su un computer con scheda Wi-Fi integrata oppure con una chiavetta USB Wi-Fi collegata (vedere Requisiti). A installazione conclusa la VMC resta visibile e utilizzabile anche dall'App Air Guard, senza ripetere la procedura.</sub>
 - <sub>Permette lo spegnimento automatico in funzione della Temperatura Esterna ≤ -18 °C e successiva ripresa in funzione degli offset impostati.</sub>
   > <sub>**Nota:** per impostazione firmware, la priorità è assegnata al sensore interno della VMC rispetto al valore rilevato dal sensore esterno dell'entità selezionata.</sub>
@@ -149,8 +149,8 @@
 |---|---|---|
 | <sub>Installare</sub> | <sub>Copiare i file e incollare automazione e scheda</sub> | <sub>*Marketplace → Installa*, poi l'IP della VMC</sub> |
 | <sub>Aggiungere una VMC</sub> | <sub>Finestra Clona + incollare automazione e scheda</sub> | <sub>*Aggiungi dispositivo*: solo l'IP (il nome si legge dalla VMC), nient'altro da incollare</sub> |
-| <sub>Cancellare una VMC</sub> | <sub>Finestra Clona + cancellare a mano automazione e scheda</sub> | <sub>Eliminare la VMC: la cartella va in `config/vmc_master_backup`</sub> |
-| <sub>Cambiare IP</sub> | <sub>Campo «Cambia IP VMC» della scheda</sub> | <sub>Lo stesso campo, oppure l'icona ingranaggio sulla VMC</sub> |
+| <sub>Cancellare una VMC</sub> | <sub>Finestra Clona + cancellare a mano automazione e scheda</sub> | <sub>Icona ingranaggio → «Elimina la VMC»: solo da Home Assistant o anche dalla rete (torna in Access Point); la cartella va in `config/vmc_master_backup`</sub> |
+| <sub>Cambiare IP</sub> | <sub>Campo «Cambia IP VMC» della scheda</sub> | <sub>Lo stesso campo, oppure l'icona ingranaggio sulla VMC → «Cambia l'IP della VMC»</sub> |
 | <sub>Cambiare nome della VMC</sub> | <sub>Campo «Cambia Nome VMC»</sub> | <sub>Invariato</sub> |
 | <sub>Collegare al Wi-Fi una VMC nuova</sub> | <sub>Finestra Prima Installazione VMC della scheda Master</sub> | <sub>*Aggiungi dispositivo* → «No, va installata da zero» (stesso motore della 8.6.0)</sub> |
 | <sub>Automazione principale</sub> | <sub>Incollata nell'editor (modificabile)</sub> | <sub>Nel package (`vmc_‹nome›_automazione.yaml`, sola lettura)</sub> |
@@ -213,8 +213,13 @@ Ogni script chiede conferma con il popup «Vuoi Procedere?». Per i dettagli apr
 
 **Da *Impostazioni → Dispositivi e servizi → VMC Master*:**
 - **aggiungere un'altra VMC**: pulsante **Aggiungi dispositivo**, poi «Sì, è già collegata» e l'IP oppure «No, va installata da zero», poi i passi 4, 5 e 6 dell'Installazione;
-- **cambiare l'IP**: icona ingranaggio sulla riga della VMC, in alternativa al campo della scheda;
-- **eliminare una VMC**: tre puntini → **Elimina**; la cartella va in `config/vmc_master_backup`, poi riavviare e togliere la sua scheda.
+- **nome della VMC**: ogni riga mostra il nome letto dalla VMC, cioè quello dell'App Air Guard (per esempio «VMC ‹nome›»), e si aggiorna a ogni avvio. Il nome interno usato da cartella, entità e scheda non cambia. Con **tre puntini → Rinomina** si può scegliere un altro nome, che resta;
+- **cambiare l'IP**: icona ingranaggio sulla riga della VMC → **«Cambia l'IP della VMC»**, in alternativa al campo della scheda;
+- **eliminare una VMC**: icona ingranaggio → **«Elimina la VMC»**, poi:
+  - **«Solo da Home Assistant»**: la VMC resta collegata al Wi-Fi di casa e si può riaggiungere scrivendo solo l'IP;
+  - **«Anche dalla rete»**: la VMC lascia il Wi-Fi di casa e torna in Access Point, cioè mostra di nuovo la sua rete VMC_…; per ricollegarla: **Aggiungi dispositivo → «No, va installata da zero»**, oppure l'App Air Guard.
+
+  In tutti e due i casi la cartella va in `config/vmc_master_backup`: poi riavviare e togliere la sua scheda. Anche **tre puntini → Elimina** funziona, ma elimina la VMC solo da Home Assistant.
 </details>
 
 <details>
@@ -274,7 +279,7 @@ Finché l'integrazione non è nel catalogo pubblico, si aggiunge come repository
 3. la finestra **«Aggiungi una VMC Helty Flow»** chiede se la VMC è già collegata al Wi-Fi di casa:
    - **«Sì, è già collegata: scrivo solo l'IP»**: scrivere l'IP statico della VMC, per esempio `192.168.1.160`, e premere **Invia**. La prima VMC si chiama sempre `master`; per le altre il nome si legge dalla VMC e si conferma nella finestra seguente (sole lettere minuscole, da 1 a 10 caratteri, senza spazi né numeri);
    - **«No, va installata da zero»**: vedere **«VMC nuova senza l'App Air Guard»** più sotto;
-4. se compare **«VMC non raggiungibile»** (per esempio VMC spenta) premere **Invia** per aggiungerla comunque: l'IP si cambia più tardi con l'**icona ingranaggio** sulla riga della VMC;
+4. se compare **«VMC non raggiungibile»** (per esempio VMC spenta) premere **Invia** per aggiungerla comunque: l'IP si cambia più tardi con l'**icona ingranaggio** sulla riga della VMC → **«Cambia l'IP della VMC»**;
 5. nella finestra finale premere **Fine**.
 
 Dopo la prima VMC, la pagina *Impostazioni → Dispositivi e servizi → VMC Master* mostra una riga per ogni VMC e il pulsante **Aggiungi dispositivo** in alto a destra: per le VMC successive si può usare anche quello.
@@ -287,7 +292,7 @@ In *Impostazioni*, in cima alla pagina, compare **«VMC Master: riavviare Home A
 2. aprire la plancia. Nelle installazioni nuove la plancia **Panoramica** è generata in automatico: in questo caso creare prima una plancia da *Impostazioni → Plance → Aggiungi plancia → Nuova plancia da zero*;
 3. **icona matita** (Modifica la plancia) in alto a destra → **Aggiungi scheda**;
 4. cercare **VMC Master** e cliccarla. C'è una sola scheda per tutte le VMC: la VMC si sceglie nel passo seguente;
-5. nel campo **VMC** scegliere la VMC (per esempio «VMC master») e premere **Salva**, poi **Fatto** in alto a destra.
+5. nel campo **VMC** scegliere la VMC, che compare con il nome letto dalla VMC (per esempio «VMC ‹nome›»), e premere **Salva**, poi **Fatto** in alto a destra.
 
 ### A7. Profilo Inizializzazione
 Come nella 8.6.0, solo la prima volta: nel pannello **Impostazioni** della scheda premere **Esegui** su **«VMC ‹nome› - Profilo Inizializzazione»** e confermare con **OK** nel popup «Vuoi Procedere?». Al riavvio aprire la finestra **«Opzioni - Sensori da Selezionare»** e scegliere le entità dei sensori.
@@ -357,7 +362,7 @@ Conviene aggiungere prima la scheda nuova e togliere la vecchia solo dopo aver v
 5. ripetere i passi 3 e 4 per ogni VMC, poi **Fatto** in alto a destra.
 
 ### B8. Controllo finale
-- Nel **Pannello Informazioni** della scheda, «Package Ver.» indica la versione dell'integrazione (per esempio `v.9.0.0b12`).
+- Nel **Pannello Informazioni** della scheda, «Package Ver.» indica la versione dell'integrazione (per esempio `v.9.0.0b13`).
 - Il Profilo Inizializzazione **non va rifatto**: le impostazioni restano quelle di prima.
 - Le automazioni principali «Automazione VMC ‹nome›» del package conservano area, etichette e categoria di quelle incollate.
 - Le 18 entità della Finestra Clona e le 27 della Finestra Prima Installazione VMC della VMC master, che non esistono più, vengono tolte da sole al riavvio.
@@ -459,7 +464,7 @@ Il ritorno non è automatico. Ci sono due strade:
 </p>
 
 <p align="center">
-  <sub>Beta version 9.0.0b12: same logic and same card as the manual release <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW">8.6.0</a>, which stays available for manual installs.</sub>
+  <sub>Beta version 9.0.0b13: same logic and same card as the manual release <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW">8.6.0</a>, which stays available for manual installs.</sub>
 </p>
 
 <p align="center">
@@ -530,8 +535,9 @@ Every script asks for confirmation with the «Vuoi Procedere?» popup. For detai
 
 **From *Settings → Devices & services → VMC Master*:**
 - **add another unit**: **Add device** button, then «Yes, it is connected» and the IP, or «No, it must be set up from scratch»; then steps 4, 5 and 6 of the Installation;
-- **change the IP**: gear icon on the unit's row, as an alternative to the card field;
-- **delete a unit**: three dots → **Delete**; the folder goes to `config/vmc_master_backup`, then restart and remove its card.
+- **unit name**: each row shows the name read from the unit, the one set in the Air Guard app (for example «VMC ‹name›»), refreshed at every start. The internal name used by folder, entities and card does not change. **Three dots → Rename** sets another name, which is kept;
+- **change the IP**: gear icon on the unit's row → **«Change the unit's IP»**, as an alternative to the card field;
+- **delete a unit**: gear icon → **«Delete the unit»**, then **«Only from Home Assistant»** (the unit stays on the home Wi-Fi) or **«From the network too»** (the unit goes back to Access Point mode and shows its VMC_… network again). In both cases the folder goes to `config/vmc_master_backup`; then restart and remove its card. **Three dots → Delete** also works, but only removes the unit from Home Assistant.
 </details>
 
 <details>
