@@ -1,9 +1,9 @@
 <p align="center">
   <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/raw/main/Video/VMC_MASTER_promo_IT.mp4">
-    <img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/main/Video/anteprima_scene_IT.webp" alt="Video di presentazione di VMC MASTER (50 secondi)" width="100%">
+    <img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/main/Video/anteprima_scene_IT.webp" alt="Video di presentazione di VMC MASTER (1 minuto e 17 secondi)" width="100%">
   </a>
   <br>
-  <sub>Video di presentazione · 50 secondi · clicca per scaricarlo</sub>
+  <sub>Video di presentazione · 1 minuto e 17 secondi · clicca per scaricarlo</sub>
 </p>
 
 ---
@@ -452,10 +452,10 @@ Il ritorno non è automatico. Ci sono due strade:
 
 <p align="center">
   <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/raw/main/Video/VMC_MASTER_promo_EN.mp4">
-    <img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/main/Video/anteprima_scene_EN.webp" alt="VMC MASTER presentation video (50 seconds)" width="720">
+    <img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/main/Video/anteprima_scene_EN.webp" alt="VMC MASTER presentation video (1 minute 17 seconds)" width="720">
   </a>
   <br>
-  <sub>Presentation video · 50 seconds · click to download</sub>
+  <sub>Presentation video · 1 minute 17 seconds · click to download</sub>
 </p>
 
 <p align="center">
