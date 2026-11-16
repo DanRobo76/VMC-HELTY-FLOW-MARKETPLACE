@@ -293,3 +293,93 @@ def test_link_del_readme() -> None:
     assert len(percorsi) == FILE_COLLEGATI_README
     assert [p for p in percorsi if not (RADICE / p).is_file()] == []
     assert "VMC-HELTY-FLOW/main/" not in readme and "VMC-HELTY-FLOW/raw/main/" not in readme
+
+
+def test_ricariche_dopo_aggiornamento() -> None:
+    """Quali modifiche del package si applicano ricaricando e quali vogliono il riavvio."""
+    from custom_components.vmc_master import ORDINE_RICARICHE
+    from custom_components.vmc_master.installatore import (
+        SERVIZI_RICARICA,
+        SERVIZI_RICARICA_SENSORI,
+        genera_file,
+        ricariche_necessarie,
+    )
+
+    # ogni servizio di ricarica ha il suo posto nell'ordine
+    servizi = set(SERVIZI_RICARICA.values()) | set(SERVIZI_RICARICA_SENSORI.values())
+    assert servizi == set(ORDINE_RICARICHE)
+
+    vecchi = genera_file("master", "192.168.1.160", "9.0.0b1")
+    nuovi = genera_file("master", "192.168.1.160", "9.0.0b2")
+    # nuova versione dell'integrazione: cambia solo il sensore template della versione
+    assert ricariche_necessarie(vecchi["vmc_master.yaml"], nuovi["vmc_master.yaml"]) == {
+        "template.reload"
+    }
+    assert vecchi["vmc_master_automazione.yaml"] == nuovi["vmc_master_automazione.yaml"]
+    # solo commenti: niente da fare
+    assert ricariche_necessarie(
+        vecchi["vmc_master.yaml"], "# commento\r\n" + vecchi["vmc_master.yaml"]
+    ) == set()
+    # automazione cambiata: si ricaricano le automazioni
+    automazione = vecchi["vmc_master_automazione.yaml"]
+    assert ricariche_necessarie(
+        automazione, automazione.replace("automazione_vmc_master", "automazione_vmc_master_2", 1)
+    ) == {"automation.reload"}
+    # sensore REST (versione nel repository) cambiato: si ricarica
+    package = vecchi["vmc_master.yaml"]
+    assert "VMC-HELTY-FLOW-MARKETPLACE/releases/latest" in package
+    assert ricariche_necessarie(
+        package, package.replace("VMC-HELTY-FLOW-MARKETPLACE/releases/latest", "ALTRO/releases/latest")
+    ) == {"rest.reload"}
+    # IP cambiato: i sensori TCP vogliono il riavvio
+    altro_ip = genera_file("master", "192.168.1.170", "9.0.0b1")
+    assert ricariche_necessarie(package, altro_ip["vmc_master.yaml"]) is None
+    # file non leggibile: riavvio
+    assert ricariche_necessarie(package, "sensor: [") is None
+
+
+async def test_aggiornamento_senza_secondo_riavvio(hass: HomeAssistant) -> None:
+    """Dopo l'aggiornamento dell'integrazione basta il riavvio dell'aggiornamento: il
+    package riscritto si ricarica e la riparazione «riavviare» non compare."""
+    from pytest_homeassistant_custom_component.common import async_mock_service
+
+    from custom_components.vmc_master.installatore import installa
+
+    # package scritto da una versione precedente dell'integrazione
+    esito = await hass.async_add_executor_job(
+        installa, hass.config.config_dir, "master", "192.168.1.160", "9.0.0b1"
+    )
+    assert esito.riavvio_necessario
+    chiamate = async_mock_service(hass, "template", "reload")
+    voce = MockConfigEntry(
+        domain=DOMAIN, unique_id="master", data={"nome": "master", "host": "192.168.1.160"}
+    )
+    voce.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(voce.entry_id)
+    await hass.async_block_till_done()
+    assert len(chiamate) == 1
+    assert ir.async_get(hass).async_get_issue(DOMAIN, "riavvio_necessario") is None
+    versione = json.loads(MANIFEST.read_text(encoding="utf-8"))["version"]
+    package = Path(hass.config.path("packages", "vmc_helty_flow", "master", "vmc_master.yaml"))
+    assert f'state: "v.{versione}"' in package.read_text(encoding="utf-8")
+
+    # stessa versione: niente da ricaricare
+    assert await hass.config_entries.async_reload(voce.entry_id)
+    await hass.async_block_till_done()
+    assert len(chiamate) == 1
+
+
+async def test_ricarica_non_riuscita_chiede_il_riavvio(hass: HomeAssistant) -> None:
+    from custom_components.vmc_master.installatore import installa
+
+    await hass.async_add_executor_job(
+        installa, hass.config.config_dir, "master", "192.168.1.160", "9.0.0b1"
+    )
+    # nessun servizio template.reload: la ricarica fallisce e si torna al riavvio
+    voce = MockConfigEntry(
+        domain=DOMAIN, unique_id="master", data={"nome": "master", "host": "192.168.1.160"}
+    )
+    voce.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(voce.entry_id)
+    await hass.async_block_till_done()
+    assert ir.async_get(hass).async_get_issue(DOMAIN, "riavvio_necessario") is not None

@@ -17,6 +17,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 
+import yaml
+
 from .const import NOME_MASTER
 from .trasforma import (
     adatta_link_repository,
@@ -35,6 +37,31 @@ CARTELLA_BACKUP = "vmc_master_backup"
 
 # Prima riga «host:» del package: e' l'IP della VMC (sensori TCP)
 _RE_HOST = re.compile(r"^\s+host:\s+([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)", re.MULTILINE)
+
+# Parti del package che Home Assistant sa ricaricare senza riavvio: chiave -> servizio
+SERVIZI_RICARICA = {
+    "automation": "automation.reload",
+    "command_line": "command_line.reload",
+    "homeassistant": "homeassistant.reload_core_config",
+    "input_boolean": "input_boolean.reload",
+    "input_datetime": "input_datetime.reload",
+    "input_number": "input_number.reload",
+    "input_select": "input_select.reload",
+    "input_text": "input_text.reload",
+    "script": "script.reload",
+    "shell_command": "shell_command.reload",
+    "template": "template.reload",
+    "timer": "timer.reload",
+}
+# Sensori della chiave «sensor:» che si ricaricano: piattaforma -> servizio.
+# I sensori TCP e la chiave «recorder:» vogliono il riavvio.
+SERVIZI_RICARICA_SENSORI = {
+    "command_line": "command_line.reload",
+    "rest": "rest.reload",
+    "template": "template.reload",
+}
+
+_LOADER = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
 
 
 def _leggi(percorso: Path) -> str:
@@ -134,16 +161,70 @@ def sposta_in_backup(config_dir: str, nome: str) -> Path | None:
     return destinazione
 
 
+def _per_piattaforma(sensori: object) -> dict[object, list] | None:
+    if sensori is None:
+        return {}
+    if not isinstance(sensori, list) or not all(isinstance(s, dict) for s in sensori):
+        return None
+    gruppi: dict[object, list] = {}
+    for sensore in sensori:
+        gruppi.setdefault(sensore.get("platform"), []).append(sensore)
+    return gruppi
+
+
+def _ricariche_sensori(prima: object, dopo: object) -> set[str] | None:
+    gruppi_prima, gruppi_dopo = _per_piattaforma(prima), _per_piattaforma(dopo)
+    if gruppi_prima is None or gruppi_dopo is None:
+        return None
+    servizi: set[str] = set()
+    for piattaforma in gruppi_prima.keys() | gruppi_dopo.keys():
+        if gruppi_prima.get(piattaforma) == gruppi_dopo.get(piattaforma):
+            continue
+        if piattaforma not in SERVIZI_RICARICA_SENSORI:
+            return None
+        servizi.add(SERVIZI_RICARICA_SENSORI[piattaforma])
+    return servizi
+
+
+def ricariche_necessarie(vecchio: str, nuovo: str) -> set[str] | None:
+    """Servizi che applicano le modifiche di un file del package senza riavvio.
+
+    Si confronta il contenuto YAML chiave per chiave, quindi i commenti non contano.
+    None vuol dire che serve il riavvio (per esempio IP cambiato nei sensori TCP).
+    """
+    try:
+        prima = yaml.load(vecchio, Loader=_LOADER) or {}
+        dopo = yaml.load(nuovo, Loader=_LOADER) or {}
+    except yaml.YAMLError:
+        return None
+    if not isinstance(prima, dict) or not isinstance(dopo, dict):
+        return None
+    servizi: set[str] = set()
+    for chiave in prima.keys() | dopo.keys():
+        if prima.get(chiave) == dopo.get(chiave):
+            continue
+        if chiave in SERVIZI_RICARICA:
+            servizi.add(SERVIZI_RICARICA[chiave])
+        elif chiave == "sensor":
+            sensori = _ricariche_sensori(prima.get(chiave), dopo.get(chiave))
+            if sensori is None:
+                return None
+            servizi |= sensori
+        else:
+            return None
+    return servizi
+
+
 @dataclass
 class EsitoInstallazione:
-    """Cosa e' cambiato su disco."""
+    """Cosa e' cambiato su disco e come renderlo attivo."""
 
     file_scritti: list[str] = field(default_factory=list)
     backup: Path | None = None
-
-    @property
-    def riavvio_necessario(self) -> bool:
-        return bool(self.file_scritti)
+    # File nuovi o parti che Home Assistant non sa ricaricare
+    riavvio_necessario: bool = False
+    # Servizi che ricaricano le parti cambiate, se il riavvio non serve
+    ricariche: set[str] = field(default_factory=set)
 
 
 def installa(config_dir: str, nome: str, ip: str, versione: str) -> EsitoInstallazione:
@@ -156,12 +237,20 @@ def installa(config_dir: str, nome: str, ip: str, versione: str) -> EsitoInstall
     nuovi = genera_file(nome, ip, versione)
     for nome_file, testo in nuovi.items():
         percorso = cartella / nome_file
-        if percorso.is_file() and _leggi(percorso) == testo:
+        vecchio = _leggi(percorso) if percorso.is_file() else None
+        if vecchio == testo:
             continue
         _scrivi(percorso, testo)
+        esito.file_scritti.append(nome_file)
         if nome_file.endswith(".sh"):
             percorso.chmod(0o755)
-        esito.file_scritti.append(nome_file)
+            if vecchio is not None:
+                continue  # gli script si leggono a ogni esecuzione: niente riavvio
+        servizi = None if vecchio is None else ricariche_necessarie(vecchio, testo)
+        if servizi is None:
+            esito.riavvio_necessario = True
+        else:
+            esito.ricariche |= servizi
     marcatore = {
         "versione": versione,
         "nome": nome,
@@ -170,6 +259,8 @@ def installa(config_dir: str, nome: str, ip: str, versione: str) -> EsitoInstall
         "md5": {nome_file: _md5(testo) for nome_file, testo in nuovi.items()},
     }
     _scrivi(cartella / FILE_MARCATORE, json.dumps(marcatore, indent=2, ensure_ascii=False) + "\n")
+    if esito.riavvio_necessario:
+        esito.ricariche.clear()  # il riavvio carica gia' tutto
     if esito.file_scritti:
         _LOGGER.info("VMC %s: file aggiornati %s", nome, ", ".join(esito.file_scritti))
     return esito
