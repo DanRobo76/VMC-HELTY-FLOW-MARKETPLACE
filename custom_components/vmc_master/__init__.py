@@ -52,6 +52,24 @@ _CARTELLA = Path(__file__).parent
 
 ISSUE_RIAVVIO = "riavvio_necessario"
 ISSUE_PACKAGES = "packages_non_abilitati"
+DATI_RICARICHE = f"{DOMAIN}_ricariche"
+
+# Ordine delle ricariche: prima aiutanti e sensori, per ultime script e automazioni che li usano
+ORDINE_RICARICHE = (
+    "homeassistant.reload_core_config",
+    "input_boolean.reload",
+    "input_datetime.reload",
+    "input_number.reload",
+    "input_select.reload",
+    "input_text.reload",
+    "timer.reload",
+    "shell_command.reload",
+    "command_line.reload",
+    "rest.reload",
+    "template.reload",
+    "script.reload",
+    "automation.reload",
+)
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
@@ -103,6 +121,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if esito.riavvio_necessario:
         _segnala_riavvio(hass)
     else:
+        if esito.ricariche:
+            # Aggiornamento dell'integrazione: Home Assistant ha gia' letto i package
+            # all'avvio, le parti cambiate si ricaricano senza chiedere un altro riavvio
+            _ricarica_dopo_avvio(hass, entry, esito.ricariche)
         _controlla_packages_dopo_avvio(hass, entry, nome)
 
     entry.async_on_unload(entry.add_update_listener(_async_aggiornata))
@@ -139,6 +161,37 @@ def _segnala_riavvio(hass: HomeAssistant) -> None:
         severity=ir.IssueSeverity.WARNING,
         translation_key=ISSUE_RIAVVIO,
     )
+
+
+@callback
+def _ricarica_dopo_avvio(hass: HomeAssistant, entry: ConfigEntry, servizi: set[str]) -> None:
+    """Ricarica le parti cambiate del package appena Home Assistant e' avviato.
+
+    Con piu' VMC le ricariche si fanno una volta sola per tutte."""
+    in_attesa: set[str] = hass.data.setdefault(DATI_RICARICHE, set())
+    in_attesa.update(servizi)
+
+    @callback
+    def _avviato(_hass: HomeAssistant) -> None:
+        if not in_attesa:
+            return  # gia' fatte insieme a un'altra VMC
+        da_fare = sorted(in_attesa, key=ORDINE_RICARICHE.index)
+        in_attesa.clear()
+        hass.async_create_task(_async_ricarica(hass, da_fare))
+
+    entry.async_on_unload(async_at_started(hass, _avviato))
+
+
+async def _async_ricarica(hass: HomeAssistant, servizi: list[str]) -> None:
+    for servizio in servizi:
+        dominio, nome_servizio = servizio.split(".")
+        try:
+            await hass.services.async_call(dominio, nome_servizio, blocking=True)
+        except Exception:  # noqa: BLE001 - qualunque errore: si torna al riavvio
+            _LOGGER.exception("Ricarica %s non riuscita: serve un riavvio", servizio)
+            _segnala_riavvio(hass)
+            return
+    _LOGGER.info("Package delle VMC aggiornato senza riavvio: %s", ", ".join(servizi))
 
 
 @callback

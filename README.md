@@ -31,7 +31,7 @@
 </p>
 
 <p align="center">
-  <sub>Versione beta 9.0.0b9: stessa logica e stessa scheda della release manuale <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW">8.6.0</a>, che resta disponibile per chi preferisce installare a mano.</sub>
+  <sub>Versione beta 9.0.0b10: stessa logica e stessa scheda della release manuale <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW">8.6.0</a>, che resta disponibile per chi preferisce installare a mano.</sub>
 </p>
 
 <p align="center">
@@ -237,7 +237,7 @@ Serve Home Assistant **2026.11** o successivo.
 
 Se VMC Master non compare nel Marketplace: **⋮ → Repository personalizzate**, indirizzo `https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE`, tipo **Integrazione**.
 
-**Aggiornare**: quando il Marketplace segnala una nuova versione premere **Aggiorna**, poi riavviare dalla riparazione «VMC Master: riavviare Home Assistant». Il Marketplace controlla le nuove versioni ogni 48 ore: per vederle subito, nella pagina di VMC Master **⋮ → Aggiorna le informazioni**.
+**Aggiornare**: quando il Marketplace segnala una nuova versione premere **Aggiorna**, poi riavviare Home Assistant dalla richiesta di riavvio del Marketplace. Basta un riavvio: all'avvio l'integrazione aggiorna il package e ricarica da sola le parti cambiate. Solo quando cambia qualcosa che Home Assistant non sa ricaricare (per esempio l'IP della VMC) compare anche «VMC Master: riavviare Home Assistant». Il Marketplace controlla le nuove versioni ogni 48 ore: per vederle subito, nella pagina di VMC Master **⋮ → Aggiorna le informazioni**.
 
 Hai già la 8.6.0 manuale? Segui la guida B qui sotto: impostazioni e cronologia restano.
 
@@ -347,7 +347,7 @@ Conviene aggiungere prima la scheda nuova e togliere la vecchia solo dopo aver v
 5. ripetere i passi 3 e 4 per ogni VMC, poi **Fatto** in alto a destra.
 
 ### B8. Controllo finale
-- Nel **Pannello Informazioni** della scheda, «Package Ver.» indica la versione dell'integrazione (per esempio `v.9.0.0b9`).
+- Nel **Pannello Informazioni** della scheda, «Package Ver.» indica la versione dell'integrazione (per esempio `v.9.0.0b10`).
 - Il Profilo Inizializzazione **non va rifatto**: le impostazioni restano quelle di prima.
 - Le automazioni principali «Automazione VMC ‹nome›» del package conservano area, etichette e categoria di quelle incollate.
 - Le 18 entità della Finestra Clona della VMC master, che non esiste più, vengono tolte da sole al riavvio.
@@ -449,7 +449,7 @@ Il ritorno non è automatico. Ci sono due strade:
 </p>
 
 <p align="center">
-  <sub>Beta version 9.0.0b9: same logic and same card as the manual release <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW">8.6.0</a>, which stays available for manual installs.</sub>
+  <sub>Beta version 9.0.0b10: same logic and same card as the manual release <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW">8.6.0</a>, which stays available for manual installs.</sub>
 </p>
 
 <p align="center">
@@ -544,7 +544,7 @@ Requires Home Assistant **2026.11** or later.
 
 If VMC Master does not show up in the Marketplace: **⋮ → Custom repositories**, URL `https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE`, type **Integration**.
 
-**Update**: when the Marketplace shows a new version press **Update**, then restart from the repair «VMC Master: riavviare Home Assistant». The Marketplace checks for new versions every 48 hours: to see them at once, on the VMC Master page **⋮ → Refresh information**.
+**Update**: when the Marketplace shows a new version press **Update**, then restart Home Assistant from the Marketplace restart request. One restart is enough: at startup the integration updates the package and reloads the changed parts by itself. Only when something changes that Home Assistant cannot reload (for example the unit IP address) does «VMC Master: riavviare Home Assistant» appear as well. The Marketplace checks for new versions every 48 hours: to see them at once, on the VMC Master page **⋮ → Refresh information**.
 
 <details>
 <summary><strong>Moving from manual 8.6.0</strong></summary>
