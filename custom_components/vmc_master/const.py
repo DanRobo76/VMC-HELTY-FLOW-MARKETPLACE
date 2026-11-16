@@ -11,7 +11,7 @@ DOMAIN: Final = "vmc_master"
 CONF_NOME: Final = "nome"
 CONF_HOST: Final = "host"
 
-# Nome della prima VMC: e' l'unica che contiene la Finestra Prima Installazione VMC
+# Nome della prima VMC (nella release 8.6.0 l'unica con la Finestra Prima Installazione VMC)
 NOME_MASTER: Final = "master"
 
 # Stesse regole della Finestra Clona: solo lettere minuscole, da 1 a 10 caratteri
@@ -54,4 +54,37 @@ ENTITA_FINESTRA_CLONA: Final = (
     "script.vmc_master_clona_vmc",
     "sensor.vmc_master_clona_verifica_ip",
     "sensor.vmc_master_clona_verifica_nome",
+)
+
+# Entita' della Finestra Prima Installazione VMC della VMC Master 8.6.0 (27, le stesse escluse
+# dal recorder): il collegamento al Wi-Fi si fa da «Aggiungi dispositivo», quindi dopo
+# l'aggiornamento restano «non piu' fornite» e vengono tolte dal registro
+ENTITA_PRIMA_INSTALLAZIONE: Final = (
+    "automation.vmc_master_installa_vmc_avvio",
+    "automation.vmc_master_installa_vmc_finestre",
+    "automation.vmc_master_installa_vmc_lettura_stato",
+    "automation.vmc_master_installa_vmc_notifica_esito",
+    "automation.vmc_master_installa_vmc_verifica_ip",
+    "binary_sensor.vmc_master_installa_vmc_configurata",
+    "binary_sensor.vmc_master_installa_vmc_in_corso",
+    "input_boolean.vmc_master_installa_vmc_finestra",
+    "input_boolean.vmc_master_installa_vmc_scheda_access_point",
+    "input_boolean.vmc_master_installa_vmc_scheda_errori",
+    "input_boolean.vmc_master_installa_vmc_scheda_password",
+    "input_text.vmc_master_installa_vmc_ip_vmc",
+    "input_text.vmc_master_installa_vmc_nuova_password",
+    "input_text.vmc_master_installa_vmc_password_casa",
+    "input_text.vmc_master_installa_vmc_password_vmc",
+    "input_text.vmc_master_installa_vmc_rete_casa",
+    "input_text.vmc_master_installa_vmc_rete_vmc",
+    "input_text.vmc_master_installa_vmc_ripeti_password",
+    "script.vmc_master_installa_vmc_access_point",
+    "script.vmc_master_installa_vmc_avvia",
+    "script.vmc_master_installa_vmc_cambia_password",
+    "script.vmc_master_installa_vmc_cerca_reti",
+    "script.vmc_master_installa_vmc_configura",
+    "script.vmc_master_installa_vmc_nuova_vmc",
+    "script.vmc_master_installa_vmc_usa_ip",
+    "sensor.vmc_master_installa_vmc_stato",
+    "sensor.vmc_master_installa_vmc_verifica_ip",
 )

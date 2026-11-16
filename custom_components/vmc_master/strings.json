@@ -3,33 +3,99 @@
     "step": {
       "user": {
         "title": "Add a Helty Flow unit",
-        "description": "Unit name (lowercase letters only, 1 to 10 characters; the first unit is called «master») and the unit's IP address on port 5001.\n\nThe integration creates the folder packages/vmc_helty_flow/‹name› with the VMC Master package: after restarting Home Assistant, add the «VMC Master» card from the dashboard.",
+        "description": "**Is the unit already connected to the home Wi-Fi?**\n\nThe first unit is always called «master»; for the others the name is read from the unit. The integration installs the VMC Master package in the folder packages/vmc_helty_flow/‹name›: after restarting Home Assistant add the «VMC Master» card from the dashboard.",
+        "menu_options": {
+          "in_rete": "Yes, it is connected: I only enter the IP",
+          "da_installare": "No, it must be set up from scratch (without the Air Guard app)",
+          "riprendi": "Continue with the unit just connected ({rete_vmc}, IP {ip})"
+        }
+      },
+      "in_rete": {
+        "title": "Unit already on the Wi-Fi",
+        "description": "Enter the IP address of the unit: it is shown in the router's device list or in the Air Guard app. Reserving it on the router as a fixed IP is recommended.",
         "data": {
-          "nome": "Unit name",
-          "host": "Unit IP on port 5001"
+          "host": "Unit IP"
         },
         "data_description": {
-          "nome": "Lowercase letters only, 1 to 10 characters.",
-          "host": "Set a static IP for the unit in your router."
+          "host": "Port 5001, factory setting."
+        }
+      },
+      "nome": {
+        "title": "Unit name in the integration",
+        "description": "Name read from the unit at {ip}: «{nome_vmc}». In the integration it becomes «{proposta}».\n\nThis name is part of every entity name (sensor.vmc_‹name›_…) and of the package folder, and cannot be changed later without losing the history: confirm it with Submit or correct it (lowercase letters only, 1 to 10 characters; «master» is reserved for the first unit).",
+        "data": {
+          "nome": "Unit name"
+        }
+      },
+      "nome_manuale": {
+        "title": "Unit name in the integration",
+        "description": "The unit at {ip} does not answer, so its name cannot be read from the unit: type it here.\n\nThis name is part of every entity name (sensor.vmc_‹name›_…) and of the package folder, and cannot be changed later without losing the history (lowercase letters only, 1 to 10 characters; «master» is reserved for the first unit).",
+        "data": {
+          "nome": "Unit name"
         }
       },
       "non_raggiungibile": {
         "title": "Unit not reachable",
-        "description": "The unit at {ip} does not answer on port 5001.\n\nYou can add it anyway, for example to connect it to Wi-Fi with the First Installation window of the Master card, and change the IP later from «Configure»."
+        "description": "The unit at {ip} does not answer on port 5001.\n\nYou can add it anyway, for example if it is switched off now, and change the IP later from «Configure». If the unit is not on the home Wi-Fi yet, close this window, repeat «Add device» and choose «No, it must be set up from scratch»."
       },
       "migra": {
         "title": "Manual installation found",
-        "description": "The folder packages/vmc_helty_flow/{nome} already holds a manual installation of unit {nome}.\n\nIP entered: {ip}. IP in the manual installation: {ip_trovato}. If they differ, close this dialog and start again with the right IP.\n\nIf you continue, the folder is moved to /config/vmc_master_backup and replaced by the integration's package. Entity names stay the same, so history is kept. Before restarting, delete the hand-pasted automation (otherwise two identical automations run after the restart); after the restart, remove the old manual card."
+        "description": "The folder packages/vmc_helty_flow/{nome} already contains a manual installation of unit {nome}.\n\nIP entered: {ip}. IP in the manual installation: {ip_trovato}. If they differ, close this window and repeat with the right IP.\n\nIf you continue, the folder is moved to /config/vmc_master_backup and replaced by the integration package. Entity names stay the same, so the history is kept. Before restarting, delete the automation pasted by hand (otherwise two identical automations run after the restart); after the restart remove the old manual card."
+      },
+      "rete_vmc": {
+        "title": "Connect the unit to the home Wi-Fi",
+        "description": "Unit networks found: {trovate}.\n\n1. **Unit network**: VMC_ followed by the serial number, as the smartphone sees it. If it is missing: move the server closer to the unit; with the filter alarm LED on, reset the filters first; if the unit was already connected to another network, do the Wi-Fi reset below. You can also type the name.\n2. **Unit network password**: the factory one is 12345678.\n3. **Home Wi-Fi network** and its **password**: the network the unit will join.\n\n**Wi-Fi reset:** switch the unit off, cut the power upstream, restore the power **while holding the Night button** until all LEDs have flashed 7 times (the unit network password goes back to 12345678).",
+        "data": {
+          "rete_vmc": "Unit network",
+          "password_vmc": "Unit network password",
+          "rete_casa": "Home Wi-Fi network",
+          "password_casa": "Home Wi-Fi password"
+        },
+        "data_description": {
+          "password_casa": "Used only for the connection: it is not stored in the integration."
+        }
+      },
+      "errore": {
+        "title": "Connection failed",
+        "description": "{errore}\n\n**Filter alarm LED** (sequence repeated every 4 seconds):\n\n| Flashes | Error |\n|---|---|\n| 1 alternating with 2 fast | Wrong password |\n| 2 fast | Wrong encryption or password (e.g. router in WEP) |\n| 3 fast | Access point not found |\n| 4 fast | Connection error |\n| 5 fast | Disconnected (weak Wi-Fi signal) |\n| 6 fast | No IP address (router DHCP) |\n\nAfter errors 1 and 2 three times in a row the unit goes back to Access Point mode by itself.\n\n**Wi-Fi reset:** switch the unit off, cut the power upstream, restore the power **while holding the Night button** until all LEDs have flashed 7 times (the unit network password goes back to 12345678).",
+        "menu_options": {
+          "rete_vmc": "Correct the data and try again",
+          "cerca": "Search the unit networks again"
+        }
+      },
+      "ip_fisso": {
+        "title": "Unit connected: reserve the IP on the router",
+        "description": "**{nome_vmc}** (network {rete_vmc}) is connected to the home Wi-Fi.\n\n- **IP:** {ip}\n- **MAC:** {mac}\n\nOn the router reserve a fixed IP for this MAC, so the unit keeps its address (if the MAC is «-», read it in the router's device list).\n- Same IP reserved: press Submit.\n- Different IP reserved: power the unit off and on so it takes it, enter it here and press Submit. It is checked that the same unit answers at that IP.",
+        "data": {
+          "host": "Unit IP"
+        }
+      },
+      "cerca": {
+        "title": "Searching the unit networks"
+      },
+      "collega": {
+        "title": "Connecting to the home Wi-Fi"
+      },
+      "verifica": {
+        "title": "Checking the reserved IP"
       }
+    },
+    "progress": {
+      "cerca": "Searching the VMC_xxxxxxxx Wi-Fi networks: a few seconds.",
+      "collega": "Connecting the unit to the {rete_casa} network: 1 to 3 minutes.\n\nThe server Wi-Fi switches to the {rete_vmc} network for about a minute, then goes back as it was. If Home Assistant reaches the home network only through Wi-Fi, this page may lose the connection meanwhile: the procedure goes on anyway. If the window closes, open «Add device» again and choose «Continue with the unit just connected».",
+      "verifica": "Checking IP {ip}: the same unit must answer (up to 30 seconds)."
     },
     "error": {
       "nome_non_valido": "Invalid name: lowercase letters only, 1 to 10 characters.",
       "nome_in_uso": "Name already used by another unit.",
       "ip_non_valido": "Invalid IP: four numbers from 0 to 255 separated by dots.",
-      "ip_in_uso": "IP already used by another unit."
+      "ip_in_uso": "IP already used by another unit.",
+      "motore": "{errore}"
     },
     "abort": {
-      "already_configured": "This unit is already configured."
+      "already_configured": "This unit is already configured.",
+      "senza_supervisor": "Connecting a unit to the Wi-Fi from here needs Home Assistant OS (with the Supervisor) and a Wi-Fi adapter on the server. This Home Assistant has no Supervisor: connect the unit once with the Air Guard app, then repeat «Add device» and choose «Yes, it is connected».",
+      "senza_wifi": "Home Assistant OS finds no Wi-Fi adapter on the server. You need a computer with built-in Wi-Fi or a recognised USB Wi-Fi dongle (Settings → System → Network). Otherwise connect the unit once with the Air Guard app, then repeat «Add device» and choose «Yes, it is connected»."
     }
   },
   "options": {

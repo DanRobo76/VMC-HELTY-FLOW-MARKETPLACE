@@ -73,32 +73,6 @@ def rimuovi_clona(testo: str) -> str:
     return "".join(uscita)
 
 
-_CLONATE = "states('input_text.vmc_master_clona_vmc_clonate')"
-
-
-def neutralizza_clonate_in_installa(testo: str) -> str:
-    """Solo VMC Master dell'integrazione (Prima Installazione presente, Clona assente).
-
-    Nella sezione Installa VMC i controlli dell'IP leggono anche l'elenco delle VMC clonate
-    in attesa di riavvio (input_text.vmc_master_clona_vmc_clonate). Senza la Finestra Clona
-    quell'elenco non esiste piu': al suo posto si mette l'elenco vuoto '' cosi' la riga
-    non viene cancellata da rimuovi_clona e i modelli Jinja restano completi.
-    Le VMC aggiunte dall'integrazione sono controllate dalla configurazione (IP gia' in uso).
-    """
-    uscita: list[str] = []
-    in_installa = False
-    for riga in _dividi_righe(testo):
-        corpo = _corpo(riga)
-        if _INIZIO_INSTALLA in corpo:
-            in_installa = True
-        elif _FINE_INSTALLA in corpo:
-            in_installa = False
-        elif in_installa and _CLONATE in corpo:
-            corpo = corpo.replace(_CLONATE, "''")
-        uscita.append(_ricomponi(corpo, riga))
-    return "".join(uscita)
-
-
 def rimuovi_installa(testo: str) -> str:
     """Seconda meta' dello stesso script sed:
       /INIZIO INSTALLA/,/FINE INSTALLA/d
@@ -190,14 +164,16 @@ def adatta_link_repository(testo: str) -> str:
 
 def per_vmc(testo_master: str, nome: str, ip: str) -> str:
     """Scheda o automazione della VMC indicata, come la produce la release 8.6.0,
-    ma senza la Finestra Clona (sostituita da «Aggiungi voce» dell'integrazione).
+    ma senza la Finestra Clona (sostituita da «Aggiungi dispositivo» dell'integrazione)
+    e senza la Finestra Prima Installazione VMC (il collegamento al Wi-Fi si fa da
+    «Aggiungi dispositivo», con lo stesso motore).
 
-    - VMC Master: solo la rimozione della sezione Clona (Cambia IP non tocca questi file);
+    - VMC Master: rimozione delle due sezioni (Cambia IP non tocca questi file);
     - altre VMC: stessa sequenza di vmc_script_clona.sh (rimozione sezioni, nome, IP).
     """
-    if nome == NOME_MASTER:
-        return rimuovi_clona(neutralizza_clonate_in_installa(testo_master))
     testo = rimuovi_sezioni_solo_master(testo_master)
+    if nome == NOME_MASTER:
+        return testo
     testo = rinomina(testo, nome)
     return sostituisci_ip(testo, ip)
 
@@ -205,7 +181,7 @@ def per_vmc(testo_master: str, nome: str, ip: str) -> str:
 def package_per_vmc(yaml_master: str, nome: str, ip: str) -> str:
     """vmc_<nome>.yaml: come per_vmc, ma per la Master anche l'IP (script Cambia IP)."""
     if nome == NOME_MASTER:
-        return sostituisci_ip(rimuovi_clona(neutralizza_clonate_in_installa(yaml_master)), ip)
+        return sostituisci_ip(rimuovi_sezioni_solo_master(yaml_master), ip)
     return per_vmc(yaml_master, nome, ip)
 
 
