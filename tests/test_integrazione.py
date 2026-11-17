@@ -96,7 +96,10 @@ async def test_aggiungi_master_e_sala(hass: HomeAssistant, hass_client) -> None:
     assert f'state: "v.{versione}"' in package and '"v.8.6.0"' not in package
     assert "repos/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/releases/latest" in package
     automazione = (cartella / "vmc_master_automazione.yaml").read_text(encoding="utf-8")
-    assert "[Note di rilascio](https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/releases)" in automazione
+    # l'avviso di aggiornamento lo da' il Marketplace: nessuna notifica dall'automazione
+    assert "VMC: aggiornamento disponibile" not in automazione
+    # il confronto delle versioni riconosce le beta (9.0.0b13 -> 9.0.0b14 -> 9.0.0)
+    assert "(b[0-9]+)?$" in automazione and "(b[0-9]+)?$" in package
     # tutti i file del package: nessun link al repository VMC-HELTY-FLOW
     for file in sorted(cartella.iterdir()):
         if file.is_file():
