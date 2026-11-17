@@ -143,8 +143,8 @@
       "ip_in_uso": "IP already used by another unit."
     },
     "abort": {
-      "eliminata": "{titolo} has been deleted from Home Assistant and stays on the home network. To finish, restart Home Assistant from «VMC Master: restart Home Assistant» in Settings.",
-      "eliminata_dalla_rete": "{titolo} is back in Access Point mode (its VMC_… network is visible again) and has been deleted from Home Assistant. To finish, restart Home Assistant from «VMC Master: restart Home Assistant» in Settings."
+      "eliminata": "{titolo} has been deleted from Home Assistant and stays on the home network. To finish, restart Home Assistant.",
+      "eliminata_dalla_rete": "{titolo} is back in Access Point mode (its VMC_… network is visible again) and has been deleted from Home Assistant. To finish, restart Home Assistant."
     }
   },
   "issues": {

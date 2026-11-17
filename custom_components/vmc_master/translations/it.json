@@ -143,8 +143,8 @@
       "ip_in_uso": "IP già usato da un'altra VMC."
     },
     "abort": {
-      "eliminata": "{titolo} è stata eliminata da Home Assistant e resta sulla rete di casa. Per completare, riavviare Home Assistant da «VMC Master: riavviare Home Assistant» in Impostazioni.",
-      "eliminata_dalla_rete": "{titolo} è tornata in Access Point (la sua rete VMC_… è di nuovo visibile) ed è stata eliminata da Home Assistant. Per completare, riavviare Home Assistant da «VMC Master: riavviare Home Assistant» in Impostazioni."
+      "eliminata": "{titolo} è stata eliminata da Home Assistant e resta sulla rete di casa. Per completare, riavvia Home Assistant.",
+      "eliminata_dalla_rete": "{titolo} è tornata in Access Point (la sua rete VMC_… è di nuovo visibile) ed è stata eliminata da Home Assistant. Per completare, riavvia Home Assistant."
     }
   },
   "issues": {
