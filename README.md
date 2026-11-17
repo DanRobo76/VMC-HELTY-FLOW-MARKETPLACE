@@ -114,7 +114,7 @@
 - <sub>Calcola il tempo di ricambio d'aria in funzione della velocità.</sub>
 - <sub>Calcola la portata d'aria (m³/h) in funzione della velocità.</sub>
 - <sub>Calcola l'umidità assoluta esterna e interna (g/m³).</sub>
-- <sub>Pulisce la cronologia delle entità del Package mostrando prima, in un riquadro di conferma, il numero e l'elenco delle entità coinvolte e quante di esse sono registrate nel database (le entità escluse sono indicate in un unico elenco nella sezione «recorder» del package; il package è scritto dall'integrazione e viene riscritto a ogni avvio, quindi l'elenco non va modificato a mano).</sub>
+- <sub>Pulisce la cronologia delle entità del Package mostrando prima, in un riquadro di conferma, il numero e l'elenco delle entità coinvolte e quante di esse sono registrate nel database (le entità escluse sono indicate in un unico elenco nella sezione «recorder» del package; il package è scritto dall'integrazione e non va modificato a mano: se un file viene modificato, all'avvio la sua copia viene salvata in `config/vmc_master_backup` e il file torna quello dell'integrazione).</sub>
 - <sub>Mostra avvisi in funzione di:</sub>
   - <sub>sensori CO₂ e/o VOC;</sub>
   - <sub>sensore umidità;</sub>
@@ -238,7 +238,7 @@ Serve Home Assistant **2026.11** o successivo.
 
 Se VMC Master non compare nel Marketplace: **⋮ → Repository personalizzate**, indirizzo `https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE`, tipo **Integrazione**.
 
-**Aggiornare**: quando il Marketplace segnala una nuova versione premere **Aggiorna**, poi riavviare Home Assistant dalla richiesta di riavvio del Marketplace. Basta un riavvio: all'avvio l'integrazione aggiorna il package e ricarica da sola le parti cambiate. Solo quando cambia qualcosa che Home Assistant non sa ricaricare (per esempio l'IP della VMC) compare anche «VMC Master: riavviare Home Assistant». Il Marketplace controlla le nuove versioni ogni 48 ore: per vederle subito, nella pagina di VMC Master **⋮ → Aggiorna le informazioni**.
+**Aggiornare**: quando il Marketplace segnala una nuova versione premere **Aggiorna**, poi riavviare Home Assistant dalla richiesta di riavvio del Marketplace. Basta un riavvio: all'avvio l'integrazione aggiorna il package e ricarica da sola le parti cambiate. Solo quando cambia qualcosa che Home Assistant non sa ricaricare (per esempio l'IP della VMC) compare anche «VMC Master: riavviare Home Assistant». Il Marketplace controlla le nuove versioni ogni 48 ore: per vederle subito, nella pagina di VMC Master **⋮ → Aggiorna le informazioni**. I file del package li scrive l'integrazione e non vanno modificati: se uno è stato modificato a mano, all'avvio la sua copia viene salvata in `config/vmc_master_backup`, il file torna quello dell'integrazione e compare una notifica.
 
 Hai già la 8.6.0 manuale? Segui la guida B qui sotto: impostazioni e cronologia restano.
 
@@ -559,7 +559,7 @@ Requires Home Assistant **2026.11** or later.
 
 If VMC Master does not show up in the Marketplace: **⋮ → Custom repositories**, URL `https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE`, type **Integration**.
 
-**Update**: when the Marketplace shows a new version press **Update**, then restart Home Assistant from the Marketplace restart request. One restart is enough: at startup the integration updates the package and reloads the changed parts by itself. Only when something changes that Home Assistant cannot reload (for example the unit IP address) does «VMC Master: riavviare Home Assistant» appear as well. The Marketplace checks for new versions every 48 hours: to see them at once, on the VMC Master page **⋮ → Refresh information**.
+**Update**: when the Marketplace shows a new version press **Update**, then restart Home Assistant from the Marketplace restart request. One restart is enough: at startup the integration updates the package and reloads the changed parts by itself. Only when something changes that Home Assistant cannot reload (for example the unit IP address) does «VMC Master: riavviare Home Assistant» appear as well. The Marketplace checks for new versions every 48 hours: to see them at once, on the VMC Master page **⋮ → Refresh information**. The package files are written by the integration and must not be edited: if one was edited by hand, at startup a copy is saved in `config/vmc_master_backup`, the file is put back as the integration wrote it and a notification appears.
 
 <details>
 <summary><strong>Moving from manual 8.6.0</strong></summary>

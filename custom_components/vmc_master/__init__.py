@@ -143,6 +143,22 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             title=f"VMC Master: VMC {nome} passata all'integrazione",
             notification_id=f"{DOMAIN}_migrazione_{nome}",
         )
+    if esito.backup_modificati is not None:
+        elenco = "\n".join(f"- `{nome_file}`" for nome_file in esito.file_modificati)
+        copia = f"config/{esito.backup_modificati.relative_to(config_dir).as_posix()}"
+        persistent_notification.async_create(
+            hass,
+            (
+                f"Questi file del package della VMC {nome} erano stati modificati a mano:\n\n"
+                f"{elenco}\n\n"
+                "I file del package sono scritti dall'integrazione e non vanno modificati: "
+                f"la versione modificata è stata salvata in `{copia}` e al suo "
+                "posto è stata rimessa quella dell'integrazione. Le impostazioni si cambiano "
+                "dalla scheda «VMC Master»."
+            ),
+            title=f"VMC Master: file della VMC {nome} modificati a mano",
+            notification_id=f"{DOMAIN}_modificati_{nome}",
+        )
     if esito.riavvio_necessario:
         _segnala_riavvio(hass)
     else:
