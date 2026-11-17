@@ -37,7 +37,7 @@ def _nessuna_vmc_in_rete():
 # Link a immagini e video, contati uno per uno: 77 nella scheda (51 file diversi)
 # piu' il link «GitHub» del Pannello Informazioni; 14 nel README
 FILE_COLLEGATI_SCHEDA = 77
-FILE_COLLEGATI_README = 14
+FILE_COLLEGATI_README = 10
 # Link al repository della release manuale (non seguito da «-MARKETPLACE»)
 RE_LINK_8 = re.compile(r"DanRobo76/VMC-HELTY-FLOW(?![-\w])")
 # File letti dal repository dell'integrazione (immagini, video)
@@ -96,7 +96,7 @@ async def test_aggiungi_master_e_sala(hass: HomeAssistant, hass_client) -> None:
     assert f'state: "v.{versione}"' in package and '"v.8.6.0"' not in package
     assert "repos/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/releases/latest" in package
     automazione = (cartella / "vmc_master_automazione.yaml").read_text(encoding="utf-8")
-    assert "[Link](https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE)" in automazione
+    assert "[Note di rilascio](https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/releases)" in automazione
     # tutti i file del package: nessun link al repository VMC-HELTY-FLOW
     for file in sorted(cartella.iterdir()):
         if file.is_file():

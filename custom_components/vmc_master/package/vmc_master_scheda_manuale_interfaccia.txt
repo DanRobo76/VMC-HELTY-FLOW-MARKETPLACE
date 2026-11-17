@@ -1,6 +1,6 @@
 ###########################################################################################################################################################################################################################
 #                                                                                                                                                                                                                         #
-#                                                          SCHEDA MANUALE INTERFACCIA VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b11]                                                                                         #
+#                                                          SCHEDA MANUALE INTERFACCIA VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b14]                                                                                         #
 #                                                                                                                                                                                                                         #
 # SVILUPPATO DA ING. DANILO ROBOTTI, ALLE PRIME ARMI CON HOME ASSISTANT :)                                                                                                                                                #
 #                                                                                                                                                                                                                         #
@@ -10032,7 +10032,7 @@ cards:
                         - Media 8 Settimane: {{ [g, 56] | min | round(0) | int }} / 56 giorni{% if g >= 56 %} (completa){% endif %}
                         - Media 12 Settimane: {{ [g, 84] | min | round(0) | int }} / 84 giorni{% if g >= 84 %} (completa){% endif %}
 
-                        Finché una media non è completa è calcolata sui soli giorni disponibili. Vedere Pannello Informazioni, punto 19.
+                        Finché una media non è completa è calcolata sui soli giorni disponibili. Vedere Pannello Informazioni, voce 19.
               - type: conditional
                 conditions:
                   - entity: >-
@@ -11841,7 +11841,7 @@ cards:
                   <br>
                   <details><summary><b>Informazioni</b></summary>
                   <table><tr><td align="justify">
-                  <b>Licenza:</b> <a href="https://www.gnu.org/licenses/gpl-3.0.html">GNU GPL 3.0</a> (versione distribuita con l'integrazione VMC Master). Copyright © 2023-2026 Ing. Danilo Robotti.
+                  <b>Licenza:</b> <a href="https://www.gnu.org/licenses/gpl-3.0.html">GNU GPL 3.0</a> (versione distribuita con questa integrazione). Copyright © 2023-2026 Ing. Danilo Robotti.
                   È consentito usare, copiare, modificare e distribuire il Software, anche per scopi commerciali; chi lo distribuisce,
                   anche modificato, deve renderne disponibile il codice sorgente con la stessa licenza e mantenere questa nota di copyright.
                   Il Software è fornito senza alcuna garanzia.
@@ -12448,7 +12448,7 @@ cards:
 
                   <br>
 
-                  - E' consigliato avere attive tutte le seguenti Impostazioni
+                  - È consigliato avere attive tutte le seguenti Impostazioni
                   su ON:
                    - [VMC ON/OFF, in Funzione del Lim. CO₂ e/o VOC]
                    - [VMC ON/OFF, in Funzione della Vel. Free Heating]
@@ -12680,10 +12680,12 @@ cards:
                   entità del Package; entità e impostazioni restano invariate.
                   Prima di procedere mostra un riquadro con il numero e
                   l'elenco delle sole entità registrate nel database
-                  e chiede conferma con «Sì» o «No». Le entità da
-                  registrare o escludere si scelgono nell'unico elenco della
-                  sezione «recorder» del file vmc_master.yaml (riga commentata
-                  con # = registrata); dopo la modifica riavviare Home Assistant.
+                  e chiede conferma con «Sì» o «No». Le entità registrate e
+                  quelle escluse sono indicate nell'unico elenco della sezione
+                  «recorder» del file vmc_master.yaml (riga commentata con # =
+                  registrata). Il file è scritto dall'integrazione e viene
+                  riscritto a ogni avvio di Home Assistant: le modifiche fatte a
+                  mano si perdono, quindi l'elenco non va modificato.
 
                   <br>
 
@@ -12707,13 +12709,29 @@ cards:
 
                   Per questo nei grafici possono comparire brevi picchi (o
                   salti) verso il valore della sonda della VMC: non sono errori
-                  di lettura. Succedono quando l'entità scelta resta non
-                  disponibile per pochi secondi o minuti, di solito a ogni
-                  riavvio di Home Assistant finché la sua integrazione non si
-                  ricollega, oppure per un calo del segnale (sensori Bluetooth
-                  o Wi-Fi). Nei grafici dell'entità scelta questi buchi brevi
-                  non si vedono se il grafico mostra le statistiche a lungo
-                  termine (medie orarie): si vedono nella sua Cronologia.
+                  di lettura e non indicano un guasto dell'entità scelta.
+                  Succedono in tre casi.
+
+                  <b>A ogni avvio di Home Assistant</b>, per pochi secondi: i
+                  sensori della VMC partono prima che l'integrazione dell'entità
+                  scelta (per esempio un sensore Bluetooth) l'abbia creata.
+                  Nella Cronologia dell'entità scelta non compare nessun buco,
+                  perché in quei secondi l'entità non esiste ancora e non viene
+                  registrato nulla.
+
+                  <b>Quando i sensori della VMC vengono ricaricati</b>: dopo un
+                  aggiornamento dell'integrazione, 20-60 secondi dopo l'avvio,
+                  oppure con Strumenti per sviluppatori → YAML → Ricarica. Il
+                  grafico mostra per un istante la sonda della VMC e poi «Non
+                  disponibile» per circa 2 secondi; l'entità scelta non
+                  c'entra.
+
+                  <b>Quando l'entità scelta resta davvero non disponibile</b>,
+                  per un calo del segnale (sensori Bluetooth o Wi-Fi) o
+                  un'integrazione scollegata: solo in questo caso il buco si
+                  vede anche nella Cronologia dell'entità scelta (non nei
+                  grafici che mostrano le statistiche a lungo termine, cioè le
+                  medie orarie).
 
                   <br>
 
@@ -12743,7 +12761,7 @@ cards:
 
                   Ogni script chiede conferma con il popup «Sei sicuro? -
                   Vuoi Procedere?»: «OK» lo esegue, «Annulla» no.
-                  «Pulisci cronologia Entità» e «Cancella VMC» chiedono invece
+                  «Pulisci cronologia Entità» chiede invece
                   conferma con un riquadro con «Sì» e «No».
 
                   <br>
@@ -12789,9 +12807,12 @@ cards:
                   secondi, anche se l'Automazione VMC Master sta eseguendo
                   altri eventi: il Cambio IP è un'automazione a parte del
                   Package. Se l'IP è già quello della VMC, o è già usato da
-                  un'altra VMC del Package (principale o clonata), non viene
+                  un'altra VMC, non viene
                   cambiato nulla, Home Assistant non si riavvia e sotto il
-                  campo compare l'avviso.
+                  campo compare l'avviso. In alternativa al campo, l'IP si
+                  cambia anche da Impostazioni → Dispositivi e servizi, nella
+                  pagina dell'integrazione: icona ingranaggio sulla riga della
+                  VMC → «Cambia l'IP della VMC».
 
                   <br>
 
@@ -12834,7 +12855,7 @@ cards:
                   Non ha un pulsante nella scheda: i Tempi di Attesa sono fissi e non vanno modificati.
 
                   Riporta i 24 Tempi di Attesa dell'Automazione ai Valori
-                  Originali. E' compreso nel Profilo
+                  Originali. È compreso nel Profilo
                   Inizializzazione.
 
                   <br>
@@ -13731,28 +13752,11 @@ cards:
                   modo, qualunque sia la frequenza di aggiornamento del sensore.
                   <br><br>
                   <b>Periodo di avvio.</b> Le statistiche esistono solo da quando i sensori sono registrati
-                  (dalla release 8.5.1): finché non sono trascorsi 28, 56 e 84 giorni, le medie di 4, 8 e 12
+                  nel database: finché non sono trascorsi 28, 56 e 84 giorni, le medie di 4, 8 e 12
                   Settimane sono calcolate sui soli giorni disponibili (nei primi giorni le tre medie coincidono
                   e l'Andamento risulta Stabile). Sotto la scheda «Sensori - Extra» il riquadro «Rischio Muffa: Status
                   Medie» mostra i giorni di dati disponibili per ciascuna media (es. 12 / 28 giorni) e resta sempre
                   visibile: quando una media raggiunge i suoi giorni accanto compare «(completa)».
-                  <br><br>
-                  <b>Entità da cancellare dopo l'aggiornamento.</b> Chi aggiorna da una release 8.5.0 o precedente trova
-                  ancora le 6 vecchie entità delle medie, sostituite dalla release 8.5.1 con le nuove medie dalle statistiche:
-                  restano come «non più fornite» e vanno eliminate a mano. Per ciascuna: Impostazioni → Dispositivi e servizi
-                  → Entità → cerca il nome → apri l'entità → Elimina. Non cancellare le nuove medie, che hanno «media» nel nome.
-                  </td></tr></table>
-                  <table style="width:100%; border-collapse: collapse;">
-                  <tr><th style="padding: 4px 8px; border: 1px solid #c3c2b7;">N°</th><th style="padding: 4px 8px; border: 1px solid #c3c2b7;">Da cancellare</th></tr>
-                  <tr><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">1</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">sensor.vmc_master_temp_interna_4w</td></tr>
-                  <tr><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">2</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">sensor.vmc_master_temp_interna_8w</td></tr>
-                  <tr><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">3</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">sensor.vmc_master_temp_interna_12w</td></tr>
-                  <tr><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">4</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">sensor.vmc_master_hum_interna_4w</td></tr>
-                  <tr><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">5</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">sensor.vmc_master_hum_interna_8w</td></tr>
-                  <tr><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">6</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">sensor.vmc_master_hum_interna_12w</td></tr>
-                  </table>
-                  <table><tr><td align="justify">
-                  Con una prima installazione dalla release 8.5.1 in poi queste entità non sono mai esistite e non c'è nulla da cancellare.
                   </td></tr></table>
 
 
