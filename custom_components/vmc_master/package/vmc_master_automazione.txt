@@ -1,6 +1,6 @@
 ###########################################################################################################################################################################################################################
 #                                                                                                                                                                                                                         #
-#                                                          AUTOMAZIONE VMC HELTY FLOW PLUS RELEASE [VER. 8.6.0]                                                                                                           #
+#                                                          AUTOMAZIONE VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b14]                                                                                                        #
 #                                                                                                                                                                                                                         #
 # SVILUPPATO DA ING. DANILO ROBOTTI, ALLE PRIME ARMI CON HOME ASSISTANT :)                                                                                                                                                #
 #                                                                                                                                                                                                                         #
@@ -39,7 +39,7 @@
 ###########################################################################################################################################################################################################################
 alias: Automazione VMC Master
 description: >-
-  Automazione VMC Master Release v.8.6.0:
+  Automazione VMC Master:
 
   - Invia Comandi alla VMC leggendone i valori Contenuti;
 
@@ -114,12 +114,12 @@ description: >-
 
   - Permette di Rinominare la VMC;
 
-  - La Prima Installazione della VMC (collegamento al Wi-Fi di casa anche senza
-  l'App Air Guard, con gli stessi passaggi del manuale Helty) non è in questa
-  automazione: la esegue la Finestra Prima Installazione VMC del Package
-  principale e richiede Home Assistant OS su un computer con scheda Wi-Fi
-  integrata oppure con una chiavetta USB Wi-Fi collegata; a installazione
-  conclusa la VMC resta visibile e utilizzabile anche dall'App Air Guard;
+  - Il collegamento di una VMC nuova al Wi-Fi di casa (anche senza l'App Air
+  Guard) non è in questa automazione: si fa da Impostazioni → Dispositivi e
+  servizi, con «Aggiungi dispositivo», e richiede Home Assistant OS su un
+  computer con scheda Wi-Fi integrata oppure con una chiavetta USB Wi-Fi
+  collegata; dopo il collegamento la VMC resta utilizzabile anche dall'App Air
+  Guard;
 
   - Il Cambio dell'IP non è in questa automazione: lo esegue subito l'automazione
   «VMC Master - Cambio IP VMC (Riavvio di H.A.)» del Package.
@@ -18686,9 +18686,9 @@ actions:
             action: input_boolean.turn_on
           - data:
               message: >-
-                Una nuova revisione è stata rilasciata
-                [Link](https://github.com/DanRobo76/VMC-HELTY-FLOW)
-              title: AGGIORNAMENTO SUL REPOSITORY VMC HELTY FLOW
+                È disponibile una nuova versione dell'integrazione: aggiornarla dal
+                Marketplace. [Note di rilascio](https://github.com/DanRobo76/VMC-HELTY-FLOW/releases)
+              title: "VMC: aggiornamento disponibile"
             action: notify.persistent_notification
         alias: Verifica Aggiornamenti Repository VMC-HELTY-FLOW - ON
       - conditions:
