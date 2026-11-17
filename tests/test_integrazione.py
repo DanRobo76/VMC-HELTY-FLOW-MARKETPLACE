@@ -37,7 +37,7 @@ def _nessuna_vmc_in_rete():
 # Link a immagini e video, contati uno per uno: 77 nella scheda (51 file diversi)
 # piu' il link «GitHub» del Pannello Informazioni; 14 nel README
 FILE_COLLEGATI_SCHEDA = 77
-FILE_COLLEGATI_README = 14
+FILE_COLLEGATI_README = 10
 # Link al repository della release manuale (non seguito da «-MARKETPLACE»)
 RE_LINK_8 = re.compile(r"DanRobo76/VMC-HELTY-FLOW(?![-\w])")
 # File letti dal repository dell'integrazione (immagini, video)
