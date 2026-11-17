@@ -1,6 +1,6 @@
 ###########################################################################################################################################################################################################################
 #                                                                                                                                                                                                                         #
-#                                                          SCHEDA MANUALE INTERFACCIA VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b15]                                                                                         #
+#                                                          SCHEDA MANUALE INTERFACCIA VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b16]                                                                                         #
 #                                                                                                                                                                                                                         #
 # SVILUPPATO DA ING. DANILO ROBOTTI, ALLE PRIME ARMI CON HOME ASSISTANT :)                                                                                                                                                #
 #                                                                                                                                                                                                                         #
@@ -141,7 +141,7 @@ cards:
             target:
               entity_id: script.vmc_master_upgrade_sensors
             confirmation:
-              text: "Vuoi Procedere? Attendi il termine del processo (alcuni secondi)."
+              text: "Vuoi Procedere? Attendi il termine del processo (79 secondi)."
         - type: conditional
           conditions:
             - entity: timer.vmc_master_countdown_script_agg_sensori
@@ -9893,7 +9893,7 @@ cards:
                       target:
                         entity_id: script.vmc_master_upgrade_sensors
                       confirmation:
-                        text: "Vuoi Procedere? Attendi il termine del processo (alcuni secondi)."
+                        text: "Vuoi Procedere? Attendi il termine del processo (79 secondi)."
                   - type: conditional
                     conditions:
                       - entity: timer.vmc_master_countdown_script_agg_sensori
@@ -14270,7 +14270,7 @@ cards:
                       target:
                         entity_id: script.vmc_master_upgrade_sensors
                       confirmation:
-                        text: "Vuoi Procedere? Attendi il termine del processo (alcuni secondi)."
+                        text: "Vuoi Procedere? Attendi il termine del processo (79 secondi)."
                   - type: conditional
                     conditions:
                       - entity: timer.vmc_master_countdown_script_agg_sensori
