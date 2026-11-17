@@ -244,9 +244,6 @@ Serve Home Assistant **2026.11** o successivo.
    - *Impostazioni → Dispositivi e servizi → Aggiungi integrazione → VMC Master*;
    - alla domanda «La VMC è già collegata al Wi-Fi di casa?» scegliere **«Sì, è già collegata: scrivo solo l'IP»**;
    - scrivere l'IP della VMC e premere **Invia**. L'IP si legge nell'elenco dei dispositivi del router: l'App Air Guard non lo mostra.
-
-   La prima VMC si chiama sempre `master`; per le altre il nome si legge dalla VMC.
-   Se la VMC non è ancora collegata al Wi-Fi: vedere «VMC nuova senza l'App Air Guard» nella guida A qui sotto.
 4. **Riavviare**: in *Impostazioni* cliccare **«VMC Master: riavviare Home Assistant»** e premere **Invia**.
 5. **Aggiungere la scheda**: premere **Ctrl+F5**, poi sulla plancia **matita → Aggiungi scheda → VMC Master** e scegliere la VMC.
 6. **Solo la prima volta**: nella scheda eseguire **«VMC ‹nome› - Profilo Inizializzazione»**, poi scegliere i sensori (vedi *Configurazione*).
@@ -500,8 +497,6 @@ Requires Home Assistant **2026.11** or later.
    - *Settings → Devices & services → Add integration → VMC Master*;
    - to the question «Is the unit already connected to the home Wi-Fi?» choose **«Yes, it is connected: I only enter the IP»**;
    - type the unit's IP and press **Submit**. The IP is shown in the router's device list: the Air Guard app does not show it.
-
-   The first unit is always `master`; for the others the name is read from the unit. A unit not yet on the home Wi-Fi: see below.
 4. **Restart**: in *Settings* click **«VMC Master: riavviare Home Assistant»** and press **Submit**.
 5. **Add the card**: press **Ctrl+F5**, then on the dashboard **pencil → Add card → VMC Master** and pick the unit.
 6. **First time only**: in the card run **«VMC ‹name› - Profilo Inizializzazione»**, then pick the sensors (see *Configuration*).
