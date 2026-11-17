@@ -31,10 +31,6 @@
 </p>
 
 <p align="center">
-  <sub>Versione beta 9.0.0b14: stessa logica e stessa scheda della release manuale <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW">8.6.0</a>, che resta disponibile per chi preferisce installare a mano.</sub>
-</p>
-
-<p align="center">
   Hai già provato <strong><a href="https://github.com/DanRobo76/Aspiratore">ASPIRATORE MASTER</a></strong> e <strong><a href="https://github.com/DanRobo76/VMC-HELTY-FLOW-LIGHT/tree/main">VMC Versione Light</a></strong>?
 </p>
 
@@ -461,10 +457,6 @@ Il ritorno non è automatico. Ci sono due strade:
   </a>
   <br>
   <sub>Presentation video · 1 minute 17 seconds · click to download</sub>
-</p>
-
-<p align="center">
-  <sub>Beta version 9.0.0b14: same logic and same card as the manual release <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW">8.6.0</a>, which stays available for manual installs.</sub>
 </p>
 
 <p align="center">
