@@ -38,7 +38,7 @@
 <details>
 <summary><strong>Perché VMC MASTER</strong></summary>
 
-<sub>**VMC MASTER** è un'integrazione per Home Assistant progettata per la gestione delle VMC **Helty Flow Plus / Elite** (gestite con l'app Air Guard), sia in locale sia da remoto.</sub>
+<sub>**VMC MASTER** è un'integrazione per Home Assistant progettata per la gestione delle VMC **Helty Flow Plus / Elite** (le stesse che si comandano con l'app Air Guard). L'app funziona solo con il telefono collegato al Wi-Fi di casa; con Home Assistant la VMC si comanda in casa e anche da fuori casa.</sub>
 <br>
 <sub>Non è un semplice telecomando, ma una logica evoluta che confronta in continuo le condizioni interne ed esterne (temperatura, umidità, punto di rugiada, inquinanti) e decide se e a quale velocità far funzionare la VMC, con priorità precise tra le allerte e la ripresa automatica della velocità impostata.</sub>
 <br>
@@ -243,7 +243,7 @@ Serve Home Assistant **2026.11** o successivo.
 3. **Aggiungere la VMC**:
    - *Impostazioni → Dispositivi e servizi → Aggiungi integrazione → VMC Master*;
    - alla domanda «La VMC è già collegata al Wi-Fi di casa?» scegliere **«Sì, è già collegata: scrivo solo l'IP»**;
-   - scrivere l'IP della VMC e premere **Invia**.
+   - scrivere l'IP della VMC e premere **Invia**. L'IP si legge nell'elenco dei dispositivi del router: l'App Air Guard non lo mostra.
 
    La prima VMC si chiama sempre `master`; per le altre il nome si legge dalla VMC.
    Se la VMC non è ancora collegata al Wi-Fi: vedere «VMC nuova senza l'App Air Guard» nella guida A qui sotto.
@@ -284,7 +284,7 @@ Finché l'integrazione non è nel catalogo pubblico, si aggiunge come repository
 1. *Impostazioni → Dispositivi e servizi*, pulsante **+ Aggiungi integrazione** in basso a destra;
 2. scrivere **VMC Master** e cliccarla;
 3. la finestra **«Aggiungi una VMC Helty Flow»** chiede se la VMC è già collegata al Wi-Fi di casa:
-   - **«Sì, è già collegata: scrivo solo l'IP»**: scrivere l'IP statico della VMC, per esempio `192.168.1.160`, e premere **Invia**. La prima VMC si chiama sempre `master`; per le altre il nome si legge dalla VMC e si conferma nella finestra seguente (sole lettere minuscole, da 1 a 10 caratteri, senza spazi né numeri);
+   - **«Sì, è già collegata: scrivo solo l'IP»**: scrivere l'IP statico della VMC, per esempio `192.168.1.160`, e premere **Invia**. L'IP si legge nell'elenco dei dispositivi del router (l'App Air Guard non lo mostra). La prima VMC si chiama sempre `master`; per le altre il nome si legge dalla VMC e si conferma nella finestra seguente (sole lettere minuscole, da 1 a 10 caratteri, senza spazi né numeri);
    - **«No, va installata da zero»**: vedere **«VMC nuova senza l'App Air Guard»** più sotto;
 4. se compare **«VMC non raggiungibile»** (per esempio VMC spenta) premere **Invia** per aggiungerla comunque: l'IP si cambia più tardi con l'**icona ingranaggio** sulla riga della VMC → **«Cambia l'IP della VMC»**;
 5. nella finestra finale premere **Finito**.
@@ -407,7 +407,7 @@ Se il collegamento non riesce, la finestra mostra il motivo, la tabella dei lamp
 <details>
 <summary><strong>Why VMC MASTER</strong></summary>
 
-<sub>**VMC MASTER** is a Home Assistant integration designed to manage **Helty Flow Plus / Elite** ventilation units (managed with the Air Guard app), both locally and remotely.</sub>
+<sub>**VMC MASTER** is a Home Assistant integration designed to manage **Helty Flow Plus / Elite** ventilation units (the same ones controlled with the Air Guard app). The app only works with the phone on the home Wi-Fi; with Home Assistant the unit can be controlled at home and away from home.</sub>
 <br>
 <sub>It is not just a remote control, but an evolved logic that continuously compares indoor and outdoor conditions (temperature, humidity, dew point, pollutants) and decides whether and at which speed the unit should run, with precise priorities between alerts and automatic return to the set speed.</sub>
 <br>
@@ -499,7 +499,7 @@ Requires Home Assistant **2026.11** or later.
 3. **Add the unit**:
    - *Settings → Devices & services → Add integration → VMC Master*;
    - to the question «Is the unit already connected to the home Wi-Fi?» choose **«Yes, it is connected: I only enter the IP»**;
-   - type the unit's IP and press **Submit**.
+   - type the unit's IP and press **Submit**. The IP is shown in the router's device list: the Air Guard app does not show it.
 
    The first unit is always `master`; for the others the name is read from the unit. A unit not yet on the home Wi-Fi: see below.
 4. **Restart**: in *Settings* click **«VMC Master: riavviare Home Assistant»** and press **Submit**.
