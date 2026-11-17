@@ -122,7 +122,7 @@
   - <sub>differenza tra temperatura interna ed esterna;</sub>
   - <sub>superamento del Set Lim. Δ Punto di Rugiada;</sub>
   - <sub>riscaldamento o raffrescamento indesiderato (Free Heating / Free Cooling).</sub>
-- <sub>Informa in caso di nuovo aggiornamento disponibile.</sub>
+- <sub>Mostra sulla scheda se c'è un aggiornamento disponibile, anche per le versioni beta (l'avviso arriva dal Marketplace).</sub>
 - <sub>Permette di selezionare la "Condizione Climatica Esterna" da introdurre tramite il "Set Lim. Δ Punto di Rugiada".</sub>
 
 <br>
