@@ -12,7 +12,7 @@
       },
       "in_rete": {
         "title": "Unit already on the Wi-Fi",
-        "description": "Enter the IP address of the unit: it is shown in the router's device list or in the Air Guard app. Reserving it on the router as a fixed IP is recommended.",
+        "description": "Enter the IP address of the unit: it is shown in the router's device list. Reserving it on the router as a fixed IP is recommended.",
         "data": {
           "host": "Unit IP"
         },

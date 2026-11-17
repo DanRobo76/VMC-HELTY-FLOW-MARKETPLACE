@@ -12,7 +12,7 @@
       },
       "in_rete": {
         "title": "VMC già collegata al Wi-Fi",
-        "description": "Scrivere l'indirizzo IP della VMC: si legge nell'elenco dei dispositivi del router o nell'App Air Guard. Conviene prenotarlo sul router come IP fisso.",
+        "description": "Scrivere l'indirizzo IP della VMC: si legge nell'elenco dei dispositivi del router. Conviene prenotarlo sul router come IP fisso.",
         "data": {
           "host": "IP della VMC"
         },
