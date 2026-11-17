@@ -8236,7 +8236,7 @@ script:
   vmc_master_profilo_inizializzazione:                                          # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 3 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI]
     alias: VMC Master - Profilo Inizializzazione
     description: >
-      Da eseguire solo la prima volta, appena installato il Package (e su ogni VMC clonata).
+      Da eseguire solo la prima volta, subito dopo aver aggiunto la VMC.
       In sequenza: porta tutte le variabili booleane su OFF, azzera gli Offset dei sensori, esegue i
       Profili Calendario, Free Heating/Cooling, Lim. Δ P. di Rugiada, Umidità e Audio, riporta i Tempi di
       Attesa ai valori originali, arresta la VMC (Velocità 0), dopo 5 s disattiva lo Status Routine
@@ -19032,8 +19032,7 @@ automation:
   - id: "vmc_master_cambio_ip_vmc"                                              # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 0 RICHIAMI]
     alias: "VMC Master - Cambio IP VMC (Riavvio di H.A.)"
     description: >
-      Quando si scrive un IP nel campo «Cambia IP VMC (Riavvio di H.A.)» (anche dal passo 3 della Finestra Prima
-      Installazione VMC): se l'IP è valido toglie i caratteri di ritorno dagli script .sh,
+      Quando si scrive un IP nel campo «Cambia IP VMC (Riavvio di H.A.)»: se l'IP è valido toglie i caratteri di ritorno dagli script .sh,
       aggiorna l'IP in tutti i file del Package, attende 2 s e riavvia Home Assistant; se non è valido svuota il
       campo. Se l'IP è già quello di questa VMC, o è già usato da un'altra VMC del Package, non cambia nulla e non
       riavvia: sotto il campo compare l'avviso. Il controllo è fatto qui e non solo nel sensore di verifica, che si
@@ -26783,9 +26782,9 @@ automation:
       La finestra «Timer Lettura Dati VMC» della scheda Sensori - Selezionati si comporta come le finestre Extra,
       VMC Interni e Offset della stessa scheda: aprendola si chiudono loro, aprendo una di loro si chiude lei, e si
       chiude anche quando si apre o si chiude la scheda Sensori - Selezionati. La finestra «Tempi di Attesa» (non
-      piu' presente nella scheda) si comporta come le altre del pannello Opzioni (Audio, Clona, Calendario, ...):
+      più presente nella scheda) si comporta come le altre del pannello Opzioni (Audio, Calendario, ...):
       aprendola si chiudono le altre, aprendo un'altra finestra di Opzioni si chiude lei, e si chiude anche quando si
-      chiude o si riapre il pannello Opzioni. E' separata dall'Automazione VMC Master per non accodarle un evento
+      chiude o si riapre il pannello Opzioni. È separata dall'Automazione VMC Master per non accodarle un evento
       (mode: queued) a ogni apertura di finestra.
     mode: queued
     max: 10

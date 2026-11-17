@@ -96,7 +96,7 @@ async def test_aggiungi_master_e_sala(hass: HomeAssistant, hass_client) -> None:
     assert f'state: "v.{versione}"' in package and '"v.8.6.0"' not in package
     assert "repos/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/releases/latest" in package
     automazione = (cartella / "vmc_master_automazione.yaml").read_text(encoding="utf-8")
-    assert "[Link](https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE)" in automazione
+    assert "[Note di rilascio](https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/releases)" in automazione
     # tutti i file del package: nessun link al repository VMC-HELTY-FLOW
     for file in sorted(cartella.iterdir()):
         if file.is_file():

@@ -36,7 +36,7 @@
       },
       "non_raggiungibile": {
         "title": "VMC non raggiungibile",
-        "description": "La VMC all'indirizzo {ip} non risponde sulla porta 5001.\n\nSi può aggiungere comunque, per esempio se ora è spenta, e cambiare l'IP più tardi da «Configura». Se la VMC non è ancora collegata al Wi-Fi di casa, chiudere questa finestra, ripetere «Aggiungi dispositivo» e scegliere «No, va installata da zero»."
+        "description": "La VMC all'indirizzo {ip} non risponde sulla porta 5001.\n\nSi può aggiungere comunque, per esempio se ora è spenta: premere Invia. L'IP si cambia più tardi dall'icona ingranaggio sulla riga della VMC → «Cambia l'IP della VMC». Se la VMC non è ancora collegata al Wi-Fi di casa, chiudere questa finestra, ripetere «Aggiungi dispositivo» e scegliere «No, va installata da zero»."
       },
       "migra": {
         "title": "Installazione manuale trovata",
@@ -109,10 +109,10 @@
         }
       },
       "cambia_ip": {
-        "title": "Cambia IP VMC",
+        "title": "Cambia l'IP della VMC",
         "description": "Nuovo indirizzo IP della VMC. Il package viene aggiornato e Home Assistant chiede di riavviarsi.",
         "data": {
-          "host": "IP VMC su porta 5001"
+          "host": "IP della VMC"
         }
       },
       "elimina": {
@@ -161,7 +161,7 @@
     },
     "packages_non_abilitati": {
       "title": "VMC Master: package non caricati",
-      "description": "I file della VMC sono installati ma Home Assistant non li carica. Nel file configuration.yaml deve esserci:\n\nhomeassistant:\n  packages: !include_dir_named packages/\n\nAggiungere la riga, salvare e riavviare Home Assistant."
+      "description": "I file della VMC sono installati ma Home Assistant non li carica. Nel file configuration.yaml devono esserci queste righe:\n\n```yaml\nhomeassistant:\n  packages: !include_dir_named packages/\n```\n\nSe la riga `homeassistant:` c'è già, aggiungere solo la riga `packages:` subito sotto, con due spazi davanti. Salvare e riavviare Home Assistant."
     }
   }
 }

@@ -36,7 +36,7 @@
       },
       "non_raggiungibile": {
         "title": "Unit not reachable",
-        "description": "The unit at {ip} does not answer on port 5001.\n\nYou can add it anyway, for example if it is switched off now, and change the IP later from «Configure». If the unit is not on the home Wi-Fi yet, close this window, repeat «Add device» and choose «No, it must be set up from scratch»."
+        "description": "The unit at {ip} does not answer on port 5001.\n\nYou can add it anyway, for example if it is switched off now: press Submit. The IP can be changed later from the gear icon on the unit's row → «Change the unit's IP». If the unit is not on the home Wi-Fi yet, close this window, repeat «Add device» and choose «No, it must be set up from scratch»."
       },
       "migra": {
         "title": "Manual installation found",
@@ -109,10 +109,10 @@
         }
       },
       "cambia_ip": {
-        "title": "Change unit IP",
+        "title": "Change the unit's IP",
         "description": "New IP address of the unit. The package is updated and Home Assistant asks to restart.",
         "data": {
-          "host": "Unit IP on port 5001"
+          "host": "Unit IP"
         }
       },
       "elimina": {
@@ -161,7 +161,7 @@
     },
     "packages_non_abilitati": {
       "title": "VMC Master: packages not loaded",
-      "description": "The unit's files are installed but Home Assistant does not load them. configuration.yaml must contain:\n\nhomeassistant:\n  packages: !include_dir_named packages/\n\nAdd the line, save and restart Home Assistant."
+      "description": "The unit's files are installed but Home Assistant does not load them. configuration.yaml must contain these lines:\n\n```yaml\nhomeassistant:\n  packages: !include_dir_named packages/\n```\n\nIf the `homeassistant:` line is already there, add only the `packages:` line right below it, indented by two spaces. Save and restart Home Assistant."
     }
   }
 }
