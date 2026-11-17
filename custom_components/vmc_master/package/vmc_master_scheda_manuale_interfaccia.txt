@@ -1,6 +1,6 @@
 ###########################################################################################################################################################################################################################
 #                                                                                                                                                                                                                         #
-#                                                          SCHEDA MANUALE INTERFACCIA VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b11]                                                                                         #
+#                                                          SCHEDA MANUALE INTERFACCIA VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b14]                                                                                         #
 #                                                                                                                                                                                                                         #
 # SVILUPPATO DA ING. DANILO ROBOTTI, ALLE PRIME ARMI CON HOME ASSISTANT :)                                                                                                                                                #
 #                                                                                                                                                                                                                         #
@@ -12680,10 +12680,12 @@ cards:
                   entità del Package; entità e impostazioni restano invariate.
                   Prima di procedere mostra un riquadro con il numero e
                   l'elenco delle sole entità registrate nel database
-                  e chiede conferma con «Sì» o «No». Le entità da
-                  registrare o escludere si scelgono nell'unico elenco della
-                  sezione «recorder» del file vmc_master.yaml (riga commentata
-                  con # = registrata); dopo la modifica riavviare Home Assistant.
+                  e chiede conferma con «Sì» o «No». Le entità registrate e
+                  quelle escluse sono indicate nell'unico elenco della sezione
+                  «recorder» del file vmc_master.yaml (riga commentata con # =
+                  registrata). Il file è scritto dall'integrazione e viene
+                  riscritto a ogni avvio di Home Assistant: le modifiche fatte a
+                  mano si perdono, quindi l'elenco non va modificato.
 
                   <br>
 
@@ -12707,13 +12709,29 @@ cards:
 
                   Per questo nei grafici possono comparire brevi picchi (o
                   salti) verso il valore della sonda della VMC: non sono errori
-                  di lettura. Succedono quando l'entità scelta resta non
-                  disponibile per pochi secondi o minuti, di solito a ogni
-                  riavvio di Home Assistant finché la sua integrazione non si
-                  ricollega, oppure per un calo del segnale (sensori Bluetooth
-                  o Wi-Fi). Nei grafici dell'entità scelta questi buchi brevi
-                  non si vedono se il grafico mostra le statistiche a lungo
-                  termine (medie orarie): si vedono nella sua Cronologia.
+                  di lettura e non indicano un guasto dell'entità scelta.
+                  Succedono in tre casi.
+
+                  <b>A ogni avvio di Home Assistant</b>, per pochi secondi: i
+                  sensori della VMC partono prima che l'integrazione dell'entità
+                  scelta (per esempio un sensore Bluetooth) l'abbia creata.
+                  Nella Cronologia dell'entità scelta non compare nessun buco,
+                  perché in quei secondi l'entità non esiste ancora e non viene
+                  registrato nulla.
+
+                  <b>Quando i sensori della VMC vengono ricaricati</b>: dopo un
+                  aggiornamento dell'integrazione, 20-60 secondi dopo l'avvio,
+                  oppure con Strumenti per sviluppatori → YAML → Ricarica. Il
+                  grafico mostra per un istante la sonda della VMC e poi «Non
+                  disponibile» per circa 2 secondi; l'entità scelta non
+                  c'entra.
+
+                  <b>Quando l'entità scelta resta davvero non disponibile</b>,
+                  per un calo del segnale (sensori Bluetooth o Wi-Fi) o
+                  un'integrazione scollegata: solo in questo caso il buco si
+                  vede anche nella Cronologia dell'entità scelta (non nei
+                  grafici che mostrano le statistiche a lungo termine, cioè le
+                  medie orarie).
 
                   <br>
 
@@ -12791,7 +12809,10 @@ cards:
                   Package. Se l'IP è già quello della VMC, o è già usato da
                   un'altra VMC del Package (principale o clonata), non viene
                   cambiato nulla, Home Assistant non si riavvia e sotto il
-                  campo compare l'avviso.
+                  campo compare l'avviso. In alternativa al campo, l'IP si
+                  cambia anche da Impostazioni → Dispositivi e servizi, nella
+                  pagina dell'integrazione: icona ingranaggio sulla riga della
+                  VMC → «Cambia l'IP della VMC».
 
                   <br>
 

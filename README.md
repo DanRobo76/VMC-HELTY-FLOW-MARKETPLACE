@@ -31,7 +31,7 @@
 </p>
 
 <p align="center">
-  <sub>Versione beta 9.0.0b13: stessa logica e stessa scheda della release manuale <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW">8.6.0</a>, che resta disponibile per chi preferisce installare a mano.</sub>
+  <sub>Versione beta 9.0.0b14: stessa logica e stessa scheda della release manuale <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW">8.6.0</a>, che resta disponibile per chi preferisce installare a mano.</sub>
 </p>
 
 <p align="center">
@@ -79,7 +79,7 @@
 - <sub>Calcolo di ricambi d'aria, portata, umidità assoluta e comfort igrometrico</sub>
 - <sub>Cambio dell'indirizzo IP e del nome della VMC dall'interfaccia</sub>
 - <sub>Conferma prima di ogni script («Vuoi Procedere?»); conferma «Sì / No» per la pulizia della cronologia</sub>
-- <sub>Pannello Informazioni con 23 voci illustrate che spiegano ogni funzione</sub>
+- <sub>Pannello Informazioni con 22 voci illustrate che spiegano ogni funzione</sub>
 </details>
 
 <details>
@@ -98,7 +98,7 @@
 - <sub>Elenca tutte le VMC installate in una tabella, una colonna per VMC [Pannello Informazioni → voce 21].</sub>
 - <sub>Intestazione animata: flusso d'aria proporzionale alla portata e colore del LED in funzione dello stato; scritte «Alert», «Alert Δ Temp.» e «Alert Free» sotto i tasti di velocità quando un'allerta bloccherebbe o ridurrebbe la VMC [Pannello Informazioni → voce 22].</sub>
 - <sub>Permette di selezionare le entità di: Temperatura (Interna ed Esterna), Umidità (Interna ed Esterna), Anidride Carbonica CO₂ (Interna) e Dispositivo Mobile, disponibili in Home Assistant, includendo anche le entità provenienti da fonti Meteo, per ottenere maggiore precisione e affidabilità rispetto ai sensori integrati della VMC.</sub>
-- <sub>Toccando un sensore delle schede «Sensori - Selezionati», «Sensori - Extra» e «Sensori VMC Interni» si apre il grafico della sua cronologia; quando il dato non è disponibile il grafico mostra un buco e non 0.</sub>
+- <sub>Toccando un sensore delle schede «Sensori - Selezionati», «Sensori - Extra» e «Sensori VMC Interni» si apre il grafico della sua cronologia; quando il dato non è disponibile il grafico mostra un buco e non 0. Brevi picchi verso il valore della sonda della VMC a ogni avvio di Home Assistant e dopo un aggiornamento sono normali: l'entità scelta non è ancora pronta e per pochi secondi si usa la sonda della VMC [Pannello Informazioni → voce 15, Nota Entità Scelte non Disponibili].</sub>
 - <sub>Avvisa l'utente tramite notifica sul Dispositivo Mobile in caso di Avvio, Arresto, Errori o cambio filtro della VMC.</sub>
 - <sub>Permette l'accensione e lo spegnimento automatico in funzione degli inquinanti (CO₂ e/o VOC) [sensori della VMC presenti solo nella VMC HELTY FLOW ELITE; per la CO₂ si può selezionare anche un'entità di Home Assistant].</sub>
 - <sub>Permette l'accensione e lo spegnimento automatico in funzione dell'Umidità Interna Settata (sopra il valore impostato, oppure con aria secca ≤ 35% per far entrare aria dall'esterno).</sub>
@@ -118,7 +118,7 @@
 - <sub>Calcola il tempo di ricambio d'aria in funzione della velocità.</sub>
 - <sub>Calcola la portata d'aria (m³/h) in funzione della velocità.</sub>
 - <sub>Calcola l'umidità assoluta esterna e interna (g/m³).</sub>
-- <sub>Pulisce la cronologia delle entità del Package mostrando prima, in un riquadro di conferma, il numero e l'elenco delle entità coinvolte e quante di esse sono registrate nel database (le esclusioni si gestiscono in un unico elenco nella sezione «recorder» del file YAML).</sub>
+- <sub>Pulisce la cronologia delle entità del Package mostrando prima, in un riquadro di conferma, il numero e l'elenco delle entità coinvolte e quante di esse sono registrate nel database (le entità escluse sono indicate in un unico elenco nella sezione «recorder» del package; il package è scritto dall'integrazione e viene riscritto a ogni avvio, quindi l'elenco non va modificato a mano).</sub>
 - <sub>Mostra avvisi in funzione di:</sub>
   - <sub>sensori CO₂ e/o VOC;</sub>
   - <sub>sensore umidità;</sub>
@@ -362,7 +362,7 @@ Conviene aggiungere prima la scheda nuova e togliere la vecchia solo dopo aver v
 5. ripetere i passi 3 e 4 per ogni VMC, poi **Fatto** in alto a destra.
 
 ### B8. Controllo finale
-- Nel **Pannello Informazioni** della scheda, «Package Ver.» indica la versione dell'integrazione (per esempio `v.9.0.0b13`).
+- Nel **Pannello Informazioni** della scheda, «Package Ver.» indica la versione dell'integrazione (per esempio `v.9.0.0b14`).
 - Il Profilo Inizializzazione **non va rifatto**: le impostazioni restano quelle di prima.
 - Le automazioni principali «Automazione VMC ‹nome›» del package conservano area, etichette e categoria di quelle incollate.
 - Le 18 entità della Finestra Clona e le 27 della Finestra Prima Installazione VMC della VMC master, che non esistono più, vengono tolte da sole al riavvio.
@@ -464,7 +464,7 @@ Il ritorno non è automatico. Ci sono due strade:
 </p>
 
 <p align="center">
-  <sub>Beta version 9.0.0b13: same logic and same card as the manual release <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW">8.6.0</a>, which stays available for manual installs.</sub>
+  <sub>Beta version 9.0.0b14: same logic and same card as the manual release <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW">8.6.0</a>, which stays available for manual installs.</sub>
 </p>
 
 <p align="center">
