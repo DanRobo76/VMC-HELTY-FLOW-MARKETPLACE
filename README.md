@@ -65,20 +65,6 @@
 </details>
 
 <details>
-<summary><strong>Vantaggi principali</strong></summary>
-
-- <sub>Installazione e aggiornamenti dal Marketplace di Home Assistant</sub>
-- <sub>Configurazione dall'interfaccia, senza modificare lo YAML</sub>
-- <sub>Controllo locale e remoto della VMC</sub>
-- <sub>Ripresa automatica della velocità al termine di ogni allerta</sub>
-- <sub>Ripristino della velocità dopo un black-out (VMC con linea dedicata nel quadro elettrico e/o relè domotico); durante una fascia del Calendario la VMC riparte con la velocità della fascia in corso</sub>
-- <sub>Calcolo di ricambi d'aria, portata, umidità assoluta e comfort igrometrico</sub>
-- <sub>Cambio dell'indirizzo IP e del nome della VMC dall'interfaccia</sub>
-- <sub>Conferma prima di ogni script («Vuoi Procedere?»); conferma «Sì / No» per la pulizia della cronologia</sub>
-- <sub>Pannello Informazioni con 22 voci illustrate che spiegano ogni funzione</sub>
-</details>
-
-<details>
 <summary><strong>Funzionalità complete</strong></summary>
 
 - <sub>Permette di selezionare quali Avvisi ascoltare tramite il Media Player selezionato.</sub>
@@ -197,7 +183,7 @@ Dopo l'installazione tutto si regola dall'interfaccia, senza modificare lo YAML.
 - interruttori ON/OFF di ogni funzione: inquinanti, punto di rugiada, Free Cooling, Free Heating, umidità, calendario;
 - notifiche audio: Media Player, volume, orari e categorie di allerta.
 
-Ogni script chiede conferma con il popup «Vuoi Procedere?». Per i dettagli aprire il **Pannello Informazioni** della scheda.
+Ogni script chiede conferma con il popup «Vuoi Procedere?». Per i dettagli aprire il **Pannello Informazioni** della scheda, con 22 voci illustrate.
 
 **Da *Impostazioni → Dispositivi e servizi → VMC Master*:**
 - **nome della VMC**: la riga mostra il nome dell'App Air Guard e si aggiorna a ogni avvio; con **tre puntini → Rinomina** se ne può mostrare un altro. Il nome interno (cartella, entità, scheda) non cambia;
