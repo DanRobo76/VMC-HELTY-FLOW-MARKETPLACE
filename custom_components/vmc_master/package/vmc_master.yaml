@@ -27300,7 +27300,7 @@ shell_command:
             config = {k: wifi[k] for k in ("ssid", "mode", "auth") if k in wifi}
             if config.get("auth") == "wpa-psk":
                 if not password:
-                    raise Failure("restore_password_required", "Il Wi-Fi del server è collegato alla rete " + wifi["ssid"] + ": per ripristinarlo al termine servono nome e password di quella rete nei campi della rete domestica. In alternativa usa una scheda Wi-Fi libera. Nessuna modifica è stata eseguita.")
+                    raise Failure("restore_password_required", "Il Wi-Fi del server è collegato alla rete " + wifi["ssid"] + ": per ripristinarlo al termine servono nome e password di quella rete nei campi «Rete Wi-Fi di casa» e «Password del Wi-Fi di casa». In alternativa usa una scheda Wi-Fi libera. Nessuna modifica è stata eseguita.")
                 config["psk"] = password
             elif config.get("auth", "open") != "open":
                 raise Failure("unsupported_restore", "Il profilo Wi-Fi attuale del server usa un'autenticazione non supportata.")
