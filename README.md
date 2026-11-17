@@ -188,7 +188,6 @@ actions:
   <sub>Poi salvare il file e riavviare Home Assistant. Servono proprio queste righe: creano l'azione `tts.google_translate_say` usata dagli avvisi audio. Se l'integrazione si aggiunge solo da *Impostazioni → Dispositivi e servizi*, l'azione non c'è e gli avvisi audio restano muti.</sub>
 
 - <sub>**Solo per collegare al Wi-Fi di casa una VMC nuova senza l'App Air Guard:** Home Assistant OS con il Supervisor, installato su un computer dotato di scheda Wi-Fi integrata oppure con una chiavetta USB Wi-Fi compatibile collegata; la scheda deve risultare tra le interfacce di rete di Home Assistant (Impostazioni → Sistema → Rete).</sub>
-- <sub>**Consigliata:** l'app **File editor** di Home Assistant, con cui si modifica <strong>configuration.yaml</strong> [Impostazioni → Applicazioni → Installa app → File editor → Installa]</sub>
 <br>
 
 > <sub>⚠️ **ATTENZIONE!** Se la VMC utilizza un'app diversa da **Air Guard**, il codice molto probabilmente non sarà compatibile 🧰.</sub>
@@ -211,7 +210,7 @@ Dopo l'installazione tutto si regola dall'interfaccia, senza modificare lo YAML.
 Ogni script chiede conferma con il popup «Vuoi Procedere?». Per i dettagli aprire il **Pannello Informazioni** della scheda.
 
 **Da *Impostazioni → Dispositivi e servizi → VMC Master*:**
-- **aggiungere un'altra VMC**: pulsante **Aggiungi dispositivo**, poi «Sì, è già collegata» e l'IP oppure «No, va installata da zero», poi i passi 4, 5 e 6 dell'Installazione;
+- **aggiungere un'altra VMC**: pulsante **Aggiungi dispositivo**, poi «Sì, è già collegata» e l'IP oppure «No, va installata da zero», poi i punti 6, 7 e 8 dell'Installazione;
 - **nome della VMC**: ogni riga mostra il nome letto dalla VMC, cioè quello dell'App Air Guard (per esempio «VMC ‹nome›»), e si aggiorna a ogni avvio. Il nome interno usato da cartella, entità e scheda non cambia. Con **tre puntini → Rinomina** si può scegliere un altro nome, che resta;
 - **cambiare l'IP**: icona ingranaggio sulla riga della VMC → **«Cambia l'IP della VMC»**, in alternativa al campo della scheda;
 - **eliminare una VMC**: icona ingranaggio → **«Elimina la VMC»**, poi:
@@ -224,99 +223,42 @@ Ogni script chiede conferma con il popup «Vuoi Procedere?». Per i dettagli apr
 <details>
 <summary><strong>Installazione</strong></summary>
 
-Serve Home Assistant **2026.11** o successivo.
+1. **Abilitare i package** (una volta sola):
+   - installare l'app **File editor**: *Impostazioni → Applicazioni → Installa app → File editor → Installa*, poi **Avvia** e **Apri l'interfaccia web**;
+   - aprire `configuration.yaml` con l'icona della **cartella** in alto a sinistra e aggiungere in fondo:
 
-1. **Abilitare i package** (una volta sola): in `configuration.yaml` aggiungere
+     ```yaml
+     homeassistant:
+       packages: !include_dir_named packages/
+     ```
 
-   ```yaml
-   homeassistant:
-     packages: !include_dir_named packages/
-   ```
+     Se la riga `homeassistant:` c'è già, aggiungere sotto solo la seconda riga, con due spazi davanti;
+   - salvare con l'icona del **dischetto**.
+2. **Aggiungere il repository**: *Impostazioni → Marketplace → ⋮ → Repository personalizzate*, scrivere `https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE`, tipo **Integrazione**, premere **Aggiungi** e chiudere la finestra.
+3. **Installare**: cercare **VMC Master** nel Marketplace e premere **Installa**.
+4. **Riavviare**: *Impostazioni → Strumenti → YAML → Riavvia → Riavvia Home Assistant*.
+5. **Aggiungere la VMC**: *Impostazioni → Dispositivi e servizi → + Aggiungi integrazione → VMC Master*:
+   - VMC già collegata al Wi-Fi di casa: scegliere **«Sì, è già collegata: scrivo solo l'IP»**, scrivere l'IP (si legge nell'elenco dei dispositivi del router) e premere **Invia**;
+   - VMC nuova, mai collegata: vedere **VMC nuova** qui sotto;
+   - se compare **«VMC non raggiungibile»** (per esempio VMC spenta) premere **Invia** lo stesso: l'IP si cambia poi dall'**icona ingranaggio** → **«Cambia l'IP della VMC»**;
+   - premere **Finito**.
+6. **Riavviare**: in *Impostazioni* cliccare **«VMC Master: riavviare Home Assistant»** e premere **Invia**.
+7. **Aggiungere la scheda**: premere **Ctrl+F5**, poi sulla plancia **matita → Aggiungi scheda → VMC Master**, scegliere la VMC, **Salva** e **Fatto**. Se la plancia **Panoramica** è quella automatica, crearne prima una: *Impostazioni → Plance → Aggiungi plancia → Nuova plancia da zero*.
+8. **Solo la prima volta**: nel pannello **Impostazioni** della scheda premere **Esegui** su **«VMC ‹nome› - Profilo Inizializzazione»** e confermare con **OK**; dopo il riavvio scegliere i sensori nella finestra **«Opzioni - Sensori da Selezionare»**.
 
-2. **Installare** (VMC Master non è ancora nel catalogo del Marketplace, si aggiunge come repository personalizzato):
-   - *Impostazioni → Marketplace*;
-   - menu **⋮** in alto a destra → **Repository personalizzate**;
-   - scrivere `https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE`;
-   - come tipo scegliere **Integrazione** e premere **Aggiungi**;
-   - cercare **VMC Master** e premere **Installa**;
-   - riavviare Home Assistant.
-3. **Aggiungere la VMC**:
-   - *Impostazioni → Dispositivi e servizi → Aggiungi integrazione → VMC Master*;
-   - alla domanda «La VMC è già collegata al Wi-Fi di casa?» scegliere **«Sì, è già collegata: scrivo solo l'IP»**;
-   - scrivere l'IP della VMC e premere **Invia**. L'IP si legge nell'elenco dei dispositivi del router: l'App Air Guard non lo mostra.
-4. **Riavviare**: in *Impostazioni* cliccare **«VMC Master: riavviare Home Assistant»** e premere **Invia**.
-5. **Aggiungere la scheda**: premere **Ctrl+F5**, poi sulla plancia **matita → Aggiungi scheda → VMC Master** e scegliere la VMC.
-6. **Solo la prima volta**: nella scheda eseguire **«VMC ‹nome› - Profilo Inizializzazione»**, poi scegliere i sensori (vedi *Configurazione*).
+**Altre VMC**: *Impostazioni → Dispositivi e servizi → VMC Master → Aggiungi dispositivo*, poi i punti 5-8. Si possono aggiungere più VMC e riavviare una volta sola.
 
-**Aggiornare**: quando il Marketplace segnala una nuova versione premere **Aggiorna**, poi riavviare Home Assistant dalla richiesta di riavvio del Marketplace. Basta un riavvio: all'avvio l'integrazione aggiorna il package e ricarica da sola le parti cambiate. Solo quando cambia qualcosa che Home Assistant non sa ricaricare (per esempio l'IP della VMC) compare anche «VMC Master: riavviare Home Assistant». Il Marketplace controlla le nuove versioni ogni 48 ore: per vederle subito, nella pagina di VMC Master **⋮ → Aggiorna le informazioni**. I file del package li scrive l'integrazione e non vanno modificati: se uno è stato modificato a mano, all'avvio la sua copia viene salvata in `config/vmc_master_backup`, il file torna quello dell'integrazione e compare una notifica.
+**VMC nuova** (senza l'App Air Guard; serve Home Assistant OS con il Wi-Fi sul server, vedere *Requisiti*):
+1. accendere la VMC: crea la rete `VMC_xxxxxxxx`;
+2. al punto 5 scegliere **«No, va installata da zero»**;
+3. scegliere la rete `VMC_xxxxxxxx` (password `12345678`), poi la rete di casa con la sua password, e premere **Invia**;
+4. attendere da 1 a 3 minuti; se la finestra si chiude, riaprire **Aggiungi dispositivo** e scegliere **«Continua con la VMC appena collegata»**;
+5. prenotare sul router un IP fisso per il MAC mostrato; se è diverso dall'IP mostrato, togliere e ridare corrente alla VMC, scriverlo e premere **Invia**;
+6. confermare il nome e continuare dal punto 6.
 
-<details>
-<summary><strong>A. Guida passo passo per chi parte da zero</strong></summary>
+Se il collegamento non riesce, la finestra mostra il motivo e permette di riprovare.
 
-### A1. Abilitare i package
-Serve l'app **File editor**: *Impostazioni → Applicazioni → Installa app → File editor → Installa*, poi **Avvia** e **Apri l'interfaccia web**.
-
-1. In File editor premere l'icona della **cartella** in alto a sinistra e aprire `configuration.yaml`.
-2. Aggiungere in fondo al file:
-
-```yaml
-homeassistant:
-  packages: !include_dir_named packages/
-```
-
-   Se nel file c'è già una riga `homeassistant:`, non scriverla una seconda volta: aggiungere solo la riga `  packages: !include_dir_named packages/` subito sotto, con due spazi davanti.
-3. Salvare con l'icona del **dischetto** in alto a destra.
-
-### A2. Installare l'integrazione dal Marketplace
-Finché l'integrazione non è nel catalogo pubblico, si aggiunge come repository personalizzato:
-
-1. **Impostazioni → Marketplace**, menu **⋮** in alto a destra → **Repository personalizzate**;
-2. nel campo del repository scrivere `https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE`, come tipo scegliere **Integrazione** e premere **Aggiungi**, poi chiudere la finestra;
-3. cercare **VMC Master** nel Marketplace e aprirla: compare «Non installata» con il pulsante **Installa** a destra; premerlo e, se compare una finestra di conferma, premere di nuovo **Installa**.
-
-### A3. Riavviare Home Assistant
-*Impostazioni → Strumenti → YAML → Riavvia → Riavvia Home Assistant*. Attendere che l'interfaccia torni disponibile.
-
-### A4. Aggiungere la VMC
-1. *Impostazioni → Dispositivi e servizi*, pulsante **+ Aggiungi integrazione** in basso a destra;
-2. scrivere **VMC Master** e cliccarla;
-3. la finestra **«Aggiungi una VMC Helty Flow»** chiede se la VMC è già collegata al Wi-Fi di casa:
-   - **«Sì, è già collegata: scrivo solo l'IP»**: scrivere l'IP statico della VMC, per esempio `192.168.1.160`, e premere **Invia**. L'IP si legge nell'elenco dei dispositivi del router (l'App Air Guard non lo mostra). La prima VMC si chiama sempre `master`; per le altre il nome si legge dalla VMC e si conferma nella finestra seguente (sole lettere minuscole, da 1 a 10 caratteri, senza spazi né numeri);
-   - **«No, va installata da zero»**: vedere **«VMC nuova senza l'App Air Guard»** più sotto;
-4. se compare **«VMC non raggiungibile»** (per esempio VMC spenta) premere **Invia** per aggiungerla comunque: l'IP si cambia più tardi con l'**icona ingranaggio** sulla riga della VMC → **«Cambia l'IP della VMC»**;
-5. nella finestra finale premere **Finito**.
-
-Dopo la prima VMC, la pagina *Impostazioni → Dispositivi e servizi → VMC Master* mostra una riga per ogni VMC e il pulsante **Aggiungi dispositivo** in alto a destra: per le VMC successive si può usare anche quello.
-
-### A5. Riavviare Home Assistant
-In *Impostazioni*, in cima alla pagina, compare **«VMC Master: riavviare Home Assistant»**: cliccarla e premere **Invia**. Home Assistant si riavvia da solo. In alternativa: *Impostazioni → Strumenti → YAML → Riavvia → Riavvia Home Assistant*.
-
-### A6. Aggiungere la scheda
-1. Premere **Ctrl+F5** sulla pagina di Home Assistant, così il browser carica la scheda nuova;
-2. aprire la plancia. Nelle installazioni nuove la plancia **Panoramica** è generata in automatico: in questo caso creare prima una plancia da *Impostazioni → Plance → Aggiungi plancia → Nuova plancia da zero*;
-3. **icona matita** (Modifica la plancia) in alto a destra → **Aggiungi scheda**;
-4. cercare **VMC Master** e cliccarla;
-5. nel campo **VMC** scegliere la VMC, che compare con il nome letto dalla VMC (per esempio «VMC ‹nome›»), e premere **Salva**, poi **Fatto** in alto a destra.
-
-### A7. Profilo Inizializzazione
-Solo la prima volta: nel pannello **Impostazioni** della scheda premere **Esegui** su **«VMC ‹nome› - Profilo Inizializzazione»** e confermare con **OK** nel popup «Vuoi Procedere?». Al riavvio aprire la finestra **«Opzioni - Sensori da Selezionare»** e scegliere le entità dei sensori.
-
-### Altre VMC
-Ripetere i punti **A4**, **A5**, **A6** e **A7**: per una VMC già collegata al Wi-Fi basta l'IP. Si possono aggiungere più VMC di seguito e riavviare una volta sola.
-
-### VMC nuova senza l'App Air Guard
-Una VMC appena installata, non ancora collegata al Wi-Fi di casa, si collega direttamente da **Aggiungi dispositivo**, con gli stessi passaggi delle istruzioni Helty. Serve Home Assistant OS con una scheda Wi-Fi sul server, integrata oppure una chiavetta USB (vedere *Requisiti*); altrimenti la finestra lo dice e la VMC si collega una volta con l'App Air Guard.
-
-1. Accendere la VMC nuova: crea la sua rete `VMC_xxxxxxxx`.
-2. Aprire **Aggiungi dispositivo** (la prima volta dal punto **A4**, poi anche dal pulsante **Aggiungi dispositivo** della pagina *Impostazioni → Dispositivi e servizi → VMC Master*) e scegliere **«No, va installata da zero»**.
-3. Home Assistant cerca le reti Wi-Fi: scegliere la rete `VMC_xxxxxxxx` (la password di fabbrica è `12345678`), poi la rete Wi-Fi di casa con la sua password, e premere **Invia**.
-4. Il collegamento dura da 1 a 3 minuti. Per circa un minuto il Wi-Fi del server passa sulla rete della VMC: se Home Assistant è collegato alla rete di casa solo via Wi-Fi la pagina può perdere la connessione, ma la procedura continua. Se la finestra si chiude, riaprire **Aggiungi dispositivo** e scegliere **«Continua con la VMC appena collegata»**.
-5. Compaiono IP e MAC della VMC: prenotare sul router un IP fisso per quel MAC. Se è lo stesso IP premere **Invia**; se è diverso, togliere e ridare corrente alla VMC, scriverlo e premere **Invia**: la finestra controlla che risponda la stessa VMC.
-6. La prima VMC in assoluto diventa `master`; per le altre confermare il nome letto dalla VMC.
-7. Continuare con **A5**, **A6** e **A7**.
-
-Se il collegamento non riesce, la finestra mostra il motivo, la tabella dei lampeggi del LED Allarme filtri e il ripristino Wi-Fi della VMC, e permette di riprovare. Se Home Assistant si riavvia a metà procedura, all'avvio l'integrazione riporta il Wi-Fi del server alla rete di prima.
-</details>
+**Aggiornare**: quando il Marketplace segnala una nuova versione premere **Aggiorna**, poi riavviare Home Assistant. Per controllare subito: pagina di VMC Master **⋮ → Aggiorna le informazioni**. I file del package non vanno modificati: un file modificato a mano viene ripristinato all'avvio (la copia resta in `config/vmc_master_backup`).
 
 </details>
 
@@ -468,7 +410,7 @@ After installation everything is set from the interface, without editing YAML.
 Every script asks for confirmation with the «Vuoi Procedere?» popup. For details open the card's **Information Panel**.
 
 **From *Settings → Devices & services → VMC Master*:**
-- **add another unit**: **Add device** button, then «Yes, it is connected» and the IP, or «No, it must be set up from scratch»; then steps 4, 5 and 6 of the Installation;
+- **add another unit**: **Add device** button, then «Yes, it is connected» and the IP, or «No, it must be set up from scratch»; then steps 6, 7 and 8 of the Installation;
 - **unit name**: each row shows the name read from the unit, the one set in the Air Guard app (for example «VMC ‹name›»), refreshed at every start. The internal name used by folder, entities and card does not change. **Three dots → Rename** sets another name, which is kept;
 - **change the IP**: gear icon on the unit's row → **«Change the unit's IP»**, as an alternative to the card field;
 - **delete a unit**: gear icon → **«Delete the unit»**, then **«Only from Home Assistant»** (the unit stays on the home Wi-Fi) or **«From the network too»** (the unit goes back to Access Point mode and shows its VMC_… network again). In both cases the folder goes to `config/vmc_master_backup`; then restart and remove its card. **Three dots → Delete** also works, but only removes the unit from Home Assistant.
@@ -477,38 +419,42 @@ Every script asks for confirmation with the «Vuoi Procedere?» popup. For detai
 <details>
 <summary><strong>Installation</strong></summary>
 
-Requires Home Assistant **2026.11** or later.
+1. **Enable packages** (once):
+   - install the **File editor** app: *Settings → Apps → Install app → File editor → Install*, then **Start** and **Open web UI**;
+   - open `configuration.yaml` with the **folder** icon at the top left and add at the end:
 
-1. **Enable packages** (once): add to `configuration.yaml`
+     ```yaml
+     homeassistant:
+       packages: !include_dir_named packages/
+     ```
 
-   ```yaml
-   homeassistant:
-     packages: !include_dir_named packages/
-   ```
+     If the `homeassistant:` line is already there, add only the second line below it, with two spaces in front;
+   - save with the **disk** icon.
+2. **Add the repository**: *Settings → Marketplace → ⋮ → Custom repositories*, type `https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE`, type **Integration**, press **Add** and close the window.
+3. **Install**: search for **VMC Master** in the Marketplace and press **Install**.
+4. **Restart**: *Settings → Developer tools → YAML → Restart → Restart Home Assistant*.
+5. **Add the unit**: *Settings → Devices & services → + Add integration → VMC Master*:
+   - unit already on the home Wi-Fi: choose **«Yes, it is connected: I only enter the IP»**, type the IP (shown in the router's device list) and press **Submit**;
+   - new unit, never connected: see **New unit** below;
+   - if **«Unit not reachable»** appears (for example the unit is off) press **Submit** anyway: change the IP later with the **gear icon** → **«Change the unit IP»**;
+   - press **Finish**.
+6. **Restart**: in *Settings* click **«VMC Master: restart Home Assistant»** and press **Submit**.
+7. **Add the card**: press **Ctrl+F5**, then on the dashboard **pencil → Add card → VMC Master**, pick the unit, **Save** and **Done**. If the **Overview** dashboard is the automatic one, create one first: *Settings → Dashboards → Add dashboard → New dashboard from scratch*.
+8. **First time only**: in the card's **Impostazioni** panel press **Esegui** on **«VMC ‹name› - Profilo Inizializzazione»** and confirm with **OK**; after the restart pick the sensors in the **«Opzioni - Sensori da Selezionare»** window.
 
-2. **Install** (VMC Master is not yet in the Marketplace catalog, so add it as a custom repository):
-   - *Settings → Marketplace*;
-   - **⋮** menu at the top right → **Custom repositories**;
-   - type `https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE`;
-   - choose type **Integration** and press **Add**;
-   - search for **VMC Master** and press **Install**;
-   - restart Home Assistant.
-3. **Add the unit**:
-   - *Settings → Devices & services → Add integration → VMC Master*;
-   - to the question «Is the unit already connected to the home Wi-Fi?» choose **«Yes, it is connected: I only enter the IP»**;
-   - type the unit's IP and press **Submit**. The IP is shown in the router's device list: the Air Guard app does not show it.
-4. **Restart**: in *Settings* click **«VMC Master: riavviare Home Assistant»** and press **Submit**.
-5. **Add the card**: press **Ctrl+F5**, then on the dashboard **pencil → Add card → VMC Master** and pick the unit.
-6. **First time only**: in the card run **«VMC ‹name› - Profilo Inizializzazione»**, then pick the sensors (see *Configuration*).
+**More units**: *Settings → Devices & services → VMC Master → Add device*, then steps 5-8. You can add several units and restart once.
 
-**New unit without the Air Guard app**: in *Add device* choose «No, it must be set up from scratch». It needs Home Assistant OS with a Wi-Fi adapter on the server (built-in or a USB dongle); without it, connect the unit once with the Air Guard app.
-1. Power on the new unit: it creates its own `VMC_xxxxxxxx` network.
-2. Pick the `VMC_xxxxxxxx` network (factory password `12345678`), the home Wi-Fi and its password, then press **Submit**.
-3. The connection takes 1 to 3 minutes; the server Wi-Fi switches to the unit network for about a minute. If the window closes, open *Add device* again and choose «Continue with the unit just connected».
-4. On the router reserve a fixed IP for the MAC shown; if it differs from the IP shown, power the unit off and on, type it and the window checks that the same unit answers.
-5. The first unit becomes `master`; for the others confirm the name read from the unit. Then restart and add the card.
+**New unit** (without the Air Guard app; needs Home Assistant OS with Wi-Fi on the server, see *Requirements*):
+1. power on the unit: it creates the `VMC_xxxxxxxx` network;
+2. at step 5 choose **«No, it must be set up from scratch»**;
+3. pick the `VMC_xxxxxxxx` network (password `12345678`), then the home network and its password, and press **Submit**;
+4. wait 1 to 3 minutes; if the window closes, open **Add device** again and choose **«Continue with the unit just connected»**;
+5. reserve a fixed IP on the router for the MAC shown; if it differs from the IP shown, power the unit off and on, type it and press **Submit**;
+6. confirm the name and continue from step 6.
 
-**Update**: when the Marketplace shows a new version press **Update**, then restart Home Assistant from the Marketplace restart request. One restart is enough: at startup the integration updates the package and reloads the changed parts by itself. Only when something changes that Home Assistant cannot reload (for example the unit IP address) does «VMC Master: riavviare Home Assistant» appear as well. The Marketplace checks for new versions every 48 hours: to see them at once, on the VMC Master page **⋮ → Refresh information**. The package files are written by the integration and must not be edited: if one was edited by hand, at startup a copy is saved in `config/vmc_master_backup`, the file is put back as the integration wrote it and a notification appears.
+If the connection fails, the window shows the reason and lets you retry.
+
+**Update**: when the Marketplace shows a new version press **Update**, then restart Home Assistant. To check at once: VMC Master page **⋮ → Refresh information**. Do not edit the package files: a hand-edited file is restored at startup (the copy stays in `config/vmc_master_backup`).
 
 </details>
 
