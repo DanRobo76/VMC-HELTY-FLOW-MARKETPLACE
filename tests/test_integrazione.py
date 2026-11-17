@@ -245,15 +245,112 @@ async def test_cambia_ip_dalla_scheda(hass: HomeAssistant) -> None:
     assert await hass.config_entries.async_setup(voce.entry_id)
     await hass.async_block_till_done()
     yaml_master = Path(hass.config.path("packages", "vmc_helty_flow", "master", "vmc_master.yaml"))
-    # come lo script Cambia IP: tutti gli IP del file diventano il nuovo
-    yaml_master.write_text(
-        yaml_master.read_text(encoding="utf-8").replace("192.168.1.160", "192.168.1.180"),
-        encoding="utf-8",
-    )
+    # come lo script Cambia IP (sed -i): tutti gli IP del file diventano il nuovo, fine riga intatti
+    yaml_master.write_bytes(yaml_master.read_bytes().replace(b"192.168.1.160", b"192.168.1.180"))
     assert await hass.config_entries.async_reload(voce.entry_id)
     await hass.async_block_till_done()
     assert voce.data["host"] == "192.168.1.180"
     assert "192.168.1.180" in yaml_master.read_text(encoding="utf-8")
+    # l'IP cambiato dalla scheda non e' una modifica a mano: nessuna copia salvata
+    assert not Path(hass.config.path("vmc_master_backup")).exists()
+
+
+def test_file_modificati_a_mano(tmp_path: Path) -> None:
+    """Un file del package modificato a mano non si perde: prima di riscriverlo
+    l'integrazione ne salva una copia in /config/vmc_master_backup."""
+    from custom_components.vmc_master.installatore import cartella_vmc, installa
+
+    config_dir = str(tmp_path)
+    esito = installa(config_dir, "master", "192.168.1.160", "9.0.0b13")
+    assert esito.file_modificati == [] and esito.backup_modificati is None
+    automazione = cartella_vmc(config_dir, "master") / "vmc_master_automazione.yaml"
+    originale = automazione.read_bytes()
+    modificato = originale + b"# riga aggiunta a mano\r\n"
+    automazione.write_bytes(modificato)
+
+    esito = installa(config_dir, "master", "192.168.1.160", "9.0.0b13")
+    assert esito.file_modificati == ["vmc_master_automazione.yaml"]
+    copia = esito.backup_modificati / "vmc_master_automazione.yaml"
+    assert copia.read_bytes() == modificato  # copia identica, fine riga compresi
+    assert esito.backup_modificati.parent == tmp_path / "vmc_master_backup"
+    assert esito.backup_modificati.name.startswith("master_modificati_")
+    assert automazione.read_bytes() == originale  # torna il file dell'integrazione
+    assert esito.file_scritti == ["vmc_master_automazione.yaml"]
+
+    # file di nuovo uguale a quello scritto: niente da salvare
+    esito = installa(config_dir, "master", "192.168.1.160", "9.0.0b13")
+    assert esito.file_modificati == [] and esito.file_scritti == []
+
+    # nuova versione dell'integrazione: un file non toccato si aggiorna senza copie
+    esito = installa(config_dir, "master", "192.168.1.160", "9.0.0b14")
+    assert esito.file_modificati == [] and esito.file_scritti == ["vmc_master.yaml"]
+    assert len(list((tmp_path / "vmc_master_backup").iterdir())) == 1
+
+
+def test_ip_della_scheda_non_e_una_modifica(tmp_path: Path) -> None:
+    """IP cambiato dal campo «Cambia IP VMC» e poi aggiornamento dell'integrazione:
+    i file sono diversi da quelli scritti, ma non sono modificati a mano."""
+    from custom_components.vmc_master.installatore import cartella_vmc, installa
+
+    config_dir = str(tmp_path)
+    installa(config_dir, "master", "192.168.1.160", "9.0.0b13")
+    cartella = cartella_vmc(config_dir, "master")
+    # come lo script Cambia IP: package e script del nome con il nuovo IP
+    for nome_file in ("vmc_master.yaml", "vmc_master_script_cambio_nome.sh"):
+        percorso = cartella / nome_file
+        percorso.write_bytes(percorso.read_bytes().replace(b"192.168.1.160", b"192.168.1.180"))
+    esito = installa(config_dir, "master", "192.168.1.180", "9.0.0b14")
+    assert esito.file_modificati == [] and esito.backup_modificati is None
+    assert esito.file_scritti == ["vmc_master.yaml"]
+    assert not (tmp_path / "vmc_master_backup").exists()
+
+    # IP cambiato e anche una modifica a mano: questa si vede
+    percorso = cartella / "vmc_master.yaml"
+    percorso.write_bytes(percorso.read_bytes().replace(b"192.168.1.180", b"192.168.1.190") + b"# a mano\r\n")
+    esito = installa(config_dir, "master", "192.168.1.190", "9.0.0b14")
+    assert esito.file_modificati == ["vmc_master.yaml"]
+
+
+def test_marcatore_senza_md5(tmp_path: Path) -> None:
+    """Marcatore senza md5: non si puo' sapere se il file e' stato modificato, si
+    aggiorna come prima senza copie."""
+    from custom_components.vmc_master.installatore import FILE_MARCATORE, cartella_vmc, installa
+
+    config_dir = str(tmp_path)
+    installa(config_dir, "master", "192.168.1.160", "9.0.0b13")
+    cartella = cartella_vmc(config_dir, "master")
+    marcatore = json.loads((cartella / FILE_MARCATORE).read_text(encoding="utf-8"))
+    del marcatore["md5"]
+    (cartella / FILE_MARCATORE).write_text(json.dumps(marcatore), encoding="utf-8")
+    (cartella / "vmc_master.yaml").write_bytes(b"# a mano\r\n")
+    esito = installa(config_dir, "master", "192.168.1.160", "9.0.0b13")
+    assert esito.file_modificati == [] and esito.file_scritti == ["vmc_master.yaml"]
+
+
+async def test_notifica_file_modificati(hass: HomeAssistant) -> None:
+    """All'avvio, se un file era stato modificato a mano, compare la notifica con
+    l'elenco dei file e la cartella della copia."""
+    voce = MockConfigEntry(
+        domain=DOMAIN, unique_id="master", data={"nome": "master", "host": "192.168.1.160"}
+    )
+    voce.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(voce.entry_id)
+    await hass.async_block_till_done()
+    automazione = Path(
+        hass.config.path("packages", "vmc_helty_flow", "master", "vmc_master_automazione.yaml")
+    )
+    automazione.write_bytes(automazione.read_bytes() + b"# a mano\r\n")
+    with patch(
+        "custom_components.vmc_master.persistent_notification.async_create"
+    ) as notifica:
+        assert await hass.config_entries.async_reload(voce.entry_id)
+        await hass.async_block_till_done()
+    chiamate = [c for c in notifica.call_args_list if "modificati" in c.kwargs["notification_id"]]
+    assert len(chiamate) == 1
+    testo = chiamate[0].args[1]
+    assert "`vmc_master_automazione.yaml`" in testo
+    assert "`config/vmc_master_backup/master_modificati_" in testo
+    assert chiamate[0].kwargs["title"] == "VMC Master: file della VMC master modificati a mano"
 
 
 async def test_migrazione_da_installazione_manuale(hass: HomeAssistant) -> None:

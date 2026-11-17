@@ -12683,9 +12683,11 @@ cards:
                   e chiede conferma con «Sì» o «No». Le entità registrate e
                   quelle escluse sono indicate nell'unico elenco della sezione
                   «recorder» del file vmc_master.yaml (riga commentata con # =
-                  registrata). Il file è scritto dall'integrazione e viene
-                  riscritto a ogni avvio di Home Assistant: le modifiche fatte a
-                  mano si perdono, quindi l'elenco non va modificato.
+                  registrata). Il file è scritto dall'integrazione e non va
+                  modificato: se viene modificato a mano, all'avvio di Home
+                  Assistant la sua copia viene salvata nella cartella
+                  vmc_master_backup, il file torna quello dell'integrazione e
+                  compare una notifica.
 
                   <br>
 

@@ -34,6 +34,8 @@ _LOGGER = logging.getLogger(__name__)
 _SORGENTI = Path(__file__).parent / "package"
 FILE_MARCATORE = ".vmc_master_integrazione.json"
 CARTELLA_BACKUP = "vmc_master_backup"
+# Sottocartella di CARTELLA_BACKUP per i file del package modificati a mano
+SUFFISSO_MODIFICATI = "modificati"
 
 # Prima riga «host:» del package: e' l'IP della VMC (sensori TCP)
 _RE_HOST = re.compile(r"^\s+host:\s+([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)", re.MULTILINE)
@@ -161,16 +163,38 @@ def leggi_marcatore(config_dir: str, nome: str) -> dict:
         return {}
 
 
+def _cartella_backup(config_dir: str, nome: str, tipo: str = "") -> Path:
+    data_ora = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    parti = [nome, tipo, data_ora] if tipo else [nome, data_ora]
+    return Path(config_dir) / CARTELLA_BACKUP / "_".join(parti)
+
+
+def _rimetti_ip(testo: str, ip: str, ip_scritto: str) -> str:
+    """Testo con l'IP originale al posto di quello scritto dal campo «Cambia IP VMC»."""
+    return re.sub(rf"(?<![0-9.]){re.escape(ip)}(?![0-9])", ip_scritto, testo)
+
+
+def modificato_a_mano(testo: str, md5_scritto: object, ip: str, ip_scritto: object) -> bool:
+    """True se il file non e' piu' quello scritto dall'integrazione (md5 del marcatore).
+
+    Non conta come modifica l'IP cambiato dal campo «Cambia IP VMC» della scheda: lo script
+    sostituisce l'IP in tutto il file, quindi rimettendo quello vecchio torna l'md5 scritto.
+    Senza md5 nel marcatore non si puo' sapere: il file si aggiorna come sempre.
+    """
+    if not isinstance(md5_scritto, str) or _md5(testo) == md5_scritto:
+        return False
+    if isinstance(ip_scritto, str) and ip_scritto and ip != ip_scritto:
+        if _md5(_rimetti_ip(testo, ip, ip_scritto)) == md5_scritto:
+            return False
+    return True
+
+
 def sposta_in_backup(config_dir: str, nome: str) -> Path | None:
     """Sposta la cartella della VMC fuori da «packages» (non viene piu' caricata)."""
     cartella = cartella_vmc(config_dir, nome)
     if not cartella.is_dir():
         return None
-    destinazione = (
-        Path(config_dir)
-        / CARTELLA_BACKUP
-        / f"{nome}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
-    )
+    destinazione = _cartella_backup(config_dir, nome)
     destinazione.parent.mkdir(parents=True, exist_ok=True)
     shutil.move(str(cartella), str(destinazione))
     _LOGGER.info("Cartella %s spostata in %s", cartella, destinazione)
@@ -269,23 +293,63 @@ class EsitoInstallazione:
 
     file_scritti: list[str] = field(default_factory=list)
     backup: Path | None = None
+    # File modificati a mano dopo l'ultima scrittura: la loro copia e' in «backup_modificati»
+    file_modificati: list[str] = field(default_factory=list)
+    backup_modificati: Path | None = None
     # File nuovi o parti che Home Assistant non sa ricaricare
     riavvio_necessario: bool = False
     # Servizi che ricaricano le parti cambiate, se il riavvio non serve
     ricariche: set[str] = field(default_factory=set)
 
 
+def _salva_modificati(config_dir: str, nome: str, modificati: dict[str, str]) -> Path:
+    """Copia i file modificati a mano fuori da «packages» (cosi' non vengono caricati)."""
+    destinazione = _cartella_backup(config_dir, nome, SUFFISSO_MODIFICATI)
+    destinazione.mkdir(parents=True, exist_ok=True)
+    for nome_file, testo in modificati.items():
+        _scrivi(destinazione / nome_file, testo)
+    _LOGGER.warning(
+        "VMC %s: file modificati a mano %s, copia salvata in %s",
+        nome,
+        ", ".join(modificati),
+        destinazione,
+    )
+    return destinazione
+
+
 def installa(config_dir: str, nome: str, ip: str, versione: str) -> EsitoInstallazione:
-    """Scrive solo i file che sono cambiati; un'installazione manuale va prima in backup."""
+    """Scrive solo i file che sono cambiati; un'installazione manuale va prima in backup.
+
+    Un file modificato a mano dopo l'ultima scrittura (md5 diverso da quello del
+    marcatore) viene copiato in /config/vmc_master_backup prima di essere riscritto.
+    """
     esito = EsitoInstallazione()
     if installazione_manuale(config_dir, nome):
         esito.backup = sposta_in_backup(config_dir, nome)
     cartella = cartella_vmc(config_dir, nome)
     cartella.mkdir(parents=True, exist_ok=True)
     nuovi = genera_file(nome, ip, versione)
+    marcatore = leggi_marcatore(config_dir, nome)
+    md5_scritti = marcatore.get("md5")
+    if not isinstance(md5_scritti, dict):
+        md5_scritti = {}
+    vecchi = {
+        nome_file: _leggi(cartella / nome_file)
+        for nome_file in nuovi
+        if (cartella / nome_file).is_file()
+    }
+    modificati = {
+        nome_file: vecchio
+        for nome_file, vecchio in vecchi.items()
+        if vecchio != nuovi[nome_file]
+        and modificato_a_mano(vecchio, md5_scritti.get(nome_file), ip, marcatore.get("ip"))
+    }
+    if modificati:
+        esito.backup_modificati = _salva_modificati(config_dir, nome, modificati)
+        esito.file_modificati = list(modificati)
     for nome_file, testo in nuovi.items():
         percorso = cartella / nome_file
-        vecchio = _leggi(percorso) if percorso.is_file() else None
+        vecchio = vecchi.get(nome_file)
         if vecchio == testo:
             continue
         _scrivi(percorso, testo)
