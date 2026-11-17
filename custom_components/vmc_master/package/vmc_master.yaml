@@ -8070,7 +8070,7 @@ script:
           entity_id: timer.vmc_master_countdown_script_agg_sensori
     mode: restart
     icon: mdi:cursor-pointer
-    description: Aggiorna in sequenza tutte le entità e i sensori della VMC (circa 79 s). Durante l'esecuzione la scheda mostra il countdown sotto il pulsante.
+    description: Aggiorna in sequenza tutte le entità e i sensori della VMC (79 s). Durante l'esecuzione la scheda mostra il countdown sotto il pulsante.
 
   vmc_master_profilo_calendario:                                                # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 3 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI]
     alias: VMC Master - Profilo Calendario
