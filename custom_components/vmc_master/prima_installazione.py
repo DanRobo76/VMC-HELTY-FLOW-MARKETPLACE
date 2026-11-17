@@ -3,12 +3,14 @@
 Usa il motore della Finestra Prima Installazione VMC della release 8.6.0
 (motore_installa_vmc.py, identico al programma del package) e la stessa cartella
 interna, cosi' un ripristino lasciato a meta' dal package viene completato qui.
+Con lo stesso motore la VMC si toglie anche dal Wi-Fi di casa (modalita' Access Point).
 Le funzioni sono bloccanti: si chiamano con hass.async_add_executor_job.
 """
 
 from __future__ import annotations
 
 import threading
+import time
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -111,3 +113,71 @@ def rete_del_server(config_dir: str) -> str:
         if interfaccia.get("type") == "wireless" and interfaccia.get("connected"):
             return (interfaccia.get("wifi") or {}).get("ssid", "")
     return ""
+
+
+def rimanda_in_access_point(
+    config_dir: str,
+    ip: str,
+    avanzamento: Callable[[int], None] | None = None,
+    attesa: float = 60.0,
+    pausa: float = 3.0,
+) -> str:
+    """Toglie la VMC dal Wi-Fi di casa con lo stesso comando «Access Point» della Finestra
+    Prima Installazione VMC della 8.6.0 (VMSL in modalita' Access Point): la VMC torna a
+    mostrare la sua rete VMC_xxxxxxxx. Non serve il Wi-Fi del server: basta che la VMC
+    smetta di rispondere all'IP di casa. Restituisce il nome della VMC."""
+
+    def passo(percento: int) -> None:
+        if avanzamento is not None:
+            avanzamento(percento)
+
+    if not _BLOCCO.acquire(blocking=False):
+        raise Failure("in_corso", "Una procedura è già in corso. Attendi il risultato.")
+    try:
+        trasporto = motore.Transport()
+        passo(10)
+        try:
+            nome = trasporto.identify(ip)
+        except OSError:
+            raise Failure(
+                "vmc_unreachable",
+                f"La VMC non risponde all'indirizzo {ip}. Controlla che sia accesa e "
+                "collegata al Wi-Fi di casa.",
+            ) from None
+        passo(30)
+        try:
+            trasporto.send(ip, motore.access_point_packet())
+        except OSError:
+            raise Failure("vmc_unreachable", "La VMC non ha accettato il comando.") from None
+        passo(50)
+        inizio = time.monotonic()
+        assenze = 0
+        while time.monotonic() - inizio < attesa:
+            time.sleep(pausa)
+            passo(50 + int(45 * min(time.monotonic() - inizio, attesa) / attesa))
+            try:
+                risponde = trasporto.identify(ip) == nome
+            except (OSError, Failure):
+                risponde = False
+            # due controlli di fila senza risposta: la VMC ha lasciato il Wi-Fi di casa
+            assenze = 0 if risponde else assenze + 1
+            if assenze >= 2:
+                if motore.read_identity(cartella(config_dir)).get("ip") == ip:
+                    # non e' piu' una VMC «collegata ma non aggiunta» da riprendere
+                    (cartella(config_dir) / "identity.json").unlink(missing_ok=True)
+                passo(100)
+                return nome
+        raise Failure(
+            "ap_not_applied",
+            "La VMC risponde ancora sulla rete di casa: il passaggio in Access Point non è "
+            "stato applicato.",
+        )
+    except Failure:
+        raise
+    except Exception as errore:  # stesso messaggio del worker della 8.6.0
+        raise Failure(
+            "communication_error",
+            "Errore di comunicazione. Verifica la raggiungibilità della VMC.",
+        ) from errore
+    finally:
+        _BLOCCO.release()

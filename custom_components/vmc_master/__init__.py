@@ -34,6 +34,7 @@ from homeassistant.loader import async_get_integration
 from .const import (
     CONF_HOST,
     CONF_NOME,
+    CONF_TITOLO,
     DOMAIN,
     ENTITA_FINESTRA_CLONA,
     ENTITA_PRIMA_INSTALLAZIONE,
@@ -42,7 +43,7 @@ from .const import (
     NOME_MASTER,
     URL_FRONTEND,
 )
-from . import prima_installazione
+from . import config_flow, prima_installazione
 from .installatore import installa, ip_nel_package, leggi_marcatore, sposta_in_backup
 from .trasforma import adatta_link_repository, per_vmc
 
@@ -151,6 +152,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             _ricarica_dopo_avvio(hass, entry, esito.ricariche)
         _controlla_packages_dopo_avvio(hass, entry, nome)
 
+    _aggiorna_titolo_dopo_avvio(hass, entry)
+    # IP con cui e' stato installato il package: la voce si ricarica solo se cambia
+    entry.runtime_data = ip
     entry.async_on_unload(entry.add_update_listener(_async_aggiornata))
     return True
 
@@ -171,7 +175,38 @@ async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
 
 
 async def _async_aggiornata(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    await hass.config_entries.async_reload(entry.entry_id)
+    # IP cambiato dall'ingranaggio: si aggiorna il package. Il solo titolo non serve.
+    if entry.data[CONF_HOST] != entry.runtime_data:
+        await hass.config_entries.async_reload(entry.entry_id)
+
+
+@callback
+def _aggiorna_titolo_dopo_avvio(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Titolo della voce = nome della VMC (quello dell'App Air Guard), anche per le VMC
+    aggiunte prima della 9.0.0b13 («VMC ‹nome›»). Se l'utente ha rinominato la voce,
+    il suo nome resta. Il nome interno (cartella, entita', scheda) non cambia."""
+
+    async def _aggiorna() -> None:
+        nome = entry.data[CONF_NOME]
+        if entry.title not in {f"VMC {nome}", entry.data.get(CONF_TITOLO)}:
+            return
+        try:
+            nome_vmc = await config_flow.async_nome_vmc(entry.data[CONF_HOST])
+        except Exception:  # noqa: BLE001 - VMC spenta o rete assente: resta il titolo
+            return
+        if not nome_vmc:
+            return
+        titolo = config_flow.titolo_voce(nome_vmc, nome)
+        if titolo != entry.title or entry.data.get(CONF_TITOLO) != titolo:
+            hass.config_entries.async_update_entry(
+                entry, title=titolo, data={**entry.data, CONF_TITOLO: titolo}
+            )
+
+    @callback
+    def _avvia(_hass: HomeAssistant) -> None:
+        entry.async_create_background_task(hass, _aggiorna(), f"{DOMAIN}_titolo_{entry.entry_id}")
+
+    entry.async_on_unload(async_at_started(hass, _avvia))
 
 
 @callback

@@ -101,16 +101,50 @@
   "options": {
     "step": {
       "init": {
+        "title": "Impostazioni della VMC",
+        "description": "**{titolo}** (IP {ip}): cosa vuoi fare?",
+        "menu_options": {
+          "cambia_ip": "Cambia l'IP della VMC",
+          "elimina": "Elimina la VMC"
+        }
+      },
+      "cambia_ip": {
         "title": "Cambia IP VMC",
         "description": "Nuovo indirizzo IP della VMC. Il package viene aggiornato e Home Assistant chiede di riavviarsi.",
         "data": {
           "host": "IP VMC su porta 5001"
         }
+      },
+      "elimina": {
+        "title": "Elimina la VMC",
+        "description": "Vuoi eliminare **{titolo}** solo da Home Assistant, lasciandola sulla rete di casa, oppure anche dalla rete?\n\n- **Solo da Home Assistant**: la VMC resta collegata al Wi-Fi di casa. Si può riaggiungere con «Aggiungi dispositivo» scrivendo solo l'IP.\n- **Anche dalla rete**: la VMC lascia il Wi-Fi di casa e torna in Access Point, cioè mostra di nuovo la sua rete VMC_…. Per ricollegarla: «Aggiungi dispositivo» → «No, va installata da zero», oppure l'App Air Guard.\n\nIn tutti e due i casi la cartella della VMC va in `vmc_master_backup` e poi serve un riavvio di Home Assistant.",
+        "menu_options": {
+          "elimina_solo_ha": "Solo da Home Assistant (resta sulla rete di casa)",
+          "elimina_dalla_rete": "Anche dalla rete (torna in Access Point)"
+        }
+      },
+      "elimina_dalla_rete": {
+        "title": "Elimina la VMC anche dalla rete"
+      },
+      "errore_rete": {
+        "title": "Access Point non riuscito",
+        "description": "{errore}\n\n{titolo} non è stata eliminata.",
+        "menu_options": {
+          "elimina_dalla_rete": "Riprova",
+          "elimina_solo_ha": "Eliminala solo da Home Assistant (resta sulla rete di casa)"
+        }
       }
+    },
+    "progress": {
+      "access_point": "Invio del comando Access Point alla VMC ({ip}) e attesa che lasci il Wi-Fi di casa: al massimo un minuto."
     },
     "error": {
       "ip_non_valido": "IP non valido: quattro numeri da 0 a 255 separati da punti.",
       "ip_in_uso": "IP già usato da un'altra VMC."
+    },
+    "abort": {
+      "eliminata": "{titolo} è stata eliminata da Home Assistant e resta sulla rete di casa. Per completare, riavvia Home Assistant.",
+      "eliminata_dalla_rete": "{titolo} è tornata in Access Point (la sua rete VMC_… è di nuovo visibile) ed è stata eliminata da Home Assistant. Per completare, riavvia Home Assistant."
     }
   },
   "issues": {

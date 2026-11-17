@@ -101,16 +101,50 @@
   "options": {
     "step": {
       "init": {
+        "title": "Unit settings",
+        "description": "**{titolo}** (IP {ip}): what do you want to do?",
+        "menu_options": {
+          "cambia_ip": "Change the unit's IP",
+          "elimina": "Delete the unit"
+        }
+      },
+      "cambia_ip": {
         "title": "Change unit IP",
         "description": "New IP address of the unit. The package is updated and Home Assistant asks to restart.",
         "data": {
           "host": "Unit IP on port 5001"
         }
+      },
+      "elimina": {
+        "title": "Delete the unit",
+        "description": "Delete **{titolo}** only from Home Assistant, leaving it on the home network, or from the network too?\n\n- **Only from Home Assistant**: the unit stays on the home Wi-Fi. It can be added again with «Add device» by entering only the IP.\n- **From the network too**: the unit leaves the home Wi-Fi and goes back to Access Point mode, showing its VMC_… network again. To connect it again: «Add device» → «No, it must be set up from scratch», or the Air Guard app.\n\nIn both cases the unit's folder goes to `vmc_master_backup` and Home Assistant then needs a restart.",
+        "menu_options": {
+          "elimina_solo_ha": "Only from Home Assistant (stays on the home network)",
+          "elimina_dalla_rete": "From the network too (back to Access Point)"
+        }
+      },
+      "elimina_dalla_rete": {
+        "title": "Delete the unit from the network too"
+      },
+      "errore_rete": {
+        "title": "Access Point failed",
+        "description": "{errore}\n\n{titolo} has not been deleted.",
+        "menu_options": {
+          "elimina_dalla_rete": "Try again",
+          "elimina_solo_ha": "Delete it only from Home Assistant (stays on the home network)"
+        }
       }
+    },
+    "progress": {
+      "access_point": "Sending the Access Point command to the unit ({ip}) and waiting for it to leave the home Wi-Fi: one minute at most."
     },
     "error": {
       "ip_non_valido": "Invalid IP: four numbers from 0 to 255 separated by dots.",
       "ip_in_uso": "IP already used by another unit."
+    },
+    "abort": {
+      "eliminata": "{titolo} has been deleted from Home Assistant and stays on the home network. To finish, restart Home Assistant.",
+      "eliminata_dalla_rete": "{titolo} is back in Access Point mode (its VMC_… network is visible again) and has been deleted from Home Assistant. To finish, restart Home Assistant."
     }
   },
   "issues": {

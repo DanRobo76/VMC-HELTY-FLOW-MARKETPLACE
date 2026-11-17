@@ -10,6 +10,9 @@ DOMAIN: Final = "vmc_master"
 # Dati salvati in ogni voce di configurazione (una per VMC)
 CONF_NOME: Final = "nome"
 CONF_HOST: Final = "host"
+# Ultimo titolo della voce scritto dall'integrazione (nome letto dalla VMC): se l'utente
+# rinomina la voce, il suo nome resta
+CONF_TITOLO: Final = "titolo"
 
 # Nome della prima VMC (nella release 8.6.0 l'unica con la Finestra Prima Installazione VMC)
 NOME_MASTER: Final = "master"

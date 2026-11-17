@@ -2,6 +2,7 @@
 
 «Aggiungi dispositivo» chiede per prima cosa se la VMC e' gia' collegata al Wi-Fi di casa:
 - si': basta l'IP (la prima VMC si chiama «master», per le altre il nome si legge dalla VMC);
+  il titolo della voce e' il nome della VMC (quello dell'App Air Guard);
 - no: la VMC si collega al Wi-Fi da qui, con il motore della Finestra Prima Installazione VMC
   della release 8.6.0 (serve Home Assistant OS con una scheda Wi-Fi).
 """
@@ -38,6 +39,7 @@ from . import prima_installazione as pi
 from .const import (
     CONF_HOST,
     CONF_NOME,
+    CONF_TITOLO,
     DOMAIN,
     IP_RE,
     NOME_MASTER,
@@ -109,6 +111,20 @@ def nome_da_vmc(nome_vmc: str) -> str:
     senza_accenti = unicodedata.normalize("NFKD", "".join(parole))
     lettere = re.sub(r"[^a-z]", "", senza_accenti.encode("ascii", "ignore").decode().lower())
     return lettere[:10]
+
+
+def titolo_voce(nome_vmc: str | None, nome: str) -> str:
+    """Titolo della voce in Dispositivi e servizi: il nome della VMC (Air Guard).
+
+    «VMC Soggiorno» resta com'e', «Soggiorno» diventa «VMC Soggiorno»; senza nome letto
+    resta «VMC ‹nome›» (il nome interno, che non cambia mai).
+    """
+    nome_vmc = (nome_vmc or "").strip()
+    if not nome_vmc:
+        return f"VMC {nome}"
+    if nome_vmc.split()[0].lower() == "vmc":
+        return nome_vmc
+    return f"VMC {nome_vmc}"
 
 
 def _messaggio(errore: pi.Failure) -> str:
@@ -187,9 +203,7 @@ class VmcMasterConfigFlow(ConfigFlow, domain=DOMAIN):
             elif ip in ips:
                 errori[CONF_HOST] = "ip_in_uso"
             else:
-                if NOME_MASTER not in nomi:
-                    # la prima VMC si chiama sempre «master»
-                    return await self._async_continua(NOME_MASTER, ip, raggiungibile=None)
+                # il nome letto serve anche alla prima VMC («master») per il titolo della voce
                 nome_vmc = await async_nome_vmc(ip)
                 return await self._async_scegli_nome(ip, nome_vmc or "", nome_vmc is not None)
 
@@ -217,10 +231,10 @@ class VmcMasterConfigFlow(ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         """La prima VMC e' «master»; per le altre si propone il nome letto dalla VMC."""
         nomi, _ips = self._nomi_e_ip_in_uso()
+        self._nome_vmc = nome_vmc
         if NOME_MASTER not in nomi:
             return await self._async_continua(NOME_MASTER, ip, raggiungibile=risponde)
         self._dati = {CONF_HOST: ip}
-        self._nome_vmc = nome_vmc
         self._risponde = risponde
         return await self.async_step_nome()
 
@@ -307,8 +321,10 @@ class VmcMasterConfigFlow(ConfigFlow, domain=DOMAIN):
         )
 
     def _crea_voce(self) -> ConfigFlowResult:
-        nome = self._dati[CONF_NOME]
-        return self.async_create_entry(title=f"VMC {nome}", data=self._dati)
+        titolo = titolo_voce(self._nome_vmc, self._dati[CONF_NOME])
+        return self.async_create_entry(
+            title=titolo, data={**self._dati, CONF_TITOLO: titolo}
+        )
 
     # ---- VMC da installare: collegamento al Wi-Fi di casa ----------------------------
     async def async_step_da_installare(
@@ -588,11 +604,30 @@ class VmcMasterConfigFlow(ConfigFlow, domain=DOMAIN):
 
 
 class VmcMasterOptionsFlow(OptionsFlow):
-    """Cambia l'IP della VMC (sostituisce lo script Cambia IP)."""
+    """Ingranaggio della VMC: cambia l'IP oppure elimina la VMC (solo da Home Assistant o
+    anche dalla rete). La finestra «Elimina» del menu ⋮ e' di Home Assistant e non si
+    puo' cambiare: elimina solo da Home Assistant."""
+
+    def __init__(self) -> None:
+        self._task: asyncio.Task | None = None
+        self._errore = ""
+
+    def _segnaposto(self) -> dict[str, str]:
+        return {"titolo": self.config_entry.title, "ip": self.config_entry.data[CONF_HOST]}
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
+        return self.async_show_menu(
+            step_id="init",
+            menu_options=["cambia_ip", "elimina"],
+            description_placeholders=self._segnaposto(),
+        )
+
+    async def async_step_cambia_ip(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Cambia l'IP della VMC (sostituisce lo script Cambia IP)."""
         errori: dict[str, str] = {}
         voce = self.config_entry
         if user_input is not None:
@@ -614,4 +649,86 @@ class VmcMasterOptionsFlow(OptionsFlow):
         schema = vol.Schema(
             {vol.Required(CONF_HOST, default=voce.data[CONF_HOST]): str}
         )
-        return self.async_show_form(step_id="init", data_schema=schema, errors=errori)
+        return self.async_show_form(step_id="cambia_ip", data_schema=schema, errors=errori)
+
+    # ---- Elimina la VMC -----------------------------------------------------------
+    async def async_step_elimina(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Solo da Home Assistant (resta sul Wi-Fi di casa) o anche dalla rete?"""
+        return self.async_show_menu(
+            step_id="elimina",
+            menu_options=["elimina_solo_ha", "elimina_dalla_rete"],
+            description_placeholders=self._segnaposto(),
+        )
+
+    def _elimina_voce(self) -> None:
+        """La voce si elimina appena la finestra si chiude (come «Elimina» del menu ⋮:
+        la cartella della VMC va in vmc_master_backup e Home Assistant chiede il riavvio)."""
+        entry_id = self.config_entry.entry_id
+        self.hass.async_create_task(
+            self.hass.config_entries.async_remove(entry_id), f"{DOMAIN}_elimina_{entry_id}"
+        )
+
+    async def async_step_elimina_solo_ha(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        segnaposto = self._segnaposto()
+        self._elimina_voce()
+        return self.async_abort(reason="eliminata", description_placeholders=segnaposto)
+
+    def _avvia_access_point(self) -> asyncio.Task:
+        ip = self.config_entry.data[CONF_HOST]
+
+        def avanzamento(percento: int) -> None:
+            self.hass.loop.call_soon_threadsafe(
+                self.async_update_progress, min(max(percento, 0), 100) / 100
+            )
+
+        async def _esegui() -> str:
+            return await self.hass.async_add_executor_job(
+                pi.rimanda_in_access_point, self.hass.config.config_dir, ip, avanzamento
+            )
+
+        return self.hass.async_create_task(_esegui(), f"{DOMAIN}_access_point")
+
+    async def async_step_elimina_dalla_rete(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """La VMC lascia il Wi-Fi di casa (Access Point), poi si elimina la voce."""
+        nuovo = self._task is None
+        if nuovo:
+            self._task = self._avvia_access_point()
+        if nuovo or not self._task.done():
+            return self.async_show_progress(
+                step_id="elimina_dalla_rete",
+                progress_action="access_point",
+                progress_task=self._task,
+                description_placeholders=self._segnaposto(),
+            )
+        task, self._task = self._task, None
+        try:
+            task.result()
+        except pi.Failure as errore:
+            self._errore = _messaggio(errore)
+            return self.async_show_progress_done(next_step_id="errore_rete")
+        return self.async_show_progress_done(next_step_id="eliminata_dalla_rete")
+
+    async def async_step_eliminata_dalla_rete(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        segnaposto = self._segnaposto()
+        self._elimina_voce()
+        return self.async_abort(
+            reason="eliminata_dalla_rete", description_placeholders=segnaposto
+        )
+
+    async def async_step_errore_rete(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Access Point non riuscito: la voce non e' stata eliminata."""
+        return self.async_show_menu(
+            step_id="errore_rete",
+            menu_options=["elimina_dalla_rete", "elimina_solo_ha"],
+            description_placeholders={**self._segnaposto(), "errore": self._errore},
+        )
