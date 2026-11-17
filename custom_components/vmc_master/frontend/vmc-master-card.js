@@ -18,6 +18,37 @@ class VmcMasterCard extends HTMLElement {
     this._hass = undefined;
     this._scheda = undefined;
     this._caricata = undefined; // VMC (entry_id) della scheda costruita o in costruzione
+    this._connessione = undefined; // collegamento a Home Assistant che stiamo ascoltando
+    // Dopo un riavvio di Home Assistant (per esempio dopo un aggiornamento) il browser
+    // si ricollega senza ricaricare la pagina: si chiede di nuovo la configurazione,
+    // cosi' la scheda e' sempre quella della versione installata, senza Ctrl+F5.
+    this._alRicollegamento = () => {
+      this._caricata = undefined;
+      this._carica();
+    };
+  }
+
+  disconnectedCallback() {
+    this._ascolta(undefined);
+  }
+
+  connectedCallback() {
+    if (this._hass) {
+      this._ascolta(this._hass.connection);
+    }
+  }
+
+  _ascolta(connessione) {
+    if (this._connessione === connessione) {
+      return;
+    }
+    if (this._connessione) {
+      this._connessione.removeEventListener("ready", this._alRicollegamento);
+    }
+    this._connessione = connessione;
+    if (connessione) {
+      connessione.addEventListener("ready", this._alRicollegamento);
+    }
   }
 
   static getConfigForm() {
@@ -59,6 +90,9 @@ class VmcMasterCard extends HTMLElement {
 
   set hass(hass) {
     this._hass = hass;
+    if (this.isConnected) {
+      this._ascolta(hass.connection);
+    }
     if (this._scheda) {
       this._scheda.hass = hass;
     } else {
