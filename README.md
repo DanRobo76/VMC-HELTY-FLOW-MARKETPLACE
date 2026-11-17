@@ -31,7 +31,7 @@
 </p>
 
 <p align="center">
-  Hai già provato <strong><a href="https://github.com/DanRobo76/Aspiratore">ASPIRATORE MASTER</a></strong> e <strong><a href="https://github.com/DanRobo76/VMC-HELTY-FLOW-LIGHT/tree/main">VMC Versione Light</a></strong>?
+  Hai già provato <strong><a href="https://github.com/DanRobo76/Aspiratore">ASPIRATORE MASTER</a></strong>?
 </p>
 
 ---
@@ -60,7 +60,7 @@
 | <sub>**Selezione dinamica delle entità**</sub> | <sub>Sensori di Home Assistant e servizi meteo al posto dei sensori della VMC, con offset</sub> |
 | <sub>**Intestazione animata**</sub> | <sub>Il flusso d'aria scorre in funzione della portata e il colore del LED indica lo stato: bianco normale, giallo allerta (che respira a VMC ferma con Avvisi presenti), blu umidità, rosso inquinanti, grigio OFF-Line; la scritta «Alert» sotto i tasti avvisa prima di avviare la VMC</sub> |
 | <sub>**Avvisi e notifiche**</sub> | <sub>Su dispositivo mobile e tramite Media Player</sub> |
-| <sub>**Più VMC**</sub> | <sub>Ogni VMC si aggiunge da *Dispositivi e servizi*: per una VMC già in rete basta l'IP; una sola scheda per tutte le VMC</sub> |
+| <sub>**Più VMC**</sub> | <sub>Ogni VMC si aggiunge da *Dispositivi e servizi*: per una VMC già in rete basta l'IP</sub> |
 | <sub>**Prima installazione**</sub> | <sub>Collegamento della VMC nuova al Wi-Fi di casa da *Aggiungi dispositivo*, senza l'App Air Guard</sub> |
 </details>
 
@@ -98,8 +98,8 @@
 - <sub>Avvisa l'utente tramite notifica sul Dispositivo Mobile in caso di Avvio, Arresto, Errori o cambio filtro della VMC.</sub>
 - <sub>Permette l'accensione e lo spegnimento automatico in funzione degli inquinanti (CO₂ e/o VOC) [sensori della VMC presenti solo nella VMC HELTY FLOW ELITE; per la CO₂ si può selezionare anche un'entità di Home Assistant].</sub>
 - <sub>Permette l'accensione e lo spegnimento automatico in funzione dell'Umidità Interna Settata (sopra il valore impostato, oppure con aria secca ≤ 35% per far entrare aria dall'esterno).</sub>
-- <sub>Se si dispone di più VMC, ognuna si aggiunge da *Impostazioni → Dispositivi e servizi → VMC Master → Aggiungi dispositivo* (se è già collegata al Wi-Fi basta l'IP: il nome si legge dalla VMC) e si elimina dalla stessa pagina con l'icona ingranaggio, scegliendo se lasciarla sulla rete di casa o rimandarla in Access Point (la sua cartella va in `config/vmc_master_backup`); una sola scheda «VMC Master» per tutte le VMC.</sub>
-- <sub>Collega una VMC appena installata al Wi-Fi di casa senza l'App Air Guard, con gli stessi passaggi del manuale Helty, direttamente da *Aggiungi dispositivo* (risposta «No, va installata da zero»): ricerca della rete VMC_xxxxxxxx, invio della rete di casa, IP e MAC da prenotare sul router e, se qualcosa non va, la tabella dei lampeggi del LED. Richiede Home Assistant OS su un computer con scheda Wi-Fi integrata oppure con una chiavetta USB Wi-Fi collegata (vedere Requisiti). A installazione conclusa la VMC resta visibile e utilizzabile anche dall'App Air Guard, senza ripetere la procedura.</sub>
+- <sub>Se si dispone di più VMC, ognuna si aggiunge da *Impostazioni → Dispositivi e servizi → VMC Master → Aggiungi dispositivo* (se è già collegata al Wi-Fi basta l'IP: il nome si legge dalla VMC) e si elimina dalla stessa pagina con l'icona ingranaggio, scegliendo se lasciarla sulla rete di casa o rimandarla in Access Point (la sua cartella va in `config/vmc_master_backup`).</sub>
+- <sub>Collega una VMC appena installata al Wi-Fi di casa senza l'App Air Guard, con gli stessi passaggi delle istruzioni Helty, direttamente da *Aggiungi dispositivo* (risposta «No, va installata da zero»): ricerca della rete VMC_xxxxxxxx, invio della rete di casa, IP e MAC da prenotare sul router e, se qualcosa non va, la tabella dei lampeggi del LED. Richiede Home Assistant OS su un computer con scheda Wi-Fi integrata oppure con una chiavetta USB Wi-Fi collegata (vedere Requisiti). A installazione conclusa la VMC resta visibile e utilizzabile anche dall'App Air Guard, senza ripetere la procedura.</sub>
 - <sub>Permette lo spegnimento automatico in funzione della Temperatura Esterna ≤ -18 °C e successiva ripresa in funzione degli offset impostati.</sub>
   > <sub>**Nota:** per impostazione firmware, la priorità è assegnata al sensore interno della VMC rispetto al valore rilevato dal sensore esterno dell'entità selezionata.</sub>
 - <sub>Permette l'avvio automatico a Velocità 1 in funzione della Differenza Temperatura Interna - Temperatura Esterna se > 23 °C e successiva ripresa.</sub>
@@ -127,38 +127,36 @@
 
 <br>
 
-<img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/main/immagini/README/punto_rugiada_it.png" alt="Controllo del punto di rugiada" width="100%">
+<sub>**Servizi da usare nelle proprie automazioni e script.** Ogni servizio invia un comando alla VMC. Qui la VMC si chiama `master`: per un'altra VMC sostituire `master` con il suo nome.</sub>
 
-<sub>Il software calcola il Punto di Rugiada Esterno (PdR Ext.) e il Punto di Rugiada Interno (PdR Int.). Se la differenza tra il PdR Ext. e il PdR Int. è inferiore al "Set Lim. Δ Punto di Rugiada" (valore impostato dall'utente), la VMC garantirà un adeguato trasporto dell'umidità dall'interno all'esterno dell'edificio. Al contrario, se la differenza tra il PdR Ext. e il PdR Int. sarà maggiore o uguale al "Set Lim. Δ Punto di Rugiada", la VMC si arresterà per evitare il trasporto dell'umidità dall'esterno all'interno dell'edificio; la ripresa automatica sull'ultima velocità impostata è garantita non appena la differenza tra il PdR Ext. e il PdR Int. è inferiore al "Set Lim. Δ Punto di Rugiada". Le allerte con priorità maggiore (congelamento, Δ temperatura, inquinanti) prevalgono sul punto di rugiada: vedere "Logiche di funzionamento".</sub>
+| <sub>Servizio</sub> | <sub>Cosa fa</sub> |
+|---|---|
+| <sub>`shell_command.vmc_master_velocita_0`</sub> | <sub>Ferma la VMC (Velocità 0)</sub> |
+| <sub>`shell_command.vmc_master_velocita_1`</sub> | <sub>Velocità 1</sub> |
+| <sub>`shell_command.vmc_master_velocita_2`</sub> | <sub>Velocità 2</sub> |
+| <sub>`shell_command.vmc_master_velocita_3`</sub> | <sub>Velocità 3</sub> |
+| <sub>`shell_command.vmc_master_velocita_4`</sub> | <sub>Velocità 4</sub> |
+| <sub>`shell_command.vmc_master_notturna`</sub> | <sub>Velocità Notturna</sub> |
+| <sub>`shell_command.vmc_master_iperventilazione`</sub> | <sub>Iperventilazione</sub> |
+| <sub>`shell_command.vmc_master_freecooling`</sub> | <sub>Free Cooling / Free Heating</sub> |
+| <sub>`shell_command.vmc_master_sensori_on`</sub> | <sub>Accende i sensori della VMC</sub> |
+| <sub>`shell_command.vmc_master_sensori_off`</sub> | <sub>Spegne i sensori della VMC</sub> |
+| <sub>`shell_command.vmc_master_pannello_led_on`</sub> | <sub>Accende i LED del pannello</sub> |
+| <sub>`shell_command.vmc_master_pannello_led_off`</sub> | <sub>Spegne i LED del pannello</sub> |
+| <sub>`shell_command.vmc_master_reset_filtro`</sub> | <sub>Azzera il contatore del filtro</sub> |
 
-<br><br>
+<sub>Esempio: ogni sera alle 22:00 la VMC passa alla Velocità 1.</sub>
 
-<sub>Permette l'utilizzo dei seguenti Servizi, da impiegare in qualsiasi Automazione, Script, etc.:</sub>
+```yaml
+alias: VMC a Velocità 1 alle 22
+triggers:
+  - trigger: time
+    at: "22:00:00"
+actions:
+  - action: shell_command.vmc_master_velocita_1
+```
 
-<img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/main/immagini/README/servizi_it.png" alt="Servizi" width="100%">
-</details>
-
-<details>
-<summary><strong>Integrazione e installazione manuale: le differenze</strong></summary>
-
-| <sub>Funzione</sub> | <sub>Manuale 8.6.0</sub> | <sub>Integrazione</sub> |
-|---|---|---|
-| <sub>Installare</sub> | <sub>Copiare i file e incollare automazione e scheda</sub> | <sub>*Marketplace → Installa*, poi l'IP della VMC</sub> |
-| <sub>Aggiungere una VMC</sub> | <sub>Finestra Clona + incollare automazione e scheda</sub> | <sub>*Aggiungi dispositivo*: solo l'IP (il nome si legge dalla VMC), nient'altro da incollare</sub> |
-| <sub>Cancellare una VMC</sub> | <sub>Finestra Clona + cancellare a mano automazione e scheda</sub> | <sub>Icona ingranaggio → «Elimina la VMC»: solo da Home Assistant o anche dalla rete (torna in Access Point); la cartella va in `config/vmc_master_backup`</sub> |
-| <sub>Cambiare IP</sub> | <sub>Campo «Cambia IP VMC» della scheda</sub> | <sub>Lo stesso campo, oppure l'icona ingranaggio sulla VMC → «Cambia l'IP della VMC»</sub> |
-| <sub>Cambiare nome della VMC</sub> | <sub>Campo «Cambia Nome VMC»</sub> | <sub>Invariato</sub> |
-| <sub>Collegare al Wi-Fi una VMC nuova</sub> | <sub>Finestra Prima Installazione VMC della scheda Master</sub> | <sub>*Aggiungi dispositivo* → «No, va installata da zero» (stesso motore della 8.6.0)</sub> |
-| <sub>Automazione principale</sub> | <sub>Incollata nell'editor (modificabile)</sub> | <sub>Nel package (`vmc_‹nome›_automazione.yaml`, sola lettura)</sub> |
-| <sub>Aggiornare</sub> | <sub>Scaricare e sostituire i file</sub> | <sub>*Marketplace → Aggiorna*, poi riavviare</sub> |
-| <sub>Nomi delle entità</sub> | <sub>`vmc_master_…`, `vmc_‹nome›_…`</sub> | <sub>Identici: la cronologia resta</sub> |
-
-<sub>L'integrazione scrive in `config/packages/vmc_helty_flow/‹nome›` gli stessi file che la 8.6.0 crea con gli script Clona e Cambia IP. La Finestra Clona e la Finestra Prima Installazione VMC non ci sono più, perché le sostituisce *Aggiungi dispositivo*: nella scheda e nel package vengono tolti solo i blocchi fra i segnaposto «SEZIONE CLONA VMC» e «SEZIONE INSTALLA VMC», gli stessi che la 8.6.0 toglie già alle VMC clonate. Il collegamento al Wi-Fi usa lo stesso motore della 8.6.0.</sub>
-
-<sub>Correzioni rispetto allo script Clona della 8.6.0, solo nella scheda:</sub>
-- <sub>la riga `or is_state('input_boolean.vmc_master_opzione_finestra_clona', 'on')` viene tolta intera. Lo script Clona lasciava `or is_state('on')`, che faceva andare in errore il riquadro grande del Pannello Informazioni;</sub>
-- <sub>il link del video resta `VMC_MASTER_promo_IT.mp4`. Nelle VMC clonate lo script Clona lo rinominava in `VMC_‹nome›_promo_IT.mp4`, un file che non esiste;</sub>
-- <sub>il link **GitHub** del Pannello Informazioni apre questo repository.</sub>
+<sub>Per usarlo: *Impostazioni → Automazioni e scenari → Crea automazione → Crea nuova automazione*, menu **⋮** in alto a destra → **Modifica in YAML**, incollare il testo e premere **Salva**.</sub>
 </details>
 
 <details>
@@ -180,9 +178,14 @@
 - <sub>VMC **Helty Flow Plus** oppure **Flow Elite** visibile nell'app **[Air Guard](https://play.google.com/store/apps/details?id=com.helty.heltyair&hl=it&gl=US&pli=1)**; diversamente, inserirla nella rete di casa con la stessa app, oppure collegarla senza l'app da *Aggiungi dispositivo* dell'integrazione</sub>
 - <sub>Indirizzo IP della VMC statico (impostato nel router); la VMC risponde sulla porta 5001</sub>
 - <sub>Package abilitati nel file `configuration.yaml` (passo 1 dell'installazione). Se manca la riga, l'integrazione lo segnala in *Impostazioni → Riparazioni*.</sub>
-- <sub>**Solo per gli Avvisi audio:** l'integrazione **Google Translate Text-to-Speech** configurata in YAML nel file <strong>configuration.yaml</strong> della cartella <strong>config</strong>, con la sintassi riportata nell'immagine. Questa configurazione crea l'azione `tts.google_translate_say` usata dagli script audio del Package; se l'integrazione viene aggiunta soltanto dall'interfaccia (Impostazioni → Dispositivi e servizi) l'azione non viene creata e gli avvisi audio non vengono riprodotti. Dopo la modifica salvare il file e riavviare Home Assistant.</sub>
+- <sub>**Solo per gli Avvisi audio:** l'integrazione **Google Translate Text-to-Speech** scritta nel file <strong>configuration.yaml</strong> della cartella <strong>config</strong>. Aggiungere in fondo al file:</sub>
 
-  <img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/main/immagini/README/configurazione_tts.png" alt="configuration.yaml: tts / google_translate" width="60%">
+  ```yaml
+  tts:
+    - platform: google_translate
+  ```
+
+  <sub>Poi salvare il file e riavviare Home Assistant. Servono proprio queste righe: creano l'azione `tts.google_translate_say` usata dagli avvisi audio. Se l'integrazione si aggiunge solo da *Impostazioni → Dispositivi e servizi*, l'azione non c'è e gli avvisi audio restano muti.</sub>
 
 - <sub>**Solo per collegare al Wi-Fi di casa una VMC nuova senza l'App Air Guard:** Home Assistant OS con il Supervisor, installato su un computer dotato di scheda Wi-Fi integrata oppure con una chiavetta USB Wi-Fi compatibile collegata; la scheda deve risultare tra le interfacce di rete di Home Assistant (Impostazioni → Sistema → Rete).</sub>
 - <sub>**Consigliata:** l'app **File editor** di Home Assistant, con cui si modifica <strong>configuration.yaml</strong> [Impostazioni → Applicazioni → Installa app → File editor → Installa]</sub>
@@ -230,17 +233,25 @@ Serve Home Assistant **2026.11** o successivo.
      packages: !include_dir_named packages/
    ```
 
-2. **Installare**: *Impostazioni → Marketplace → VMC Master → Installa*, poi riavviare Home Assistant.
-3. **Aggiungere la VMC**: *Impostazioni → Dispositivi e servizi → Aggiungi integrazione → VMC Master*, scrivere il nome (la prima VMC si chiama `master`) e l'IP, poi premere **Invia**.
+2. **Installare** (VMC Master non è ancora nel catalogo del Marketplace, si aggiunge come repository personalizzato):
+   - *Impostazioni → Marketplace*;
+   - menu **⋮** in alto a destra → **Repository personalizzate**;
+   - scrivere `https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE`;
+   - come tipo scegliere **Integrazione** e premere **Aggiungi**;
+   - cercare **VMC Master** e premere **Installa**;
+   - riavviare Home Assistant.
+3. **Aggiungere la VMC**:
+   - *Impostazioni → Dispositivi e servizi → Aggiungi integrazione → VMC Master*;
+   - alla domanda «La VMC è già collegata al Wi-Fi di casa?» scegliere **«Sì, è già collegata: scrivo solo l'IP»**;
+   - scrivere l'IP della VMC e premere **Invia**.
+
+   La prima VMC si chiama sempre `master`; per le altre il nome si legge dalla VMC.
+   Se la VMC non è ancora collegata al Wi-Fi: vedere «VMC nuova senza l'App Air Guard» nella guida A qui sotto.
 4. **Riavviare**: in *Impostazioni* cliccare **«VMC Master: riavviare Home Assistant»** e premere **Invia**.
 5. **Aggiungere la scheda**: premere **Ctrl+F5**, poi sulla plancia **matita → Aggiungi scheda → VMC Master** e scegliere la VMC.
 6. **Solo la prima volta**: nella scheda eseguire **«VMC ‹nome› - Profilo Inizializzazione»**, poi scegliere i sensori (vedi *Configurazione*).
 
-Se VMC Master non compare nel Marketplace: **⋮ → Repository personalizzate**, indirizzo `https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE`, tipo **Integrazione**.
-
 **Aggiornare**: quando il Marketplace segnala una nuova versione premere **Aggiorna**, poi riavviare Home Assistant dalla richiesta di riavvio del Marketplace. Basta un riavvio: all'avvio l'integrazione aggiorna il package e ricarica da sola le parti cambiate. Solo quando cambia qualcosa che Home Assistant non sa ricaricare (per esempio l'IP della VMC) compare anche «VMC Master: riavviare Home Assistant». Il Marketplace controlla le nuove versioni ogni 48 ore: per vederle subito, nella pagina di VMC Master **⋮ → Aggiorna le informazioni**.
-
-Hai già la 8.6.0 manuale? Segui la guida B qui sotto: impostazioni e cronologia restano.
 
 <details>
 <summary><strong>A. Guida passo passo per chi parte da zero</strong></summary>
@@ -287,17 +298,17 @@ In *Impostazioni*, in cima alla pagina, compare **«VMC Master: riavviare Home A
 1. Premere **Ctrl+F5** sulla pagina di Home Assistant, così il browser carica la scheda nuova;
 2. aprire la plancia. Nelle installazioni nuove la plancia **Panoramica** è generata in automatico: in questo caso creare prima una plancia da *Impostazioni → Plance → Aggiungi plancia → Nuova plancia da zero*;
 3. **icona matita** (Modifica la plancia) in alto a destra → **Aggiungi scheda**;
-4. cercare **VMC Master** e cliccarla. C'è una sola scheda per tutte le VMC: la VMC si sceglie nel passo seguente;
+4. cercare **VMC Master** e cliccarla;
 5. nel campo **VMC** scegliere la VMC, che compare con il nome letto dalla VMC (per esempio «VMC ‹nome›»), e premere **Salva**, poi **Fatto** in alto a destra.
 
 ### A7. Profilo Inizializzazione
-Come nella 8.6.0, solo la prima volta: nel pannello **Impostazioni** della scheda premere **Esegui** su **«VMC ‹nome› - Profilo Inizializzazione»** e confermare con **OK** nel popup «Vuoi Procedere?». Al riavvio aprire la finestra **«Opzioni - Sensori da Selezionare»** e scegliere le entità dei sensori.
+Solo la prima volta: nel pannello **Impostazioni** della scheda premere **Esegui** su **«VMC ‹nome› - Profilo Inizializzazione»** e confermare con **OK** nel popup «Vuoi Procedere?». Al riavvio aprire la finestra **«Opzioni - Sensori da Selezionare»** e scegliere le entità dei sensori.
 
 ### Altre VMC
 Ripetere i punti **A4**, **A5**, **A6** e **A7**: per una VMC già collegata al Wi-Fi basta l'IP. Si possono aggiungere più VMC di seguito e riavviare una volta sola.
 
 ### VMC nuova senza l'App Air Guard
-Una VMC appena installata, non ancora collegata al Wi-Fi di casa, si collega direttamente da **Aggiungi dispositivo**, con gli stessi passaggi del manuale Helty. Serve Home Assistant OS con una scheda Wi-Fi sul server, integrata oppure una chiavetta USB (vedere *Requisiti*); altrimenti la finestra lo dice e la VMC si collega una volta con l'App Air Guard.
+Una VMC appena installata, non ancora collegata al Wi-Fi di casa, si collega direttamente da **Aggiungi dispositivo**, con gli stessi passaggi delle istruzioni Helty. Serve Home Assistant OS con una scheda Wi-Fi sul server, integrata oppure una chiavetta USB (vedere *Requisiti*); altrimenti la finestra lo dice e la VMC si collega una volta con l'App Air Guard.
 
 1. Accendere la VMC nuova: crea la sua rete `VMC_xxxxxxxx`.
 2. Aprire **Aggiungi dispositivo** (la prima volta dal punto **A4**, poi anche dal pulsante **Aggiungi dispositivo** della pagina *Impostazioni → Dispositivi e servizi → VMC Master*) e scegliere **«No, va installata da zero»**.
@@ -310,73 +321,6 @@ Una VMC appena installata, non ancora collegata al Wi-Fi di casa, si collega dir
 Se il collegamento non riesce, la finestra mostra il motivo, la tabella dei lampeggi del LED Allarme filtri e il ripristino Wi-Fi della VMC, e permette di riprovare. Se Home Assistant si riavvia a metà procedura, all'avvio l'integrazione riporta il Wi-Fi del server alla rete di prima.
 </details>
 
-<details>
-<summary><strong>B. Guida per chi ha già la 8.6.0 manuale</strong></summary>
-
-La guida vale per la VMC `master` e per tutte le VMC create con la Finestra Clona, qualunque nome abbiano. Le VMC clonate **non vanno cancellate prima**, né con la Finestra Clona né a mano: le sposta l'integrazione.
-
-### B1. Prima di iniziare
-1. Creare un backup completo: *Impostazioni → Sistema → Backup*, pulsante in basso a destra, e attendere che il backup compaia nell'elenco.
-2. Controllare la versione di Home Assistant: *Impostazioni → Informazioni* deve indicare **2026.11** o successiva.
-3. Annotare nome e IP di ogni VMC. I nomi sono quelli delle cartelle in `config/packages/vmc_helty_flow`: `master` e una cartella per ogni VMC clonata; l'IP è quello statico impostato nel router. Per ogni VMC con la cartella presente l'integrazione mostra anche l'IP trovato, quindi si può controllare.
-
-I package sono già abilitati dalla 8.6.0: il punto **A1** non serve.
-
-### B2. Installare l'integrazione e riavviare
-Eseguire i punti **A2** e **A3**.
-
-### B3. Aggiungere la VMC master
-1. Come al punto **A4**: *Impostazioni → Dispositivi e servizi → + Aggiungi integrazione → VMC Master*;
-2. scegliere **«Sì, è già collegata: scrivo solo l'IP»**: l'IP della VMC master è già scritto, controllarlo e premere **Invia**;
-3. compare **«Installazione manuale trovata»** con *IP scritto* e *IP nell'installazione manuale*: se sono uguali premere **Invia**; se sono diversi chiudere la finestra e ripetere con l'IP giusto;
-4. nella finestra finale premere **Fine**.
-
-La cartella manuale viene spostata in `config/vmc_master_backup/master_‹data›` e sostituita da quella dell'integrazione. I nomi delle entità restano uguali, quindi la cronologia e le impostazioni si conservano. **Non riavviare ancora**, anche se compare la richiesta di riavvio.
-
-### B4. Aggiungere le VMC clonate
-Ripetere il punto **B3** per ogni VMC clonata, scrivendo il suo IP: nella finestra **«Nome della VMC nell'integrazione»** viene proposto il nome della sua cartella; controllare che sia lo stesso e premere **Invia**. Si può partire anche dal pulsante **Aggiungi dispositivo** nella pagina *Impostazioni → Dispositivi e servizi → VMC Master*. Se la cartella di una VMC clonata non c'è più, la finestra «Installazione manuale trovata» non compare e l'integrazione la installa da zero: va bene così.
-
-### B5. Eliminare le automazioni incollate a mano, prima del riavvio
-Le automazioni principali ora sono nel package. Se restano anche quelle incollate, dopo il riavvio girano due automazioni uguali.
-
-1. *Impostazioni → Automazioni e scenari*;
-2. cliccare **«Automazione VMC Master»**, poi i **tre puntini** in alto a destra → **Elimina** e confermare;
-3. ripetere per ogni VMC clonata: la sua automazione si chiama **«Automazione VMC ‹nome›»**, con il nome in minuscolo come lo ha scritto la Finestra Clona.
-
-Eliminare solo le automazioni che si chiamano «Automazione VMC ‹nome›». Le altre automazioni «VMC Master - …» e «VMC ‹nome› - …» fanno parte del package e restano.
-
-### B6. Riavviare Home Assistant
-Come al punto **A5**: in *Impostazioni* cliccare **«VMC Master: riavviare Home Assistant»** e premere **Invia**. Home Assistant si riavvia da solo: non serve riavviarlo di nuovo.
-
-### B7. Sostituire le schede
-Conviene aggiungere prima la scheda nuova e togliere la vecchia solo dopo aver visto che funziona.
-
-1. Premere **Ctrl+F5** sulla pagina di Home Assistant, così il browser carica la scheda nuova;
-2. aprire la plancia con le vecchie schede → **icona matita** in alto a destra;
-3. **Aggiungi scheda** → **VMC Master** (una sola scheda per tutte le VMC) → nel campo **VMC** scegliere la VMC → **Salva**;
-4. controllata la scheda nuova, sulla vecchia scheda della stessa VMC: **tre puntini** → **Elimina**;
-5. ripetere i passi 3 e 4 per ogni VMC, poi **Fatto** in alto a destra.
-
-### B8. Controllo finale
-- Nel **Pannello Informazioni** della scheda, «Package Ver.» indica la versione dell'integrazione (per esempio `v.9.0.0b14`).
-- Il Profilo Inizializzazione **non va rifatto**: le impostazioni restano quelle di prima.
-- Le automazioni principali «Automazione VMC ‹nome›» del package conservano area, etichette e categoria di quelle incollate.
-- Le 18 entità della Finestra Clona e le 27 della Finestra Prima Installazione VMC della VMC master, che non esistono più, vengono tolte da sole al riavvio.
-- Le cartelle in `config/packages/vmc_helty_flow` (una per VMC) sono quelle dell'integrazione: **non vanno cancellate**.
-- La cartella `config/vmc_master_backup` contiene le vecchie installazioni manuali: conviene tenerla qualche giorno, perché serve per tornare alla 8.6.0, e cancellarla quando tutto funziona.
-</details>
-
-<details>
-<summary><strong>Tornare alla 8.6.0 manuale</strong></summary>
-
-Il ritorno non è automatico. Ci sono due strade:
-
-1. **Ripristinare il backup** fatto al punto **B1** (*Impostazioni → Sistema → Backup*, scegliere il backup e ripristinarlo). Torna tutto com'era, ma si perde ciò che è cambiato dopo il backup, per esempio la cronologia.
-2. **A mano**, senza perdere la cronologia:
-   - in *Impostazioni → Dispositivi e servizi → VMC Master*, su ogni VMC **tre puntini → Elimina**: l'integrazione sposta le sue cartelle in `config/vmc_master_backup`;
-   - riportare le vecchie cartelle manuali da `config/vmc_master_backup` a `config/packages/vmc_helty_flow`, rinominandole con il solo nome della VMC (per esempio da `master_‹data›` a `master`);
-   - incollare di nuovo le automazioni e le schede manuali della 8.6.0, poi riavviare.
-</details>
 </details>
 
 <details>
@@ -390,7 +334,7 @@ Il ritorno non è automatico. Ci sono due strade:
 <details>
 <summary><strong>Schermate</strong></summary>
 
-<sub>Le schermate possono variare in funzione dell'ultima versione rilasciata. Con l'integrazione la Finestra Clona e la Finestra Prima Installazione VMC non ci sono più.</sub>
+<sub>Le schermate possono variare in funzione dell'ultima versione rilasciata.</sub>
 
 <img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/main/immagini/README/schermate_it.png" alt="Schermate VMC MASTER" width="100%">
 </details>
@@ -400,8 +344,6 @@ Il ritorno non è automatico. Ci sono due strade:
 
 <sub>**[GNU General Public License v3.0](LICENSE)**. Copyright © 2023-2026 Ing. Danilo Robotti. È consentito usare, copiare, modificare e distribuire il software, anche per scopi commerciali; chi lo distribuisce, anche modificato, deve renderne disponibile il codice sorgente con la stessa licenza e mantenere la nota di copyright. Il software è fornito senza alcuna garanzia.</sub>
 
-<sub>La release manuale 8.6.0 del repository [VMC-HELTY-FLOW](https://github.com/DanRobo76/VMC-HELTY-FLOW) resta sotto PolyForm Noncommercial License 1.0.0.</sub>
-
 <sub>**Impiego dell'Intelligenza Artificiale:** nello sviluppo del software l'autore si è avvalso anche di strumenti di intelligenza artificiale.</sub>
 </details>
 
@@ -409,8 +351,6 @@ Il ritorno non è automatico. Ci sono due strade:
 <summary><strong>Esonero di responsabilità</strong></summary>
 
 <sub>Il software è fornito «così com'è», senza garanzie di alcun tipo. In nessun caso lo sviluppatore sarà responsabile di danneggiamenti diretti, indiretti o conseguenti, correlati a difetti del presente software. L'utente ha l'onere e la responsabilità della scelta, dell'installazione, dell'uso e della gestione del software al fine del raggiungimento del risultato prefissatosi.</sub>
-
-<sub><strong><a href="https://github.com/DanRobo76/VMC-HELTY-FLOW/blob/main/SECURITY.md">Limiti del software (Security Policy)</a></strong></sub>
 </details>
 
 ---
@@ -448,7 +388,7 @@ Il ritorno non è automatico. Ci sono due strade:
 
 <p align="center">
   <strong>Your mechanical ventilation, controlled in Home Assistant.</strong><br>
-  Integration for Helty Flow Plus / Elite MVHR units: install it from the Home Assistant Marketplace and add each unit with a name and an IP, with no files to copy and no code to paste.
+  Integration for Helty Flow Plus / Elite MVHR units: install it from the Home Assistant Marketplace and add each unit with its IP, with no files to copy and no code to paste.
 </p>
 
 <p align="center">
@@ -460,7 +400,7 @@ Il ritorno non è automatico. Ci sono due strade:
 </p>
 
 <p align="center">
-  Have you tried <strong><a href="https://github.com/DanRobo76/Aspiratore">ASPIRATORE MASTER</a></strong> and <strong><a href="https://github.com/DanRobo76/VMC-HELTY-FLOW-LIGHT/tree/main">VMC Light Version</a></strong>?
+  Have you tried <strong><a href="https://github.com/DanRobo76/Aspiratore">ASPIRATORE MASTER</a></strong>?
 </p>
 
 ---
@@ -489,7 +429,7 @@ Il ritorno non è automatico. Ci sono due strade:
 | <sub>**Dynamic entity selection**</sub> | <sub>Home Assistant sensors and weather services instead of the unit's own sensors, with offsets</sub> |
 | <sub>**Animated header**</sub> | <sub>The airflow moves according to the flow rate and the LED colour shows the state: white normal, yellow alert (breathing when the unit is stopped with warnings present), blue humidity, red pollutants, grey off-line; the «Alert» label under the buttons warns before starting the unit</sub> |
 | <sub>**Alerts and notifications**</sub> | <sub>On mobile devices and through Media Players</sub> |
-| <sub>**Multiple units**</sub> | <sub>Each unit is added from *Devices & services*: for a unit already on the network the IP is enough; one card for all units</sub> |
+| <sub>**Multiple units**</sub> | <sub>Each unit is added from *Devices & services*: for a unit already on the network the IP is enough</sub> |
 | <sub>**First installation**</sub> | <sub>Connect a new unit to the home Wi-Fi from *Add device*, without the Air Guard app</sub> |
 </details>
 
@@ -500,9 +440,14 @@ Il ritorno non è automatico. Ci sono due strade:
 - <sub>**Helty Flow Plus** or **Flow Elite** unit visible in the **[Air Guard](https://play.google.com/store/apps/details?id=com.helty.heltyair&hl=it&gl=US&pli=1)** app; otherwise add it to the home network with the same app, or connect it without the app from the integration's *Add device*</sub>
 - <sub>Static IP address for the unit (set in the router); the unit answers on port 5001</sub>
 - <sub>Packages enabled in `configuration.yaml` (installation step 1)</sub>
-- <sub>**Only for audio alerts:** the **Google Translate Text-to-Speech** integration configured in YAML in `configuration.yaml`, with the syntax shown in the image, then restart Home Assistant.</sub>
+- <sub>**Only for audio alerts:** the **Google Translate Text-to-Speech** integration written in `configuration.yaml`. Add at the end of the file:</sub>
 
-  <img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/main/immagini/README/configurazione_tts.png" alt="configuration.yaml: tts / google_translate" width="60%">
+  ```yaml
+  tts:
+    - platform: google_translate
+  ```
+
+  <sub>Then save the file and restart Home Assistant. These lines create the `tts.google_translate_say` action used by the audio alerts; adding the integration only from *Settings → Devices & services* does not create it.</sub>
 
 - <sub>**Only to connect a new unit to the home Wi-Fi without the Air Guard app:** Home Assistant OS with the Supervisor, on a computer with a built-in Wi-Fi card or a compatible USB Wi-Fi dongle.</sub>
 
@@ -544,8 +489,19 @@ Requires Home Assistant **2026.11** or later.
      packages: !include_dir_named packages/
    ```
 
-2. **Install**: *Settings → Marketplace → VMC Master → Install*, then restart Home Assistant.
-3. **Add the unit**: *Settings → Devices & services → Add integration → VMC Master*. If the unit is already on the home Wi-Fi choose «Yes, it is connected» and type only its IP (the first unit is `master`; for the others the name is read from the unit and confirmed); otherwise see below.
+2. **Install** (VMC Master is not yet in the Marketplace catalog, so add it as a custom repository):
+   - *Settings → Marketplace*;
+   - **⋮** menu at the top right → **Custom repositories**;
+   - type `https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE`;
+   - choose type **Integration** and press **Add**;
+   - search for **VMC Master** and press **Install**;
+   - restart Home Assistant.
+3. **Add the unit**:
+   - *Settings → Devices & services → Add integration → VMC Master*;
+   - to the question «Is the unit already connected to the home Wi-Fi?» choose **«Yes, it is connected: I only enter the IP»**;
+   - type the unit's IP and press **Submit**.
+
+   The first unit is always `master`; for the others the name is read from the unit. A unit not yet on the home Wi-Fi: see below.
 4. **Restart**: in *Settings* click **«VMC Master: riavviare Home Assistant»** and press **Submit**.
 5. **Add the card**: press **Ctrl+F5**, then on the dashboard **pencil → Add card → VMC Master** and pick the unit.
 6. **First time only**: in the card run **«VMC ‹name› - Profilo Inizializzazione»**, then pick the sensors (see *Configuration*).
@@ -557,22 +513,8 @@ Requires Home Assistant **2026.11** or later.
 4. On the router reserve a fixed IP for the MAC shown; if it differs from the IP shown, power the unit off and on, type it and the window checks that the same unit answers.
 5. The first unit becomes `master`; for the others confirm the name read from the unit. Then restart and add the card.
 
-If VMC Master does not show up in the Marketplace: **⋮ → Custom repositories**, URL `https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE`, type **Integration**.
-
 **Update**: when the Marketplace shows a new version press **Update**, then restart Home Assistant from the Marketplace restart request. One restart is enough: at startup the integration updates the package and reloads the changed parts by itself. Only when something changes that Home Assistant cannot reload (for example the unit IP address) does «VMC Master: riavviare Home Assistant» appear as well. The Marketplace checks for new versions every 48 hours: to see them at once, on the VMC Master page **⋮ → Refresh information**.
 
-<details>
-<summary><strong>Moving from manual 8.6.0</strong></summary>
-
-The guide covers the `master` unit and every unit created with the Clone window, whatever its name. Do not delete cloned units first.
-
-1. Make a full backup; check Home Assistant is 2026.11 or later.
-2. Install the integration and restart (steps 2 above).
-3. Add each unit with «Yes, it is connected» and its IP (for cloned units the name of their folder is proposed: check it); confirm «Installazione manuale trovata» if both IPs match. The manual folder is moved to `config/vmc_master_backup`; entity names, history and settings stay. Do not restart yet.
-4. **Before restarting**, delete the hand-pasted automations «Automazione VMC Master» and «Automazione VMC ‹name›» of each cloned unit, with the name in lowercase (otherwise two identical automations run). The «VMC ‹name› - …» automations belong to the package and stay.
-5. Restart from the repair, then replace each old card with a **VMC Master** card. No Profilo Inizializzazione needed; the 18 Clone-window entities and the 27 First Installation window entities of `master` are removed automatically.
-6. Going back to manual 8.6.0 is not automatic: restore the backup, or delete the units from the integration, move the old folders back from `config/vmc_master_backup` and paste the automations and cards again.
-</details>
 </details>
 
 <details>
@@ -586,7 +528,7 @@ The guide covers the `master` unit and every unit created with the Clone window,
 <details>
 <summary><strong>Screenshots</strong></summary>
 
-<sub>Screenshots may change with the latest release. The interface of the card is in Italian. With the integration there is no Clone window and no First Installation window.</sub>
+<sub>Screenshots may change with the latest release. The interface of the card is in Italian.</sub>
 
 <img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/main/immagini/README/schermate_en.png" alt="VMC MASTER screenshots" width="100%">
 </details>
@@ -595,8 +537,6 @@ The guide covers the `master` unit and every unit created with the Clone window,
 <summary><strong>License</strong></summary>
 
 <sub>**[GNU General Public License v3.0](LICENSE)**. Copyright © 2023-2026 Ing. Danilo Robotti. You may use, copy, modify and distribute the software, also for commercial purposes; whoever distributes it, even modified, must make the source code available under the same licence and keep the copyright notice. The software comes with no warranty.</sub>
-
-<sub>The manual release 8.6.0 of the [VMC-HELTY-FLOW](https://github.com/DanRobo76/VMC-HELTY-FLOW) repository stays under the PolyForm Noncommercial License 1.0.0.</sub>
 
 <sub>**Use of Artificial Intelligence:** in developing the software the author also used artificial intelligence tools.</sub>
 </details>
