@@ -9,7 +9,7 @@ Comandi Air Guard (porta TCP 5001), gli stessi usati dall'app ufficiale:
   VMNM?            nome della VMC
   VMNM <nome>      rinomina (massimo 12 caratteri)
   VMSL?            rete memorizzata nella VMC
-  VMSL <dati>      modalità Infrastruttura (rete domestica) o Access Point
+  VMSL <dati>      modalità Infrastruttura (rete di casa) o Access Point
   VMPW <dati>      cambio password della rete VMC (solo in Access Point)
 """
 from __future__ import annotations
@@ -57,9 +57,9 @@ def private_ip(value):
     try:
         ip = ipaddress.IPv4Address(value)
     except (ValueError, TypeError):
-        raise Failure("invalid_ip", "Inserisci un indirizzo IPv4 valido.") from None
+        raise Failure("invalid_ip", "Inserire un indirizzo IPv4 valido.") from None
     if not any(ip in network for network in PRIVATE):
-        raise Failure("invalid_ip", "Usa l'indirizzo locale della VMC, ad esempio 192.168.1.x (x da 1 a 254).")
+        raise Failure("invalid_ip", "Usare l'indirizzo locale della VMC, ad esempio 192.168.1.x (x da 1 a 254).")
     return str(ip)
 
 
@@ -80,7 +80,7 @@ def field32(value, code, label, minimum=1):
     if not isinstance(value, str) or not minimum <= len(value) <= 32:
         raise Failure(code, f"{label} deve avere da {minimum} a 32 caratteri.")
     if any(not 32 <= ord(c) <= 126 for c in value):
-        raise Failure("unsupported_encoding", f"{label}: usa solo caratteri ASCII, senza lettere accentate.")
+        raise Failure("unsupported_encoding", f"{label}: usare solo caratteri ASCII, senza lettere accentate.")
     if value.endswith("*"):
         raise Failure("ambiguous_padding", f"{label} non può terminare con un asterisco: la VMC usa l'asterisco come riempimento.")
     return value.ljust(32, "*")
@@ -103,11 +103,11 @@ def password_packet(current, new):
 
 def check_ap(request):
     if not request["ap_ssid"]:
-        raise Failure("invalid_ap_ssid", "Inserisci il nome della rete Wi-Fi della VMC (VMC_xxxxxxxx).")
+        raise Failure("invalid_ap_ssid", "Inserire il nome della rete Wi-Fi della VMC (VMC_xxxxxxxx).")
     if not 1 <= len(request["ap_ssid"].encode("utf-8")) <= 32:
         raise Failure("invalid_ap_ssid", "Il nome della rete VMC deve contenere al massimo 32 byte.")
     if not wifi_password(request["ap_password"]):
-        raise Failure("invalid_ap_password", "Inserisci una password valida per la rete VMC: quella iniziale è 12345678.")
+        raise Failure("invalid_ap_password", "Inserire una password valida per la rete VMC: quella iniziale è 12345678.")
 
 
 def base_request(data, keys):
@@ -160,7 +160,7 @@ def configured_identity(data, root):
         raise Failure("invalid_request", "Richiesta non valida.")
     identity = read_identity(root)
     if not identity.get("ap_ssid") or data.get("ap_ssid") != identity["ap_ssid"] or not identity.get("ip"):
-        raise Failure("not_configured", "Prima completa il collegamento della VMC selezionata (sezione Configurazione rete).")
+        raise Failure("not_configured", "Prima completare il collegamento della VMC.")
     return {"ip": private_ip(identity["ip"]), "ap_ssid": identity["ap_ssid"],
             "expected_mac": mac(identity.get("mac", "")), "expected_name": identity.get("name", "")}
 
@@ -171,9 +171,9 @@ def normalize_verification(data, root):
     ip = private_ip(str(data.get("ip", "")).strip())
     identity = read_identity(root)
     if not identity.get("ap_ssid") or data.get("ap_ssid") != identity["ap_ssid"]:
-        raise Failure("not_configured", "Prima completa il collegamento della VMC selezionata.")
+        raise Failure("not_configured", "Prima completare il collegamento della VMC.")
     if not identity.get("mac"):
-        raise Failure("mac_unavailable", "Il MAC non è stato rilevato sulla rete domestica. Controlla MAC e IP nell'elenco dispositivi del router: il nuovo IP non può essere confermato automaticamente.")
+        raise Failure("mac_unavailable", "Il MAC non è stato rilevato sulla rete di casa. Controllare MAC e IP nell'elenco dispositivi del router: il nuovo IP non può essere confermato automaticamente.")
     return {"ip": ip, "ap_ssid": identity["ap_ssid"], "expected_mac": mac(identity["mac"]),
             "expected_name": identity["name"]}
 
@@ -206,7 +206,7 @@ def atomic_json(path, data):
 class Status:
     def __init__(self, root):
         self.root = Path(root)
-        self.data = {"version": VERSION, "stage": "In attesa", "progress": 0, "message": "Compila i dati e premi Collega VMC alla rete.",
+        self.data = {"version": VERSION, "stage": "In attesa", "progress": 0, "message": "Compilare i dati e premere Collega VMC alla rete.",
                      "network_sent": False, "success": False, "wifi_interfaces": [], "vmc_ip": "", "vmc_name": "", "vmc_mac": "",
                      "mac_source": "", "vmc_network_ssid": "", "vmc_router": "", "error_code": "", "finished": False,
                      "job_id": "", "action": ""}
@@ -357,7 +357,8 @@ def addresses(interface):
 
 def lan_targets(info, cidr=""):
     networks = []
-    values = [cidr] if cidr else [a for i in interfaces(info) if i.get("connected") for a in addresses(i)]
+    # cidr: una o più reti di ricerca separate da virgole (ad esempio cavo e Wi-Fi del server).
+    values = [c.strip() for c in cidr.split(",") if c.strip()] if cidr else [a for i in interfaces(info) if i.get("connected") for a in addresses(i)]
     for value in values:
         try:
             network = ipaddress.ip_network(value, strict=False)
@@ -369,7 +370,7 @@ def lan_targets(info, cidr=""):
             raise Failure("subnet_too_large", "La rete locale è troppo ampia per la ricerca automatica: sono supportate sottoreti fino a 256 indirizzi, ad esempio 192.168.1.x/24.")
         networks.append(network)
     if not networks:
-        raise Failure("no_lan", "Non è stata individuata una rete locale. Controlla che il server sia collegato alla rete domestica e riprova.")
+        raise Failure("no_lan", "Non è stata individuata una rete locale. Controllare che il server sia collegato alla rete di casa e riprovare.")
     own = {str(ipaddress.ip_interface(a).ip) for i in interfaces(info) for a in addresses(i)}
     return sorted({str(ip) for n in networks for ip in n.hosts()} - own)
 
@@ -396,7 +397,7 @@ def restore_payload(interface, password=""):
         config = {k: wifi[k] for k in ("ssid", "mode", "auth") if k in wifi}
         if config.get("auth") == "wpa-psk":
             if not password:
-                raise Failure("restore_password_required", "Il Wi-Fi del server è collegato alla rete " + wifi["ssid"] + ": per ripristinarlo al termine scrivi la password di quella rete nel campo «Password del Wi-Fi attuale del server». In alternativa usa una scheda Wi-Fi libera. Nessuna modifica è stata eseguita.")
+                raise Failure("restore_password_required", "Il Wi-Fi del server è collegato alla rete " + wifi["ssid"] + ": per ripristinarlo al termine scrivere la password di quella rete nel campo «Password del Wi-Fi attuale del server». In alternativa usare una scheda Wi-Fi libera. Nessuna modifica è stata eseguita.")
             config["psk"] = password
         elif config.get("auth", "open") != "open":
             raise Failure("unsupported_restore", "Il profilo Wi-Fi attuale del server usa un'autenticazione non supportata.")
@@ -404,12 +405,20 @@ def restore_payload(interface, password=""):
     return payload
 
 
+def password_hint(payload):
+    """Avviso per un ripristino non riuscito che usava una password del Wi-Fi del server."""
+    wifi = payload.get("wifi") if isinstance(payload, dict) else None
+    if isinstance(wifi, dict) and wifi.get("psk"):
+        return " La password della rete " + str(wifi.get("ssid", "")) + " potrebbe essere sbagliata."
+    return ""
+
+
 def ap_profile(ssid, password):
     return {"enabled": True, "ipv4": {"method": "auto", "route_metric": 4096}, "ipv6": {"method": "disabled"},
             "wifi": {"mode": "infrastructure", "auth": "wpa-psk", "ssid": ssid, "psk": password}}
 
 
-LED_HINT = (" Guarda il LED Allarme filtri della VMC e confronta i lampeggi con la tabella Errori connessione"
+LED_HINT = (" Guardare il LED Allarme filtri della VMC e confrontare i lampeggi con la tabella Errori connessione"
             " (sezione Errori e ripristino della scheda).")
 
 
@@ -445,7 +454,7 @@ class Engine:
                     break
                 self.sleep(1)
             else:
-                raise Failure("restore_failed", "Il Wi-Fi del server non è tornato alla rete precedente. Riprova; se la connessione non torna, controlla il server localmente.")
+                raise Failure("restore_failed", "Il Wi-Fi del server non è tornato alla rete precedente." + password_hint(backup["payload"]) + " Riprovare; se la connessione non torna, controllare il server localmente.")
         checkpoint.unlink()
 
     def recover(self):
@@ -457,7 +466,7 @@ class Engine:
         if requested:
             eligible = [i for i in eligible if i.get("interface") == requested]
         if not eligible:
-            raise Failure("no_wifi", "Il Supervisor non rileva una scheda Wi-Fi disponibile. Serve un computer di Home Assistant con scheda Wi-Fi integrata oppure con una chiavetta USB Wi-Fi compatibile collegata; in alternativa configura la VMC con l'app Air Guard.")
+            raise Failure("no_wifi", "Il Supervisor non rileva una scheda Wi-Fi disponibile. Serve un computer di Home Assistant con scheda Wi-Fi integrata oppure con una chiavetta USB Wi-Fi compatibile collegata; in alternativa configurare la VMC con l'app Air Guard.")
         eligible.sort(key=lambda i: (bool(i.get("connected")), bool(i.get("enabled") and (i.get("wifi") or {}).get("ssid"))))
         return eligible[0]
 
@@ -500,7 +509,7 @@ class Engine:
                 try:
                     self.restore()
                 except (Failure, OSError, ValueError):
-                    raise Failure("restore_failed", "Ripristino del Wi-Fi del server non completato. La configurazione di recupero è conservata: riprova oppure riavvia Home Assistant per il recupero automatico.") from None
+                    raise Failure("restore_failed", "Ripristino del Wi-Fi del server non completato." + password_hint(payload) + " La configurazione di recupero è conservata: riprovare oppure riavviare Home Assistant per il recupero automatico.") from None
             elif (self.root / "restore.json").exists():
                 (self.root / "restore.json").unlink()
 
@@ -523,13 +532,13 @@ class Engine:
                 return False
             self.sleep(5)
 
-    # ---- VMC sulla rete domestica ------------------------------------------
+    # ---- VMC sulla rete di casa ---------------------------------------------
     def confirm_identity(self, request):
         ip = request["ip"]
         try:
             name = self.transport.identify(ip)
         except OSError:
-            raise Failure("vmc_unreachable", "La VMC non risponde all'indirizzo " + ip + ". Controlla che sia accesa e collegata alla rete domestica.") from None
+            raise Failure("vmc_unreachable", "La VMC non risponde all'indirizzo " + ip + ". Controllare che sia accesa e collegata alla rete di casa.") from None
         if request["expected_name"] and name != request["expected_name"]:
             raise Failure("identity_unconfirmed", "All'indirizzo " + ip + " risponde " + name + " invece di " + request["expected_name"] + ". Nessun comando è stato inviato.")
         if request["expected_mac"]:
@@ -564,11 +573,11 @@ class Engine:
         info = self.supervisor.info()
         wireless = [i for i in interfaces(info) if i.get("type") == "wireless"]
         if not wireless:
-            raise Failure("no_wifi", "Il Supervisor non rileva una scheda Wi-Fi: scrivi a mano il nome della rete VMC letto sullo smartphone.")
+            raise Failure("no_wifi", "Il Supervisor non rileva una scheda Wi-Fi: scrivere a mano il nome della rete VMC letto sullo smartphone.")
         try:
             found = self.supervisor.accesspoints(wireless[0]["interface"])
         except Failure:
-            raise Failure("scan_failed", "La scheda Wi-Fi del server non ha restituito l'elenco delle reti. Scrivi a mano il nome della rete VMC letto sullo smartphone.") from None
+            raise Failure("scan_failed", "La scheda Wi-Fi del server non ha restituito l'elenco delle reti. Scrivere a mano il nome della rete VMC letto sullo smartphone.") from None
         networks = {}
         for ap in found:
             ssid = str(ap.get("ssid") or "")
@@ -586,9 +595,9 @@ class Engine:
         if len(vmc) == 1:
             message = "Trovata la rete " + vmc[0]["ssid"] + ": il nome è stato inserito nel campo della rete VMC."
         elif vmc:
-            message = "Trovate " + str(len(vmc)) + " reti VMC: scrivi nel campo quella della VMC da collegare (le cifre sono il numero di serie)."
+            message = "Trovate " + str(len(vmc)) + " reti VMC: scrivere nel campo quella della VMC da collegare (le cifre sono il numero di serie)."
         else:
-            message = "Nessuna rete VMC_xxxxxxxx visibile dal server. Avvicina il server o verifica che la VMC sia in modalità Access Point (vedi Ripristino Wi-Fi)."
+            message = "Nessuna rete VMC_xxxxxxxx visibile dal server. Avvicinare il server o verificare che la VMC sia in modalità Access Point (vedi Ripristino Wi-Fi)."
         self.status.emit("Ricerca completata", 100, message, success=bool(vmc), vmc_networks=vmc)
 
     # ---- Manuale: Configurazione rete > Infrastruttura ------------------------
@@ -598,36 +607,36 @@ class Engine:
         info = self.diagnose()
         self.status.data["success"] = False
         targets = [request["final_ip"]] if request["ip_mode"] == "IP riservato sul router" else lan_targets(info, request["lan_cidr"])
-        self.status.emit("Controllo rete domestica", 20, "Controllo delle VMC già presenti per evitare una conferma del dispositivo sbagliato.")
+        self.status.emit("Controllo rete di casa", 20, "Controllo delle VMC già presenti per evitare una conferma del dispositivo sbagliato.")
         previous_devices = self.discover(targets, "", "")
         name = ""
-        unreachable = "La rete VMC non è raggiungibile o non assegna un indirizzo. Controlla nome e password della rete VMC e che la VMC sia in modalità Access Point."
+        unreachable = "La rete VMC non è raggiungibile o non assegna un indirizzo. Controllare nome e password della rete VMC e che la VMC sia in modalità Access Point."
         with self.ap_session(info, request, unreachable) as (source_ip, source_interface):
             self.status.emit("Identificazione VMC", 40, "Lettura del nome della VMC prima dell'invio.")
             try:
                 name = self.transport.identify(source_ip, source_interface)
             except OSError:
-                raise Failure("vmc_unreachable", "La rete VMC è stata raggiunta, ma il dispositivo non risponde sulla porta 5001. Controlla che sia una VMC Helty compatibile.") from None
+                raise Failure("vmc_unreachable", "La rete VMC è stata raggiunta, ma il dispositivo non risponde sulla porta 5001. Controllare che sia una VMC Helty compatibile.") from None
             if any(device["name"] == name for device in previous_devices):
-                raise Failure("ambiguous_device", "Una VMC con lo stesso nome è già presente sulla rete domestica. Rinomina una delle due VMC prima di riprovare: nessuna nuova rete è stata inviata.")
-            self.status.emit("Invio rete domestica", 50, "Invio della rete " + request["home_ssid"] + " in modalità Infrastruttura (SALVA nel manuale).", vmc_name=name)
+                raise Failure("ambiguous_device", "Una VMC con lo stesso nome è già presente sulla rete di casa. Rinominare una delle due VMC prima di riprovare: nessuna nuova rete è stata inviata.")
+            self.status.emit("Invio rete di casa", 50, "Invio della rete " + request["home_ssid"] + " in modalità Infrastruttura (SALVA nel manuale).", vmc_name=name)
             self.transport.send(source_ip, packet, source_interface)
             self.status.data["network_sent"] = True
             self.status.emit("Attesa cambio rete", 60, "Attesa del collegamento della VMC alla nuova rete.", network_sent=True)
             self.sleep(3)
-        self.status.emit("Ricerca nuovo indirizzo", 80, "Ricerca della stessa VMC sulla rete domestica.")
+        self.status.emit("Ricerca nuovo indirizzo", 80, "Ricerca della stessa VMC sulla rete di casa.")
         deadline = self.now() + self.verify_seconds
         while self.now() < deadline:
             candidates = self.discover(targets, name, request["expected_mac"])
             if len(candidates) > 1:
-                raise Failure("ambiguous_device", "Più VMC rispondono con lo stesso nome: il collegamento non può essere confermato. Rinomina le VMC con nomi distinti.")
+                raise Failure("ambiguous_device", "Più VMC rispondono con lo stesso nome: il collegamento non può essere confermato. Rinominare le VMC con nomi distinti.")
             if len(candidates) == 1:
                 found = candidates[0]
                 atomic_json(self.root / "identity.json", {"ap_ssid": request["ap_ssid"],
                             "ip": found["ip"], "name": found["name"], "mac": found["mac"]})
                 message = "La VMC è collegata ed è stata verificata sulla nuova rete."
                 if not found["mac"]:
-                    message += " Il MAC non è rilevabile dalla rete del server: leggilo nell'elenco dei dispositivi del router."
+                    message += " Il MAC non è rilevabile dalla rete del server: leggerlo nell'elenco dei dispositivi del router."
                 self.status.emit("Completato", 100, message, success=True, vmc_ip=found["ip"],
                                  vmc_name=found["name"], vmc_mac=found["mac"],
                                  mac_source="LAN" if found["mac"] else "", network_sent=True,
@@ -637,8 +646,8 @@ class Engine:
         # Manuale: con password o cifratura errate per 3 volte la VMC torna in Access Point.
         self.status.emit("Diagnosi", 90, "La VMC non è ancora comparsa: controllo se è tornata in Access Point.")
         if self.ap_visible(request["ap_ssid"], 45):
-            raise Failure("back_to_access_point", "La rete " + request["ap_ssid"] + " è di nuovo visibile: la VMC non è riuscita a collegarsi ed è tornata in Access Point. Secondo il manuale succede con password errata o cifratura non supportata (ad esempio WEP). Controlla nome e password della rete domestica e riprova." + LED_HINT)
-        raise Failure("verification_timeout", "La rete è stata inviata, ma la VMC non è stata ritrovata sulla rete domestica." + LED_HINT + " Controlla anche nel router l'IP assegnato.")
+            raise Failure("back_to_access_point", "La rete " + request["ap_ssid"] + " è di nuovo visibile: la VMC non è riuscita a collegarsi ed è tornata in Access Point. Secondo il manuale succede con password errata o cifratura non supportata (ad esempio WEP). Controllare nome e password della rete di casa e riprovare." + LED_HINT)
+        raise Failure("verification_timeout", "La rete è stata inviata, ma la VMC non è stata ritrovata sulla rete di casa." + LED_HINT + " Controllare anche nel router l'IP assegnato.")
 
     def verify(self, data):
         request = normalize_verification(data, self.root)
@@ -653,14 +662,14 @@ class Engine:
                 continue
             actual = self.transport.neighbor_mac(ip)
             if actual != expected or name != request["expected_name"]:
-                raise Failure("identity_unconfirmed", "Il dispositivo a questo IP non corrisponde alla VMC configurata, oppure il suo MAC non è leggibile dalla rete del server. Controlla l'associazione MAC/IP sul router.")
+                raise Failure("identity_unconfirmed", "Il dispositivo a questo IP non corrisponde alla VMC configurata, oppure il suo MAC non è leggibile dalla rete del server. Controllare l'associazione MAC/IP sul router.")
             identity = read_identity(self.root)
             identity["ip"] = ip
             atomic_json(self.root / "identity.json", identity)
             self.status.emit("Completato", 100, "L'indirizzo è stato verificato: risponde la stessa VMC configurata.",
                              success=True, vmc_ip=ip, vmc_name=name, vmc_mac=actual, mac_source="LAN", **self.read_network(ip))
             return
-        raise Failure("vmc_unreachable", "La VMC non risponde all'IP inserito. Controlla l'indirizzo e la prenotazione nel router; potrebbe servire ricollegare la VMC al Wi-Fi per ottenere il nuovo IP.")
+        raise Failure("vmc_unreachable", "La VMC non risponde all'IP inserito. Controllare l'indirizzo e la prenotazione nel router; perché la VMC prenda il nuovo IP, spegnerla e riaccenderla dal suo interruttore.")
 
     # ---- Manuale: Rinomina VMC ---------------------------------------------
     def rename(self, data):
@@ -675,7 +684,7 @@ class Engine:
             except Failure:
                 targets = []
             if self.discover(targets, new_name, ""):
-                raise Failure("duplicate_name", "Il nome " + new_name + " è già usato da un'altra VMC sulla rete domestica: scegline uno diverso.")
+                raise Failure("duplicate_name", "Il nome " + new_name + " è già usato da un'altra VMC sulla rete di casa: sceglierne uno diverso.")
             self.status.emit("Invio nuovo nome", 60, "RINOMINA VMC: invio del nome " + new_name + ".")
             try:
                 accepted = self.transport.rename(ip, new_name)
@@ -702,7 +711,7 @@ class Engine:
         packet = password_packet(request["ap_password"], request["new_password"])
         info = self.diagnose()
         self.status.data["success"] = False
-        unreachable = "La rete " + request["ap_ssid"] + " non è raggiungibile con la password attuale indicata. Secondo il manuale la password si cambia solo in modalità Access Point: se la VMC è già collegata alla rete domestica, la sua rete VMC non è attiva."
+        unreachable = "La rete " + request["ap_ssid"] + " non è raggiungibile con la password attuale indicata. Secondo il manuale la password si cambia solo in modalità Access Point: se la VMC è già collegata alla rete di casa, la sua rete VMC non è attiva."
         with self.ap_session(info, request, unreachable) as (source_ip, interface):
             self.status.emit("Identificazione VMC", 40, "Lettura del nome della VMC prima del cambio password.")
             try:
@@ -723,8 +732,8 @@ class Engine:
                 except (OSError, Failure):
                     confirmed = False
             if not confirmed:
-                raise Failure("password_unconfirmed", "La nuova password è stata inviata, ma il server non riesce a collegarsi alla rete VMC con la nuova password. Prova dallo smartphone con la nuova e con la vecchia password; se nessuna funziona usa il Ripristino Wi-Fi del manuale (la password tornerà 12345678).")
-        self.status.emit("Completato", 100, "La password della rete " + request["ap_ssid"] + " è cambiata ed è stata verificata. Da ora usala al posto di 12345678 per collegarti alla rete VMC.",
+                raise Failure("password_unconfirmed", "La nuova password è stata inviata, ma il server non riesce a collegarsi alla rete VMC con la nuova password. Provare dallo smartphone con la nuova e con la vecchia password; se nessuna funziona usare il Ripristino Wi-Fi del manuale (la password tornerà 12345678).")
+        self.status.emit("Completato", 100, "La password della rete " + request["ap_ssid"] + " è cambiata ed è stata verificata. Da ora usarla al posto di 12345678 per collegarsi alla rete VMC.",
                          success=True, vmc_name=name)
 
     # ---- Manuale: Configurazione rete > Access Point ---------------------------
@@ -744,7 +753,7 @@ class Engine:
         visible = self.ap_visible(request["ap_ssid"], 60)
         if visible:
             (self.root / "identity.json").unlink(missing_ok=True)
-            self.status.emit("Completato", 100, "La VMC è tornata in modalità Access Point: la rete " + request["ap_ssid"] + " è di nuovo visibile. Per ricollegarla alla rete domestica usa Configurazione rete.",
+            self.status.emit("Completato", 100, "La VMC è tornata in modalità Access Point: la rete " + request["ap_ssid"] + " è di nuovo visibile. Per ricollegarla alla rete di casa ripetere il collegamento della VMC.",
                              success=True, vmc_ip="", vmc_name=name, vmc_mac="")
             return
         try:
@@ -752,8 +761,8 @@ class Engine:
         except (OSError, Failure):
             still_there = False
         if still_there:
-            raise Failure("ap_not_applied", "La VMC risponde ancora sulla rete domestica: il passaggio in Access Point non è stato applicato.")
-        raise Failure("ap_unconfirmed", "La VMC non risponde più sulla rete domestica, ma la rete " + request["ap_ssid"] + " non è visibile dal server. Controlla dallo smartphone; se non compare usa il Ripristino Wi-Fi del manuale.")
+            raise Failure("ap_not_applied", "La VMC risponde ancora sulla rete di casa: il passaggio in Access Point non è stato applicato.")
+        raise Failure("ap_unconfirmed", "La VMC non risponde più sulla rete di casa, ma la rete " + request["ap_ssid"] + " non è visibile dal server. Controllare dallo smartphone; se non compare usare il Ripristino Wi-Fi del manuale.")
 
 
 def read_status(root=ROOT):
@@ -779,7 +788,7 @@ def read_status(root=ROOT):
             # Un worker terminato in modo anomalo non deve bloccare la scheda.
             data.update(finished=True, success=False, error_code="interrupted",
                         stage="Ripristino necessario" if (root / "restore.json").exists() else "Errore",
-                        message="La procedura è stata interrotta. Ripeti l'operazione per tentare il recupero; se la rete era già stata inviata, controlla nel router l'indirizzo della VMC.")
+                        message="La procedura è stata interrotta. Ripetere l'operazione per tentare il recupero; se la rete era già stata inviata, controllare nel router l'indirizzo della VMC.")
             atomic_json(root / "status.json", {k: v for k, v in data.items() if not k.startswith("configured_") and k not in ("vmc_networks", "wifi_networks")})
     return data
 
@@ -801,7 +810,7 @@ def launch(action, payload, root=ROOT):
         fcntl.flock(lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
     except BlockingIOError:
         lock.close()
-        return {"accepted": False, "message": "Una procedura è già in corso. Attendi il risultato."}
+        return {"accepted": False, "message": "Una procedura è già in corso. Attendere il risultato."}
     try:
         if action in NORMALIZE:
             NORMALIZE[action](payload, root)
@@ -819,7 +828,7 @@ def launch(action, payload, root=ROOT):
         lock.close()
         raise Failure("worker_start", "Non è stato possibile avviare la procedura.") from None
     lock.close()
-    return {"accepted": True, "job_id": job, "message": "Procedura avviata. Segui lo stato nella scheda."}
+    return {"accepted": True, "job_id": job, "message": "Procedura avviata. Seguire lo stato nella scheda."}
 
 
 def dispatch(engine, action, payload):
@@ -851,7 +860,7 @@ def run_worker(job, lock_fd, root=ROOT, engine=None):
     engine = engine or Engine(root)
 
     def interrupted(_signum, _frame):
-        raise Failure("interrupted", "Procedura interrotta. Controlla lo stato del ripristino prima di riprovare.")
+        raise Failure("interrupted", "Procedura interrotta. Controllare lo stato del ripristino prima di riprovare.")
     signal.signal(signal.SIGTERM, interrupted)
     signal.signal(signal.SIGALRM, interrupted)
     signal.alarm(420)
@@ -864,7 +873,7 @@ def run_worker(job, lock_fd, root=ROOT, engine=None):
                            engine.status.data["message"], finished=True)
     except Exception as exc:
         code = exc.code if isinstance(exc, Failure) else "communication_error"
-        message = exc.message if isinstance(exc, Failure) else "Errore di comunicazione. Verifica la raggiungibilità della VMC e del Supervisor."
+        message = exc.message if isinstance(exc, Failure) else "Errore di comunicazione. Verificare la raggiungibilità della VMC e del Supervisor."
         stage = "Ripristino necessario" if (root / "restore.json").exists() else "Verifica non completata" if engine.status.data.get("network_sent") else "Errore"
         engine.status.emit(stage, engine.status.data.get("progress", 0), message=message,
                            error_code=code, success=False, finished=True)

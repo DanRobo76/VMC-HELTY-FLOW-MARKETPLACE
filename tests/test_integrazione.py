@@ -277,6 +277,51 @@ async def test_cambia_ip_dalla_scheda(hass: HomeAssistant) -> None:
     assert not Path(hass.config.path("vmc_master_backup")).exists()
 
 
+@pytest.mark.parametrize(
+    ("ip_scheda", "motivo"),
+    [
+        ("192.168.1.010", "non è valido"),
+        ("999.999.999.999", "non è valido"),
+        ("192.168.1.161", "è già usato dalla VMC sala"),
+    ],
+)
+async def test_ip_della_scheda_rifiutato(hass: HomeAssistant, ip_scheda: str, motivo: str) -> None:
+    """IP della scheda non valido o gia' di un'altra VMC: resta quello di prima, i file
+    tornano quelli dell'integrazione (nessuna copia «modificati a mano») e lo dice una notifica."""
+    from homeassistant.components import persistent_notification
+
+    hass.config.language = "it"
+    MockConfigEntry(
+        domain=DOMAIN, unique_id="sala", data={"nome": "sala", "host": "192.168.1.161"}
+    ).add_to_hass(hass)
+    voce = MockConfigEntry(
+        domain=DOMAIN, unique_id="master", data={"nome": "master", "host": "192.168.1.160"}
+    )
+    voce.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(voce.entry_id)
+    await hass.async_block_till_done()
+    cartella = Path(hass.config.path("packages", "vmc_helty_flow", "master"))
+    prima = {f.name: f.read_bytes() for f in cartella.iterdir()}
+    ir.async_get(hass).async_delete(DOMAIN, "riavvio_necessario")
+    # come lo script Cambia IP (sed -i) sui due file che cambia
+    for nome_file in ("vmc_master.yaml", "vmc_master_script_cambio_nome.sh"):
+        file = cartella / nome_file
+        file.write_bytes(file.read_bytes().replace(b"192.168.1.160", ip_scheda.encode()))
+    assert await hass.config_entries.async_reload(voce.entry_id)
+    await hass.async_block_till_done()
+    assert voce.data["host"] == "192.168.1.160"
+    assert {f.name: f.read_bytes() for f in cartella.iterdir()} == prima
+    assert not Path(hass.config.path("vmc_master_backup")).exists()
+    notifica = persistent_notification._async_get_or_create_notifications(hass)[
+        f"{DOMAIN}_ip_scheda_master"
+    ]
+    assert notifica["title"] == "VMC Master: IP della VMC master non cambiato"
+    assert f"L'IP {ip_scheda} scritto dalla scheda {motivo}" in notifica["message"]
+    assert "La VMC master resta sull'IP 192.168.1.160." in notifica["message"]
+    # Home Assistant ha caricato il package con l'IP rifiutato: serve un riavvio
+    assert ir.async_get(hass).async_get_issue(DOMAIN, "riavvio_necessario") is not None
+
+
 def test_file_modificati_a_mano(tmp_path: Path) -> None:
     """Un file del package modificato a mano non si perde: prima di riscriverlo
     l'integrazione ne salva una copia in /config/vmc_master_backup."""
@@ -564,6 +609,7 @@ async def test_elimina_anche_dalla_rete(hass: HomeAssistant) -> None:
 
 async def test_elimina_dalla_rete_non_riuscita(hass: HomeAssistant) -> None:
     """VMC che non risponde: la voce resta; si puo' riprovare o eliminarla solo da HA."""
+    hass.config.language = "it"  # messaggi del motore in italiano, come scritti
     from custom_components.vmc_master.prima_installazione import Failure
 
     voce = await _voce_sala(hass)
@@ -872,6 +918,7 @@ async def test_da_installare_senza_wifi(hass: HomeAssistant) -> None:
 
 async def test_da_installare_completo(hass: HomeAssistant) -> None:
     """Ricerca, collegamento, IP prenotato diverso e verificato, nome dalla VMC."""
+    hass.config.language = "it"  # messaggi del motore in italiano, come scritti
     from custom_components.vmc_master.prima_installazione import LED_HINT, Failure
 
     MockConfigEntry(
@@ -1086,6 +1133,9 @@ async def test_cambia_ip_aggiorna_la_vmc_appena_collegata(hass: HomeAssistant) -
     (cartella / "identity.json").write_text(
         json.dumps({**COLLEGATA, "ip": "192.168.1.160"}), encoding="utf-8"
     )
+    MockConfigEntry(
+        domain=DOMAIN, unique_id="sala", data={"nome": "sala", "host": "192.168.1.161"}
+    ).add_to_hass(hass)
     voce = MockConfigEntry(
         domain=DOMAIN, unique_id="master", data={"nome": "master", "host": "192.168.1.160"}
     )
@@ -1097,6 +1147,11 @@ async def test_cambia_ip_aggiorna_la_vmc_appena_collegata(hass: HomeAssistant) -
         risultato["flow_id"], {"next_step_id": "cambia_ip"}
     )
     # IP gia' usato da un'altra VMC: errore; IP che risponde: salvato subito
+    risultato = await hass.config_entries.options.async_configure(
+        risultato["flow_id"], {"host": "192.168.1.161"}
+    )
+    assert risultato["type"] is FlowResultType.FORM
+    assert risultato["errors"] == {"host": "ip_in_uso"}
     with patch(PROVA_VMC, return_value=True):
         risultato = await hass.config_entries.options.async_configure(
             risultato["flow_id"], {"host": "192.168.1.170"}
@@ -1137,10 +1192,34 @@ async def test_elimina_dalla_rete_con_la_finestra_chiusa(hass: HomeAssistant) ->
     assert not Path(hass.config.path("packages", "vmc_helty_flow", "sala")).exists()
 
 
+# Entita' del package della VMC «sala» come le salva il registro:
+# (entity_id, dominio, piattaforma, unique_id)
+ENTITA_PACKAGE_SALA = (
+    ("sensor.vmc_sala_status_ventola_memorizzata", "sensor", "template", "vmc_sala_status_ventola_memorizzata"),
+    ("sensor.vmc_sala_status_ip", "sensor", "command_line", "vmc_sala_status_ip"),
+    ("sensor.vmc_sala_versione_repository", "sensor", "rest", "vmc_sala_versione_repository"),
+    ("script.vmc_sala_aggiorna_elenco_entita_co2_interna", "script", "script", "vmc_sala_aggiorna_elenco_entita_co2_interna"),
+    ("input_boolean.vmc_sala_attese_inizializzate", "input_boolean", "input_boolean", "vmc_sala_attese_inizializzate"),
+    ("timer.vmc_sala_countdown_avvisi", "timer", "timer", "vmc_sala_countdown_avvisi"),
+    ("automation.vmc_sala_cambio_ip_vmc", "automation", "automation", "vmc_sala_cambio_ip_vmc"),
+    ("automation.automazione_vmc_sala", "automation", "automation", "automazione_vmc_sala"),
+)
+
+
+def _registra(registro, entity_id: str, dominio: str, piattaforma: str, unique_id: str, **altro):
+    oggetto = entity_id.split(".")[1]
+    creata = registro.async_get_or_create(
+        dominio, piattaforma, unique_id, suggested_object_id=oggetto, **altro
+    )
+    assert creata.entity_id == entity_id
+    return creata
+
+
 async def test_elimina_toglie_subito_le_entita(hass: HomeAssistant, hass_storage) -> None:
-    """«Elimina la VMC» toglie subito dal registro le entita' della VMC (la cartella e'
-    gia' nel backup), anche se ancora fornite; quelle di altre VMC o di altre
-    integrazioni restano e non serve ricordare il nome per il riavvio."""
+    """«Elimina la VMC» toglie subito dal registro le entita' del package della VMC (la
+    cartella e' gia' nel backup), anche se ancora fornite o rinominate dall'utente. Restano
+    quelle create dall'utente con un nome «VMC Sala …», quelle di altre VMC e quelle di
+    altre integrazioni; non serve ricordare il nome per il riavvio."""
     from homeassistant.helpers import entity_registry as er
 
     from custom_components.vmc_master import _togli_entita_vmc_eliminate
@@ -1149,33 +1228,128 @@ async def test_elimina_toglie_subito_le_entita(hass: HomeAssistant, hass_storage
     altra_integrazione = MockConfigEntry(domain="prova")
     altra_integrazione.add_to_hass(hass)
     registro = er.async_get(hass)
-    della_sala = (
-        "sensor.vmc_sala_temperatura",
-        "script.vmc_sala_ventilazione_on",
-        "input_boolean.vmc_sala_notturna",
-        "automation.automazione_vmc_sala",
+    for entita in ENTITA_PACKAGE_SALA:
+        _registra(registro, *entita)
+    # entita' del package rinominata dall'utente: si riconosce dall'unique_id
+    rinominata = _registra(
+        registro, "input_boolean.vmc_sala_opzioni_avvisi", "input_boolean", "input_boolean",
+        "vmc_sala_opzioni_avvisi",
     )
-    altre = ("sensor.vmc_salab_temperatura", "sensor.vmc_master_temperatura", "sensor.sala_vmc_prova")
-    for entity_id in (*della_sala, *altre):
-        dominio, oggetto = entity_id.split(".")
-        assert registro.async_get_or_create(
-            dominio, dominio, oggetto, suggested_object_id=oggetto
-        ).entity_id == entity_id
-    assert registro.async_get_or_create(
-        "sensor", "prova", "x", suggested_object_id="vmc_sala_altra", config_entry=altra_integrazione
-    ).entity_id == "sensor.vmc_sala_altra"
-    for entity_id in (*della_sala, *altre):
+    registro.async_update_entity(rinominata.entity_id, new_entity_id="input_boolean.avvisi_soggiorno")
+    della_sala = (*(e[0] for e in ENTITA_PACKAGE_SALA), "input_boolean.avvisi_soggiorno")
+    altre = (
+        # automazione creata dall'interfaccia con il nome «VMC Sala notte» (unique_id numerico)
+        ("automation.vmc_sala_notte", "automation", "automation", "1731900000000"),
+        # aiutante dell'interfaccia e sensore YAML dell'utente con un nome «VMC Sala …»
+        ("input_boolean.vmc_sala_vacanza", "input_boolean", "input_boolean", "vmc_sala_vacanza"),
+        ("sensor.vmc_sala_mio_sensore", "sensor", "template", "mio_sensore_sala"),
+        # altre VMC
+        ("sensor.vmc_salab_status_ip", "sensor", "command_line", "vmc_salab_status_ip"),
+        ("sensor.vmc_master_status_ip", "sensor", "command_line", "vmc_master_status_ip"),
+        ("automation.automazione_vmc_master", "automation", "automation", "automazione_vmc_master"),
+    )
+    for entita in altre:
+        _registra(registro, *entita)
+    _registra(
+        registro, "sensor.vmc_sala_altra", "sensor", "prova", "vmc_sala_status_ip",
+        config_entry=altra_integrazione,
+    )
+    restano = (*(e[0] for e in altre), "sensor.vmc_sala_altra")
+    for entity_id in (*della_sala, *restano):
         hass.states.async_set(entity_id, "1")
 
     assert await hass.config_entries.async_remove(voce.entry_id)
     await hass.async_block_till_done()
     assert [e for e in della_sala if registro.async_get(e) is not None] == []
-    assert all(registro.async_get(e) is not None for e in (*altre, "sensor.vmc_sala_altra"))
+    assert [e for e in restano if registro.async_get(e) is None] == []
     assert "vmc_master.vmc_eliminate" not in hass_storage
 
     # all'avvio non resta niente da togliere
     await _togli_entita_vmc_eliminate(hass)
-    assert all(registro.async_get(e) is not None for e in (*altre, "sensor.vmc_sala_altra"))
+    assert [e for e in restano if registro.async_get(e) is None] == []
+
+
+async def test_elimina_con_la_cartella_mancante(hass: HomeAssistant, hass_storage) -> None:
+    """Cartella del package gia' tolta a mano: niente backup e niente riavvio. Si usano gli
+    id del package scritto dall'integrazione: le entita' non piu' fornite escono subito,
+    quelle ancora fornite al riavvio; le entita' dell'utente restano sempre."""
+    import shutil
+
+    from homeassistant.helpers import entity_registry as er
+
+    from custom_components.vmc_master import _togli_entita_vmc_eliminate
+
+    voce = await _voce_sala(hass)
+    ir.async_get(hass).async_delete(DOMAIN, "riavvio_necessario")
+    shutil.rmtree(hass.config.path("packages", "vmc_helty_flow", "sala"))
+    registro = er.async_get(hass)
+    for entita in ENTITA_PACKAGE_SALA:
+        _registra(registro, *entita)
+    utente = _registra(registro, "automation.vmc_sala_notte", "automation", "automation", "1731900000000")
+    registro.async_update_entity(utente.entity_id, disabled_by=er.RegistryEntryDisabler.USER)
+    fornita = "sensor.vmc_sala_status_ip"
+    hass.states.async_set(fornita, "ON-Line")
+
+    assert await hass.config_entries.async_remove(voce.entry_id)
+    await hass.async_block_till_done()
+    assert not Path(hass.config.path("vmc_master_backup")).exists()
+    assert ir.async_get(hass).async_get_issue(DOMAIN, "riavvio_necessario") is None
+    rimaste = [e[0] for e in ENTITA_PACKAGE_SALA if registro.async_get(e[0]) is not None]
+    assert rimaste == [fornita]
+    assert hass_storage["vmc_master.vmc_eliminate"]["data"] == {"nomi": ["sala"]}
+
+    # dopo il riavvio l'entita' non e' piu' fornita: esce; l'automazione disattivata
+    # dell'utente (nessuno stato) resta
+    hass.states.async_remove(fornita)
+    await _togli_entita_vmc_eliminate(hass)
+    assert registro.async_get(fornita) is None
+    assert registro.async_get("automation.vmc_sala_notte") is not None
+    assert hass_storage["vmc_master.vmc_eliminate"]["data"] == {"nomi": []}
+
+
+async def test_elimina_con_i_file_del_package_illeggibili(hass: HomeAssistant) -> None:
+    """File del package nel backup non leggibili: si usano gli id del package scritto
+    dall'integrazione, mai l'entity_id."""
+    from homeassistant.helpers import entity_registry as er
+
+    voce = await _voce_sala(hass)
+    package = Path(hass.config.path("packages", "vmc_helty_flow", "sala", "vmc_sala.yaml"))
+    package.write_text("sensor: [\n", encoding="utf-8")
+    registro = er.async_get(hass)
+    for entita in ENTITA_PACKAGE_SALA:
+        _registra(registro, *entita)
+    _registra(registro, "automation.vmc_sala_notte", "automation", "automation", "1731900000000")
+    assert await hass.config_entries.async_remove(voce.entry_id)
+    await hass.async_block_till_done()
+    assert [e[0] for e in ENTITA_PACKAGE_SALA if registro.async_get(e[0]) is not None] == []
+    assert registro.async_get("automation.vmc_sala_notte") is not None
+
+
+def test_id_del_package(tmp_path: Path) -> None:
+    """Gli id si leggono come li salva il registro: dominio, piattaforma e unique_id."""
+    from custom_components.vmc_master import _id_del_package, _id_del_package_generato
+    from custom_components.vmc_master.installatore import genera_file
+
+    for nome_file, testo in genera_file("sala", "192.168.1.161", "9.0.0").items():
+        (tmp_path / nome_file).write_text(testo, encoding="utf-8")
+    id_package = _id_del_package(tmp_path)
+    assert id_package == _id_del_package_generato("sala")
+    for _entity_id, *chiave in ENTITA_PACKAGE_SALA:
+        assert tuple(chiave) in id_package
+    assert all("vmc_sala_" in unique_id or unique_id == "automazione_vmc_sala" for *_d, unique_id in id_package)
+    # 133 unique_id e 10 automazioni, piu' le chiavi di aiutanti, timer e script
+    assert sum(1 for d, p, _u in id_package if p in ("template", "command_line", "rest")) == 133
+    assert sum(1 for d, _p, _u in id_package if d == "automation") == 10
+    assert len(id_package) == 459
+    # nessun id in comune con un'altra VMC
+    assert id_package.isdisjoint(_id_del_package_generato("salab"))
+    # tag di Home Assistant e unique_id di blocco dei template
+    (tmp_path / "altro.yaml").write_text(
+        "template:\n  - unique_id: blocco\n    sensor:\n      - unique_id: uno\n        state: !secret x\n",
+        encoding="utf-8",
+    )
+    assert ("sensor", "template", "blocco-uno") in _id_del_package(tmp_path)
+    assert _id_del_package(tmp_path / "inesistente") is None
 
 
 async def test_entita_della_vmc_eliminata_all_avvio(hass: HomeAssistant, hass_storage) -> None:
@@ -1188,17 +1362,21 @@ async def test_entita_della_vmc_eliminata_all_avvio(hass: HomeAssistant, hass_st
         "data": {"nomi": ["sala", "camera"]},
     }
     registro = er.async_get(hass)
-    for entity_id in ("sensor.vmc_sala_temperatura", "sensor.vmc_camera_temperatura"):
-        dominio, oggetto = entity_id.split(".")
-        registro.async_get_or_create(dominio, dominio, oggetto, suggested_object_id=oggetto)
+    for nome in ("sala", "camera"):
+        _registra(
+            registro, f"sensor.vmc_{nome}_status_ip", "sensor", "command_line", f"vmc_{nome}_status_ip"
+        )
+    _registra(registro, "automation.vmc_sala_notte", "automation", "automation", "1731900000000")
     # «camera» aggiunta di nuovo
     MockConfigEntry(
         domain=DOMAIN, unique_id="camera", data={"nome": "camera", "host": "192.168.1.162"}
     ).add_to_hass(hass)
     assert await async_setup_component(hass, DOMAIN, {})
     await hass.async_block_till_done()
-    assert registro.async_get("sensor.vmc_sala_temperatura") is None
-    assert registro.async_get("sensor.vmc_camera_temperatura") is not None
+    assert registro.async_get("sensor.vmc_sala_status_ip") is None
+    assert registro.async_get("sensor.vmc_camera_status_ip") is not None
+    # automazione dell'utente senza stato (Home Assistant appena avviato): resta
+    assert registro.async_get("automation.vmc_sala_notte") is not None
     assert hass_storage["vmc_master.vmc_eliminate"]["data"] == {"nomi": []}
 
 
@@ -1290,6 +1468,7 @@ async def test_ip_prenotato_senza_mac(hass: HomeAssistant) -> None:
 async def test_server_su_un_altro_wifi(hass: HomeAssistant) -> None:
     """Server su un Wi-Fi diverso dalla rete di casa scelta: serve la password della sua
     rete, che il motore usa per riportarlo li' (restore_password)."""
+    hass.config.language = "it"  # messaggi del motore in italiano, come scritti
     motore = MotoreFinto()
     with (
         patch(HASSIO, return_value=True),
@@ -1371,3 +1550,115 @@ def test_motore_password_del_server_e_reti_grandi() -> None:
         assert pi.rete_da_ripristinare("/config") == ""
     # senza Supervisor
     assert pi.rete_da_ripristinare("/config") == ""
+
+
+async def test_riparazione_riavvio(hass: HomeAssistant) -> None:
+    """«Riavviare Home Assistant» nelle Riparazioni: chiede conferma, poi riavvia. Gli
+    altri avvisi si chiudono con una semplice conferma."""
+    from homeassistant.components.repairs import ConfirmRepairFlow
+    from pytest_homeassistant_custom_component.common import async_mock_service
+
+    from custom_components.vmc_master.repairs import RiavvioFlow, async_create_fix_flow
+
+    riavvii = async_mock_service(hass, "homeassistant", "restart")
+    flusso = await async_create_fix_flow(hass, "riavvio_necessario", None)
+    assert isinstance(flusso, RiavvioFlow)
+    flusso.hass = hass
+    flusso.flow_id = "prova"
+    flusso.handler = DOMAIN
+    risultato = await flusso.async_step_init()
+    assert risultato["type"] is FlowResultType.FORM and risultato["step_id"] == "confirm"
+    assert riavvii == []
+    risultato = await flusso.async_step_confirm({})
+    assert risultato["type"] is FlowResultType.CREATE_ENTRY
+    await hass.async_block_till_done()
+    assert len(riavvii) == 1
+    altro = await async_create_fix_flow(hass, "packages_non_abilitati_sala", None)
+    assert type(altro) is ConfirmRepairFlow
+
+
+def test_rete_di_ricerca_passata_al_motore(tmp_path: Path) -> None:
+    """«configure»: con una rete di casa piu' ampia di /24 il motore riceve lan_cidr con i
+    256 indirizzi intorno al server; con una /24 lan_cidr resta vuoto; un lan_cidr gia'
+    scritto non si cambia."""
+    from custom_components.vmc_master import prima_installazione as pi
+
+    richieste: list[dict] = []
+    indirizzo = ["192.168.2.10/22"]
+
+    class SupervisorFinto:
+        def info(self):
+            return {"interfaces": [{
+                "interface": "end0", "type": "ethernet", "connected": True,
+                "ipv4": {"address": list(indirizzo)},
+            }]}
+
+    class EngineFinto:
+        def __init__(self, root):
+            self.root = Path(root)
+            self.supervisor = SupervisorFinto()
+
+        def run(self, dati):
+            richieste.append(dati)
+
+    with patch.object(pi.motore, "Engine", EngineFinto):
+        pi.esegui(str(tmp_path), "configure", {"ap_ssid": "VMC_1"})
+        indirizzo[:] = ["192.168.1.10/24"]
+        pi.esegui(str(tmp_path), "configure", {"ap_ssid": "VMC_1"})
+        pi.esegui(str(tmp_path), "configure", {"ap_ssid": "VMC_1", "lan_cidr": "10.0.0.0/24"})
+    assert [r["lan_cidr"] for r in richieste] == ["192.168.2.0/24", "", "10.0.0.0/24"]
+
+
+async def test_toglie_il_vecchio_avviso_comune(hass: HomeAssistant) -> None:
+    """L'avviso unico «package non caricati» delle versioni fino alla 9.0.0b18 si toglie
+    all'avvio, anche se il package della VMC e' caricato."""
+    ir.async_create_issue(
+        hass, DOMAIN, "packages_non_abilitati", is_fixable=False,
+        severity=ir.IssueSeverity.ERROR, translation_key="packages_non_abilitati",
+        translation_placeholders={"nome": "master"},
+    )
+    from custom_components.vmc_master.installatore import installa
+
+    # package gia' installato e caricato (nessun riavvio da chiedere)
+    versione = json.loads(MANIFEST.read_text(encoding="utf-8"))["version"]
+    await hass.async_add_executor_job(
+        installa, hass.config.config_dir, "master", "192.168.1.160", versione
+    )
+    hass.states.async_set("sensor.vmc_master_status_ip", "ON-Line")
+    voce = MockConfigEntry(
+        domain=DOMAIN, unique_id="master", data={"nome": "master", "host": "192.168.1.160"}
+    )
+    voce.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(voce.entry_id)
+    await hass.async_block_till_done()
+    registro = ir.async_get(hass)
+    assert registro.async_get_issue(DOMAIN, "riavvio_necessario") is None
+    assert registro.async_get_issue(DOMAIN, "packages_non_abilitati") is None
+    assert registro.async_get_issue(DOMAIN, "packages_non_abilitati_master") is None
+
+
+async def test_due_vmc_eliminate_insieme(hass: HomeAssistant, hass_storage) -> None:
+    """Due VMC eliminate insieme con entita' ancora fornite: si ricordano tutte e due."""
+    import asyncio
+    import shutil
+
+    from homeassistant.helpers import entity_registry as er
+
+    registro = er.async_get(hass)
+    voci = []
+    for nome, ip in (("sala", "192.168.1.161"), ("camera", "192.168.1.162")):
+        voce = MockConfigEntry(domain=DOMAIN, unique_id=nome, data={"nome": nome, "host": ip})
+        voce.add_to_hass(hass)
+        assert await hass.config_entries.async_setup(voce.entry_id)
+        voci.append(voce)
+        entity_id = f"sensor.vmc_{nome}_status_ip"
+        _registra(registro, entity_id, "sensor", "command_line", f"vmc_{nome}_status_ip")
+        hass.states.async_set(entity_id, "ON-Line")
+    await hass.async_block_till_done()
+    shutil.rmtree(hass.config.path("packages"))
+    risultati = await asyncio.gather(
+        *(hass.config_entries.async_remove(voce.entry_id) for voce in voci)
+    )
+    assert all(risultati)
+    await hass.async_block_till_done()
+    assert sorted(hass_storage["vmc_master.vmc_eliminate"]["data"]["nomi"]) == ["camera", "sala"]

@@ -7,8 +7,8 @@ e serve la scheda «VMC Master», che si aggiunge dalla plancia senza incollare 
 
 from __future__ import annotations
 
+import asyncio
 import logging
-import re
 from functools import lru_cache
 from http import HTTPStatus
 from pathlib import Path
@@ -48,7 +48,9 @@ from .const import (
 )
 from . import config_flow, prima_installazione
 from .installatore import (
+    _rimetti_ip,
     cartella_vmc,
+    genera_file,
     installa,
     ip_nel_package,
     leggi_marcatore,
@@ -68,6 +70,30 @@ DATI_RICARICHE = f"{DOMAIN}_ricariche"
 # Nomi delle VMC eliminate: al prossimo avvio si tolgono dal registro le loro entita'
 CHIAVE_ELIMINATE = f"{DOMAIN}.vmc_eliminate"
 DATI_ELIMINATE = f"{DOMAIN}_eliminate"
+DATI_BLOCCO_ELIMINATE = f"{DOMAIN}_eliminate_blocco"
+
+# Domini YAML in cui l'unique_id di un'entita' e' la sua chiave (piattaforma = dominio)
+DOMINI_CON_CHIAVE = (
+    "counter",
+    "input_boolean",
+    "input_button",
+    "input_datetime",
+    "input_number",
+    "input_select",
+    "input_text",
+    "schedule",
+    "script",
+    "timer",
+)
+# Integrazioni con un elenco di blocchi {dominio: entita'} (piattaforma = integrazione)
+INTEGRAZIONI_A_BLOCCHI = ("command_line", "rest", "template")
+
+
+class _CaricatoreYaml(getattr(yaml, "CSafeLoader", yaml.SafeLoader)):  # type: ignore[misc]
+    """Legge i file del package; i tag di Home Assistant (!secret, !include...) valgono None."""
+
+
+_CaricatoreYaml.add_multi_constructor("!", lambda _loader, _suffisso, _nodo: None)
 
 # Ordine delle ricariche: prima aiutanti e sensori, per ultime script e automazioni che li usano
 ORDINE_RICARICHE = (
@@ -116,16 +142,17 @@ async def _ripristina_wifi_server(hass: HomeAssistant) -> None:
         await hass.async_add_executor_job(prima_installazione.esegui, config_dir, "recover")
     except prima_installazione.Failure as errore:
         _LOGGER.warning("Ripristino del Wi-Fi del server non riuscito: %s", errore.message)
+        messaggio = await config_flow.async_messaggio_errore(hass, errore)
         if _italiano(hass):
             testo = (
-                f"{errore.message}\n\nIl Wi-Fi del server potrebbe essere ancora sulla rete della VMC: "
+                f"{messaggio}\n\nIl Wi-Fi del server potrebbe essere ancora sulla rete della VMC: "
                 "controllarlo in Impostazioni → Sistema → Rete, oppure riavviare Home Assistant per "
                 "riprovare il ripristino."
             )
             titolo = "VMC Master: ripristino del Wi-Fi del server non riuscito"
         else:
             testo = (
-                f"{errore.message}\n\nThe server Wi-Fi may still be on the unit's network: "
+                f"{messaggio}\n\nThe server Wi-Fi may still be on the unit's network: "
                 "check it in Settings → System → Network, or restart Home Assistant to "
                 "retry the restore."
             )
@@ -145,12 +172,27 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     marcatore = await hass.async_add_executor_job(leggi_marcatore, config_dir, nome)
     ip_file = await hass.async_add_executor_job(ip_nel_package, config_dir, nome)
     if marcatore and ip == marcatore.get("ip") and ip_file and ip_file != ip:
-        # IP cambiato dal campo «Cambia IP VMC» della scheda: vale quello del package
-        await hass.async_add_executor_job(
-            prima_installazione.aggiorna_ip, config_dir, ip, ip_file
+        # IP cambiato dal campo «Cambia IP VMC» della scheda: vale quello del package,
+        # solo se e' valido e non e' gia' di un'altra VMC
+        altra = next(
+            (
+                voce.data.get(CONF_NOME)
+                for voce in hass.config_entries.async_entries(DOMAIN)
+                if voce.entry_id != entry.entry_id and voce.data.get(CONF_HOST) == ip_file
+            ),
+            None,
         )
-        ip = ip_file
-        hass.config_entries.async_update_entry(entry, data={**entry.data, CONF_HOST: ip})
+        if config_flow.ip_valido(ip_file) and altra is None:
+            await hass.async_add_executor_job(
+                prima_installazione.aggiorna_ip, config_dir, ip, ip_file
+            )
+            ip = ip_file
+            hass.config_entries.async_update_entry(entry, data={**entry.data, CONF_HOST: ip})
+        else:
+            # si rimette l'IP di prima: i file tornano quelli scritti dall'integrazione
+            await hass.async_add_executor_job(_rimetti_ip_nel_package, config_dir, nome, ip_file, ip)
+            _segnala_ip_scheda_rifiutato(hass, nome, ip, ip_file, altra)
+            _segnala_riavvio(hass)  # Home Assistant ha gia' caricato il package con l'IP rifiutato
 
     esito = await hass.async_add_executor_job(
         installa, config_dir, nome, ip, str(integrazione.version)
@@ -161,23 +203,31 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         if _italiano(hass):
             testo = (
                 f"La precedente installazione manuale della VMC {nome} è stata spostata in "
-                f"`{esito.backup}` e sostituita dal package dell'integrazione (stessi nomi delle "
-                "entità, la cronologia resta).\n\n"
-                f"PRIMA di riavviare eliminare l'automazione incollata a mano «Automazione VMC {nome_automazione}» "
-                "(Impostazioni → Automazioni e scenari), altrimenti dopo il riavvio girano due "
-                "automazioni uguali. Poi riavviare, togliere la vecchia scheda manuale e aggiungere "
-                "la scheda «VMC Master» dalla plancia."
+                f"`{esito.backup}`.\n\n"
+                "Al suo posto c'è il package dell'integrazione: stessi nomi delle entità, "
+                "la cronologia resta.\n\n"
+                "Cosa fare:\n"
+                "1. Aprire Impostazioni → Automazioni e scenari.\n"
+                f"2. Eliminare l'automazione incollata a mano «Automazione VMC {nome_automazione}». "
+                "Va fatto PRIMA di riavviare, altrimenti dopo il riavvio girano due automazioni uguali.\n"
+                "3. Riavviare Home Assistant.\n"
+                "4. Togliere dalla plancia la vecchia scheda manuale.\n"
+                "5. Aggiungere dalla plancia la scheda «VMC Master»."
             )
             titolo = f"VMC Master: VMC {nome} passata all'integrazione"
         else:
             testo = (
                 f"The previous manual installation of unit {nome} has been moved to "
-                f"`{esito.backup}` and replaced by the integration package (same entity "
-                "names, the history is kept).\n\n"
-                f"BEFORE restarting, delete the automation pasted by hand «Automazione VMC {nome_automazione}» "
-                "(Settings → Automations & scenes), otherwise two identical automations run "
-                "after the restart. Then restart, remove the old manual card and add the "
-                "«VMC Master» card from the dashboard."
+                f"`{esito.backup}`.\n\n"
+                "It has been replaced by the integration package: same entity names, "
+                "the history is kept.\n\n"
+                "What to do:\n"
+                "1. Open Settings → Automations & scenes.\n"
+                f"2. Delete the automation pasted by hand «Automazione VMC {nome_automazione}». "
+                "Do it BEFORE restarting, otherwise two identical automations run after the restart.\n"
+                "3. Restart Home Assistant.\n"
+                "4. Remove the old manual card from the dashboard.\n"
+                "5. Add the «VMC Master» card from the dashboard."
             )
             titolo = f"VMC Master: unit {nome} moved to the integration"
         persistent_notification.async_create(
@@ -232,23 +282,33 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """VMC eliminata: la sua cartella va in /config/vmc_master_backup e serve un riavvio.
 
-    Le entita' della VMC escono subito dal registro (la cartella e' gia' nel backup,
-    quindi al riavvio non tornano), anche quando e' l'ultima VMC e l'integrazione non
-    si avviera' piu'. Se qualcuna resta, il nome si ricorda e si toglie al riavvio."""
+    Le entita' del package della VMC escono subito dal registro (la cartella e' gia' nel
+    backup, quindi al riavvio non tornano), anche quando e' l'ultima VMC e l'integrazione
+    non si avviera' piu'. Si tolgono solo quelle del package (unique_id letti dai file
+    spostati nel backup): le entita' create dall'utente restano, anche se si chiamano
+    «vmc_‹nome›_…». Se qualcuna resta, il nome si ricorda e si toglie al riavvio."""
     nome = entry.data[CONF_NOME]
     destinazione = await hass.async_add_executor_job(
         sposta_in_backup, hass.config.config_dir, nome
     )
     ir.async_delete_issue(hass, DOMAIN, f"{ISSUE_PACKAGES}_{nome}")
+    id_package = None
     if destinazione is not None:
         _segnala_riavvio(hass)
-    if _togli_entita_della_vmc(hass, nome, anche_fornite=destinazione is not None):
+        id_package = await hass.async_add_executor_job(_id_del_package, destinazione)
+    if id_package is None:
+        # cartella assente o file non leggibili: gli id del package scritto dall'integrazione
+        id_package = await hass.async_add_executor_job(_id_del_package_generato, nome)
+    if id_package is not None and _togli_entita_della_vmc(
+        hass, nome, id_package, anche_fornite=destinazione is not None
+    ):
         return
-    store = _store_eliminate(hass)
-    dati = await store.async_load() or {}
-    nomi = [n for n in dati.get("nomi", []) if isinstance(n, str)]
-    if nome not in nomi:
-        await store.async_save({"nomi": [*nomi, nome]})
+    async with _blocco_eliminate(hass):
+        store = _store_eliminate(hass)
+        dati = await store.async_load() or {}
+        nomi = [n for n in dati.get("nomi", []) if isinstance(n, str)]
+        if nome not in nomi:
+            await store.async_save({"nomi": [*nomi, nome]})
 
 
 def _store_eliminate(hass: HomeAssistant) -> Store[dict[str, Any]]:
@@ -257,49 +317,122 @@ def _store_eliminate(hass: HomeAssistant) -> Store[dict[str, Any]]:
     return hass.data[DATI_ELIMINATE]
 
 
+def _blocco_eliminate(hass: HomeAssistant) -> asyncio.Lock:
+    """Un solo accesso alla volta all'elenco delle VMC eliminate (due VMC eliminate insieme)."""
+    return hass.data.setdefault(DATI_BLOCCO_ELIMINATE, asyncio.Lock())
+
+
 async def _togli_entita_vmc_eliminate(hass: HomeAssistant) -> None:
     """Dopo il riavvio che segue «Elimina la VMC» si tolgono dal registro le entita'
-    della VMC eliminata non piu' fornite, solo se nessuna VMC con quel nome e' stata
-    aggiunta di nuovo. Il nome si dimentica quando non resta piu' niente da togliere."""
-    store = _store_eliminate(hass)
-    dati = await store.async_load() or {}
-    nomi = [n for n in dati.get("nomi", []) if isinstance(n, str) and NOME_RE.fullmatch(n)]
-    if not nomi:
+    del package della VMC eliminata non piu' fornite, solo se nessuna VMC con quel nome
+    e' stata aggiunta di nuovo. Il nome si dimentica quando non resta piu' niente da togliere."""
+    async with _blocco_eliminate(hass):
+        store = _store_eliminate(hass)
+        dati = await store.async_load() or {}
+        nomi = [n for n in dati.get("nomi", []) if isinstance(n, str) and NOME_RE.fullmatch(n)]
+        if not nomi:
+            return
+        presenti = {voce.data.get(CONF_NOME) for voce in hass.config_entries.async_entries(DOMAIN)}
+        rimasti: list[str] = []
+        for nome in nomi:
+            if nome in presenti:
+                continue  # aggiunta di nuovo: le entita' sono di nuovo sue
+            if await hass.async_add_executor_job(cartella_vmc(hass.config.config_dir, nome).is_dir):
+                rimasti.append(nome)  # cartella del package di nuovo presente: non si tocca niente
+                continue
+            id_package = await hass.async_add_executor_job(_id_del_package_generato, nome)
+            if id_package is None or not _togli_entita_della_vmc(hass, nome, id_package):
+                rimasti.append(nome)  # entita' ancora fornite (nessun riavvio dopo l'eliminazione)
+        if rimasti != dati.get("nomi"):
+            await store.async_save({"nomi": rimasti})
+
+
+def _come_lista(valore: object) -> list:
+    return valore if isinstance(valore, list) else [valore]
+
+
+def _id_della_configurazione(configurazione: object, id_package: set[tuple[str, str, str]]) -> None:
+    """Aggiunge gli id delle entita' di un file YAML come (dominio, piattaforma, unique_id),
+    come li salva il registro delle entita' (anche per le entita' rinominate dall'utente)."""
+    if not isinstance(configurazione, dict):
         return
-    presenti = {voce.data.get(CONF_NOME) for voce in hass.config_entries.async_entries(DOMAIN)}
-    rimasti: list[str] = []
-    for nome in nomi:
-        if nome in presenti:
-            continue  # aggiunta di nuovo: le entita' sono di nuovo sue
-        if await hass.async_add_executor_job(cartella_vmc(hass.config.config_dir, nome).is_dir):
-            rimasti.append(nome)  # cartella del package di nuovo presente: non si tocca niente
-            continue
-        if not _togli_entita_della_vmc(hass, nome):
-            rimasti.append(nome)  # entita' ancora fornite (nessun riavvio dopo l'eliminazione)
-    if rimasti != dati.get("nomi"):
-        await store.async_save({"nomi": rimasti})
+    for dominio, valore in configurazione.items():
+        if dominio == "automation":
+            for automazione in _come_lista(valore):
+                if isinstance(automazione, dict) and automazione.get("id") is not None:
+                    id_package.add(("automation", "automation", str(automazione["id"])))
+        elif dominio in DOMINI_CON_CHIAVE:
+            if isinstance(valore, dict):
+                id_package.update((dominio, dominio, str(chiave)) for chiave in valore)
+        elif dominio in INTEGRAZIONI_A_BLOCCHI:
+            for blocco in _come_lista(valore):
+                if not isinstance(blocco, dict):
+                    continue
+                prefisso = blocco.get("unique_id") if dominio == "template" else None
+                for dominio_entita, entita in blocco.items():
+                    for voce in _come_lista(entita):
+                        if isinstance(voce, dict) and voce.get("unique_id") is not None:
+                            unique_id = str(voce["unique_id"])
+                            if prefisso is not None:
+                                unique_id = f"{prefisso}-{unique_id}"
+                            id_package.add((str(dominio_entita), dominio, unique_id))
+        else:
+            # piattaforme in elenco (sensor: - platform: rest ... unique_id: ...)
+            for voce in _come_lista(valore):
+                if isinstance(voce, dict) and voce.get("platform") and voce.get("unique_id") is not None:
+                    id_package.add((dominio, str(voce["platform"]), str(voce["unique_id"])))
+
+
+def _id_del_package(cartella: Path) -> set[tuple[str, str, str]] | None:
+    """Id delle entita' dei file YAML di un package (cartella appena spostata nel backup).
+    None se non ci sono file YAML o non si possono leggere."""
+    id_package: set[tuple[str, str, str]] = set()
+    try:
+        file_yaml = sorted(percorso for percorso in cartella.glob("*.yaml") if percorso.is_file())
+        if not file_yaml:
+            return None
+        for percorso in file_yaml:
+            with open(percorso, encoding="utf-8") as file:
+                _id_della_configurazione(yaml.load(file, Loader=_CaricatoreYaml), id_package)
+    except (OSError, UnicodeDecodeError, yaml.YAMLError) as errore:
+        _LOGGER.warning("File del package in %s non leggibili: %s", cartella, errore)
+        return None
+    return id_package
+
+
+def _id_del_package_generato(nome: str) -> set[tuple[str, str, str]] | None:
+    """Id delle entita' del package che l'integrazione scrive per la VMC (gli unique_id
+    non dipendono dall'IP). None se i file dell'integrazione non si possono leggere."""
+    id_package: set[tuple[str, str, str]] = set()
+    try:
+        for nome_file, testo in genera_file(nome, "0.0.0.0", "0").items():
+            if nome_file.endswith(".yaml"):
+                _id_della_configurazione(yaml.load(testo, Loader=_CaricatoreYaml), id_package)
+    except (OSError, UnicodeDecodeError, yaml.YAMLError) as errore:
+        _LOGGER.warning("Package della VMC %s non leggibile: %s", nome, errore)
+        return None
+    return id_package
 
 
 @callback
 def _togli_entita_della_vmc(
-    hass: HomeAssistant, nome: str, anche_fornite: bool = False
+    hass: HomeAssistant,
+    nome: str,
+    id_package: set[tuple[str, str, str]],
+    anche_fornite: bool = False,
 ) -> bool:
-    """Toglie dal registro le entita' del package della VMC (‹dominio›.vmc_‹nome›_… e
-    l'automazione principale) non piu' fornite, o tutte con anche_fornite (VMC appena
-    eliminata, cartella gia' nel backup). False se qualcuna resta.
-    Il nome ha solo lettere, quindi «vmc_‹nome›_» non comprende altre VMC."""
+    """Toglie dal registro le entita' del package della VMC non piu' fornite, o tutte con
+    anche_fornite (VMC appena eliminata, cartella gia' nel backup). False se qualcuna resta.
+
+    Si confrontano dominio, piattaforma e unique_id con gli id del package: non si tocca
+    niente creato dall'utente (automazioni, aiutanti, sensori YAML), anche se il suo
+    entity_id comincia con «vmc_‹nome›_», e si trovano anche le entita' rinominate."""
     registro = er.async_get(hass)
-    modello = re.compile(rf"^[a-z_]+\.vmc_{nome}_")
-    automazione = f"automazione_vmc_{nome}"
     da_togliere = [
         voce.entity_id
-        for voce in registro.entities.values()
+        for voce in list(registro.entities.values())
         if voce.config_entry_id is None  # entita' dei package YAML
-        and (
-            modello.match(voce.entity_id)
-            or voce.entity_id == f"automation.{automazione}"
-            or (voce.domain == "automation" and voce.unique_id == automazione)
-        )
+        and (voce.domain, voce.platform, voce.unique_id) in id_package
     ]
     tutte = True
     for entity_id in da_togliere:
@@ -309,8 +442,64 @@ def _togli_entita_della_vmc(
         else:
             tutte = False
     if da_togliere:
-        _LOGGER.info("VMC %s eliminata: entita' tolte dal registro se non piu' fornite", nome)
+        _LOGGER.info("VMC %s eliminata: entita' del package tolte dal registro se non piu' fornite", nome)
     return tutte
+
+
+def _rimetti_ip_nel_package(config_dir: str, nome: str, ip_scheda: str, ip: str) -> None:
+    """IP della scheda rifiutato: nei file cambiati dallo script «Cambia IP VMC» torna l'IP
+    di prima, cosi' i file sono di nuovo quelli scritti dall'integrazione."""
+    cartella = cartella_vmc(config_dir, nome)
+    for nome_file in (f"vmc_{nome}.yaml", f"vmc_{nome}_script_cambio_nome.sh"):
+        percorso = cartella / nome_file
+        if not percorso.is_file():
+            continue
+        with open(percorso, encoding="utf-8", newline="") as file:
+            testo = file.read()
+        nuovo = _rimetti_ip(testo, ip_scheda, ip)
+        if nuovo != testo:
+            with open(percorso, "w", encoding="utf-8", newline="") as file:
+                file.write(nuovo)
+
+
+@callback
+def _segnala_ip_scheda_rifiutato(
+    hass: HomeAssistant, nome: str, ip: str, ip_scheda: str, altra: str | None
+) -> None:
+    """Notifica: l'IP scritto nel campo «Cambia IP VMC» della scheda non si usa."""
+    if _italiano(hass):
+        motivo = (
+            f"è già usato dalla VMC {altra}"
+            if altra is not None
+            else "non è valido: servono quattro numeri da 0 a 255, senza zeri iniziali"
+        )
+        testo = (
+            f"L'IP {ip_scheda} scritto dalla scheda {motivo}.\n\n"
+            f"La VMC {nome} resta sull'IP {ip}.\n\n"
+            "Per cambiarlo:\n"
+            "1. Aprire Impostazioni → Dispositivi e servizi → VMC Master.\n"
+            f"2. Premere l'icona ingranaggio sulla riga della VMC {nome}.\n"
+            "3. Scegliere «Cambia l'IP della VMC»."
+        )
+        titolo = f"VMC Master: IP della VMC {nome} non cambiato"
+    else:
+        motivo = (
+            f"is already used by unit {altra}"
+            if altra is not None
+            else "is not valid: four numbers from 0 to 255 are needed, without leading zeros"
+        )
+        testo = (
+            f"The IP {ip_scheda} written from the card {motivo}.\n\n"
+            f"Unit {nome} keeps the IP {ip}.\n\n"
+            "To change it:\n"
+            "1. Open Settings → Devices & services → VMC Master.\n"
+            f"2. Press the gear icon on the row of unit {nome}.\n"
+            "3. Choose «Change the unit's IP»."
+        )
+        titolo = f"VMC Master: IP of unit {nome} not changed"
+    persistent_notification.async_create(
+        hass, testo, title=titolo, notification_id=f"{DOMAIN}_ip_scheda_{nome}"
+    )
 
 
 async def _async_aggiornata(hass: HomeAssistant, entry: ConfigEntry) -> None:
