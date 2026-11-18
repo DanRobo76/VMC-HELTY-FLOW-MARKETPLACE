@@ -16,6 +16,31 @@ const ATTESA_DOPO_ERRORE_MS = 30 * 1000;
 // ogni 5 minuti (GitHub accetta 60 richieste all'ora senza autenticazione)
 const ATTESA_CONTROLLO_MS = 5 * 60 * 1000;
 const RE_SENSORE_REPOSITORY = /sensor\.vmc_[a-z]+_versione_repository/;
+const TITOLO_INFORMAZIONI = "Informazioni";
+// Ora dell'ultimo controllo aggiornamenti per ogni sensore, salvata nella pagina e non
+// nella singola scheda: cambiando vista la scheda si ricrea ma il limite resta
+const ULTIMI_CONTROLLI = (window.__vmcMasterUltimiControlli = window.__vmcMasterUltimiControlli || {});
+
+// Solo la risposta JSON «VMC non trovata» dell'integrazione dice che la VMC scelta non
+// esiste piu'. Un 404 senza quel testo arriva per esempio subito dopo il riavvio di
+// Home Assistant, quando l'integrazione non e' ancora partita.
+function vmcNonTrovata(errore) {
+  return Boolean(
+    errore &&
+      errore.status_code === 404 &&
+      errore.body &&
+      typeof errore.body === "object" &&
+      errore.body.message === "VMC non trovata"
+  );
+}
+
+function titoloInformazioni(elemento) {
+  return (
+    elemento &&
+    elemento.tagName === "SUMMARY" &&
+    (elemento.textContent || "").trim() === TITOLO_INFORMAZIONI
+  );
+}
 
 class VmcMasterCard extends HTMLElement {
   constructor() {
@@ -23,15 +48,24 @@ class VmcMasterCard extends HTMLElement {
     this._config = undefined;
     this._hass = undefined;
     this._scheda = undefined;
+    this._testoConfigurazione = undefined; // configurazione della scheda costruita (JSON)
     this._caricata = undefined; // VMC (entry_id) della scheda costruita o in costruzione
     this._connessione = undefined; // collegamento a Home Assistant che stiamo ascoltando
     this._errore = undefined; // { vmc, alle }: ultima richiesta della scheda non riuscita
     this._sensoreRepository = undefined; // sensore «Versione Repository» della scheda
-    this._ultimoControllo = 0; // ora dell'ultimo controllo aggiornamenti dalla scheda
-    // Dopo un riavvio di Home Assistant (per esempio dopo un aggiornamento) il browser
-    // si ricollega senza ricaricare la pagina: si chiede di nuovo la configurazione,
-    // cosi' la scheda e' sempre quella della versione installata, senza Ctrl+F5.
+    this._riprova = undefined; // nuovo tentativo dopo un ricollegamento non riuscito
+    this._daAggiornare = false; // ricollegamento senza risposta: si riprova
+    this._osservatore = undefined; // tiene aperto il Pannello Informazioni
+    // Dopo un riavvio di Home Assistant il browser si ricollega senza ricaricare la pagina
+    // (succede anche sbloccando il telefono o dopo un calo di rete): si chiede di nuovo la
+    // configurazione e la scheda si ricostruisce solo se e' cambiata, per esempio dopo un
+    // aggiornamento. Vale per la configurazione della scheda; questo file JavaScript resta
+    // quello gia' caricato fino al ricaricamento della pagina.
     this._alRicollegamento = () => {
+      if (this._scheda) {
+        this._aggiorna();
+        return;
+      }
       this._caricata = undefined;
       this._errore = undefined;
       this._carica();
@@ -39,27 +73,71 @@ class VmcMasterCard extends HTMLElement {
     // Apertura del Pannello Informazioni: si controlla subito se c'e' una nuova release,
     // come fa «Agg. Sensori» per la versione installata. Il clic attraversa le schede
     // interne (shadow DOM): composedPath() da' anche gli elementi al loro interno.
-    this._alClic = (evento) => this._controllaAggiornamenti(evento);
+    this._alClic = (evento) => this._clicInformazioni(evento);
     this.addEventListener("click", this._alClic);
   }
 
-  _controllaAggiornamenti(evento) {
+  _clicInformazioni(evento) {
     const percorso = typeof evento.composedPath === "function" ? evento.composedPath() : [];
-    const titolo = percorso.find((elemento) => elemento && elemento.tagName === "SUMMARY");
-    if (!titolo || (titolo.textContent || "").trim() !== "Informazioni") {
+    const titolo = percorso.find(titoloInformazioni);
+    if (!titolo) {
       return;
     }
     const pannello = titolo.parentElement;
-    // il clic arriva prima che il pannello cambi stato: aperto ora = si sta chiudendo
-    if (!pannello || pannello.tagName !== "DETAILS" || pannello.open) {
+    if (!pannello || pannello.tagName !== "DETAILS") {
       return;
     }
+    // il clic arriva prima che il pannello cambi stato: aperto ora = si sta chiudendo
+    if (pannello.open) {
+      this._fermaOsservatore();
+      return;
+    }
+    this._tieniAperto(pannello);
+    this._controllaAggiornamenti();
+  }
+
+  // La scheda markdown che contiene il pannello si ridisegna quando cambia un suo valore
+  // (per esempio la riga della versione dopo il controllo aggiornamenti) e il pannello
+  // si richiuderebbe: finche' l'utente non lo chiude, lo si riapre subito.
+  _tieniAperto(pannello) {
+    this._fermaOsservatore();
+    if (typeof MutationObserver !== "function") {
+      return;
+    }
+    const radice = pannello.getRootNode();
+    const contenitore = radice === document ? pannello.parentNode : radice;
+    if (!contenitore || typeof contenitore.querySelectorAll !== "function") {
+      return;
+    }
+    this._osservatore = new MutationObserver(() => {
+      const titolo = Array.from(contenitore.querySelectorAll("details > summary")).find(
+        titoloInformazioni
+      );
+      if (titolo && !titolo.parentElement.open) {
+        titolo.parentElement.open = true;
+      }
+    });
+    this._osservatore.observe(contenitore, { childList: true, subtree: true });
+  }
+
+  _fermaOsservatore() {
+    if (this._osservatore) {
+      this._osservatore.disconnect();
+      this._osservatore = undefined;
+    }
+  }
+
+  _controllaAggiornamenti() {
     const sensore = this._trovaSensoreRepository();
     const adesso = Date.now();
-    if (!sensore || !this._hass || adesso - this._ultimoControllo < ATTESA_CONTROLLO_MS) {
+    if (
+      !sensore ||
+      !this._hass ||
+      adesso - (ULTIMI_CONTROLLI[sensore] || 0) < ATTESA_CONTROLLO_MS
+    ) {
       return;
     }
-    this._ultimoControllo = adesso;
+    ULTIMI_CONTROLLI[sensore] = adesso;
     Promise.resolve()
       .then(() =>
         this._hass.callService("homeassistant", "update_entity", { entity_id: sensore })
@@ -82,11 +160,16 @@ class VmcMasterCard extends HTMLElement {
 
   disconnectedCallback() {
     this._ascolta(undefined);
+    this._fermaRiprova();
+    this._fermaOsservatore();
   }
 
   connectedCallback() {
     if (this._hass) {
       this._ascolta(this._hass.connection);
+    }
+    if (this._daAggiornare) {
+      this._aggiorna();
     }
   }
 
@@ -100,6 +183,13 @@ class VmcMasterCard extends HTMLElement {
     this._connessione = connessione;
     if (connessione) {
       connessione.addEventListener("ready", this._alRicollegamento);
+    }
+  }
+
+  _fermaRiprova() {
+    if (this._riprova !== undefined) {
+      clearTimeout(this._riprova);
+      this._riprova = undefined;
     }
   }
 
@@ -138,6 +228,8 @@ class VmcMasterCard extends HTMLElement {
       this._caricata = undefined;
       this._errore = undefined;
       this._sensoreRepository = undefined;
+      this._daAggiornare = false;
+      this._fermaRiprova();
       this._carica();
     }
   }
@@ -165,7 +257,9 @@ class VmcMasterCard extends HTMLElement {
   }
 
   _messaggio(testo) {
+    this._fermaOsservatore();
     this._scheda = undefined;
+    this._testoConfigurazione = undefined;
     this.replaceChildren();
     const card = document.createElement("ha-card");
     const corpo = document.createElement("div");
@@ -173,6 +267,74 @@ class VmcMasterCard extends HTMLElement {
     corpo.textContent = testo;
     card.appendChild(corpo);
     this.appendChild(card);
+  }
+
+  _costruisci(configurazione, testo, aiuti) {
+    this._fermaOsservatore();
+    this._errore = undefined;
+    const trovato = testo.match(RE_SENSORE_REPOSITORY);
+    this._sensoreRepository = trovato ? trovato[0] : undefined;
+    const scheda = aiuti.createCardElement(configurazione);
+    scheda.hass = this._hass;
+    this._scheda = scheda;
+    this._testoConfigurazione = testo;
+    this.replaceChildren(scheda);
+  }
+
+  _mostraErrore(vmc, errore) {
+    this._caricata = undefined;
+    this._errore = { vmc, alle: Date.now() };
+    const dettaglio = errore && (errore.body?.message || errore.message);
+    const consiglio = vmcNonTrovata(errore)
+      ? "Scegliere di nuovo la VMC nelle opzioni della scheda."
+      : "Verificare che la VMC sia configurata in Impostazioni → Dispositivi e servizi → VMC Master.";
+    this._messaggio(
+      `Scheda VMC Master non disponibile${dettaglio ? `: ${dettaglio}` : ""}. ${consiglio}`
+    );
+  }
+
+  // Dopo un ricollegamento, con la scheda gia' costruita: la si ricostruisce solo se la
+  // configurazione e' cambiata (cosi' il Pannello Informazioni aperto e lo scorrimento
+  // restano). Se la richiesta non riesce si tiene la scheda e si riprova.
+  async _aggiorna() {
+    this._fermaRiprova();
+    this._daAggiornare = false;
+    const vmc = this._config && this._config.vmc;
+    if (!this._hass || !vmc || this._caricata !== vmc || !this._scheda) {
+      return;
+    }
+    let configurazione;
+    try {
+      configurazione = await this._hass.callApi("GET", `${DOMINIO}/scheda/${vmc}`);
+    } catch (errore) {
+      if (this._caricata !== vmc || !this._scheda) {
+        return; // nel frattempo e' stata scelta un'altra VMC
+      }
+      if (vmcNonTrovata(errore)) {
+        this._mostraErrore(vmc, errore);
+        return;
+      }
+      this._daAggiornare = true;
+      if (this.isConnected) {
+        this._riprova = setTimeout(() => this._aggiorna(), ATTESA_DOPO_ERRORE_MS);
+      }
+      return;
+    }
+    if (this._caricata !== vmc || !this._scheda) {
+      return;
+    }
+    const testo = JSON.stringify(configurazione);
+    if (testo === this._testoConfigurazione) {
+      return; // configurazione invariata: la scheda resta com'e'
+    }
+    try {
+      const aiuti = await window.loadCardHelpers();
+      if (this._caricata === vmc) {
+        this._costruisci(configurazione, testo, aiuti);
+      }
+    } catch (_errore) {
+      // scheda nuova non costruita: resta quella di prima
+    }
   }
 
   async _carica() {
@@ -203,27 +365,12 @@ class VmcMasterCard extends HTMLElement {
       if (this._caricata !== vmc) {
         return; // nel frattempo e' stata scelta un'altra VMC
       }
-      this._errore = undefined;
-      const trovato = JSON.stringify(configurazione).match(RE_SENSORE_REPOSITORY);
-      this._sensoreRepository = trovato ? trovato[0] : undefined;
-      const scheda = aiuti.createCardElement(configurazione);
-      scheda.hass = this._hass;
-      this._scheda = scheda;
-      this.replaceChildren(scheda);
+      this._costruisci(configurazione, JSON.stringify(configurazione), aiuti);
     } catch (errore) {
       if (this._caricata !== vmc) {
         return; // errore di una richiesta vecchia: nel frattempo e' stata scelta un'altra VMC
       }
-      this._caricata = undefined;
-      this._errore = { vmc, alle: Date.now() };
-      const dettaglio = errore && (errore.body?.message || errore.message);
-      const consiglio =
-        errore && errore.status_code === 404
-          ? "Scegliere di nuovo la VMC nelle opzioni della scheda."
-          : "Verificare che la VMC sia configurata in Impostazioni → Dispositivi e servizi → VMC Master.";
-      this._messaggio(
-        `Scheda VMC Master non disponibile${dettaglio ? `: ${dettaglio}` : ""}. ${consiglio}`
-      );
+      this._mostraErrore(vmc, errore);
     }
   }
 }

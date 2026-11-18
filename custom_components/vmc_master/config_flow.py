@@ -18,14 +18,16 @@ from typing import Any
 
 import voluptuous as vol
 
+from homeassistant.components import persistent_notification
 from homeassistant.config_entries import (
     ConfigEntry,
     ConfigFlow,
     ConfigFlowResult,
     OptionsFlow,
 )
-from homeassistant.core import callback
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.hassio import is_hassio
+from homeassistant.helpers.translation import async_get_translations
 from homeassistant.helpers.selector import (
     SelectOptionDict,
     SelectSelector,
@@ -67,7 +69,7 @@ _SENZA_WIFI = {"no_wifi", "supervisor_unavailable"}
 
 def ip_valido(ip: str) -> bool:
     """IPv4 con quattro numeri da 0 a 255 (999.999.999.999 non e' valido), senza zeri
-    iniziali: «192.168.1.010» non e' valido (per qualcuno e' 192.168.1.8)."""
+    iniziali: «x.x.x.010» non e' valido (per qualcuno e' x.x.x.8)."""
     if not IP_RE.fullmatch(ip):
         return False
     try:
@@ -104,15 +106,16 @@ async def async_nome_vmc(ip: str) -> str | None:
 
 
 async def async_prova_vmc(ip: str) -> bool:
-    """True se la VMC risponde sulla porta 5001."""
-    return await async_nome_vmc(ip) is not None
+    """True se a quell'IP risponde una VMC sulla porta 5001 (risposta «VMNM <nome>»):
+    un altro dispositivo che risponde sulla 5001 senza nome non conta come VMC."""
+    return bool(await async_nome_vmc(ip))
 
 
 def nome_da_vmc(nome_vmc: str) -> str:
     """Nome della VMC (Air Guard, fino a 12 caratteri) -> nome per l'integrazione.
 
     Solo lettere minuscole a-z, senza accenti, spazi e numeri, senza la parola «VMC»
-    davanti e al massimo 10 lettere: «VMC Sala Grande» -> «salagrande».
+    davanti e al massimo 10 lettere: «VMC Primo Piano» -> «primopiano».
     """
     parole = [p for p in re.split(r"[\s_-]+", nome_vmc) if p]
     if len(parole) > 1 and parole[0].lower() == "vmc":
@@ -125,21 +128,47 @@ def nome_da_vmc(nome_vmc: str) -> str:
 def titolo_voce(nome_vmc: str | None, nome: str) -> str:
     """Titolo della voce in Dispositivi e servizi: il nome della VMC (Air Guard).
 
-    «VMC Soggiorno» resta com'e', «Soggiorno» diventa «VMC Soggiorno»; senza nome letto
-    resta «VMC ‹nome›» (il nome interno, che non cambia mai).
+    «VMC Soggiorno» (o «VMC_Soggiorno», «vmc-soggiorno») resta com'e', «Soggiorno» diventa
+    «VMC Soggiorno»; senza nome letto resta «VMC ‹nome›» (il nome interno, che non cambia
+    mai). Le parole si dividono come in nome_da_vmc: spazi, «_» e «-».
     """
     nome_vmc = (nome_vmc or "").strip()
-    if not nome_vmc:
+    parole = [p for p in re.split(r"[\s_-]+", nome_vmc) if p]
+    if not parole:
         return f"VMC {nome}"
-    if nome_vmc.split()[0].lower() == "vmc":
+    if parole[0].lower() == "vmc":
         return nome_vmc
     return f"VMC {nome_vmc}"
+
+
+def _confrontabile(testo: str) -> str:
+    """Nome senza differenze di maiuscole e separatori («VMC_Zona» = «vmc zona»)."""
+    return " ".join(p for p in re.split(r"[\s_-]+", testo.lower()) if p)
 
 
 def _messaggio(errore: pi.Failure) -> str:
     """Messaggio del motore senza il rimando alla tabella della vecchia finestra:
     la tabella dei lampeggi e' nella finestra dell'errore."""
     return errore.message.replace(pi.LED_HINT, "").strip()
+
+
+async def async_messaggio_errore(hass: HomeAssistant, errore: pi.Failure) -> str:
+    """Messaggio di un errore del motore nella lingua di Home Assistant.
+
+    In italiano resta il messaggio del motore (contiene IP, nomi delle reti...); nelle
+    altre lingue si usa il testo inglese della sezione «exceptions» delle traduzioni,
+    cercato per codice dell'errore, o il messaggio del motore se il codice non c'e'."""
+    lingua = hass.config.language or ""
+    if lingua.lower().startswith("it"):
+        return _messaggio(errore)
+    try:
+        testi = await async_get_translations(hass, lingua, "exceptions", {DOMAIN})
+    except Exception:  # noqa: BLE001 - un testo mancante non deve fermare la finestra
+        _LOGGER.debug("Traduzioni degli errori non disponibili", exc_info=True)
+        testi = {}
+    return testi.get(f"component.{DOMAIN}.exceptions.{errore.code}.message") or _messaggio(
+        errore
+    )
 
 
 def _opzioni_reti(reti: list[dict[str, Any]]) -> list[SelectOptionDict]:
@@ -216,7 +245,8 @@ class VmcMasterConfigFlow(ConfigFlow, domain=DOMAIN):
             else:
                 # il nome letto serve anche alla prima VMC («master») per il titolo della voce
                 nome_vmc = await async_nome_vmc(ip)
-                return await self._async_scegli_nome(ip, nome_vmc or "", nome_vmc is not None)
+                # risponde senza nome («»): non si sa se e' una VMC, il nome si scrive a mano
+                return await self._async_scegli_nome(ip, nome_vmc or "", bool(nome_vmc))
 
         ip_predefinito = ""
         if NOME_MASTER not in nomi and await self.hass.async_add_executor_job(
@@ -268,8 +298,9 @@ class VmcMasterConfigFlow(ConfigFlow, domain=DOMAIN):
         if user_input is not None and not errori:
             return await self._async_continua(nome, ip, raggiungibile=self._risponde)
         return self.async_show_form(
-            # VMC che non risponde: stesso passo, ma la finestra chiede di scrivere il nome
-            step_id="nome" if self._risponde else "nome_manuale",
+            # VMC che non risponde o senza nome letto: stesso passo, ma la finestra chiede
+            # di scrivere il nome (niente «Nome letto: «-»»)
+            step_id="nome" if self._risponde and self._nome_vmc else "nome_manuale",
             data_schema=vol.Schema(
                 {vol.Required(CONF_NOME, description={"suggested_value": nome}): str}
             ),
@@ -382,7 +413,7 @@ class VmcMasterConfigFlow(ConfigFlow, domain=DOMAIN):
             if errore.code in _SENZA_WIFI:
                 return self.async_show_progress_done(next_step_id="senza_wifi")
             # la rete della VMC si puo' scrivere a mano
-            self._errore = _messaggio(errore)
+            self._errore = await async_messaggio_errore(self.hass, errore)
         self._reti = await self.hass.async_add_executor_job(
             pi.stato, self.hass.config.config_dir
         )
@@ -420,7 +451,7 @@ class VmcMasterConfigFlow(ConfigFlow, domain=DOMAIN):
                 # stessi controlli del motore prima di toccare il Wi-Fi del server
                 pi.motore.normalize_request(self._dati_motore())
             except pi.Failure as errore:
-                self._errore = _messaggio(errore)
+                self._errore = await async_messaggio_errore(self.hass, errore)
                 errori["base"] = "motore"
             else:
                 self._errore = ""
@@ -520,7 +551,7 @@ class VmcMasterConfigFlow(ConfigFlow, domain=DOMAIN):
         try:
             task.result()
         except pi.Failure as errore:
-            self._errore = _messaggio(errore)
+            self._errore = await async_messaggio_errore(self.hass, errore)
             if errore.code == "restore_password_required":
                 # rete del server cambiata dopo la ricerca: il campo della password compare
                 self._rete_server = await self.hass.async_add_executor_job(
@@ -636,7 +667,7 @@ class VmcMasterConfigFlow(ConfigFlow, domain=DOMAIN):
         try:
             task.result()
         except pi.Failure as errore:
-            self._errore_ip = _messaggio(errore)
+            self._errore_ip = await async_messaggio_errore(self.hass, errore)
         else:
             self._errore_ip = ""
             self._collegata = await self.hass.async_add_executor_job(
@@ -668,10 +699,18 @@ class VmcMasterOptionsFlow(OptionsFlow):
     def __init__(self) -> None:
         self._task: asyncio.Task | None = None
         self._errore = ""
-        # IP che non risponde, gia' segnalato: con un secondo Invia si salva lo stesso
+        # IP che non risponde o con un altro nome, gia' segnalato: con un secondo Invia
+        # si salva lo stesso
         self._ip_avvisato = ""
         # segnaposto salvati prima di eliminare la voce (dopo non c'e' piu')
         self._segnaposto_eliminata: dict[str, str] = {}
+        # finestra chiusa: un errore dell'Access Point si segnala con una notifica
+        self._finestra_chiusa = False
+
+    @callback
+    def async_remove(self) -> None:
+        """Finestra chiusa (o flusso finito)."""
+        self._finestra_chiusa = True
 
     def _segnaposto(self) -> dict[str, str]:
         return {"titolo": self.config_entry.title, "ip": self.config_entry.data[CONF_HOST]}
@@ -688,9 +727,14 @@ class VmcMasterOptionsFlow(OptionsFlow):
     async def async_step_cambia_ip(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Cambia l'IP della VMC (sostituisce lo script Cambia IP)."""
+        """Cambia l'IP della VMC (sostituisce lo script Cambia IP).
+
+        A un IP nuovo deve rispondere una VMC (risposta «VMNM <nome>»): un dispositivo senza
+        nome si rifiuta; se la VMC non risponde (es. spenta) o ha un nome diverso da quello
+        di questa voce si avvisa, e un secondo Invia salva lo stesso."""
         errori: dict[str, str] = {}
         voce = self.config_entry
+        segnaposto = {"titolo": voce.title, "nome_letto": "-"}
         if user_input is not None:
             ip = user_input[CONF_HOST].strip()
             ips = {
@@ -702,15 +746,30 @@ class VmcMasterOptionsFlow(OptionsFlow):
                 errori[CONF_HOST] = "ip_non_valido"
             elif ip in ips:
                 errori[CONF_HOST] = "ip_in_uso"
-            elif (
-                ip != voce.data[CONF_HOST]
-                and ip != self._ip_avvisato
-                and not await async_prova_vmc(ip)
-            ):
-                # VMC spenta o IP sbagliato: si avvisa, un secondo Invia lo salva lo stesso
-                self._ip_avvisato = ip
-                errori[CONF_HOST] = "ip_non_risponde"
-            else:
+            elif ip != voce.data[CONF_HOST] and ip != self._ip_avvisato:
+                nome_letto = await async_nome_vmc(ip)
+                # titolo della voce preso dal nome della VMC (assente se il nome non si e'
+                # mai letto: allora non c'e' nulla con cui confrontare)
+                titolo = voce.data.get(CONF_TITOLO) or ""
+                if nome_letto == "":
+                    # risponde sulla porta 5001 ma non come una VMC
+                    errori[CONF_HOST] = "ip_altro_dispositivo"
+                elif nome_letto is None and not await async_prova_vmc(ip):
+                    # VMC spenta o IP sbagliato (seconda prova, la prima puo' andare persa)
+                    self._ip_avvisato = ip
+                    errori[CONF_HOST] = "ip_non_risponde"
+                elif (
+                    nome_letto
+                    and titolo
+                    and titolo != f"VMC {voce.data[CONF_NOME]}"
+                    and _confrontabile(titolo_voce(nome_letto, voce.data[CONF_NOME]))
+                    != _confrontabile(titolo)
+                ):
+                    # un'altra VMC, oppure nome cambiato nell'App Air Guard
+                    self._ip_avvisato = ip
+                    segnaposto["nome_letto"] = nome_letto
+                    errori[CONF_HOST] = "ip_nome_diverso"
+            if not errori:
                 await self.hass.async_add_executor_job(
                     pi.aggiorna_ip, self.hass.config.config_dir, voce.data[CONF_HOST], ip
                 )
@@ -725,7 +784,12 @@ class VmcMasterOptionsFlow(OptionsFlow):
                 ): str
             }
         )
-        return self.async_show_form(step_id="cambia_ip", data_schema=schema, errors=errori)
+        return self.async_show_form(
+            step_id="cambia_ip",
+            data_schema=schema,
+            errors=errori,
+            description_placeholders=segnaposto,
+        )
 
     # ---- Elimina la VMC -----------------------------------------------------------
     async def async_step_elimina(
@@ -760,16 +824,25 @@ class VmcMasterOptionsFlow(OptionsFlow):
         ip = self.config_entry.data[CONF_HOST]
         entry_id = self.config_entry.entry_id
         self._segnaposto_eliminata = self._segnaposto()
+        # avviso di un tentativo precedente fatto con la finestra chiusa
+        persistent_notification.async_dismiss(self.hass, f"{DOMAIN}_access_point_{entry_id}")
 
         def avanzamento(percento: int) -> None:
             self.hass.loop.call_soon_threadsafe(
                 self.async_update_progress, min(max(percento, 0), 100) / 100
             )
 
-        async def _esegui() -> str:
-            nome = await self.hass.async_add_executor_job(
-                pi.rimanda_in_access_point, self.hass.config.config_dir, ip, avanzamento
-            )
+        async def _esegui() -> str | None:
+            try:
+                nome = await self.hass.async_add_executor_job(
+                    pi.rimanda_in_access_point, self.hass.config.config_dir, ip, avanzamento
+                )
+            except pi.Failure as errore:
+                if not self._finestra_chiusa:
+                    raise  # lo mostra la finestra («Access Point non riuscito»)
+                # finestra gia' chiusa: l'errore non si perde
+                await self._async_notifica_errore_access_point(errore, entry_id)
+                return None
             if self.hass.config_entries.async_get_entry(entry_id) is not None:
                 await self.hass.config_entries.async_remove(entry_id)
             return nome
@@ -778,10 +851,35 @@ class VmcMasterOptionsFlow(OptionsFlow):
             _esegui(), f"{DOMAIN}_access_point_{entry_id}"
         )
 
-        async def _attendi() -> str:
+        async def _attendi() -> str | None:
             return await asyncio.shield(lavoro)
 
         return self.hass.async_create_task(_attendi(), f"{DOMAIN}_attesa_access_point")
+
+    async def _async_notifica_errore_access_point(
+        self, errore: pi.Failure, entry_id: str
+    ) -> None:
+        """Access Point non riuscito con la finestra chiusa: notifica (la voce resta)."""
+        titolo = self._segnaposto_eliminata.get("titolo", "")
+        messaggio = await async_messaggio_errore(self.hass, errore)
+        if (self.hass.config.language or "").lower().startswith("it"):
+            intestazione = "VMC Master: Access Point non riuscito"
+            testo = (
+                f"{messaggio}\n\n{titolo} non è stata eliminata.\n\n"
+                "Per riprovare: icona ingranaggio sulla riga della VMC → «Elimina la VMC»."
+            )
+        else:
+            intestazione = "VMC Master: Access Point failed"
+            testo = (
+                f"{messaggio}\n\n{titolo} has not been deleted.\n\n"
+                "To try again: gear icon on the unit's row → «Delete the unit»."
+            )
+        persistent_notification.async_create(
+            self.hass,
+            testo,
+            title=intestazione,
+            notification_id=f"{DOMAIN}_access_point_{entry_id}",
+        )
 
     async def async_step_elimina_dalla_rete(
         self, user_input: dict[str, Any] | None = None
@@ -802,7 +900,7 @@ class VmcMasterOptionsFlow(OptionsFlow):
         try:
             task.result()
         except pi.Failure as errore:
-            self._errore = _messaggio(errore)
+            self._errore = await async_messaggio_errore(self.hass, errore)
             return self.async_show_progress_done(next_step_id="errore_rete")
         return self.async_show_progress_done(next_step_id="eliminata_dalla_rete")
 

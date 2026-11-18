@@ -62,7 +62,7 @@ def esegui(
     """Esegue un'azione del motore come il worker della 8.6.0 (dispatch) e restituisce
     lo stato finale. Gli errori del motore escono come Failure (codice + messaggio)."""
     if not _BLOCCO.acquire(blocking=False):
-        raise Failure("in_corso", "Una procedura è già in corso. Attendi il risultato.")
+        raise Failure("in_corso", "Una procedura è già in corso. Attendere il risultato.")
     try:
         engine = _motore(config_dir, avanzamento)
         if azione == "scan":
@@ -89,7 +89,7 @@ def esegui(
     except Exception as errore:  # stesso messaggio del worker della 8.6.0
         raise Failure(
             "communication_error",
-            "Errore di comunicazione. Verifica la raggiungibilità della VMC e del Supervisor.",
+            "Errore di comunicazione. Verificare la raggiungibilità della VMC e del Supervisor.",
         ) from errore
     finally:
         _BLOCCO.release()
@@ -123,12 +123,16 @@ def rete_del_server(config_dir: str) -> str:
 
 
 def rete_di_ricerca(info: dict[str, Any]) -> str:
-    """Rete in cui il motore cerca la VMC dopo il collegamento ("" = quella del server).
+    """Reti in cui il motore cerca la VMC dopo il collegamento ("" = quelle del server).
 
-    Il motore cerca al massimo 256 indirizzi (una rete /24): con una rete di casa piu'
-    ampia (/23, /22, ...) si cerca nei 256 indirizzi intorno all'IP del server, dove di
-    solito il router assegna anche quello della VMC. Se la VMC prende un IP fuori da
-    questi, il collegamento riesce lo stesso e la VMC si aggiunge poi scrivendo l'IP."""
+    Il motore cerca al massimo 256 indirizzi (una rete /24) per ogni rete collegata: con
+    una rete di casa piu' ampia (/23, /22, ...) si cerca nei 256 indirizzi intorno all'IP
+    del server, dove di solito il router assegna anche quello della VMC. Se il server ha
+    piu' reti collegate (ad esempio cavo /24 e Wi-Fi /16) si cerca in tutte, separate da
+    virgole. Se la VMC prende un IP fuori da questi, il collegamento riesce lo stesso e la
+    VMC si aggiunge poi scrivendo l'IP."""
+    reti: list[str] = []
+    ampia = False
     for interfaccia in motore.interfaces(info):
         if not interfaccia.get("connected"):
             continue
@@ -137,13 +141,17 @@ def rete_di_ricerca(info: dict[str, Any]) -> str:
                 rete = ipaddress.ip_interface(indirizzo)
             except ValueError:
                 continue
-            if (
-                rete.version == 4
-                and rete.network.num_addresses > 256
-                and any(rete.network.subnet_of(n) for n in motore.PRIVATE)
-            ):
-                return str(ipaddress.ip_network(f"{rete.ip}/24", strict=False))
-    return ""
+            if rete.version != 4 or not any(rete.network.subnet_of(n) for n in motore.PRIVATE):
+                continue
+            if rete.network.num_addresses > 256:
+                ampia = True
+                ricerca = str(ipaddress.ip_network(f"{rete.ip}/24", strict=False))
+            else:
+                ricerca = str(rete.network)
+            if ricerca not in reti:
+                reti.append(ricerca)
+    # Senza reti piu' ampie di /24 il motore cerca da solo in tutte le reti del server
+    return ",".join(reti) if ampia else ""
 
 
 def rete_da_ripristinare(config_dir: str) -> str:
@@ -187,7 +195,7 @@ def rimanda_in_access_point(
             avanzamento(percento)
 
     if not _BLOCCO.acquire(blocking=False):
-        raise Failure("in_corso", "Una procedura è già in corso. Attendi il risultato.")
+        raise Failure("in_corso", "Una procedura è già in corso. Attendere il risultato.")
     try:
         trasporto = motore.Transport()
         passo(10)
@@ -196,7 +204,7 @@ def rimanda_in_access_point(
         except OSError:
             raise Failure(
                 "vmc_unreachable",
-                f"La VMC non risponde all'indirizzo {ip}. Controlla che sia accesa e "
+                f"La VMC non risponde all'indirizzo {ip}. Controllare che sia accesa e "
                 "collegata al Wi-Fi di casa.",
             ) from None
         passo(30)
@@ -232,7 +240,7 @@ def rimanda_in_access_point(
     except Exception as errore:  # stesso messaggio del worker della 8.6.0
         raise Failure(
             "communication_error",
-            "Errore di comunicazione. Verifica la raggiungibilità della VMC.",
+            "Errore di comunicazione. Verificare la raggiungibilità della VMC.",
         ) from errore
     finally:
         _BLOCCO.release()

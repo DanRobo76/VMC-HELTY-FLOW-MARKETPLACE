@@ -29,22 +29,22 @@
       },
       "nome_manuale": {
         "title": "Nome della VMC nell'integrazione",
-        "description": "La VMC all'indirizzo {ip} non risponde, quindi il nome non si può leggere dalla VMC: scriverlo qui.\n\nQuesto nome entra nei nomi di tutte le entità (sensor.vmc_‹nome›_…) e nella cartella del package, e dopo non si cambia senza perdere la cronologia (solo lettere minuscole, da 1 a 10 caratteri; «master» è riservato alla prima VMC).",
+        "description": "Il nome non si può leggere dalla VMC all'indirizzo {ip} (non risponde oppure non manda il suo nome): scriverlo qui.\n\nQuesto nome entra nei nomi di tutte le entità (sensor.vmc_‹nome›_…) e nella cartella del package, e dopo non si cambia senza perdere la cronologia (solo lettere minuscole, da 1 a 10 caratteri; «master» è riservato alla prima VMC).",
         "data": {
           "nome": "Nome VMC"
         }
       },
       "non_raggiungibile": {
         "title": "VMC non raggiungibile",
-        "description": "La VMC all'indirizzo {ip} non risponde sulla porta 5001.\n\nSi può aggiungere comunque, per esempio se ora è spenta: premere Invia. L'IP si cambia più tardi dall'icona ingranaggio sulla riga della VMC → «Cambia l'IP della VMC». Se la VMC non è ancora collegata al Wi-Fi di casa, chiudere questa finestra, ripetere l'aggiunta («Aggiungi integrazione» per la prima VMC, «Aggiungi dispositivo» per le altre) e scegliere «No, va installata da zero»."
+        "description": "La VMC all'indirizzo {ip} non risponde sulla porta 5001 oppure non manda il suo nome.\n\nSi può aggiungere comunque, per esempio se ora è spenta: premere Invia. L'IP si cambia più tardi dall'icona ingranaggio sulla riga della VMC → «Cambia l'IP della VMC». Se la VMC non è ancora collegata al Wi-Fi di casa, chiudere questa finestra, ripetere l'aggiunta («Aggiungi integrazione» per la prima VMC, «Aggiungi dispositivo» per le altre) e scegliere «No, va installata da zero»."
       },
       "migra": {
         "title": "Installazione manuale trovata",
-        "description": "Nella cartella packages/vmc_helty_flow/{nome} c'è già un'installazione manuale della VMC {nome}.\n\nIP scritto: {ip}. IP nell'installazione manuale: {ip_trovato}. Se sono diversi, chiudere questa finestra e ripetere con l'IP giusto.\n\nContinuando, la cartella viene spostata in /config/vmc_master_backup e sostituita dal package dell'integrazione. I nomi delle entità restano uguali, quindi la cronologia si conserva. Prima di riavviare eliminare l'automazione incollata a mano (altrimenti dopo il riavvio girano due automazioni uguali); dopo il riavvio togliere la vecchia scheda manuale."
+        "description": "Nella cartella packages/vmc_helty_flow/{nome} c'è già un'installazione manuale della VMC {nome}.\n\n- IP scritto: {ip}\n- IP nell'installazione manuale: {ip_trovato}\n\nSe sono diversi, chiudere questa finestra e ripetere con l'IP giusto.\n\nContinuando, la cartella viene spostata in `/config/vmc_master_backup` e sostituita dal package dell'integrazione. I nomi delle entità restano uguali, quindi la cronologia si conserva.\n\n1. Premere Invia.\n2. Eliminare l'automazione incollata a mano (altrimenti dopo il riavvio girano due automazioni uguali).\n3. Riavviare Home Assistant.\n4. Togliere la vecchia scheda manuale dalla plancia."
       },
       "rete_vmc": {
         "title": "Collega la VMC al Wi-Fi di casa",
-        "description": "Reti VMC trovate: {trovate}.\n\n1. **Rete della VMC**: VMC_ seguito dal numero di serie, come la vede lo smartphone. Se non compare: avvicinare il server alla VMC; con il LED Allarme filtri acceso fare prima il reset filtri; se la VMC era già collegata a un'altra rete fare il ripristino Wi-Fi qui sotto. Il nome si può anche scrivere a mano.\n2. **Password della rete VMC**: quella di fabbrica è 12345678.\n3. **Rete Wi-Fi di casa** e sua **password**: è la rete a cui si collegherà la VMC.\n\n**Ripristino Wi-Fi:** spegnere la VMC, togliere corrente a monte, ridare corrente **tenendo premuto il tasto Notturna** fino alla fine dei 7 lampeggi di tutti i LED (la password della rete VMC torna 12345678).",
+        "description": "Reti VMC trovate: {trovate}.\n\n1. **Rete della VMC**: VMC_ seguito dal numero di serie, come la vede lo smartphone. Il nome si può anche scrivere a mano. Se non compare:\n   1. avvicinare il server alla VMC;\n   2. con il LED Allarme filtri acceso, fare il reset filtri;\n   3. se la VMC era già collegata a un'altra rete, fare il ripristino Wi-Fi qui sotto.\n2. **Password della rete VMC**: quella di fabbrica è 12345678.\n3. **Rete Wi-Fi di casa** e sua **password**: è la rete a cui si collegherà la VMC.\n\n**Ripristino Wi-Fi** (la password della rete VMC torna 12345678):\n1. spegnere la VMC;\n2. togliere corrente a monte;\n3. ridare corrente **tenendo premuto il tasto Notturna**;\n4. tenerlo premuto fino alla fine dei 7 lampeggi di tutti i LED.",
         "data": {
           "rete_vmc": "Rete della VMC",
           "password_vmc": "Password della rete VMC",
@@ -54,12 +54,12 @@
         },
         "data_description": {
           "password_casa": "Serve solo per il collegamento: non resta salvata nell'integrazione.",
-          "password_server": "Il server ora è collegato alla rete {rete_del_server}. Se la rete di casa scelta è diversa, scrivere qui la password di {rete_del_server}: serve per riportare il server su quella rete. Non resta salvata."
+          "password_server": "Il server ora è collegato alla rete {rete_del_server}. Se la rete di casa scelta è diversa, scrivere qui la password di {rete_del_server}: serve per riportare il server su quella rete. Controllarla bene: con una password sbagliata il server non torna sulla sua rete. Non resta salvata."
         }
       },
       "errore": {
         "title": "Collegamento non riuscito",
-        "description": "{errore}\n\n**LED Allarme filtri** (sequenza ripetuta ogni 4 secondi):\n\n| Lampeggi | Errore |\n|---|---|\n| 1 alternato a 2 veloci | Password errata |\n| 2 veloci | Cifratura o password errata (es. router in WEP) |\n| 3 veloci | Access point non trovato |\n| 4 veloci | Errore di connessione |\n| 5 veloci | Disconnessione (segnale Wi-Fi debole) |\n| 6 veloci | IP non acquisito (DHCP del router) |\n\nCon gli errori 1 e 2 per 3 volte di seguito la VMC torna da sola in Access Point.\n\n**Ripristino Wi-Fi:** spegnere la VMC, togliere corrente a monte, ridare corrente **tenendo premuto il tasto Notturna** fino alla fine dei 7 lampeggi di tutti i LED (la password della rete VMC torna 12345678).",
+        "description": "{errore}\n\n**LED Allarme filtri** (sequenza ripetuta ogni 4 secondi):\n\n| Lampeggi | Errore |\n|---|---|\n| 1 alternato a 2 veloci | Password errata |\n| 2 veloci | Cifratura o password errata (es. router in WEP) |\n| 3 veloci | Access point non trovato |\n| 4 veloci | Errore di connessione |\n| 5 veloci | Disconnessione (segnale Wi-Fi debole) |\n| 6 veloci | IP non acquisito (DHCP del router) |\n\nCon gli errori 1 e 2 per 3 volte di seguito la VMC torna da sola in Access Point.\n\n**Ripristino Wi-Fi** (la password della rete VMC torna 12345678):\n1. spegnere la VMC;\n2. togliere corrente a monte;\n3. ridare corrente **tenendo premuto il tasto Notturna**;\n4. tenerlo premuto fino alla fine dei 7 lampeggi di tutti i LED.",
         "menu_options": {
           "rete_vmc": "Correggi i dati e riprova",
           "cerca": "Cerca di nuovo le reti VMC"
@@ -90,7 +90,7 @@
     "error": {
       "nome_non_valido": "Nome non valido: solo lettere minuscole, da 1 a 10 caratteri.",
       "nome_in_uso": "Nome già usato da un'altra VMC.",
-      "ip_non_valido": "IP non valido: quattro numeri da 0 a 255 separati da punti.",
+      "ip_non_valido": "IP non valido: quattro numeri da 0 a 255 separati da punti, senza zeri iniziali.",
       "ip_in_uso": "IP già usato da un'altra VMC.",
       "motore": "{errore}",
       "password_server_mancante": "Il server ora è collegato alla rete {rete_del_server}, diversa dalla rete di casa scelta: scrivere la password di {rete_del_server} in «Password del Wi-Fi attuale del server».",
@@ -100,14 +100,15 @@
     "abort": {
       "already_configured": "Questa VMC è già configurata.",
       "senza_supervisor": "Per collegare una VMC al Wi-Fi da qui servono Home Assistant OS (con il Supervisor) e una scheda Wi-Fi sul server. Questo Home Assistant non ha il Supervisor: collegare la VMC una volta con l'App Air Guard, poi ripetere l'aggiunta («Aggiungi integrazione» per la prima VMC, «Aggiungi dispositivo» per le altre) e scegliere «Sì, è già collegata».",
-      "senza_wifi": "Home Assistant OS non trova una scheda Wi-Fi sul server. Serve un computer con il Wi-Fi integrato oppure una chiavetta USB Wi-Fi riconosciuta (Impostazioni → Sistema → Rete). In alternativa collegare la VMC una volta con l'App Air Guard, poi ripetere l'aggiunta («Aggiungi integrazione» per la prima VMC, «Aggiungi dispositivo» per le altre) e scegliere «Sì, è già collegata»."
+      "senza_wifi": "Home Assistant OS non trova una scheda Wi-Fi sul server. Serve un computer con il Wi-Fi integrato oppure una chiavetta USB Wi-Fi riconosciuta (Impostazioni → Sistema → Rete). In alternativa collegare la VMC una volta con l'App Air Guard, poi ripetere l'aggiunta («Aggiungi integrazione» per la prima VMC, «Aggiungi dispositivo» per le altre) e scegliere «Sì, è già collegata».",
+      "already_in_progress": "L'aggiunta di questa VMC è già in corso in un'altra finestra."
     }
   },
   "options": {
     "step": {
       "init": {
         "title": "Impostazioni della VMC",
-        "description": "**{titolo}** (IP {ip}): cosa vuoi fare?",
+        "description": "**{titolo}** (IP {ip}): scegliere cosa fare.",
         "menu_options": {
           "cambia_ip": "Cambia l'IP della VMC",
           "elimina": "Elimina la VMC"
@@ -115,14 +116,14 @@
       },
       "cambia_ip": {
         "title": "Cambia l'IP della VMC",
-        "description": "Nuovo indirizzo IP della VMC. Il package viene aggiornato e Home Assistant chiede di riavviarsi.",
+        "description": "Nuovo indirizzo IP della VMC: deve rispondere {titolo}. Il package viene aggiornato e Home Assistant chiede di riavviarsi.",
         "data": {
           "host": "IP della VMC"
         }
       },
       "elimina": {
         "title": "Elimina la VMC",
-        "description": "Vuoi eliminare **{titolo}** solo da Home Assistant, lasciandola sulla rete di casa, oppure anche dalla rete?\n\n- **Solo da Home Assistant**: la VMC resta collegata al Wi-Fi di casa. Si può riaggiungere scrivendo solo l'IP, da «Aggiungi dispositivo» («Aggiungi integrazione» se non restano altre VMC).\n- **Anche dalla rete**: la VMC lascia il Wi-Fi di casa e torna in Access Point, cioè mostra di nuovo la sua rete VMC_…. Per ricollegarla: «Aggiungi dispositivo» («Aggiungi integrazione» se non restano altre VMC) → «No, va installata da zero», oppure l'App Air Guard.\n\nIn tutti e due i casi la cartella della VMC va in `/config/vmc_master_backup` e poi serve un riavvio di Home Assistant.",
+        "description": "Eliminare **{titolo}** solo da Home Assistant oppure anche dalla rete?\n\n- **Solo da Home Assistant**: la VMC resta collegata al Wi-Fi di casa. Per riaggiungerla basta l'IP («Sì, è già collegata»).\n- **Anche dalla rete**: la VMC lascia il Wi-Fi di casa e torna in Access Point (la sua rete VMC_… è di nuovo visibile). Per riaggiungerla: «No, va installata da zero», oppure collegarla prima con l'App Air Guard.\n\nSi riaggiunge da «Aggiungi dispositivo» («Aggiungi integrazione» se non restano altre VMC).\n\nIn tutti e due i casi la cartella della VMC va in `/config/vmc_master_backup` e poi serve un riavvio di Home Assistant.",
         "menu_options": {
           "elimina_solo_ha": "Solo da Home Assistant (resta sulla rete di casa)",
           "elimina_dalla_rete": "Anche dalla rete (torna in Access Point)"
@@ -136,7 +137,7 @@
         "description": "{errore}\n\n{titolo} non è stata eliminata.",
         "menu_options": {
           "elimina_dalla_rete": "Riprova",
-          "elimina_solo_ha": "Eliminala solo da Home Assistant (resta sulla rete di casa)"
+          "elimina_solo_ha": "Elimina solo da Home Assistant (resta sulla rete di casa)"
         }
       }
     },
@@ -144,13 +145,15 @@
       "access_point": "Invio del comando Access Point alla VMC ({ip}) e attesa che lasci il Wi-Fi di casa: al massimo un minuto."
     },
     "error": {
-      "ip_non_valido": "IP non valido: quattro numeri da 0 a 255 separati da punti.",
+      "ip_non_valido": "IP non valido: quattro numeri da 0 a 255 separati da punti, senza zeri iniziali.",
       "ip_in_uso": "IP già usato da un'altra VMC.",
-      "ip_non_risponde": "La VMC non risponde a questo IP sulla porta 5001. Controllare l'IP; per salvarlo comunque premere di nuovo Invia."
+      "ip_non_risponde": "La VMC non risponde a questo IP sulla porta 5001. Controllare l'IP; per salvarlo comunque premere di nuovo Invia.",
+      "ip_altro_dispositivo": "A questo IP risponde un dispositivo che non è una VMC (non manda il nome della VMC). Controllare l'IP.",
+      "ip_nome_diverso": "A questo IP risponde la VMC «{nome_letto}», non {titolo}. Controllare l'IP. Se il nome è stato cambiato nell'App Air Guard, premere di nuovo Invia per salvarlo."
     },
     "abort": {
-      "eliminata": "{titolo} è stata eliminata da Home Assistant e resta sulla rete di casa. Per completare, riavvia Home Assistant.",
-      "eliminata_dalla_rete": "{titolo} è tornata in Access Point (la sua rete VMC_… è di nuovo visibile) ed è stata eliminata da Home Assistant. Per completare, riavvia Home Assistant."
+      "eliminata": "{titolo} è stata eliminata da Home Assistant e resta sulla rete di casa. Per completare, riavviare Home Assistant.",
+      "eliminata_dalla_rete": "{titolo} è tornata in Access Point (la sua rete VMC_… è di nuovo visibile) ed è stata eliminata da Home Assistant. Per completare, riavviare Home Assistant."
     }
   },
   "issues": {
@@ -168,6 +171,143 @@
     "packages_non_abilitati": {
       "title": "VMC Master: package della VMC {nome} non caricati",
       "description": "I file della VMC sono installati ma Home Assistant non li carica. Nel file configuration.yaml devono esserci queste righe:\n\n```yaml\nhomeassistant:\n  packages: !include_dir_named packages/\n```\n\nSe la riga `homeassistant:` c'è già, aggiungere solo la riga `packages:` subito sotto, con due spazi davanti. Salvare e riavviare Home Assistant."
+    }
+  },
+  "exceptions": {
+    "ambiguous_device": {
+      "message": "Più VMC rispondono con lo stesso nome sulla rete di casa: il collegamento non può essere confermato. Dare nomi diversi alle VMC e riprovare."
+    },
+    "ambiguous_padding": {
+      "message": "Il campo non può terminare con un asterisco: la VMC usa l'asterisco come riempimento."
+    },
+    "ap_not_applied": {
+      "message": "La VMC risponde ancora sulla rete di casa: il passaggio in Access Point non è stato applicato."
+    },
+    "ap_unconfirmed": {
+      "message": "La VMC non risponde più sulla rete di casa, ma il server non vede la sua rete VMC. Controllare dallo smartphone; se non compare, usare il Ripristino Wi-Fi."
+    },
+    "ap_unreachable": {
+      "message": "La rete della VMC non è raggiungibile. Controllare nome e password della rete VMC e che la VMC sia in Access Point."
+    },
+    "back_to_access_point": {
+      "message": "La VMC non è riuscita a collegarsi ed è tornata in Access Point: di solito per password errata o cifratura non supportata (es. WEP). Controllare nome e password della rete di casa e riprovare."
+    },
+    "communication_error": {
+      "message": "Errore di comunicazione. Verificare che la VMC e il Supervisor siano raggiungibili."
+    },
+    "duplicate_name": {
+      "message": "Il nome è già usato da un'altra VMC sulla rete di casa: sceglierne uno diverso."
+    },
+    "identity_unconfirmed": {
+      "message": "A questo IP risponde un dispositivo diverso dalla VMC attesa (nome o MAC). Nessun comando è stato inviato. Controllare l'associazione MAC/IP sul router."
+    },
+    "in_corso": {
+      "message": "Una procedura è già in corso. Attendere il risultato."
+    },
+    "interrupted": {
+      "message": "Procedura interrotta. Controllare lo stato del ripristino prima di riprovare."
+    },
+    "invalid_action": {
+      "message": "Operazione non valida."
+    },
+    "invalid_ap_password": {
+      "message": "Password della rete VMC non valida: da 8 a 32 caratteri (quella di fabbrica è 12345678)."
+    },
+    "invalid_ap_ssid": {
+      "message": "Scrivere il nome della rete della VMC (VMC_xxxxxxxx), al massimo 32 caratteri."
+    },
+    "invalid_ip": {
+      "message": "IP non valido: usare l'indirizzo locale della VMC."
+    },
+    "invalid_mac": {
+      "message": "Il MAC deve contenere 6 coppie di caratteri esadecimali."
+    },
+    "invalid_name": {
+      "message": "Il nuovo nome deve avere da 1 a 12 caratteri: lettere senza accenti, numeri, _ oppure -."
+    },
+    "invalid_new_password": {
+      "message": "La nuova password deve avere da 8 a 32 caratteri tra lettere senza accenti, numeri e $ @ ! % ? &."
+    },
+    "invalid_password": {
+      "message": "La password del Wi-Fi di casa deve avere da 8 a 32 caratteri."
+    },
+    "invalid_request": {
+      "message": "Richiesta non valida."
+    },
+    "invalid_restore_password": {
+      "message": "«Password del Wi-Fi attuale del server» deve avere da 8 a 63 caratteri."
+    },
+    "invalid_ssid": {
+      "message": "Il nome della rete Wi-Fi di casa deve avere da 1 a 32 caratteri."
+    },
+    "invalid_subnet": {
+      "message": "La rete di ricerca deve avere il formato rete/24."
+    },
+    "invalid_vmc": {
+      "message": "Il dispositivo non risponde come una VMC Helty Air Guard."
+    },
+    "mac_unavailable": {
+      "message": "Il MAC non è stato rilevato sulla rete di casa: il nuovo IP non può essere confermato automaticamente. Controllare MAC e IP nell'elenco dispositivi del router."
+    },
+    "no_lan": {
+      "message": "Non è stata trovata una rete locale. Controllare che il server sia collegato alla rete di casa e riprovare."
+    },
+    "no_wifi": {
+      "message": "Il Supervisor non trova una scheda Wi-Fi sul server."
+    },
+    "not_configured": {
+      "message": "Prima completare il collegamento della VMC."
+    },
+    "password_unconfirmed": {
+      "message": "La nuova password è stata inviata, ma il server non riesce a collegarsi alla rete VMC. Provare dallo smartphone con la nuova e con la vecchia password; se nessuna funziona, usare il Ripristino Wi-Fi (la password torna 12345678)."
+    },
+    "rename_refused": {
+      "message": "La VMC non ha confermato il nuovo nome."
+    },
+    "rename_unconfirmed": {
+      "message": "Il nuovo nome è stato inviato, ma la VMC risponde ancora con un altro nome."
+    },
+    "restore_failed": {
+      "message": "Il Wi-Fi del server non è tornato alla rete precedente. La password di quella rete potrebbe essere sbagliata. Riprovare oppure riavviare Home Assistant per il ripristino automatico."
+    },
+    "restore_password_required": {
+      "message": "Il Wi-Fi del server è collegato a un'altra rete: scrivere la password di quella rete in «Password del Wi-Fi attuale del server». Nessuna modifica è stata eseguita."
+    },
+    "same_password": {
+      "message": "La nuova password coincide con quella attuale."
+    },
+    "scan_failed": {
+      "message": "La scheda Wi-Fi del server non ha restituito l'elenco delle reti. Scrivere a mano il nome della rete VMC letto sullo smartphone."
+    },
+    "subnet_too_large": {
+      "message": "La rete locale è troppo grande per la ricerca automatica: al massimo 256 indirizzi (rete/24)."
+    },
+    "supervisor_error": {
+      "message": "Il Supervisor non ha completato l'operazione di rete."
+    },
+    "supervisor_http": {
+      "message": "Il Supervisor ha rifiutato l'operazione."
+    },
+    "supervisor_unavailable": {
+      "message": "Il Supervisor non risponde: la gestione del Wi-Fi richiede Home Assistant OS con il Supervisor."
+    },
+    "unsupported_encoding": {
+      "message": "Usare solo caratteri ASCII, senza lettere accentate."
+    },
+    "unsupported_restore": {
+      "message": "Il profilo Wi-Fi attuale del server usa un'autenticazione non supportata."
+    },
+    "verification_timeout": {
+      "message": "La rete è stata inviata, ma la VMC non è stata ritrovata sulla rete di casa. Controllare nel router l'IP assegnato."
+    },
+    "vmc_unreachable": {
+      "message": "La VMC non risponde. Controllare che sia accesa, l'IP e la prenotazione sul router."
+    },
+    "wifi_socket": {
+      "message": "Non è possibile usare la scheda Wi-Fi scelta per raggiungere la VMC."
+    },
+    "worker_start": {
+      "message": "Non è stato possibile avviare la procedura."
     }
   }
 }
