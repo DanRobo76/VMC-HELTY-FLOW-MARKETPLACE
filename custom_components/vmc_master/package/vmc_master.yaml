@@ -5026,7 +5026,7 @@ input_boolean:
     initial: false
     icon: mdi:remote-tv
 
-  vmc_master_opzioni_offset_sensori:                                            # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 29 RICHIAMI] [AUTOMAZIONE, 9 RICHIAMI]
+  vmc_master_opzioni_offset_sensori:                                            # [CONFIGURAZIONE, 6 RICHIAMI] [INTERFACCIA, 29 RICHIAMI] [AUTOMAZIONE, 9 RICHIAMI]
     name: "Opzioni"
     initial: false
     icon: mdi:format-list-checkbox
@@ -5780,7 +5780,7 @@ timer:
     name: "Panic Button in corso"
     duration: "00:01:11"
     icon: mdi:timer-sand
-  vmc_master_countdown_script_inizializzazione:                  # [CONFIGURAZIONE, 4 RICHIAMI] [INTERFACCIA, 3 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] COUNTDOWN IN SCHEDA, SOTTO IL PULSANTE, DELLO SCRIPT PROFILO INIZIALIZZAZIONE (10 s: 2 PAUSE DA 5 s, POI RIAVVIO DI HOME ASSISTANT)
+  vmc_master_countdown_script_inizializzazione:                  # [CONFIGURAZIONE, 4 RICHIAMI] [INTERFACCIA, 3 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] COUNTDOWN IN SCHEDA, SOTTO IL PULSANTE, DELLO SCRIPT PROFILO INIZIALIZZAZIONE (10 s: 2 PAUSE DA 5 s)
     name: "Profilo Inizializzazione in corso"
     duration: "00:00:10"
     icon: mdi:timer-sand
@@ -6199,6 +6199,7 @@ script:
                           option: "Aggiorna Elenco Entità Temperatura Esterna"
                       - action: persistent_notification.create
                         data:
+                          notification_id: vmc_master_aggiorna_entita_temperatura_esterna
                           title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
                           message: "Aggiornare Manualmente l'Entità Temperatura Esterna"
               # Aggiorna l'ultima entità temperatura selezionata
@@ -6303,6 +6304,7 @@ script:
                           option: "Aggiorna Elenco Entità Temperatura Interna"
                       - action: persistent_notification.create
                         data:
+                          notification_id: vmc_master_aggiorna_entita_temperatura_interna
                           title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
                           message: "Aggiornare Manualmente l'Entità Temperatura Interna"
               # Aggiorna l'ultima entità temperatura selezionata
@@ -6409,6 +6411,7 @@ script:
                           option: "Aggiorna Elenco Entità Umidità Esterna"
                       - action: persistent_notification.create
                         data:
+                          notification_id: vmc_master_aggiorna_entita_umidita_esterna
                           title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
                           message: "Aggiornare Manualmente l'Entità Umidità Esterna"
               # Aggiorna l'ultima entità umidità selezionata
@@ -6513,6 +6516,7 @@ script:
                           option: "Aggiorna Elenco Entità Umidità Interna"
                       - action: persistent_notification.create
                         data:
+                          notification_id: vmc_master_aggiorna_entita_umidita_interna
                           title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
                           message: "Aggiornare Manualmente l'Entità Umidità Interna"
               # Aggiorna l'ultima entità umidità selezionata
@@ -6610,6 +6614,7 @@ script:
                           option: "Aggiorna Elenco Entità CO₂ Interna"
                       - action: persistent_notification.create
                         data:
+                          notification_id: vmc_master_aggiorna_entita_co2_interna
                           title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
                           message: "Aggiornare Manualmente l'Entità CO2 Interna"
               - action: input_text.set_value
@@ -6703,6 +6708,7 @@ script:
                           option: "Aggiorna Elenco Dispositivi per Invio Notifica"
                       - action: persistent_notification.create
                         data:
+                          notification_id: vmc_master_aggiorna_entita_dispositivo_notifica
                           title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
                           message: "Aggiornare Manualmente l'Entità Dispositivo di Notifica"
               - action: input_text.set_value
@@ -6793,6 +6799,7 @@ script:
                           option: "Aggiorna Elenco Media Player"
                       - action: persistent_notification.create
                         data:
+                          notification_id: vmc_master_aggiorna_entita_media_player
                           title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
                           message: "Aggiornare Manualmente l'Entità Media Player"
               - action: input_text.set_value
@@ -8252,10 +8259,11 @@ script:
       Profili Calendario, Free Heating/Cooling, Lim. Δ P. di Rugiada, Umidità e Audio, riporta i Tempi di
       Attesa ai valori originali, arresta la VMC (Velocità 0), dopo 5 s disattiva lo Status Routine
       Sensori, dopo altri 5 s attiva lo Status Pannello Led, attiva gli Avvisi, la Notifica Status VMC e
-      tutti gli interruttori VMC ON/OFF (PdR, Umidità, Calendario, Free Heating, Free Cooling, CO₂ e VOC)
-      e infine riavvia Home Assistant. Attendere il termine del processo: la scheda mostra il countdown
-      di 10 s sotto il pulsante prima del riavvio (la finestra Opzioni, chiusa dall'azzeramento delle
-      variabili booleane, viene riaperta per mostrarlo e richiusa prima del riavvio).
+      tutti gli interruttori VMC ON/OFF (PdR, Umidità, Calendario, Free Heating, Free Cooling, CO₂ e VOC).
+      Non riavvia Home Assistant: un riavvio interromperebbe le attese dei trigger appena partite (per esempio
+      un'Allerta Umidità già in corso) e dopo il riavvio quei trigger, già veri, non scatterebbero più.
+      Attendere il termine del processo: la scheda mostra il countdown di 10 s sotto il pulsante (la finestra
+      Opzioni, chiusa dall'azzeramento delle variabili booleane, viene riaperta per mostrarlo e resta aperta).
     sequence:
       - action: timer.start                                                 # COUNTDOWN IN SCHEDA SOTTO IL PULSANTE
         target:
@@ -8307,11 +8315,6 @@ script:
       - action: timer.cancel                                                # FINE DEL COUNTDOWN IN SCHEDA
         target:
           entity_id: timer.vmc_master_countdown_script_inizializzazione
-      - action: input_boolean.turn_off                                      # RICHIUDE LA FINESTRA OPZIONI PRIMA DEL RIAVVIO
-        target:
-          entity_id: input_boolean.vmc_master_opzioni_offset_sensori
-      - action: homeassistant.restart
-        data: {}
     mode: restart
     icon: mdi:cursor-pointer
 
@@ -18521,6 +18524,7 @@ automation:
         then:
           - action: persistent_notification.create
             data:
+              notification_id: vmc_master_vecchia_clona_eliminata
               title: "VMC: eliminati i file della vecchia Clona VMC"
               message: >-
                 Dalla release 8.5.0 la clonazione è inclusa in vmc_master.yaml, pertanto sono stati eliminati i file

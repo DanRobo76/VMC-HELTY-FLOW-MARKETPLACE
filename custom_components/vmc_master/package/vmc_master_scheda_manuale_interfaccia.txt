@@ -1,6 +1,6 @@
 ###########################################################################################################################################################################################################################
 #                                                                                                                                                                                                                         #
-#                                                          SCHEDA MANUALE INTERFACCIA VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b22]                                                                                         #
+#                                                          SCHEDA MANUALE INTERFACCIA VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b24]                                                                                         #
 #                                                                                                                                                                                                                         #
 # SVILUPPATO DA ING. DANILO ROBOTTI, ALLE PRIME ARMI CON HOME ASSISTANT :)                                                                                                                                                #
 #                                                                                                                                                                                                                         #
@@ -10361,7 +10361,7 @@ cards:
                       target:
                         entity_id: script.vmc_master_profilo_inizializzazione
                       confirmation:
-                        text: "Vuoi Procedere? Attendi il termine del processo: al termine Home Assistant verrà riavviato."
+                        text: "Vuoi Procedere? Attendi il termine del processo (10 s)."
                   - type: conditional
                     conditions:
                       - condition: state
@@ -12904,8 +12904,7 @@ cards:
                   pulsante compare una riga con il tempo che manca alla fine:
                   Agg. Sensori 79 s, Panic Button al massimo 71 s (la riga si
                   chiude prima se l'automazione finisce prima gli eventi in
-                  coda), Profilo Inizializzazione 10 s prima del riavvio di Home
-                  Assistant, Reset Filtro 5 s. Alla fine dello script la riga
+                  coda), Profilo Inizializzazione 10 s, Reset Filtro 5 s. Alla fine dello script la riga
                   scompare. Gli altri script durano al massimo pochi secondi
                   (Pulisci Cronologia Audio 2 s, Aggiorna Elenco 5 s) e non
                   hanno countdown.
@@ -12976,9 +12975,9 @@ cards:
                   Azzera gli Offset dei Sensori, Attiva gli Avvisi e la
                   Notifica Status VMC, Attiva lo Status Pannello
                   Led, Disattiva lo Status Routine Sensori, Arresta la VMC,
-                  Inizializza tutte le Variabili Booleane su [False] e Riavvia
-                  Home Assistant. Attendere il termine del processo: al termine
-                  Home Assistant viene riavviato.
+                  Inizializza tutte le Variabili Booleane su [False] e Attiva
+                  gli Interruttori VMC ON/OFF. Attendere il termine del processo
+                  (10 s). Non riavvia Home Assistant.
 
                   <br>
 
