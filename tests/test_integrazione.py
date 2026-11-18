@@ -36,7 +36,7 @@ def _nessuna_vmc_in_rete():
 
 # Link a immagini e video, contati uno per uno: 77 nella scheda (51 file diversi)
 # piu' il link «GitHub» del Pannello Informazioni; 14 nel README
-FILE_COLLEGATI_SCHEDA = 76
+FILE_COLLEGATI_SCHEDA = 75
 FILE_COLLEGATI_README = 10
 # Link al repository della release manuale (non seguito da «-MARKETPLACE»)
 RE_LINK_8 = re.compile(r"DanRobo76/VMC-HELTY-FLOW(?![-\w])")
@@ -126,10 +126,14 @@ async def test_aggiungi_master_e_sala(hass: HomeAssistant, hass_client) -> None:
         assert "vmc_master_clona_" not in testo
         assert "opzione_finestra_clona" not in testo
         if voce.data["nome"] == "sala":
-            assert "vmc_master" not in testo and "vmc_sala_" in testo
+            assert "vmc_master" not in testo.replace("vmc_master_backup", "") and "vmc_sala_" in testo
+        # la cartella dei backup e' una sola per tutte le VMC
+        assert testo.count("vmc_master_backup") == 1
+        assert testo.count("Controllo aggiornamenti non riuscito (nessuna connessione a GitHub)") == 1
+        assert "Strumenti per sviluppatori" not in testo and "Velocita 1" not in testo
         # Pannello Informazioni: «GitHub» apre il repository dell'integrazione
         assert testo.count('href="https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE">GitHub</a>') == 1
-        assert testo.count("VMC-HELTY-FLOW-MARKETPLACE/raw/main/Video/VMC_MASTER_promo_IT.mp4") == 1
+        assert testo.count("VMC-HELTY-FLOW-MARKETPLACE/raw/main/Video/VMC_MASTER_promo_IT.mp4") == 0
         # l'immagine apre la pagina dell'integrazione nel Marketplace (pulsante «Aggiorna»)
         assert testo.count(
             '<a href="/marketplace/repository?owner=DanRobo76&repository=VMC-HELTY-FLOW-MARKETPLACE&category=integration"><img '
@@ -146,8 +150,9 @@ async def test_errori_nome_e_ip(hass: HomeAssistant) -> None:
     MockConfigEntry(
         domain=DOMAIN, unique_id="master", data={"nome": "master", "host": "192.168.1.160"}
     ).add_to_hass(hass)
-    risultato = await _aggiungi(hass, "sala", "999.999.999.999")
-    assert risultato["errors"] == {"host": "ip_non_valido"}
+    for ip in ("999.999.999.999", "192.168.1.010", "192.168.01.160"):
+        risultato = await _aggiungi(hass, "sala", ip)
+        assert risultato["errors"] == {"host": "ip_non_valido"}
     risultato = await _aggiungi(hass, "sala", "192.168.1.160")
     assert risultato["errors"] == {"host": "ip_in_uso"}
     for nome, errore in (("Sala1", "nome_non_valido"), ("master", "nome_in_uso")):
@@ -217,6 +222,8 @@ def test_nome_da_vmc() -> None:
     assert nome_da_vmc("Città*") == "citta"
     assert nome_da_vmc("Soggiorno-Grande") == "soggiornog"
     assert nome_da_vmc("1234") == ""
+    assert nome_da_vmc("VMC_Cucina") == "cucina"
+    assert nome_da_vmc("vmc-Sala_Grande") == "salagrande"
 
 
 async def test_cambia_ip_da_configura(hass: HomeAssistant) -> None:
@@ -233,9 +240,17 @@ async def test_cambia_ip_da_configura(hass: HomeAssistant) -> None:
         risultato["flow_id"], {"next_step_id": "cambia_ip"}
     )
     assert risultato["step_id"] == "cambia_ip"
+    # l'IP nuovo non risponde: avviso; un secondo Invia lo salva lo stesso
     risultato = await hass.config_entries.options.async_configure(
         risultato["flow_id"], {"host": "192.168.1.170"}
     )
+    assert risultato["type"] is FlowResultType.FORM
+    assert risultato["errors"] == {"host": "ip_non_risponde"}
+    with patch(PROVA_VMC, return_value=False) as prova:
+        risultato = await hass.config_entries.options.async_configure(
+            risultato["flow_id"], {"host": "192.168.1.170"}
+        )
+    prova.assert_not_called()
     assert risultato["type"] is FlowResultType.CREATE_ENTRY
     await hass.async_block_till_done()
     yaml_master = Path(hass.config.path("packages", "vmc_helty_flow", "master", "vmc_master.yaml"))
@@ -347,6 +362,7 @@ async def test_notifica_file_modificati(hass: HomeAssistant) -> None:
         hass.config.path("packages", "vmc_helty_flow", "master", "vmc_master_automazione.yaml")
     )
     automazione.write_bytes(automazione.read_bytes() + b"# a mano\r\n")
+    hass.config.language = "it"
     with patch(
         "custom_components.vmc_master.persistent_notification.async_create"
     ) as notifica:
@@ -356,7 +372,7 @@ async def test_notifica_file_modificati(hass: HomeAssistant) -> None:
     assert len(chiamate) == 1
     testo = chiamate[0].args[1]
     assert "`vmc_master_automazione.yaml`" in testo
-    assert "`config/vmc_master_backup/master_modificati_" in testo
+    assert "`/config/vmc_master_backup/master_modificati_" in testo
     assert chiamate[0].kwargs["title"] == "VMC Master: file della VMC master modificati a mano"
 
 
@@ -433,6 +449,12 @@ async def test_rimozione_sposta_in_backup(hass: HomeAssistant) -> None:
     await hass.async_block_till_done()
     assert not Path(hass.config.path("packages", "vmc_helty_flow", "sala")).exists()
     assert len(list(Path(hass.config.path("vmc_master_backup")).iterdir())) == 1
+
+
+def test_rinomina_protegge_la_cartella_dei_backup() -> None:
+    from custom_components.vmc_master.trasforma import rinomina
+
+    assert rinomina("vmc_master_backup master", "prova") == "vmc_master_backup prova"
 
 
 def test_titolo_voce() -> None:
@@ -676,7 +698,7 @@ async def test_modelli_della_scheda_senza_errori(hass: HomeAssistant) -> None:
     for nome, ip in (("master", "192.168.1.160"), ("sala", "192.168.1.161")):
         testo = per_vmc(scheda, nome, ip)
         assert "is_state('on')" not in testo
-        assert testo.count("VMC-HELTY-FLOW/raw/main/Video/VMC_MASTER_promo_IT.mp4") == 1
+        assert testo.count("VMC-HELTY-FLOW/raw/main/Video/VMC_MASTER_promo_IT.mp4") == 0
         elenco = modelli(yaml.safe_load(testo), [])
         assert elenco
         errori = []
@@ -1036,6 +1058,324 @@ def test_master_senza_prima_installazione() -> None:
         adatta_versione(sostituisci_ip(rimuovi_clona(yaml_master), "192.168.1.160"), "9.0.0b12")
     )
     assert "vmc_master_installa_vmc_stato" in vecchio
-    servizi = ricariche_necessarie(vecchio, file["vmc_master.yaml"])
-    assert servizi is not None
-    assert {"command_line.reload", "template.reload", "script.reload", "automation.reload"} <= servizi
+    # i comandi shell (shell_command) sono cambiati e non si ricaricano: serve il riavvio
+    assert ricariche_necessarie(vecchio, file["vmc_master.yaml"]) is None
+
+
+def test_comandi_shell_chiedono_il_riavvio() -> None:
+    """«shell_command» non ha un servizio di ricarica: un suo cambio chiede il riavvio."""
+    from custom_components.vmc_master import ORDINE_RICARICHE
+    from custom_components.vmc_master.installatore import SERVIZI_RICARICA, ricariche_necessarie
+
+    assert "shell_command" not in SERVIZI_RICARICA
+    assert "shell_command.reload" not in ORDINE_RICARICHE
+    vecchio = "shell_command:\n  prova: echo 1\nscript:\n  a:\n    sequence: []\n"
+    assert ricariche_necessarie(vecchio, vecchio.replace("echo 1", "echo 2")) is None
+    assert ricariche_necessarie(vecchio, vecchio.replace("sequence: []", "sequence: [{}]")) == {
+        "script.reload"
+    }
+
+
+async def test_cambia_ip_aggiorna_la_vmc_appena_collegata(hass: HomeAssistant) -> None:
+    """Dopo «Cambia l'IP della VMC» la VMC non viene riproposta da «Continua con la VMC
+    appena collegata» (identity.json prende il nuovo IP)."""
+    from custom_components.vmc_master import prima_installazione as pi
+
+    cartella = pi.cartella(hass.config.config_dir)
+    cartella.mkdir()
+    (cartella / "identity.json").write_text(
+        json.dumps({**COLLEGATA, "ip": "192.168.1.160"}), encoding="utf-8"
+    )
+    voce = MockConfigEntry(
+        domain=DOMAIN, unique_id="master", data={"nome": "master", "host": "192.168.1.160"}
+    )
+    voce.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(voce.entry_id)
+    await hass.async_block_till_done()
+    risultato = await hass.config_entries.options.async_init(voce.entry_id)
+    risultato = await hass.config_entries.options.async_configure(
+        risultato["flow_id"], {"next_step_id": "cambia_ip"}
+    )
+    # IP gia' usato da un'altra VMC: errore; IP che risponde: salvato subito
+    with patch(PROVA_VMC, return_value=True):
+        risultato = await hass.config_entries.options.async_configure(
+            risultato["flow_id"], {"host": "192.168.1.170"}
+        )
+    assert risultato["type"] is FlowResultType.CREATE_ENTRY
+    await hass.async_block_till_done()
+    assert pi.ultima_vmc(hass.config.config_dir)["ip"] == "192.168.1.170"
+    risultato = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    assert risultato["menu_options"] == ["in_rete", "da_installare"]
+
+
+async def test_elimina_dalla_rete_con_la_finestra_chiusa(hass: HomeAssistant) -> None:
+    """Finestra chiusa mentre la VMC passa in Access Point: la voce si elimina lo stesso."""
+    import threading
+
+    voce = await _voce_sala(hass)
+    risultato = await _apri_elimina(hass, voce)
+    via = threading.Event()
+
+    def access_point(*_args, **_kwargs):
+        via.wait(5)
+        return "VMC Sala"
+
+    # funzione vera, non un Mock: nei test un Mock gira subito, non in un thread
+    with patch(f"{PI}.rimanda_in_access_point", new=access_point):
+        risultato = await hass.config_entries.options.async_configure(
+            risultato["flow_id"], {"next_step_id": "elimina_dalla_rete"}
+        )
+        assert risultato["type"] is FlowResultType.SHOW_PROGRESS
+        hass.config_entries.options.async_abort(risultato["flow_id"])  # finestra chiusa
+        assert hass.config_entries.async_get_entry(voce.entry_id) is not None
+        assert hass.config_entries.options.async_progress() == []
+        via.set()
+        await hass.async_block_till_done(wait_background_tasks=True)
+    assert hass.config_entries.async_get_entry(voce.entry_id) is None
+    assert not Path(hass.config.path("packages", "vmc_helty_flow", "sala")).exists()
+
+
+async def test_elimina_toglie_le_entita_dopo_il_riavvio(hass: HomeAssistant, hass_storage) -> None:
+    """Dopo «Elimina la VMC» e il riavvio le entita' della VMC non piu' fornite escono
+    dal registro; quelle di altre VMC, di altre integrazioni o ancora fornite restano."""
+    from homeassistant.helpers import entity_registry as er
+
+    from custom_components.vmc_master import _togli_entita_vmc_eliminate
+
+    voce = await _voce_sala(hass)
+    altra_integrazione = MockConfigEntry(domain="prova")
+    altra_integrazione.add_to_hass(hass)
+    registro = er.async_get(hass)
+    della_sala = (
+        "sensor.vmc_sala_temperatura",
+        "script.vmc_sala_ventilazione_on",
+        "input_boolean.vmc_sala_notturna",
+        "automation.automazione_vmc_sala",
+    )
+    altre = ("sensor.vmc_salab_temperatura", "sensor.vmc_master_temperatura", "sensor.sala_vmc_prova")
+    for entity_id in (*della_sala, *altre):
+        dominio, oggetto = entity_id.split(".")
+        assert registro.async_get_or_create(
+            dominio, dominio, oggetto, suggested_object_id=oggetto
+        ).entity_id == entity_id
+    assert registro.async_get_or_create(
+        "sensor", "prova", "x", suggested_object_id="vmc_sala_altra", config_entry=altra_integrazione
+    ).entity_id == "sensor.vmc_sala_altra"
+    for entity_id in (*della_sala, *altre):
+        hass.states.async_set(entity_id, "1")
+
+    assert await hass.config_entries.async_remove(voce.entry_id)
+    await hass.async_block_till_done()
+    assert hass_storage["vmc_master.vmc_eliminate"]["data"] == {"nomi": ["sala"]}
+
+    # senza riavvio le entita' sono ancora fornite: non si tocca niente, il nome resta
+    await _togli_entita_vmc_eliminate(hass)
+    assert all(registro.async_get(e) is not None for e in della_sala)
+    assert hass_storage["vmc_master.vmc_eliminate"]["data"] == {"nomi": ["sala"]}
+
+    # dopo il riavvio: entita' ripristinate «non disponibili» o senza stato
+    for entity_id in della_sala[:2]:
+        hass.states.async_set(entity_id, "unavailable", {"restored": True})
+    for entity_id in della_sala[2:]:
+        hass.states.async_remove(entity_id)
+    await _togli_entita_vmc_eliminate(hass)
+    assert [e for e in della_sala if registro.async_get(e) is not None] == []
+    assert all(registro.async_get(e) is not None for e in (*altre, "sensor.vmc_sala_altra"))
+    assert hass_storage["vmc_master.vmc_eliminate"]["data"] == {"nomi": []}
+
+
+async def test_entita_della_vmc_eliminata_all_avvio(hass: HomeAssistant, hass_storage) -> None:
+    """All'avvio dell'integrazione si puliscono le VMC eliminate; una VMC aggiunta di
+    nuovo con lo stesso nome tiene le sue entita'."""
+    from homeassistant.helpers import entity_registry as er
+
+    hass_storage["vmc_master.vmc_eliminate"] = {
+        "version": 1, "minor_version": 1, "key": "vmc_master.vmc_eliminate",
+        "data": {"nomi": ["sala", "camera"]},
+    }
+    registro = er.async_get(hass)
+    for entity_id in ("sensor.vmc_sala_temperatura", "sensor.vmc_camera_temperatura"):
+        dominio, oggetto = entity_id.split(".")
+        registro.async_get_or_create(dominio, dominio, oggetto, suggested_object_id=oggetto)
+    # «camera» aggiunta di nuovo
+    MockConfigEntry(
+        domain=DOMAIN, unique_id="camera", data={"nome": "camera", "host": "192.168.1.162"}
+    ).add_to_hass(hass)
+    assert await async_setup_component(hass, DOMAIN, {})
+    await hass.async_block_till_done()
+    assert registro.async_get("sensor.vmc_sala_temperatura") is None
+    assert registro.async_get("sensor.vmc_camera_temperatura") is not None
+    assert hass_storage["vmc_master.vmc_eliminate"]["data"] == {"nomi": []}
+
+
+async def test_avviso_package_per_ogni_vmc(hass: HomeAssistant) -> None:
+    """Un avviso «package non caricati» per ogni VMC: una VMC caricata non toglie quello
+    di un'altra."""
+    hass.states.async_set("sensor.vmc_master_status_ip", "ON-Line")
+    for nome, ip in (("master", "192.168.1.160"), ("sala", "192.168.1.161")):
+        voce = MockConfigEntry(domain=DOMAIN, unique_id=nome, data={"nome": nome, "host": ip})
+        voce.add_to_hass(hass)
+        await hass.async_add_executor_job(
+            __import__("custom_components.vmc_master.installatore", fromlist=["installa"]).installa,
+            hass.config.config_dir, nome, ip, json.loads(MANIFEST.read_text(encoding="utf-8"))["version"],
+        )
+    assert await async_setup_component(hass, DOMAIN, {})
+    await hass.async_block_till_done()
+    registro = ir.async_get(hass)
+    assert registro.async_get_issue(DOMAIN, "packages_non_abilitati_master") is None
+    avviso = registro.async_get_issue(DOMAIN, "packages_non_abilitati_sala")
+    assert avviso is not None and avviso.translation_placeholders == {"nome": "sala"}
+
+
+async def test_notifiche_in_inglese(hass: HomeAssistant) -> None:
+    """Notifiche in italiano solo se Home Assistant e' in italiano."""
+    from homeassistant.components import persistent_notification
+
+    from custom_components.vmc_master.prima_installazione import CARTELLA_MOTORE, Failure
+
+    hass.config.language = "en"
+    cartella = Path(hass.config.path(CARTELLA_MOTORE))
+    cartella.mkdir()
+    (cartella / "restore.json").write_text("{}", encoding="utf-8")
+    motore = MotoreFinto({"recover": Failure("restore_failed", "Ripristino non riuscito.")})
+    with patch(f"{PI}.esegui", motore):
+        assert await async_setup_component(hass, DOMAIN, {})
+        await hass.async_block_till_done()
+    notifica = persistent_notification._async_get_or_create_notifications(hass)[
+        f"{DOMAIN}_ripristino_wifi"
+    ]
+    assert notifica["title"] == "VMC Master: server Wi-Fi restore failed"
+
+
+async def test_ip_prenotato_senza_mac(hass: HomeAssistant) -> None:
+    """MAC non rilevato e IP prenotato diverso: basta che a quell'IP risponda la VMC con
+    lo stesso nome; se non risponde o risponde un altro dispositivo, lo dice la finestra."""
+    MockConfigEntry(
+        domain=DOMAIN, unique_id="master", data={"nome": "master", "host": "192.168.1.160"}
+    ).add_to_hass(hass)
+    senza_mac = {**COLLEGATA, "mac": ""}
+    motore = MotoreFinto()
+    with (
+        patch(HASSIO, return_value=True),
+        patch(f"{PI}.esegui", motore),
+        patch(f"{PI}.ultima_vmc", return_value=dict(senza_mac)),
+    ):
+        risultato = await hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": config_entries.SOURCE_USER}
+        )
+        risultato = await hass.config_entries.flow.async_configure(
+            risultato["flow_id"], {"next_step_id": "riprendi"}
+        )
+        assert risultato["step_id"] == "ip_fisso"
+        assert risultato["description_placeholders"]["mac"] == "-"
+        # IP gia' usato da un'altra VMC
+        risultato = await hass.config_entries.flow.async_configure(
+            risultato["flow_id"], {"host": "192.168.1.160"}
+        )
+        assert risultato["errors"] == {"host": "ip_in_uso"}
+        for letto, errore in ((None, "ip_non_risponde_riavvia"), ("VMC Altra", "ip_altro_dispositivo")):
+            with patch(NOME_VMC, return_value=letto):
+                risultato = await hass.config_entries.flow.async_configure(
+                    risultato["flow_id"], {"host": "192.168.1.60"}
+                )
+            assert risultato["step_id"] == "ip_fisso" and risultato["errors"] == {"host": errore}
+        with patch(NOME_VMC, return_value="VMC Bagno"):
+            risultato = await hass.config_entries.flow.async_configure(
+                risultato["flow_id"], {"host": "192.168.1.60"}
+            )
+        assert risultato["step_id"] == "nome"
+        risultato = await hass.config_entries.flow.async_configure(
+            risultato["flow_id"], {"nome": "bagno"}
+        )
+    assert risultato["type"] is FlowResultType.CREATE_ENTRY
+    assert risultato["data"]["host"] == "192.168.1.60"
+    # nessuna verifica del motore (che senza MAC non si puo' fare)
+    assert [azione for azione, _dati in motore.azioni] == []
+
+
+async def test_server_su_un_altro_wifi(hass: HomeAssistant) -> None:
+    """Server su un Wi-Fi diverso dalla rete di casa scelta: serve la password della sua
+    rete, che il motore usa per riportarlo li' (restore_password)."""
+    motore = MotoreFinto()
+    with (
+        patch(HASSIO, return_value=True),
+        patch(f"{PI}.esegui", motore),
+        patch(f"{PI}.stato", return_value=RETI),
+        patch(f"{PI}.rete_del_server", return_value="Casa_5G"),
+        patch(f"{PI}.rete_da_ripristinare", return_value="Casa_5G"),
+        patch(f"{PI}.ultima_vmc", return_value={}),
+    ):
+        risultato = await hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": config_entries.SOURCE_USER}
+        )
+        risultato = await hass.config_entries.flow.async_configure(
+            risultato["flow_id"], {"next_step_id": "da_installare"}
+        )
+        risultato = await _avanza(hass, risultato)
+        assert risultato["step_id"] == "rete_vmc"
+        assert "password_server" in [str(k) for k in risultato["data_schema"].schema]
+        assert risultato["description_placeholders"]["rete_del_server"] == "Casa_5G"
+        dati = {
+            "rete_vmc": "VMC_12345678", "password_vmc": "12345678",
+            "rete_casa": "CasaMia", "password_casa": "password-di-casa",
+        }
+        risultato = await hass.config_entries.flow.async_configure(risultato["flow_id"], dati)
+        assert risultato["errors"] == {"password_server": "password_server_mancante"}
+        assert motore.azioni == [("scan", None)]
+        # password troppo corta: lo dice il motore prima di toccare il Wi-Fi
+        risultato = await hass.config_entries.flow.async_configure(
+            risultato["flow_id"], {**dati, "password_server": "corta"}
+        )
+        assert risultato["errors"] == {"base": "motore"}
+        assert "Password del Wi-Fi attuale del server" in risultato["description_placeholders"]["errore"]
+        risultato = await hass.config_entries.flow.async_configure(
+            risultato["flow_id"], {**dati, "password_server": "password-5g"}
+        )
+        risultato = await _avanza(hass, risultato)
+    assert motore.azioni[-1] == ("configure", {
+        "ap_ssid": "VMC_12345678", "ap_password": "12345678", "home_ssid": "CasaMia",
+        "home_password": "password-di-casa", "final_ip": "", "restore_password": "password-5g",
+    })
+
+
+def test_motore_password_del_server_e_reti_grandi() -> None:
+    """Il motore riceve la password del Wi-Fi del server; con una rete di casa piu' ampia
+    di /24 cerca la VMC nei 256 indirizzi intorno al server."""
+    from custom_components.vmc_master import prima_installazione as pi
+
+    base = {"ap_ssid": "VMC_1", "ap_password": "12345678", "home_ssid": "Casa", "home_password": "password1"}
+    richiesta = pi.motore.normalize_request({**base, "restore_password": "password-5g"})
+    assert richiesta["restore_password"] == "password-5g" and richiesta["lan_cidr"] == ""
+    assert pi.motore.normalize_request(base)["restore_password"] == ""
+    with pytest.raises(pi.Failure) as errore:
+        pi.motore.normalize_request({**base, "home_ssid": "x" * 33})
+    assert errore.value.message == "«Rete Wi-Fi di casa» deve avere da 1 a 32 caratteri."
+
+    def info(*indirizzi):
+        return {"interfaces": [
+            {"interface": "end0", "type": "ethernet", "connected": True, "ipv4": {"address": list(indirizzi)}},
+        ]}
+
+    assert pi.rete_di_ricerca(info("192.168.2.10/22")) == "192.168.2.0/24"
+    assert pi.rete_di_ricerca(info("192.168.1.10/24")) == ""
+    obiettivi = pi.motore.lan_targets(info("192.168.2.10/22"), pi.rete_di_ricerca(info("192.168.2.10/22")))
+    assert len(obiettivi) == 253 and "192.168.2.10" not in obiettivi
+
+    class SupervisorFinto:
+        def __init__(self, auth):
+            self.auth = auth
+
+        def info(self):
+            return {"interfaces": [{
+                "interface": "wlan0", "type": "wireless", "enabled": True, "connected": True,
+                "wifi": {"ssid": "Casa_5G", "mode": "infrastructure", "auth": self.auth},
+            }]}
+
+    with patch.object(pi.motore, "Supervisor", return_value=SupervisorFinto("wpa-psk")):
+        assert pi.rete_da_ripristinare("/config") == "Casa_5G"
+    with patch.object(pi.motore, "Supervisor", return_value=SupervisorFinto("open")):
+        assert pi.rete_da_ripristinare("/config") == ""
+    # senza Supervisor
+    assert pi.rete_da_ripristinare("/config") == ""

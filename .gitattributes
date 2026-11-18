@@ -3,3 +3,10 @@
 # scarica per installare l'integrazione (limite di 100 MiB).
 /immagini export-ignore
 /Video export-ignore
+
+# Fini riga da non toccare: vmc_master.yaml e la scheda sono CRLF, l'automazione
+# è LF. Gli md5 servono a riconoscere i file modificati a mano.
+custom_components/vmc_master/package/vmc_master.yaml -text
+custom_components/vmc_master/package/vmc_master_scheda_manuale_interfaccia.txt -text
+custom_components/vmc_master/package/vmc_master_automazione.txt -text
+*.sh text eol=lf

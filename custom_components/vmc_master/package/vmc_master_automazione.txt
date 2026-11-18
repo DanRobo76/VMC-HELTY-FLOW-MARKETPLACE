@@ -1,6 +1,6 @@
 ###########################################################################################################################################################################################################################
 #                                                                                                                                                                                                                         #
-#                                                          AUTOMAZIONE VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b15]                                                                                                        #
+#                                                          AUTOMAZIONE VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b19]                                                                                                        #
 #                                                                                                                                                                                                                         #
 # SVILUPPATO DA ING. DANILO ROBOTTI, ALLE PRIME ARMI CON HOME ASSISTANT :)                                                                                                                                                #
 #                                                                                                                                                                                                                         #
@@ -128,8 +128,8 @@ description: >-
   PRIORITA' DI ATTIVAZIONE DEGLI ALLARMI (Secondi per l'Attivazione e per la
   Ripresa):
 
-  I Secondi indicati sono fissi e non vanno modificati: ogni tempo di attesa e'
-  una costante (input_number.vmc_master_attesa_*) che non compare nella scheda e
+  I Secondi indicati sono fissi e non vanno modificati: ogni tempo di attesa è
+  una costante che non compare nella scheda e
   che il Profilo Inizializzazione riporta ai valori originali. Il countdown della
   scheda legge le stesse costanti.
 

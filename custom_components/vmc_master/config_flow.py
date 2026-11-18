@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import asyncio
+import ipaddress
 import logging
 import re
 import unicodedata
@@ -56,6 +57,8 @@ CONF_RETE_VMC = "rete_vmc"
 CONF_PASSWORD_VMC = "password_vmc"
 CONF_RETE_CASA = "rete_casa"
 CONF_PASSWORD_CASA = "password_casa"
+# Password della rete Wi-Fi a cui e' collegato ora il server, se diversa da quella di casa
+CONF_PASSWORD_SERVER = "password_server"
 PASSWORD_VMC_FABBRICA = "12345678"
 
 # Errori del motore che dicono che questo Home Assistant non puo' usare il Wi-Fi
@@ -63,8 +66,14 @@ _SENZA_WIFI = {"no_wifi", "supervisor_unavailable"}
 
 
 def ip_valido(ip: str) -> bool:
-    """IPv4 con quattro numeri da 0 a 255 (999.999.999.999 non e' valido)."""
-    return bool(IP_RE.fullmatch(ip)) and all(0 <= int(p) <= 255 for p in ip.split("."))
+    """IPv4 con quattro numeri da 0 a 255 (999.999.999.999 non e' valido), senza zeri
+    iniziali: «192.168.1.010» non e' valido (per qualcuno e' 192.168.1.8)."""
+    if not IP_RE.fullmatch(ip):
+        return False
+    try:
+        return str(ipaddress.IPv4Address(ip)) == ip
+    except ValueError:
+        return False
 
 
 async def async_nome_vmc(ip: str) -> str | None:
@@ -105,7 +114,7 @@ def nome_da_vmc(nome_vmc: str) -> str:
     Solo lettere minuscole a-z, senza accenti, spazi e numeri, senza la parola «VMC»
     davanti e al massimo 10 lettere: «VMC Sala Grande» -> «salagrande».
     """
-    parole = nome_vmc.split()
+    parole = [p for p in re.split(r"[\s_-]+", nome_vmc) if p]
     if len(parole) > 1 and parole[0].lower() == "vmc":
         parole = parole[1:]
     senza_accenti = unicodedata.normalize("NFKD", "".join(parole))
@@ -159,6 +168,8 @@ class VmcMasterConfigFlow(ConfigFlow, domain=DOMAIN):
         self._errore = ""
         self._errore_ip = ""
         self._ip_da_verificare = ""
+        # rete Wi-Fi del server da ripristinare con una password ("" se non serve)
+        self._rete_server = ""
         self._task: asyncio.Task | None = None
 
     def _nomi_e_ip_in_uso(self, escludi: str | None = None) -> tuple[set[str], set[str]]:
@@ -380,6 +391,9 @@ class VmcMasterConfigFlow(ConfigFlow, domain=DOMAIN):
                 pi.rete_del_server, self.hass.config.config_dir
             )
             self._richiesta = {**self._richiesta, CONF_RETE_CASA: rete_server}
+        self._rete_server = await self.hass.async_add_executor_job(
+            pi.rete_da_ripristinare, self.hass.config.config_dir
+        )
         return self.async_show_progress_done(next_step_id="rete_vmc")
 
     async def async_step_senza_wifi(
@@ -400,6 +414,7 @@ class VmcMasterConfigFlow(ConfigFlow, domain=DOMAIN):
                 CONF_PASSWORD_VMC: str(user_input.get(CONF_PASSWORD_VMC, "")),
                 CONF_RETE_CASA: str(user_input.get(CONF_RETE_CASA, "")).strip(),
                 CONF_PASSWORD_CASA: str(user_input.get(CONF_PASSWORD_CASA, "")),
+                CONF_PASSWORD_SERVER: str(user_input.get(CONF_PASSWORD_SERVER, "")),
             }
             try:
                 # stessi controlli del motore prima di toccare il Wi-Fi del server
@@ -409,7 +424,15 @@ class VmcMasterConfigFlow(ConfigFlow, domain=DOMAIN):
                 errori["base"] = "motore"
             else:
                 self._errore = ""
-                return await self.async_step_collega()
+                if (
+                    self._rete_server
+                    and self._rete_server != self._richiesta[CONF_RETE_CASA]
+                    and not self._richiesta[CONF_PASSWORD_SERVER]
+                ):
+                    # il server e' su un'altra rete Wi-Fi: serve la sua password per tornarci
+                    errori[CONF_PASSWORD_SERVER] = "password_server_mancante"
+                else:
+                    return await self.async_step_collega()
 
         reti_vmc = list(self._reti.get("vmc_networks") or [])
         altre = list(self._reti.get("wifi_networks") or [])
@@ -440,6 +463,15 @@ class VmcMasterConfigFlow(ConfigFlow, domain=DOMAIN):
                 ),
             }
         )
+        if self._rete_server:
+            # solo se il server e' collegato via Wi-Fi a una rete protetta
+            schema = schema.extend(
+                {
+                    vol.Optional(CONF_PASSWORD_SERVER): TextSelector(
+                        TextSelectorConfig(type=TextSelectorType.PASSWORD)
+                    )
+                }
+            )
         return self.async_show_form(
             step_id="rete_vmc",
             data_schema=schema,
@@ -447,17 +479,22 @@ class VmcMasterConfigFlow(ConfigFlow, domain=DOMAIN):
             description_placeholders={
                 "trovate": str(len(reti_vmc)),
                 "errore": self._errore or "-",
+                "rete_del_server": self._rete_server or "-",
             },
         )
 
     def _dati_motore(self) -> dict[str, str]:
-        return {
+        dati = {
             "ap_ssid": self._richiesta.get(CONF_RETE_VMC, ""),
             "ap_password": self._richiesta.get(CONF_PASSWORD_VMC, ""),
             "home_ssid": self._richiesta.get(CONF_RETE_CASA, ""),
             "home_password": self._richiesta.get(CONF_PASSWORD_CASA, ""),
             "final_ip": "",
         }
+        if self._richiesta.get(CONF_PASSWORD_SERVER):
+            # il motore la usa per riportare il Wi-Fi del server alla sua rete
+            dati["restore_password"] = self._richiesta[CONF_PASSWORD_SERVER]
+        return dati
 
     async def async_step_collega(
         self, user_input: dict[str, Any] | None = None
@@ -477,12 +514,18 @@ class VmcMasterConfigFlow(ConfigFlow, domain=DOMAIN):
                 },
             )
         task, self._task = self._task, None
-        # la password di casa non resta nella finestra
+        # le password non restano nella finestra
         self._richiesta[CONF_PASSWORD_CASA] = ""
+        self._richiesta[CONF_PASSWORD_SERVER] = ""
         try:
             task.result()
         except pi.Failure as errore:
             self._errore = _messaggio(errore)
+            if errore.code == "restore_password_required":
+                # rete del server cambiata dopo la ricerca: il campo della password compare
+                self._rete_server = await self.hass.async_add_executor_job(
+                    pi.rete_da_ripristinare, self.hass.config.config_dir
+                )
             return self.async_show_progress_done(next_step_id="errore")
         self._collegata = await self.hass.async_add_executor_job(
             pi.ultima_vmc, self.hass.config.config_dir
@@ -532,10 +575,24 @@ class VmcMasterConfigFlow(ConfigFlow, domain=DOMAIN):
                 return await self._async_scegli_nome(
                     ip, self._collegata.get("name", ""), True
                 )
-            else:
-                # IP prenotato diverso: si controlla che risponda la stessa VMC
+            elif self._collegata.get("mac"):
+                # IP prenotato diverso: il motore controlla che risponda la stessa VMC (nome e MAC)
                 self._ip_da_verificare = ip
                 return await self.async_step_verifica()
+            else:
+                # MAC non rilevato: basta che a quell'IP risponda la VMC con lo stesso nome
+                atteso = self._collegata.get("name", "")
+                nome_letto = await async_nome_vmc(ip)
+                if nome_letto is None:
+                    errori[CONF_HOST] = "ip_non_risponde_riavvia"
+                elif not nome_letto or (atteso and nome_letto != atteso):
+                    errori[CONF_HOST] = "ip_altro_dispositivo"
+                else:
+                    await self.hass.async_add_executor_job(
+                        pi.aggiorna_ip, self.hass.config.config_dir, ip_collegata, ip
+                    )
+                    self._collegata = {**self._collegata, "ip": ip}
+                    return await self._async_scegli_nome(ip, atteso or nome_letto, True)
         return self.async_show_form(
             step_id="ip_fisso",
             data_schema=vol.Schema(
@@ -611,6 +668,10 @@ class VmcMasterOptionsFlow(OptionsFlow):
     def __init__(self) -> None:
         self._task: asyncio.Task | None = None
         self._errore = ""
+        # IP che non risponde, gia' segnalato: con un secondo Invia si salva lo stesso
+        self._ip_avvisato = ""
+        # segnaposto salvati prima di eliminare la voce (dopo non c'e' piu')
+        self._segnaposto_eliminata: dict[str, str] = {}
 
     def _segnaposto(self) -> dict[str, str]:
         return {"titolo": self.config_entry.title, "ip": self.config_entry.data[CONF_HOST]}
@@ -641,13 +702,28 @@ class VmcMasterOptionsFlow(OptionsFlow):
                 errori[CONF_HOST] = "ip_non_valido"
             elif ip in ips:
                 errori[CONF_HOST] = "ip_in_uso"
+            elif (
+                ip != voce.data[CONF_HOST]
+                and ip != self._ip_avvisato
+                and not await async_prova_vmc(ip)
+            ):
+                # VMC spenta o IP sbagliato: si avvisa, un secondo Invia lo salva lo stesso
+                self._ip_avvisato = ip
+                errori[CONF_HOST] = "ip_non_risponde"
             else:
+                await self.hass.async_add_executor_job(
+                    pi.aggiorna_ip, self.hass.config.config_dir, voce.data[CONF_HOST], ip
+                )
                 self.hass.config_entries.async_update_entry(
                     voce, data={**voce.data, CONF_HOST: ip}
                 )
                 return self.async_create_entry(data={})
         schema = vol.Schema(
-            {vol.Required(CONF_HOST, default=voce.data[CONF_HOST]): str}
+            {
+                vol.Required(
+                    CONF_HOST, default=(user_input or {}).get(CONF_HOST, voce.data[CONF_HOST])
+                ): str
+            }
         )
         return self.async_show_form(step_id="cambia_ip", data_schema=schema, errors=errori)
 
@@ -664,7 +740,7 @@ class VmcMasterOptionsFlow(OptionsFlow):
 
     def _elimina_voce(self) -> None:
         """La voce si elimina appena la finestra si chiude (come «Elimina» del menu ⋮:
-        la cartella della VMC va in vmc_master_backup e Home Assistant chiede il riavvio)."""
+        la cartella della VMC va in /config/vmc_master_backup e Home Assistant chiede il riavvio)."""
         entry_id = self.config_entry.entry_id
         self.hass.async_create_task(
             self.hass.config_entries.async_remove(entry_id), f"{DOMAIN}_elimina_{entry_id}"
@@ -678,7 +754,12 @@ class VmcMasterOptionsFlow(OptionsFlow):
         return self.async_abort(reason="eliminata", description_placeholders=segnaposto)
 
     def _avvia_access_point(self) -> asyncio.Task:
+        """Access Point e poi eliminazione della voce nello stesso lavoro: se la finestra si
+        chiude mentre il motore lavora, la voce si elimina lo stesso appena la VMC lascia
+        il Wi-Fi di casa (chiudendo la finestra Home Assistant annulla solo l'attesa)."""
         ip = self.config_entry.data[CONF_HOST]
+        entry_id = self.config_entry.entry_id
+        self._segnaposto_eliminata = self._segnaposto()
 
         def avanzamento(percento: int) -> None:
             self.hass.loop.call_soon_threadsafe(
@@ -686,11 +767,21 @@ class VmcMasterOptionsFlow(OptionsFlow):
             )
 
         async def _esegui() -> str:
-            return await self.hass.async_add_executor_job(
+            nome = await self.hass.async_add_executor_job(
                 pi.rimanda_in_access_point, self.hass.config.config_dir, ip, avanzamento
             )
+            if self.hass.config_entries.async_get_entry(entry_id) is not None:
+                await self.hass.config_entries.async_remove(entry_id)
+            return nome
 
-        return self.hass.async_create_task(_esegui(), f"{DOMAIN}_access_point")
+        lavoro = self.hass.async_create_background_task(
+            _esegui(), f"{DOMAIN}_access_point_{entry_id}"
+        )
+
+        async def _attendi() -> str:
+            return await asyncio.shield(lavoro)
+
+        return self.hass.async_create_task(_attendi(), f"{DOMAIN}_attesa_access_point")
 
     async def async_step_elimina_dalla_rete(
         self, user_input: dict[str, Any] | None = None
@@ -704,7 +795,8 @@ class VmcMasterOptionsFlow(OptionsFlow):
                 step_id="elimina_dalla_rete",
                 progress_action="access_point",
                 progress_task=self._task,
-                description_placeholders=self._segnaposto(),
+                # la voce puo' essere gia' stata eliminata dal lavoro
+                description_placeholders=self._segnaposto_eliminata,
             )
         task, self._task = self._task, None
         try:
@@ -717,10 +809,9 @@ class VmcMasterOptionsFlow(OptionsFlow):
     async def async_step_eliminata_dalla_rete(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        segnaposto = self._segnaposto()
-        self._elimina_voce()
+        # la voce e' gia' stata eliminata dal lavoro dell'Access Point
         return self.async_abort(
-            reason="eliminata_dalla_rete", description_placeholders=segnaposto
+            reason="eliminata_dalla_rete", description_placeholders=self._segnaposto_eliminata
         )
 
     async def async_step_errore_rete(

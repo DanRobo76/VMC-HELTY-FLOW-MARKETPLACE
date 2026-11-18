@@ -87,8 +87,8 @@ def field32(value, code, label, minimum=1):
 
 
 def network_packet(ssid, password):
-    return ("VMSL " + field32(ssid, "invalid_ssid", "Il nome della rete domestica")
-            + field32(password, "invalid_password", "La password della rete domestica", 8)
+    return ("VMSL " + field32(ssid, "invalid_ssid", "«Rete Wi-Fi di casa»")
+            + field32(password, "invalid_password", "«Password del Wi-Fi di casa»", 8)
             + SUFFIX_INFRASTRUCTURE).encode("ascii")
 
 
@@ -120,7 +120,11 @@ def base_request(data, keys):
 
 def normalize_request(data):
     request = base_request(data, ("home_ssid", "home_password", "ap_ssid", "ap_password", "final_ip"))
+    # Facoltativi: password della rete Wi-Fi a cui è collegato ora il server e rete di ricerca.
+    request.update(restore_password=str(data.get("restore_password", "")), lan_cidr=str(data.get("lan_cidr", "")).strip())
     check_ap(request)
+    if request["restore_password"] and not wifi_password(request["restore_password"]):
+        raise Failure("invalid_restore_password", "«Password del Wi-Fi attuale del server» deve avere da 8 a 63 caratteri.")
     network_packet(request["home_ssid"], request["home_password"])
     request["final_ip"] = request["final_ip"].strip()
     if request["final_ip"]:
@@ -392,7 +396,7 @@ def restore_payload(interface, password=""):
         config = {k: wifi[k] for k in ("ssid", "mode", "auth") if k in wifi}
         if config.get("auth") == "wpa-psk":
             if not password:
-                raise Failure("restore_password_required", "Il Wi-Fi del server è collegato alla rete " + wifi["ssid"] + ": per ripristinarlo al termine servono nome e password di quella rete nei campi «Rete Wi-Fi di casa» e «Password del Wi-Fi di casa». In alternativa usa una scheda Wi-Fi libera. Nessuna modifica è stata eseguita.")
+                raise Failure("restore_password_required", "Il Wi-Fi del server è collegato alla rete " + wifi["ssid"] + ": per ripristinarlo al termine scrivi la password di quella rete nel campo «Password del Wi-Fi attuale del server». In alternativa usa una scheda Wi-Fi libera. Nessuna modifica è stata eseguita.")
             config["psk"] = password
         elif config.get("auth", "open") != "open":
             raise Failure("unsupported_restore", "Il profilo Wi-Fi attuale del server usa un'autenticazione non supportata.")

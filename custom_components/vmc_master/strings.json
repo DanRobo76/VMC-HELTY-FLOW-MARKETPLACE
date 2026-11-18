@@ -36,7 +36,7 @@
       },
       "non_raggiungibile": {
         "title": "Unit not reachable",
-        "description": "The unit at {ip} does not answer on port 5001.\n\nYou can add it anyway, for example if it is switched off now: press Submit. The IP can be changed later from the gear icon on the unit's row → «Change the unit's IP». If the unit is not on the home Wi-Fi yet, close this window, repeat «Add device» and choose «No, it must be set up from scratch»."
+        "description": "The unit at {ip} does not answer on port 5001.\n\nYou can add it anyway, for example if it is switched off now: press Submit. The IP can be changed later from the gear icon on the unit's row → «Change the unit's IP». If the unit is not on the home Wi-Fi yet, close this window, add it again («Add integration» for the first unit, «Add device» for the others) and choose «No, it must be set up from scratch»."
       },
       "migra": {
         "title": "Manual installation found",
@@ -49,10 +49,12 @@
           "rete_vmc": "Unit network",
           "password_vmc": "Unit network password",
           "rete_casa": "Home Wi-Fi network",
-          "password_casa": "Home Wi-Fi password"
+          "password_casa": "Home Wi-Fi password",
+          "password_server": "Current server Wi-Fi password"
         },
         "data_description": {
-          "password_casa": "Used only for the connection: it is not stored in the integration."
+          "password_casa": "Used only for the connection: it is not stored in the integration.",
+          "password_server": "The server is now connected to the {rete_del_server} network. If the chosen home network is different, enter the {rete_del_server} password here: it is needed to bring the server back to that network. It is not stored."
         }
       },
       "errore": {
@@ -65,7 +67,7 @@
       },
       "ip_fisso": {
         "title": "Unit connected: reserve the IP on the router",
-        "description": "**{nome_vmc}** (network {rete_vmc}) is connected to the home Wi-Fi.\n\n- **IP:** {ip}\n- **MAC:** {mac}\n\nOn the router reserve a fixed IP for this MAC, so the unit keeps its address (if the MAC is «-», read it in the router's device list).\n- Same IP reserved: press Submit.\n- Different IP reserved: power the unit off and on so it takes it, enter it here and press Submit. It is checked that the same unit answers at that IP.",
+        "description": "**{nome_vmc}** (network {rete_vmc}) is connected to the home Wi-Fi.\n\n- **IP:** {ip}\n- **MAC:** {mac}\n\nOn the router reserve a fixed IP for this unit (if the MAC is «-», find it by IP in the router's device list).\n- Same IP reserved: press Submit.\n- Different IP reserved: switch the unit off and on from its switch so it takes it, enter it here and press Submit. It is checked that the same unit answers at that IP.",
         "data": {
           "host": "Unit IP"
         }
@@ -82,7 +84,7 @@
     },
     "progress": {
       "cerca": "Searching the VMC_xxxxxxxx Wi-Fi networks: a few seconds.",
-      "collega": "Connecting the unit to the {rete_casa} network: 1 to 3 minutes.\n\nThe server Wi-Fi switches to the {rete_vmc} network for about a minute, then goes back as it was. If Home Assistant reaches the home network only through Wi-Fi, this page may lose the connection meanwhile: the procedure goes on anyway. If the window closes, open «Add device» again and choose «Continue with the unit just connected».",
+      "collega": "Connecting the unit to the {rete_casa} network: 1 to 3 minutes.\n\nThe server Wi-Fi switches to the {rete_vmc} network for about a minute, then goes back as it was. If Home Assistant reaches the home network only through Wi-Fi, this page may lose the connection meanwhile: the procedure goes on anyway. If the window closes, open «Add integration» (first unit) or «Add device» (other units) again and choose «Continue with the unit just connected».",
       "verifica": "Checking IP {ip}: the same unit must answer (up to 30 seconds)."
     },
     "error": {
@@ -90,12 +92,15 @@
       "nome_in_uso": "Name already used by another unit.",
       "ip_non_valido": "Invalid IP: four numbers from 0 to 255 separated by dots.",
       "ip_in_uso": "IP already used by another unit.",
-      "motore": "{errore}"
+      "motore": "{errore}",
+      "password_server_mancante": "The server is now connected to the {rete_del_server} network, which differs from the chosen home network: enter the {rete_del_server} password in «Current server Wi-Fi password».",
+      "ip_non_risponde_riavvia": "The unit does not answer at this IP. Switch it off and on from its switch so it takes the reserved IP, then press Submit again.",
+      "ip_altro_dispositivo": "Another device or unit answers at this IP, not {nome_vmc}. Check the reservation on the router."
     },
     "abort": {
       "already_configured": "This unit is already configured.",
-      "senza_supervisor": "Connecting a unit to the Wi-Fi from here needs Home Assistant OS (with the Supervisor) and a Wi-Fi adapter on the server. This Home Assistant has no Supervisor: connect the unit once with the Air Guard app, then repeat «Add device» and choose «Yes, it is connected».",
-      "senza_wifi": "Home Assistant OS finds no Wi-Fi adapter on the server. You need a computer with built-in Wi-Fi or a recognised USB Wi-Fi dongle (Settings → System → Network). Otherwise connect the unit once with the Air Guard app, then repeat «Add device» and choose «Yes, it is connected»."
+      "senza_supervisor": "Connecting a unit to the Wi-Fi from here needs Home Assistant OS (with the Supervisor) and a Wi-Fi adapter on the server. This Home Assistant has no Supervisor: connect the unit once with the Air Guard app, then add it again («Add integration» for the first unit, «Add device» for the others) and choose «Yes, it is connected».",
+      "senza_wifi": "Home Assistant OS finds no Wi-Fi adapter on the server. You need a computer with built-in Wi-Fi or a recognised USB Wi-Fi dongle (Settings → System → Network). Otherwise connect the unit once with the Air Guard app, then add it again («Add integration» for the first unit, «Add device» for the others) and choose «Yes, it is connected»."
     }
   },
   "options": {
@@ -117,7 +122,7 @@
       },
       "elimina": {
         "title": "Delete the unit",
-        "description": "Delete **{titolo}** only from Home Assistant, leaving it on the home network, or from the network too?\n\n- **Only from Home Assistant**: the unit stays on the home Wi-Fi. It can be added again with «Add device» by entering only the IP.\n- **From the network too**: the unit leaves the home Wi-Fi and goes back to Access Point mode, showing its VMC_… network again. To connect it again: «Add device» → «No, it must be set up from scratch», or the Air Guard app.\n\nIn both cases the unit's folder goes to `vmc_master_backup` and Home Assistant then needs a restart.",
+        "description": "Delete **{titolo}** only from Home Assistant, leaving it on the home network, or from the network too?\n\n- **Only from Home Assistant**: the unit stays on the home Wi-Fi. It can be added again by entering only the IP, from «Add device» («Add integration» if no other unit is left).\n- **From the network too**: the unit leaves the home Wi-Fi and goes back to Access Point mode, showing its VMC_… network again. To connect it again: «Add device» («Add integration» if no other unit is left) → «No, it must be set up from scratch», or the Air Guard app.\n\nIn both cases the unit's folder goes to `/config/vmc_master_backup` and Home Assistant then needs a restart.",
         "menu_options": {
           "elimina_solo_ha": "Only from Home Assistant (stays on the home network)",
           "elimina_dalla_rete": "From the network too (back to Access Point)"
@@ -140,7 +145,8 @@
     },
     "error": {
       "ip_non_valido": "Invalid IP: four numbers from 0 to 255 separated by dots.",
-      "ip_in_uso": "IP already used by another unit."
+      "ip_in_uso": "IP already used by another unit.",
+      "ip_non_risponde": "The unit does not answer at this IP on port 5001. Check the IP; to save it anyway press Submit again."
     },
     "abort": {
       "eliminata": "{titolo} has been deleted from Home Assistant and stays on the home network. To finish, restart Home Assistant.",
@@ -160,7 +166,7 @@
       }
     },
     "packages_non_abilitati": {
-      "title": "VMC Master: packages not loaded",
+      "title": "VMC Master: packages of unit {nome} not loaded",
       "description": "The unit's files are installed but Home Assistant does not load them. configuration.yaml must contain these lines:\n\n```yaml\nhomeassistant:\n  packages: !include_dir_named packages/\n```\n\nIf the `homeassistant:` line is already there, add only the `packages:` line right below it, indented by two spaces. Save and restart Home Assistant."
     }
   }

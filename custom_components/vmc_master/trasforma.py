@@ -102,18 +102,25 @@ def rimuovi_sezioni_solo_master(testo: str) -> str:
     return rimuovi_installa(rimuovi_clona(testo))
 
 
-# Nome del file del video nel repository VMC-HELTY-FLOW: non va rinominato, altrimenti
-# nelle VMC clonate il link punta a «VMC_‹nome›_promo_IT.mp4», che non esiste
+# Parole che non vanno rinominate:
+# - il nome del file del video nel repository VMC-HELTY-FLOW: altrimenti nelle VMC
+#   clonate il link punta a «VMC_‹nome›_promo_IT.mp4», che non esiste;
+# - la cartella dei backup (installatore.CARTELLA_BACKUP), che e' una sola per tutte
+#   le VMC: il Pannello Informazioni deve indicare sempre «vmc_master_backup».
 _VIDEO_PROMO = "VMC_MASTER_promo_"
-_SEGNAPOSTO_VIDEO = "\x00VIDEO_PROMO\x00"
+_CARTELLA_BACKUP = "vmc_master_backup"
+_PROTETTE = (_VIDEO_PROMO, _CARTELLA_BACKUP)
 
 
 def rinomina(testo: str, nome: str) -> str:
     """s/master/nome/g, poi s/Master/nome/g, poi s/MASTER/nome/g (come vmc_script_clona.sh),
-    lasciando intatto il nome del file del video promozionale."""
-    testo = testo.replace(_VIDEO_PROMO, _SEGNAPOSTO_VIDEO)
+    lasciando intatte le parole di _PROTETTE (video promozionale, cartella dei backup)."""
+    for indice, parola in enumerate(_PROTETTE):
+        testo = testo.replace(parola, f"\x00PROTETTA{indice}\x00")
     testo = testo.replace("master", nome).replace("Master", nome).replace("MASTER", nome)
-    return testo.replace(_SEGNAPOSTO_VIDEO, _VIDEO_PROMO)
+    for indice, parola in enumerate(_PROTETTE):
+        testo = testo.replace(f"\x00PROTETTA{indice}\x00", parola)
+    return testo
 
 
 def sostituisci_ip(testo: str, ip: str) -> str:
