@@ -1,6 +1,6 @@
 ###########################################################################################################################################################################################################################
 #                                                                                                                                                                                                                         #
-#                                                          AUTOMAZIONE VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b19]                                                                                                        #
+#                                                          AUTOMAZIONE VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b22]                                                                                                        #
 #                                                                                                                                                                                                                         #
 # SVILUPPATO DA ING. DANILO ROBOTTI, ALLE PRIME ARMI CON HOME ASSISTANT :)                                                                                                                                                #
 #                                                                                                                                                                                                                         #
@@ -3585,7 +3585,7 @@ triggers:
     value_template: |
       {{
       (
-        states('input_text.vmc_master_nome_da_inserire') != ''
+        states('input_text.vmc_master_nome_da_inserire') is match('^[A-Za-z0-9_-]{1,10}$')
         and states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line'
         and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile'
         and states('input_boolean.vmc_master_spia_velocita_0') == 'off'
@@ -8596,7 +8596,7 @@ actions:
       {%- elif trigger.id == 'Cambio Nome VMC' -%}
       {{
       (
-        states('input_text.vmc_master_nome_da_inserire') != ''
+        states('input_text.vmc_master_nome_da_inserire') is match('^[A-Za-z0-9_-]{1,10}$')
         and states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line'
         and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile'
         and states('input_boolean.vmc_master_spia_velocita_0') == 'off'

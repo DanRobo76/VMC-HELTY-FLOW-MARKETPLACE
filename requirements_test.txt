@@ -1,0 +1,9 @@
+# Dipendenze dei test (CI e prove in locale), Python 3.14:
+#   pip install -r requirements_test.txt
+#   pip install homeassistant==2026.11.2
+#   pip install home-assistant-frontend==<versione in homeassistant/package_constraints.txt>
+#   pytest
+# Il plugin 0.13.375 è l'ultimo pubblicato e fissa homeassistant==2026.10.4, sotto il
+# minimo dichiarato in hacs.json (2026.11.0): HA 2026.11.2 si installa sopra (pip
+# avvisa del conflitto, è previsto). tests/conftest.py rende il plugin compatibile.
+pytest-homeassistant-custom-component==0.13.375

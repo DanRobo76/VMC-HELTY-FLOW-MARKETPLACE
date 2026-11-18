@@ -1,6 +1,6 @@
 ###########################################################################################################################################################################################################################
 #                                                                                                                                                                                                                         #
-#                                                          SCHEDA MANUALE INTERFACCIA VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b21]                                                                                         #
+#                                                          SCHEDA MANUALE INTERFACCIA VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b22]                                                                                         #
 #                                                                                                                                                                                                                         #
 # SVILUPPATO DA ING. DANILO ROBOTTI, ALLE PRIME ARMI CON HOME ASSISTANT :)                                                                                                                                                #
 #                                                                                                                                                                                                                         #
@@ -116,9 +116,11 @@ cards:
             label: VMC di nuovo ON-Line, ripristino della velocità in uso prima del Black-Out in corso... Non serve fare nulla, attendi la fine del countdown.
         - type: conditional
           conditions:
-            - entity: timer.vmc_master_countdown_avvio_home_assistant
+            - condition: state
+              entity: timer.vmc_master_countdown_avvio_home_assistant
               state: active
-            - entity: sensor.vmc_master_status_ip_interfaccia
+            - condition: state
+              entity: sensor.vmc_master_status_ip_interfaccia
               state: ON-Line
           row:
             entity: timer.vmc_master_countdown_avvio_home_assistant
@@ -126,7 +128,8 @@ cards:
             icon: mdi:timer-sand
         - type: conditional
           conditions:
-            - entity: timer.vmc_master_countdown_blackout_ripristino
+            - condition: state
+              entity: timer.vmc_master_countdown_blackout_ripristino
               state: active
           row:
             entity: timer.vmc_master_countdown_blackout_ripristino
@@ -144,7 +147,8 @@ cards:
               text: "Vuoi Procedere? Attendi il termine del processo (79 secondi)."
         - type: conditional
           conditions:
-            - entity: timer.vmc_master_countdown_script_agg_sensori
+            - condition: state
+              entity: timer.vmc_master_countdown_script_agg_sensori
               state: active
           row:
             entity: timer.vmc_master_countdown_script_agg_sensori
@@ -162,7 +166,8 @@ cards:
           secondary_info: last-changed
         - type: conditional
           conditions:
-            - entity: sensor.vmc_master_verifica_ip_inserito
+            - condition: state
+              entity: sensor.vmc_master_verifica_ip_inserito
               state_not:
                 - IP non Valido
                 - IP già in uso
@@ -174,14 +179,16 @@ cards:
             label: IP salvato. Home Assistant si sta riavviando, la pagina tornerà da sola tra 1-3 minuti.
         - type: conditional
           conditions:
-            - entity: sensor.vmc_master_verifica_ip_inserito
+            - condition: state
+              entity: sensor.vmc_master_verifica_ip_inserito
               state: IP già in uso
           row:
             type: section
             label: "IP già usato da un'altra VMC del Package: non è stato cambiato nulla, scrivi l'IP di questa VMC."
         - type: conditional
           conditions:
-            - entity: sensor.vmc_master_verifica_ip_inserito
+            - condition: state
+              entity: sensor.vmc_master_verifica_ip_inserito
               state: IP già impostato
           row:
             type: section
@@ -198,7 +205,8 @@ cards:
               text: "Vuoi Procedere? La VMC verrà arrestata e le variabili azzerate."
         - type: conditional
           conditions:
-            - entity: timer.vmc_master_countdown_script_panic_button
+            - condition: state
+              entity: timer.vmc_master_countdown_script_panic_button
               state: active
           row:
             entity: timer.vmc_master_countdown_script_panic_button
@@ -209,6 +217,7 @@ cards:
       title: Ventilazione Meccanica Controllata
       header:
         type: picture
+        alt_text: "VMC OFF-Line o non disponibile"
         image: >-
           https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/Intestazione/ferma_off_line.webp?v=20261107b
         tap_action:
@@ -240,22 +249,26 @@ cards:
           entities:
             - type: conditional
               conditions:
-                - entity: binary_sensor.vmc_master_installa_vmc_configurata
+                - condition: state
+                  entity: binary_sensor.vmc_master_installa_vmc_configurata
                   state_not: 'on'
               row:
                 type: section
                 label: "1 · Trova la VMC"
             - type: conditional
               conditions:
-                - entity: binary_sensor.vmc_master_installa_vmc_configurata
+                - condition: state
+                  entity: binary_sensor.vmc_master_installa_vmc_configurata
                   state_not: 'on'
               row:
                 entity: input_text.vmc_master_installa_vmc_rete_vmc
             - type: conditional
               conditions:
-                - entity: binary_sensor.vmc_master_installa_vmc_configurata
+                - condition: state
+                  entity: binary_sensor.vmc_master_installa_vmc_configurata
                   state_not: 'on'
-                - entity: binary_sensor.vmc_master_installa_vmc_in_corso
+                - condition: state
+                  entity: binary_sensor.vmc_master_installa_vmc_in_corso
                   state_not: 'on'
               row:
                 type: button
@@ -269,28 +282,33 @@ cards:
                     entity_id: script.vmc_master_installa_vmc_cerca_reti
             - type: conditional
               conditions:
-                - entity: binary_sensor.vmc_master_installa_vmc_configurata
+                - condition: state
+                  entity: binary_sensor.vmc_master_installa_vmc_configurata
                   state_not: 'on'
               row:
                 type: section
                 label: "2 · Collega al Wi-Fi di casa"
             - type: conditional
               conditions:
-                - entity: binary_sensor.vmc_master_installa_vmc_configurata
+                - condition: state
+                  entity: binary_sensor.vmc_master_installa_vmc_configurata
                   state_not: 'on'
               row:
                 entity: input_text.vmc_master_installa_vmc_rete_casa
             - type: conditional
               conditions:
-                - entity: binary_sensor.vmc_master_installa_vmc_configurata
+                - condition: state
+                  entity: binary_sensor.vmc_master_installa_vmc_configurata
                   state_not: 'on'
               row:
                 entity: input_text.vmc_master_installa_vmc_password_casa
             - type: conditional
               conditions:
-                - entity: binary_sensor.vmc_master_installa_vmc_configurata
+                - condition: state
+                  entity: binary_sensor.vmc_master_installa_vmc_configurata
                   state_not: 'on'
-                - entity: binary_sensor.vmc_master_installa_vmc_in_corso
+                - condition: state
+                  entity: binary_sensor.vmc_master_installa_vmc_in_corso
                   state_not: 'on'
               row:
                 type: button
@@ -306,24 +324,29 @@ cards:
                     text: "Vuoi Procedere? Il server si collega per pochi secondi alla rete della VMC e poi torna com'era."
             - type: conditional
               conditions:
-                - entity: binary_sensor.vmc_master_installa_vmc_configurata
+                - condition: state
+                  entity: binary_sensor.vmc_master_installa_vmc_configurata
                   state: 'on'
               row:
                 type: section
                 label: "3 · IP fisso e IP della VMC Master"
             - type: conditional
               conditions:
-                - entity: binary_sensor.vmc_master_installa_vmc_configurata
+                - condition: state
+                  entity: binary_sensor.vmc_master_installa_vmc_configurata
                   state: 'on'
               row:
                 entity: input_text.vmc_master_installa_vmc_ip_vmc
             - type: conditional
               conditions:
-                - entity: binary_sensor.vmc_master_installa_vmc_configurata
+                - condition: state
+                  entity: binary_sensor.vmc_master_installa_vmc_configurata
                   state: 'on'
-                - entity: binary_sensor.vmc_master_installa_vmc_in_corso
+                - condition: state
+                  entity: binary_sensor.vmc_master_installa_vmc_in_corso
                   state_not: 'on'
-                - entity: sensor.vmc_master_installa_vmc_verifica_ip
+                - condition: state
+                  entity: sensor.vmc_master_installa_vmc_verifica_ip
                   state: 'ok'
               row:
                 type: button
@@ -339,9 +362,11 @@ cards:
                     text: "L'IP verificato viene scritto in Cambia IP VMC: la scheda Master comanderà questa VMC. Home Assistant si riavvia (1-3 minuti). Non usarlo per una VMC da clonare: il suo IP va nella Finestra Clona. Vuoi procedere?"
             - type: conditional
               conditions:
-                - entity: binary_sensor.vmc_master_installa_vmc_configurata
+                - condition: state
+                  entity: binary_sensor.vmc_master_installa_vmc_configurata
                   state: 'on'
-                - entity: binary_sensor.vmc_master_installa_vmc_in_corso
+                - condition: state
+                  entity: binary_sensor.vmc_master_installa_vmc_in_corso
                   state_not: 'on'
               row:
                 type: button
@@ -524,11 +549,14 @@ cards:
 # >>> FINE SEZIONE INSTALLA VMC (SOLO MASTER, RIMOSSA DA VMC_SCRIPT_CLONA.SH) <<<
   - type: conditional
     conditions:
-      - entity: sensor.vmc_master_status_ip_interfaccia
+      - condition: state
+        entity: sensor.vmc_master_status_ip_interfaccia
         state: ON-Line
-      - entity: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
+      - condition: state
+        entity: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
         state: 'on'
-      - entity: sensor.vmc_master_alert_monitoraggio_offset_tutti_min
+      - condition: state
+        entity: sensor.vmc_master_alert_monitoraggio_offset_tutti_min
         state: NOT OK
       - condition: state
         entity: >-
@@ -627,11 +655,14 @@ cards:
         {% endif %}
   - type: conditional
     conditions:
-      - entity: sensor.vmc_master_umidita_interna_status
+      - condition: state
+        entity: sensor.vmc_master_umidita_interna_status
         state: '[Non Calcolabile]'
-      - entity: sensor.vmc_master_status_ip_interfaccia
+      - condition: state
+        entity: sensor.vmc_master_status_ip_interfaccia
         state: ON-Line
-      - entity: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
+      - condition: state
+        entity: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
         state: 'on'
       - condition: state
         entity: >-
@@ -702,11 +733,14 @@ cards:
         {% endif %}
   - type: conditional
     conditions:
-      - entity: sensor.vmc_master_umidita_esterna_status
+      - condition: state
+        entity: sensor.vmc_master_umidita_esterna_status
         state: '[Non Calcolabile]'
-      - entity: sensor.vmc_master_status_ip_interfaccia
+      - condition: state
+        entity: sensor.vmc_master_status_ip_interfaccia
         state: ON-Line
-      - entity: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
+      - condition: state
+        entity: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
         state: 'on'
       - condition: state
         entity: >-
@@ -777,9 +811,11 @@ cards:
         {% endif %}
   - type: conditional
     conditions:
-      - entity: sensor.vmc_master_status_ip_interfaccia
+      - condition: state
+        entity: sensor.vmc_master_status_ip_interfaccia
         state: ON-Line
-      - entity: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
+      - condition: state
+        entity: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
         state: 'on'
       - condition: state
         entity: >-
@@ -813,7 +849,8 @@ cards:
             state: 'off'
       - condition: or
         conditions:
-          - entity: sensor.vmc_master_congelamento_verifica_soglia
+          - condition: state
+            entity: sensor.vmc_master_congelamento_verifica_soglia
             state: Si
           - condition: state
             entity: sensor.vmc_master_congelamento_verifica_soglia
@@ -1533,9 +1570,11 @@ cards:
         {% endif %}
   - type: conditional
     conditions:
-      - entity: sensor.vmc_master_status_ip_interfaccia
+      - condition: state
+        entity: sensor.vmc_master_status_ip_interfaccia
         state: ON-Line
-      - entity: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
+      - condition: state
+        entity: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
         state: 'on'
       - condition: state
         entity: >-
@@ -1569,7 +1608,8 @@ cards:
             state: 'off'
       - condition: or
         conditions:
-          - entity: sensor.vmc_master_alert_monitoraggio_delta
+          - condition: state
+            entity: sensor.vmc_master_alert_monitoraggio_delta
             state: Allerta
           - condition: state
             entity: sensor.vmc_master_delta_temp_verifica_soglia
@@ -2225,9 +2265,11 @@ cards:
         {% endif %}
   - type: conditional
     conditions:
-      - entity: sensor.vmc_master_status_ip_interfaccia
+      - condition: state
+        entity: sensor.vmc_master_status_ip_interfaccia
         state: ON-Line
-      - entity: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
+      - condition: state
+        entity: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
         state: "on"
       - condition: state
         entity: >-
@@ -3210,9 +3252,11 @@ cards:
         {% endif %}
   - type: conditional
     conditions:
-      - entity: sensor.vmc_master_status_ip_interfaccia
+      - condition: state
+        entity: sensor.vmc_master_status_ip_interfaccia
         state: ON-Line
-      - entity: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
+      - condition: state
+        entity: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
         state: 'on'
       - condition: state
         entity: >-
@@ -3246,7 +3290,8 @@ cards:
             state: 'off'
       - condition: or
         conditions:
-          - entity: sensor.vmc_master_alert_monitoraggio_pdr
+          - condition: state
+            entity: sensor.vmc_master_alert_monitoraggio_pdr
             state: Allerta
           - condition: state
             entity: input_boolean.vmc_master_spia_velocita_0_un_solo_avvio
@@ -4899,9 +4944,11 @@ cards:
         {% endif %}
   - type: conditional
     conditions:
-      - entity: sensor.vmc_master_status_ip_interfaccia
+      - condition: state
+        entity: sensor.vmc_master_status_ip_interfaccia
         state: ON-Line
-      - entity: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
+      - condition: state
+        entity: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
         state: 'on'
       - condition: state
         entity: input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia
@@ -6776,9 +6823,11 @@ cards:
           {% endif %}
   - type: conditional
     conditions:
-      - entity: sensor.vmc_master_status_ip_interfaccia
+      - condition: state
+        entity: sensor.vmc_master_status_ip_interfaccia
         state: ON-Line
-      - entity: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
+      - condition: state
+        entity: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
         state: 'on'
       - condition: state
         entity: >-
@@ -6815,7 +6864,8 @@ cards:
           - condition: state
             entity: input_boolean.vmc_master_umidita_verifica_soglia_valore_spia
             state: 'on'
-          - entity: sensor.vmc_master_alert_monitoraggio_umidita
+          - condition: state
+            entity: sensor.vmc_master_alert_monitoraggio_umidita
             state: Allerta
       - condition: and
         conditions:
@@ -7982,7 +8032,8 @@ cards:
         {% endif %}
   - type: conditional
     conditions:
-      - entity: sensor.vmc_master_status_ip_interfaccia
+      - condition: state
+        entity: sensor.vmc_master_status_ip_interfaccia
         state: ON-Line
       - condition: and
         conditions:
@@ -8041,16 +8092,17 @@ cards:
               - entity: input_boolean.vmc_master_opzioni_lettura_sensori
             header:
               type: picture
+              alt_text: "VMC OFF-Line o non disponibile. Toccare per mostrare o nascondere gli avvisi"
               image: https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/Intestazione/ferma_off_line.webp?v=20261107b
               tap_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
               hold_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
         - type: conditional
           conditions:
@@ -8083,16 +8135,17 @@ cards:
               - entity: input_boolean.vmc_master_opzioni_lettura_sensori
             header:
               type: picture
+              alt_text: "VMC ferma. Toccare per mostrare o nascondere gli avvisi"
               image: https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/Intestazione/ferma_normale.webp?v=20261107b
               tap_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
               hold_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
         - type: conditional
           conditions:
@@ -8125,16 +8178,17 @@ cards:
               - entity: input_boolean.vmc_master_opzioni_lettura_sensori
             header:
               type: picture
+              alt_text: "VMC ferma per un'allerta. Toccare per mostrare o nascondere gli avvisi"
               image: https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/Intestazione/ferma_allerta.webp?v=20261107b
               tap_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
               hold_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
         - type: conditional
           conditions:
@@ -8167,16 +8221,17 @@ cards:
               - entity: input_boolean.vmc_master_opzioni_lettura_sensori
             header:
               type: picture
+              alt_text: "VMC ferma con avvisi presenti. Toccare per mostrare o nascondere gli avvisi"
               image: https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/Intestazione/ferma_allerta_lenta.webp?v=20261107b
               tap_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
               hold_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
         - type: conditional
           conditions:
@@ -8211,16 +8266,17 @@ cards:
               - entity: input_boolean.vmc_master_opzioni_lettura_sensori
             header:
               type: picture
+              alt_text: "VMC in funzione, Velocità 1 o Notturna. Toccare per mostrare o nascondere gli avvisi"
               image: https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/Intestazione/normale_velocita_1_notturna.webp?v=20261107
               tap_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
               hold_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
         - type: conditional
           conditions:
@@ -8254,16 +8310,17 @@ cards:
               - entity: input_boolean.vmc_master_opzioni_lettura_sensori
             header:
               type: picture
+              alt_text: "VMC in funzione, Velocità 2. Toccare per mostrare o nascondere gli avvisi"
               image: https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/Intestazione/normale_velocita_2.webp?v=20261107
               tap_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
               hold_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
         - type: conditional
           conditions:
@@ -8300,16 +8357,17 @@ cards:
               - entity: input_boolean.vmc_master_opzioni_lettura_sensori
             header:
               type: picture
+              alt_text: "VMC in funzione, Velocità 3 o Free. Toccare per mostrare o nascondere gli avvisi"
               image: https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/Intestazione/normale_velocita_3_free.webp?v=20261107
               tap_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
               hold_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
         - type: conditional
           conditions:
@@ -8343,16 +8401,17 @@ cards:
               - entity: input_boolean.vmc_master_opzioni_lettura_sensori
             header:
               type: picture
+              alt_text: "VMC in funzione, Velocità 4. Toccare per mostrare o nascondere gli avvisi"
               image: https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/Intestazione/normale_velocita_4.webp?v=20261107
               tap_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
               hold_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
         - type: conditional
           conditions:
@@ -8386,16 +8445,17 @@ cards:
               - entity: input_boolean.vmc_master_opzioni_lettura_sensori
             header:
               type: picture
+              alt_text: "VMC in funzione, Iperventilazione. Toccare per mostrare o nascondere gli avvisi"
               image: https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/Intestazione/normale_iperventilazione.webp?v=20261107
               tap_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
               hold_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
         - type: conditional
           conditions:
@@ -8430,16 +8490,17 @@ cards:
               - entity: input_boolean.vmc_master_opzioni_lettura_sensori
             header:
               type: picture
+              alt_text: "VMC in funzione per Umidità, Velocità 1 o Notturna. Toccare per mostrare o nascondere gli avvisi"
               image: https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/Intestazione/umidita_velocita_1_notturna.webp?v=20261107
               tap_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
               hold_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
         - type: conditional
           conditions:
@@ -8473,16 +8534,17 @@ cards:
               - entity: input_boolean.vmc_master_opzioni_lettura_sensori
             header:
               type: picture
+              alt_text: "VMC in funzione per Umidità, Velocità 2. Toccare per mostrare o nascondere gli avvisi"
               image: https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/Intestazione/umidita_velocita_2.webp?v=20261107
               tap_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
               hold_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
         - type: conditional
           conditions:
@@ -8519,16 +8581,17 @@ cards:
               - entity: input_boolean.vmc_master_opzioni_lettura_sensori
             header:
               type: picture
+              alt_text: "VMC in funzione per Umidità, Velocità 3 o Free. Toccare per mostrare o nascondere gli avvisi"
               image: https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/Intestazione/umidita_velocita_3_free.webp?v=20261107
               tap_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
               hold_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
         - type: conditional
           conditions:
@@ -8562,16 +8625,17 @@ cards:
               - entity: input_boolean.vmc_master_opzioni_lettura_sensori
             header:
               type: picture
+              alt_text: "VMC in funzione per Umidità, Velocità 4. Toccare per mostrare o nascondere gli avvisi"
               image: https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/Intestazione/umidita_velocita_4.webp?v=20261107
               tap_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
               hold_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
         - type: conditional
           conditions:
@@ -8605,16 +8669,17 @@ cards:
               - entity: input_boolean.vmc_master_opzioni_lettura_sensori
             header:
               type: picture
+              alt_text: "VMC in funzione per Umidità, Iperventilazione. Toccare per mostrare o nascondere gli avvisi"
               image: https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/Intestazione/umidita_iperventilazione.webp?v=20261107
               tap_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
               hold_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
         - type: conditional
           conditions:
@@ -8649,16 +8714,17 @@ cards:
               - entity: input_boolean.vmc_master_opzioni_lettura_sensori
             header:
               type: picture
+              alt_text: "VMC in funzione per Inquinanti, Velocità 1 o Notturna. Toccare per mostrare o nascondere gli avvisi"
               image: https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/Intestazione/inquinanti_velocita_1_notturna.webp?v=20261107
               tap_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
               hold_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
         - type: conditional
           conditions:
@@ -8692,16 +8758,17 @@ cards:
               - entity: input_boolean.vmc_master_opzioni_lettura_sensori
             header:
               type: picture
+              alt_text: "VMC in funzione per Inquinanti, Velocità 2. Toccare per mostrare o nascondere gli avvisi"
               image: https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/Intestazione/inquinanti_velocita_2.webp?v=20261107
               tap_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
               hold_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
         - type: conditional
           conditions:
@@ -8738,16 +8805,17 @@ cards:
               - entity: input_boolean.vmc_master_opzioni_lettura_sensori
             header:
               type: picture
+              alt_text: "VMC in funzione per Inquinanti, Velocità 3 o Free. Toccare per mostrare o nascondere gli avvisi"
               image: https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/Intestazione/inquinanti_velocita_3_free.webp?v=20261107
               tap_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
               hold_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
         - type: conditional
           conditions:
@@ -8781,16 +8849,17 @@ cards:
               - entity: input_boolean.vmc_master_opzioni_lettura_sensori
             header:
               type: picture
+              alt_text: "VMC in funzione per Inquinanti, Velocità 4. Toccare per mostrare o nascondere gli avvisi"
               image: https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/Intestazione/inquinanti_velocita_4.webp?v=20261107
               tap_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
               hold_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
         - type: conditional
           conditions:
@@ -8824,16 +8893,17 @@ cards:
               - entity: input_boolean.vmc_master_opzioni_lettura_sensori
             header:
               type: picture
+              alt_text: "VMC in funzione per Inquinanti, Iperventilazione. Toccare per mostrare o nascondere gli avvisi"
               image: https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/Intestazione/inquinanti_iperventilazione.webp?v=20261107
               tap_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
               hold_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
         - type: conditional
           conditions:
@@ -8868,16 +8938,17 @@ cards:
               - entity: input_boolean.vmc_master_opzioni_lettura_sensori
             header:
               type: picture
+              alt_text: "VMC in funzione con allerta, Velocità 1 o Notturna. Toccare per mostrare o nascondere gli avvisi"
               image: https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/Intestazione/allerta_velocita_1_notturna.webp?v=20261107
               tap_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
               hold_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
         - type: conditional
           conditions:
@@ -8911,16 +8982,17 @@ cards:
               - entity: input_boolean.vmc_master_opzioni_lettura_sensori
             header:
               type: picture
+              alt_text: "VMC in funzione con allerta, Velocità 2. Toccare per mostrare o nascondere gli avvisi"
               image: https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/Intestazione/allerta_velocita_2.webp?v=20261107
               tap_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
               hold_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
         - type: conditional
           conditions:
@@ -8957,16 +9029,17 @@ cards:
               - entity: input_boolean.vmc_master_opzioni_lettura_sensori
             header:
               type: picture
+              alt_text: "VMC in funzione con allerta, Velocità 3 o Free. Toccare per mostrare o nascondere gli avvisi"
               image: https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/Intestazione/allerta_velocita_3_free.webp?v=20261107
               tap_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
               hold_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
         - type: conditional
           conditions:
@@ -9000,16 +9073,17 @@ cards:
               - entity: input_boolean.vmc_master_opzioni_lettura_sensori
             header:
               type: picture
+              alt_text: "VMC in funzione con allerta, Velocità 4. Toccare per mostrare o nascondere gli avvisi"
               image: https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/Intestazione/allerta_velocita_4.webp?v=20261107
               tap_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
               hold_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
         - type: conditional
           conditions:
@@ -9043,16 +9117,17 @@ cards:
               - entity: input_boolean.vmc_master_opzioni_lettura_sensori
             header:
               type: picture
+              alt_text: "VMC in funzione con allerta, Iperventilazione. Toccare per mostrare o nascondere gli avvisi"
               image: https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/Intestazione/allerta_iperventilazione.webp?v=20261107
               tap_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
               hold_action:
-                action: call-service
-                service: input_boolean.toggle
-                service_data:
+                action: perform-action
+                perform_action: input_boolean.toggle
+                data:
                   entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_avvisi
         - type: conditional
           conditions:
@@ -9132,7 +9207,8 @@ cards:
             entities:
               - type: conditional
                 conditions:
-                  - entity: sensor.vmc_master_velocita_registrata
+                  - condition: state
+                    entity: sensor.vmc_master_velocita_registrata
                     state_not: ["Nessuna", "unknown", "unavailable"]
                 row:
                   entity: sensor.vmc_master_velocita_registrata
@@ -9140,7 +9216,8 @@ cards:
                   icon: mdi:restore
               - type: conditional
                 conditions:
-                  - entity: timer.vmc_master_countdown_pdr_cambio
+                  - condition: state
+                    entity: timer.vmc_master_countdown_pdr_cambio
                     state: active
                 row:
                   entity: timer.vmc_master_countdown_pdr_cambio
@@ -9148,7 +9225,8 @@ cards:
                   icon: mdi:timer-sand
               - type: conditional
                 conditions:
-                  - entity: timer.vmc_master_countdown_pdr_ripristino
+                  - condition: state
+                    entity: timer.vmc_master_countdown_pdr_ripristino
                     state: active
                 row:
                   entity: timer.vmc_master_countdown_pdr_ripristino
@@ -9156,7 +9234,8 @@ cards:
                   icon: mdi:timer-sand
               - type: conditional
                 conditions:
-                  - entity: timer.vmc_master_countdown_free_heating_annullamento
+                  - condition: state
+                    entity: timer.vmc_master_countdown_free_heating_annullamento
                     state: active
                 row:
                   entity: timer.vmc_master_countdown_free_heating_annullamento
@@ -9164,7 +9243,8 @@ cards:
                   icon: mdi:timer-sand
               - type: conditional
                 conditions:
-                  - entity: timer.vmc_master_countdown_free_heating_sospensione
+                  - condition: state
+                    entity: timer.vmc_master_countdown_free_heating_sospensione
                     state: active
                 row:
                   entity: timer.vmc_master_countdown_free_heating_sospensione
@@ -9172,7 +9252,8 @@ cards:
                   icon: mdi:timer-sand
               - type: conditional
                 conditions:
-                  - entity: timer.vmc_master_countdown_free_heating_ripristino
+                  - condition: state
+                    entity: timer.vmc_master_countdown_free_heating_ripristino
                     state: active
                 row:
                   entity: timer.vmc_master_countdown_free_heating_ripristino
@@ -9180,7 +9261,8 @@ cards:
                   icon: mdi:timer-sand
               - type: conditional
                 conditions:
-                  - entity: timer.vmc_master_countdown_free_cooling_annullamento
+                  - condition: state
+                    entity: timer.vmc_master_countdown_free_cooling_annullamento
                     state: active
                 row:
                   entity: timer.vmc_master_countdown_free_cooling_annullamento
@@ -9188,7 +9270,8 @@ cards:
                   icon: mdi:timer-sand
               - type: conditional
                 conditions:
-                  - entity: timer.vmc_master_countdown_free_cooling_sospensione
+                  - condition: state
+                    entity: timer.vmc_master_countdown_free_cooling_sospensione
                     state: active
                 row:
                   entity: timer.vmc_master_countdown_free_cooling_sospensione
@@ -9196,7 +9279,8 @@ cards:
                   icon: mdi:timer-sand
               - type: conditional
                 conditions:
-                  - entity: timer.vmc_master_countdown_free_cooling_ripristino
+                  - condition: state
+                    entity: timer.vmc_master_countdown_free_cooling_ripristino
                     state: active
                 row:
                   entity: timer.vmc_master_countdown_free_cooling_ripristino
@@ -9204,7 +9288,8 @@ cards:
                   icon: mdi:timer-sand
               - type: conditional
                 conditions:
-                  - entity: timer.vmc_master_countdown_inquinanti_avvio
+                  - condition: state
+                    entity: timer.vmc_master_countdown_inquinanti_avvio
                     state: active
                 row:
                   entity: timer.vmc_master_countdown_inquinanti_avvio
@@ -9212,7 +9297,8 @@ cards:
                   icon: mdi:timer-sand
               - type: conditional
                 conditions:
-                  - entity: timer.vmc_master_countdown_inquinanti_fine
+                  - condition: state
+                    entity: timer.vmc_master_countdown_inquinanti_fine
                     state: active
                 row:
                   entity: timer.vmc_master_countdown_inquinanti_fine
@@ -9220,7 +9306,8 @@ cards:
                   icon: mdi:timer-sand
               - type: conditional
                 conditions:
-                  - entity: timer.vmc_master_countdown_inquinanti_memoria
+                  - condition: state
+                    entity: timer.vmc_master_countdown_inquinanti_memoria
                     state: active
                 row:
                   entity: timer.vmc_master_countdown_inquinanti_memoria
@@ -9228,7 +9315,8 @@ cards:
                   icon: mdi:timer-sand
               - type: conditional
                 conditions:
-                  - entity: timer.vmc_master_countdown_umidita_avvio
+                  - condition: state
+                    entity: timer.vmc_master_countdown_umidita_avvio
                     state: active
                 row:
                   entity: timer.vmc_master_countdown_umidita_avvio
@@ -9236,7 +9324,8 @@ cards:
                   icon: mdi:timer-sand
               - type: conditional
                 conditions:
-                  - entity: timer.vmc_master_countdown_umidita_fine
+                  - condition: state
+                    entity: timer.vmc_master_countdown_umidita_fine
                     state: active
                 row:
                   entity: timer.vmc_master_countdown_umidita_fine
@@ -9244,7 +9333,8 @@ cards:
                   icon: mdi:timer-sand
               - type: conditional
                 conditions:
-                  - entity: timer.vmc_master_countdown_umidita_memoria
+                  - condition: state
+                    entity: timer.vmc_master_countdown_umidita_memoria
                     state: active
                 row:
                   entity: timer.vmc_master_countdown_umidita_memoria
@@ -9252,7 +9342,8 @@ cards:
                   icon: mdi:timer-sand
               - type: conditional
                 conditions:
-                  - entity: timer.vmc_master_countdown_delta_avvio
+                  - condition: state
+                    entity: timer.vmc_master_countdown_delta_avvio
                     state: active
                 row:
                   entity: timer.vmc_master_countdown_delta_avvio
@@ -9260,7 +9351,8 @@ cards:
                   icon: mdi:timer-sand
               - type: conditional
                 conditions:
-                  - entity: timer.vmc_master_countdown_delta_fine
+                  - condition: state
+                    entity: timer.vmc_master_countdown_delta_fine
                     state: active
                 row:
                   entity: timer.vmc_master_countdown_delta_fine
@@ -9268,7 +9360,8 @@ cards:
                   icon: mdi:timer-sand
               - type: conditional
                 conditions:
-                  - entity: timer.vmc_master_countdown_delta_memoria
+                  - condition: state
+                    entity: timer.vmc_master_countdown_delta_memoria
                     state: active
                 row:
                   entity: timer.vmc_master_countdown_delta_memoria
@@ -9276,7 +9369,8 @@ cards:
                   icon: mdi:timer-sand
               - type: conditional
                 conditions:
-                  - entity: timer.vmc_master_countdown_blackout_rilevazione
+                  - condition: state
+                    entity: timer.vmc_master_countdown_blackout_rilevazione
                     state: active
                 row:
                   entity: timer.vmc_master_countdown_blackout_rilevazione
@@ -9284,7 +9378,8 @@ cards:
                   icon: mdi:timer-sand
               - type: conditional
                 conditions:
-                  - entity: timer.vmc_master_countdown_blackout_ripristino
+                  - condition: state
+                    entity: timer.vmc_master_countdown_blackout_ripristino
                     state: active
                 row:
                   entity: timer.vmc_master_countdown_blackout_ripristino
@@ -9292,7 +9387,8 @@ cards:
                   icon: mdi:timer-sand
               - type: conditional
                 conditions:
-                  - entity: timer.vmc_master_countdown_calendario_inizio
+                  - condition: state
+                    entity: timer.vmc_master_countdown_calendario_inizio
                     state: active
                 row:
                   entity: timer.vmc_master_countdown_calendario_inizio
@@ -9300,7 +9396,8 @@ cards:
                   icon: mdi:timer-sand
               - type: conditional
                 conditions:
-                  - entity: timer.vmc_master_countdown_calendario_fine
+                  - condition: state
+                    entity: timer.vmc_master_countdown_calendario_fine
                     state: active
                 row:
                   entity: timer.vmc_master_countdown_calendario_fine
@@ -9308,7 +9405,8 @@ cards:
                   icon: mdi:timer-sand
               - type: conditional
                 conditions:
-                  - entity: timer.vmc_master_countdown_avvisi
+                  - condition: state
+                    entity: timer.vmc_master_countdown_avvisi
                     state: active
                 row:
                   entity: timer.vmc_master_countdown_avvisi
@@ -9338,8 +9436,8 @@ cards:
                   show_icon: true
                   type: button
                   tap_action:
-                    action: call-service
-                    service: shell_command.vmc_master_sensori_off
+                    action: perform-action
+                    perform_action: shell_command.vmc_master_sensori_off
                     target: {}
                   name: Sensori Off
                   show_state: false
@@ -9351,8 +9449,8 @@ cards:
                   show_icon: true
                   type: button
                   tap_action:
-                    action: call-service
-                    service: shell_command.vmc_master_sensori_on
+                    action: perform-action
+                    perform_action: shell_command.vmc_master_sensori_on
                     target: {}
                   name: Sensori On
                   show_state: false
@@ -9364,8 +9462,8 @@ cards:
                   show_icon: true
                   type: button
                   tap_action:
-                    action: call-service
-                    service: shell_command.vmc_master_pannello_led_off
+                    action: perform-action
+                    perform_action: shell_command.vmc_master_pannello_led_off
                     target: {}
                   name: Led Pannello Off
                   show_state: false
@@ -9377,8 +9475,8 @@ cards:
                   show_icon: true
                   type: button
                   tap_action:
-                    action: call-service
-                    service: shell_command.vmc_master_pannello_led_on
+                    action: perform-action
+                    perform_action: shell_command.vmc_master_pannello_led_on
                     target: {}
                   name: Led Pannello On
                   show_state: false
@@ -9390,8 +9488,8 @@ cards:
                   show_icon: true
                   type: button
                   tap_action:
-                    action: call-service
-                    service: shell_command.vmc_master_velocita_0
+                    action: perform-action
+                    perform_action: shell_command.vmc_master_velocita_0
                     target: {}
                   show_state: false
                   name: Velocità 0
@@ -9403,8 +9501,8 @@ cards:
                   show_icon: true
                   type: button
                   tap_action:
-                    action: call-service
-                    service: shell_command.vmc_master_velocita_1
+                    action: perform-action
+                    perform_action: shell_command.vmc_master_velocita_1
                     target: {}
                   name: Velocità 1
                   show_state: false
@@ -9419,8 +9517,8 @@ cards:
                   show_icon: true
                   type: button
                   tap_action:
-                    action: call-service
-                    service: shell_command.vmc_master_velocita_1
+                    action: perform-action
+                    perform_action: shell_command.vmc_master_velocita_1
                     target: {}
                   name: Velocità 1
                   show_state: true
@@ -9439,8 +9537,8 @@ cards:
                   show_icon: true
                   type: button
                   tap_action:
-                    action: call-service
-                    service: shell_command.vmc_master_velocita_2
+                    action: perform-action
+                    perform_action: shell_command.vmc_master_velocita_2
                     target: {}
                   name: Velocità 2
                   show_state: false
@@ -9456,8 +9554,8 @@ cards:
                   show_icon: true
                   type: button
                   tap_action:
-                    action: call-service
-                    service: shell_command.vmc_master_velocita_2
+                    action: perform-action
+                    perform_action: shell_command.vmc_master_velocita_2
                     target: {}
                   name: Velocità 2
                   show_state: true
@@ -9477,8 +9575,8 @@ cards:
                   show_icon: true
                   type: button
                   tap_action:
-                    action: call-service
-                    service: shell_command.vmc_master_velocita_3
+                    action: perform-action
+                    perform_action: shell_command.vmc_master_velocita_3
                     target: {}
                   name: Velocità 3
                   show_state: false
@@ -9494,8 +9592,8 @@ cards:
                   show_icon: true
                   type: button
                   tap_action:
-                    action: call-service
-                    service: shell_command.vmc_master_velocita_3
+                    action: perform-action
+                    perform_action: shell_command.vmc_master_velocita_3
                     target: {}
                   name: Velocità 3
                   show_state: true
@@ -9515,8 +9613,8 @@ cards:
                   show_icon: true
                   type: button
                   tap_action:
-                    action: call-service
-                    service: shell_command.vmc_master_velocita_4
+                    action: perform-action
+                    perform_action: shell_command.vmc_master_velocita_4
                     target: {}
                   name: Velocità 4
                   show_state: false
@@ -9532,8 +9630,8 @@ cards:
                   show_icon: true
                   type: button
                   tap_action:
-                    action: call-service
-                    service: shell_command.vmc_master_velocita_4
+                    action: perform-action
+                    perform_action: shell_command.vmc_master_velocita_4
                     target: {}
                   name: Velocità 4
                   show_state: true
@@ -9553,8 +9651,8 @@ cards:
                   show_icon: true
                   type: button
                   tap_action:
-                    action: call-service
-                    service: shell_command.vmc_master_notturna
+                    action: perform-action
+                    perform_action: shell_command.vmc_master_notturna
                     target: {}
                   name: Notturna
                   show_state: false
@@ -9570,8 +9668,8 @@ cards:
                   show_icon: true
                   type: button
                   tap_action:
-                    action: call-service
-                    service: shell_command.vmc_master_notturna
+                    action: perform-action
+                    perform_action: shell_command.vmc_master_notturna
                     target: {}
                   name: Notturna
                   show_state: true
@@ -9591,8 +9689,8 @@ cards:
                   show_icon: true
                   type: button
                   tap_action:
-                    action: call-service
-                    service: shell_command.vmc_master_iperventilazione
+                    action: perform-action
+                    perform_action: shell_command.vmc_master_iperventilazione
                     target: {}
                   name: Iperventil.
                   show_state: false
@@ -9608,8 +9706,8 @@ cards:
                   show_icon: true
                   type: button
                   tap_action:
-                    action: call-service
-                    service: shell_command.vmc_master_iperventilazione
+                    action: perform-action
+                    perform_action: shell_command.vmc_master_iperventilazione
                     target: {}
                   name: Iperventil.
                   show_state: true
@@ -9629,8 +9727,8 @@ cards:
                   show_icon: true
                   type: button
                   tap_action:
-                    action: call-service
-                    service: shell_command.vmc_master_freecooling
+                    action: perform-action
+                    perform_action: shell_command.vmc_master_freecooling
                   name: Free Heating
                   show_state: false
                   hold_action:
@@ -9658,8 +9756,8 @@ cards:
                   show_icon: true
                   type: button
                   tap_action:
-                    action: call-service
-                    service: shell_command.vmc_master_freecooling
+                    action: perform-action
+                    perform_action: shell_command.vmc_master_freecooling
                   icon: mdi:weather-sunny-alert
                   name: Free Heating
                   show_state: true
@@ -9680,8 +9778,8 @@ cards:
                   entity: binary_sensor.vmc_master_tasto_free_cooling
                   state_color: true
                   tap_action:
-                    action: call-service
-                    service: shell_command.vmc_master_freecooling
+                    action: perform-action
+                    perform_action: shell_command.vmc_master_freecooling
                   name: Free Cooling
                   show_name: true
                   show_icon: true
@@ -9711,8 +9809,8 @@ cards:
                   show_icon: true
                   type: button
                   tap_action:
-                    action: call-service
-                    service: shell_command.vmc_master_freecooling
+                    action: perform-action
+                    perform_action: shell_command.vmc_master_freecooling
                   icon: mdi:snowflake-alert
                   name: Free Cooling
                   show_state: true
@@ -9733,8 +9831,8 @@ cards:
                   entity: binary_sensor.vmc_master_tasto_free_cool_heat
                   state_color: true
                   tap_action:
-                    action: call-service
-                    service: shell_command.vmc_master_freecooling
+                    action: perform-action
+                    perform_action: shell_command.vmc_master_freecooling
                   name: Free Cool./Heat.
                   show_name: true
                   show_icon: true
@@ -9769,8 +9867,8 @@ cards:
                     - Alert Δ Temp.
                 - type: button
                   tap_action:
-                    action: call-service
-                    service: shell_command.vmc_master_freecooling
+                    action: perform-action
+                    perform_action: shell_command.vmc_master_freecooling
                   icon: mdi:sun-snowflake-variant
                   name: Free Cool./Heat.
                   show_name: true
@@ -9896,7 +9994,8 @@ cards:
                         text: "Vuoi Procedere? Attendi il termine del processo (79 secondi)."
                   - type: conditional
                     conditions:
-                      - entity: timer.vmc_master_countdown_script_agg_sensori
+                      - condition: state
+                        entity: timer.vmc_master_countdown_script_agg_sensori
                         state: active
                     row:
                       entity: timer.vmc_master_countdown_script_agg_sensori
@@ -9984,7 +10083,8 @@ cards:
                     Al ripristino dell'entità scelta si torna automaticamente al suo valore (con Offset). Vedere Pannello Informazioni, Nota Entità Scelte non Disponibili.
               - type: conditional
                 conditions:
-                  - entity: >-
+                  - condition: state
+                    entity: >-
                       input_boolean.vmc_master_opzioni_interruttore_monitoraggio_sensori_extra
                     state: 'on'
                 card:
@@ -10035,7 +10135,8 @@ cards:
                         Finché una media non è completa è calcolata sui soli giorni disponibili. Vedere Pannello Informazioni, voce 19.
               - type: conditional
                 conditions:
-                  - entity: >-
+                  - condition: state
+                    entity: >-
                       input_boolean.vmc_master_opzioni_interruttore_sensori_vmc_interni
                     state: 'on'
                 card:
@@ -10075,7 +10176,8 @@ cards:
                       state_color: true
               - type: conditional
                 conditions:
-                  - entity: >-
+                  - condition: state
+                    entity: >-
                       input_boolean.vmc_master_opzioni_interruttore_offset_sensori
                     state: 'on'
                 card:
@@ -10196,7 +10298,8 @@ cards:
                     secondary_info: last-changed
                   - type: conditional
                     conditions:
-                      - entity: sensor.vmc_master_verifica_ip_inserito
+                      - condition: state
+                        entity: sensor.vmc_master_verifica_ip_inserito
                         state_not:
                           - IP non Valido
                           - IP già in uso
@@ -10208,14 +10311,16 @@ cards:
                       label: IP salvato. Home Assistant si sta riavviando, la pagina tornerà da sola tra 1-3 minuti.
                   - type: conditional
                     conditions:
-                      - entity: sensor.vmc_master_verifica_ip_inserito
+                      - condition: state
+                        entity: sensor.vmc_master_verifica_ip_inserito
                         state: IP già in uso
                     row:
                       type: section
                       label: "IP già usato da un'altra VMC del Package: non è stato cambiato nulla, scrivi l'IP di questa VMC."
                   - type: conditional
                     conditions:
-                      - entity: sensor.vmc_master_verifica_ip_inserito
+                      - condition: state
+                        entity: sensor.vmc_master_verifica_ip_inserito
                         state: IP già impostato
                     row:
                       type: section
@@ -10240,7 +10345,8 @@ cards:
                         text: "Vuoi Procedere? La VMC verrà arrestata e le variabili azzerate."
                   - type: conditional
                     conditions:
-                      - entity: timer.vmc_master_countdown_script_panic_button
+                      - condition: state
+                        entity: timer.vmc_master_countdown_script_panic_button
                         state: active
                     row:
                       entity: timer.vmc_master_countdown_script_panic_button
@@ -10258,7 +10364,8 @@ cards:
                         text: "Vuoi Procedere? Attendi il termine del processo: al termine Home Assistant verrà riavviato."
                   - type: conditional
                     conditions:
-                      - entity: timer.vmc_master_countdown_script_inizializzazione
+                      - condition: state
+                        entity: timer.vmc_master_countdown_script_inizializzazione
                         state: active
                     row:
                       entity: timer.vmc_master_countdown_script_inizializzazione
@@ -10284,7 +10391,8 @@ cards:
                         text: "Vuoi Procedere?"
                   - type: conditional
                     conditions:
-                      - entity: timer.vmc_master_countdown_script_reset_filtro
+                      - condition: state
+                        entity: timer.vmc_master_countdown_script_reset_filtro
                         state: active
                     row:
                       entity: timer.vmc_master_countdown_script_reset_filtro
@@ -10923,7 +11031,8 @@ cards:
                       show_header_toggle: false
               - type: conditional
                 conditions:
-                  - entity: input_boolean.vmc_master_opzioni_punto_di_rugiada
+                  - condition: state
+                    entity: input_boolean.vmc_master_opzioni_punto_di_rugiada
                     state: 'on'
                 card:
                   type: vertical-stack
@@ -10972,7 +11081,8 @@ cards:
                       show_header_toggle: false
               - type: conditional
                 conditions:
-                  - entity: input_boolean.vmc_master_opzioni_calendario_main
+                  - condition: state
+                    entity: input_boolean.vmc_master_opzioni_calendario_main
                     state: 'on'
                 card:
                   type: vertical-stack
@@ -11003,7 +11113,8 @@ cards:
                       show_header_toggle: false
               - type: conditional
                 conditions:
-                  - entity: input_boolean.vmc_master_opzioni_calendario
+                  - condition: state
+                    entity: input_boolean.vmc_master_opzioni_calendario
                     state: 'on'
                 card:
                   square: true
@@ -11048,7 +11159,8 @@ cards:
                       state_color: true
               - type: conditional
                 conditions:
-                  - entity: >-
+                  - condition: state
+                    entity: >-
                       input_boolean.vmc_master_opzioni_free_heating_o_free_cooling
                     state: 'on'
                 card:
@@ -11085,7 +11197,8 @@ cards:
                       show_header_toggle: false
               - type: conditional
                 conditions:
-                  - entity: input_boolean.vmc_master_opzione_finestra_audio
+                  - condition: state
+                    entity: input_boolean.vmc_master_opzione_finestra_audio
                     state: 'on'
                 card:
                   type: vertical-stack
@@ -11416,22 +11529,26 @@ cards:
                       entities:
                         - type: conditional
                           conditions:
-                            - entity: binary_sensor.vmc_master_installa_vmc_configurata
+                            - condition: state
+                              entity: binary_sensor.vmc_master_installa_vmc_configurata
                               state_not: 'on'
                           row:
                             type: section
                             label: "1 · Trova la VMC"
                         - type: conditional
                           conditions:
-                            - entity: binary_sensor.vmc_master_installa_vmc_configurata
+                            - condition: state
+                              entity: binary_sensor.vmc_master_installa_vmc_configurata
                               state_not: 'on'
                           row:
                             entity: input_text.vmc_master_installa_vmc_rete_vmc
                         - type: conditional
                           conditions:
-                            - entity: binary_sensor.vmc_master_installa_vmc_configurata
+                            - condition: state
+                              entity: binary_sensor.vmc_master_installa_vmc_configurata
                               state_not: 'on'
-                            - entity: binary_sensor.vmc_master_installa_vmc_in_corso
+                            - condition: state
+                              entity: binary_sensor.vmc_master_installa_vmc_in_corso
                               state_not: 'on'
                           row:
                             type: button
@@ -11445,28 +11562,33 @@ cards:
                                 entity_id: script.vmc_master_installa_vmc_cerca_reti
                         - type: conditional
                           conditions:
-                            - entity: binary_sensor.vmc_master_installa_vmc_configurata
+                            - condition: state
+                              entity: binary_sensor.vmc_master_installa_vmc_configurata
                               state_not: 'on'
                           row:
                             type: section
                             label: "2 · Collega al Wi-Fi di casa"
                         - type: conditional
                           conditions:
-                            - entity: binary_sensor.vmc_master_installa_vmc_configurata
+                            - condition: state
+                              entity: binary_sensor.vmc_master_installa_vmc_configurata
                               state_not: 'on'
                           row:
                             entity: input_text.vmc_master_installa_vmc_rete_casa
                         - type: conditional
                           conditions:
-                            - entity: binary_sensor.vmc_master_installa_vmc_configurata
+                            - condition: state
+                              entity: binary_sensor.vmc_master_installa_vmc_configurata
                               state_not: 'on'
                           row:
                             entity: input_text.vmc_master_installa_vmc_password_casa
                         - type: conditional
                           conditions:
-                            - entity: binary_sensor.vmc_master_installa_vmc_configurata
+                            - condition: state
+                              entity: binary_sensor.vmc_master_installa_vmc_configurata
                               state_not: 'on'
-                            - entity: binary_sensor.vmc_master_installa_vmc_in_corso
+                            - condition: state
+                              entity: binary_sensor.vmc_master_installa_vmc_in_corso
                               state_not: 'on'
                           row:
                             type: button
@@ -11482,24 +11604,29 @@ cards:
                                 text: "Vuoi Procedere? Il server si collega per pochi secondi alla rete della VMC e poi torna com'era."
                         - type: conditional
                           conditions:
-                            - entity: binary_sensor.vmc_master_installa_vmc_configurata
+                            - condition: state
+                              entity: binary_sensor.vmc_master_installa_vmc_configurata
                               state: 'on'
                           row:
                             type: section
                             label: "3 · IP fisso e IP della VMC Master"
                         - type: conditional
                           conditions:
-                            - entity: binary_sensor.vmc_master_installa_vmc_configurata
+                            - condition: state
+                              entity: binary_sensor.vmc_master_installa_vmc_configurata
                               state: 'on'
                           row:
                             entity: input_text.vmc_master_installa_vmc_ip_vmc
                         - type: conditional
                           conditions:
-                            - entity: binary_sensor.vmc_master_installa_vmc_configurata
+                            - condition: state
+                              entity: binary_sensor.vmc_master_installa_vmc_configurata
                               state: 'on'
-                            - entity: binary_sensor.vmc_master_installa_vmc_in_corso
+                            - condition: state
+                              entity: binary_sensor.vmc_master_installa_vmc_in_corso
                               state_not: 'on'
-                            - entity: sensor.vmc_master_installa_vmc_verifica_ip
+                            - condition: state
+                              entity: sensor.vmc_master_installa_vmc_verifica_ip
                               state: 'ok'
                           row:
                             type: button
@@ -11515,9 +11642,11 @@ cards:
                                 text: "L'IP verificato viene scritto in Cambia IP VMC: la scheda Master comanderà questa VMC. Home Assistant si riavvia (1-3 minuti). Non usarlo per una VMC da clonare: il suo IP va nella Finestra Clona. Vuoi procedere?"
                         - type: conditional
                           conditions:
-                            - entity: binary_sensor.vmc_master_installa_vmc_configurata
+                            - condition: state
+                              entity: binary_sensor.vmc_master_installa_vmc_configurata
                               state: 'on'
-                            - entity: binary_sensor.vmc_master_installa_vmc_in_corso
+                            - condition: state
+                              entity: binary_sensor.vmc_master_installa_vmc_in_corso
                               state_not: 'on'
                           row:
                             type: button
@@ -14238,7 +14367,8 @@ cards:
                     secondary_info: last-changed
                   - type: conditional
                     conditions:
-                      - entity: sensor.vmc_master_verifica_ip_inserito
+                      - condition: state
+                        entity: sensor.vmc_master_verifica_ip_inserito
                         state_not:
                           - IP non Valido
                           - IP già in uso
@@ -14250,14 +14380,16 @@ cards:
                       label: IP salvato. Home Assistant si sta riavviando, la pagina tornerà da sola tra 1-3 minuti.
                   - type: conditional
                     conditions:
-                      - entity: sensor.vmc_master_verifica_ip_inserito
+                      - condition: state
+                        entity: sensor.vmc_master_verifica_ip_inserito
                         state: IP già in uso
                     row:
                       type: section
                       label: "IP già usato da un'altra VMC del Package: non è stato cambiato nulla, scrivi l'IP di questa VMC."
                   - type: conditional
                     conditions:
-                      - entity: sensor.vmc_master_verifica_ip_inserito
+                      - condition: state
+                        entity: sensor.vmc_master_verifica_ip_inserito
                         state: IP già impostato
                     row:
                       type: section
@@ -14274,7 +14406,8 @@ cards:
                         text: "Vuoi Procedere? Attendi il termine del processo (79 secondi)."
                   - type: conditional
                     conditions:
-                      - entity: timer.vmc_master_countdown_script_agg_sensori
+                      - condition: state
+                        entity: timer.vmc_master_countdown_script_agg_sensori
                         state: active
                     row:
                       entity: timer.vmc_master_countdown_script_agg_sensori

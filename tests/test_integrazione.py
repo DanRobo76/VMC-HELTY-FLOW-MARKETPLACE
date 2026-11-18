@@ -34,8 +34,8 @@ def _nessuna_vmc_in_rete():
         yield
 
 
-# Link a immagini e video, contati uno per uno: 77 nella scheda (51 file diversi)
-# piu' il link «GitHub» del Pannello Informazioni; 14 nel README
+# Link a immagini e video, contati uno per uno: 75 nella scheda (50 file diversi),
+# 10 nel README (9 file diversi)
 FILE_COLLEGATI_SCHEDA = 75
 FILE_COLLEGATI_README = 10
 # Link al repository della release manuale (non seguito da «-MARKETPLACE»)
@@ -44,6 +44,16 @@ RE_LINK_8 = re.compile(r"DanRobo76/VMC-HELTY-FLOW(?![-\w])")
 RE_FILE_9 = re.compile(
     r"DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/(?:main|raw/main)/([^\s\"'<>?]+)"
 )
+
+
+def _serve_checkout_completo() -> None:
+    """immagini/ e Video/ sono export-ignore: nell'archivio della release non ci sono."""
+    mancanti = [c for c in ("immagini", "Video") if not (RADICE / c).is_dir()]
+    if mancanti:
+        pytest.skip(
+            f"Serve un checkout git completo: {', '.join(mancanti)} non c'è "
+            "(export-ignore, esclusa dall'archivio della release)"
+        )
 
 
 def _controlla_link(testo: str) -> int:
@@ -82,6 +92,7 @@ async def _aggiungi(hass: HomeAssistant, nome: str, ip: str, risponde: bool = Tr
 
 
 async def test_aggiungi_master_e_sala(hass: HomeAssistant, hass_client) -> None:
+    _serve_checkout_completo()
     await async_setup_component(hass, "http", {})
     risultato = await _aggiungi(hass, "master", "192.168.1.160")
     assert risultato["type"] is FlowResultType.CREATE_ENTRY
@@ -676,6 +687,45 @@ def test_rimanda_in_access_point(tmp_path: Path) -> None:
     assert errore.value.code == "ap_not_applied"
 
 
+class TrasportoAlterno(TrasportoFinto):
+    """Dopo l'invio risponde secondo la sequenza (True = risponde, False = nessuna
+    risposta); finita la sequenza non risponde piu'."""
+
+    def __init__(self, risposte: list[bool]) -> None:
+        super().__init__()
+        self.risposte = list(risposte)
+        self.controlli = 0
+
+    def identify(self, ip, interface=""):
+        if not self.inviati:
+            return "VMC Sala"
+        self.controlli += 1
+        if self.risposte and self.risposte.pop(0):
+            return "VMC Sala"
+        raise OSError("nessuna risposta")
+
+
+def test_rimanda_in_access_point_dopo_due_assenze(tmp_path: Path) -> None:
+    """La voce si elimina solo dopo due controlli di fila senza risposta: una sola
+    risposta persa non basta."""
+    from custom_components.vmc_master import prima_installazione as pi
+
+    # persa, risponde, persa, persa: finisce al quarto controllo, non al primo
+    trasporto = TrasportoAlterno([False, True, False, False])
+    with patch.object(pi.motore, "Transport", return_value=trasporto):
+        nome = pi.rimanda_in_access_point(str(tmp_path), "192.168.1.161", attesa=5, pausa=0)
+    assert nome == "VMC Sala"
+    assert trasporto.controlli == 4
+
+    # risposte perse una alla volta, mai due di fila: la VMC e' ancora sul Wi-Fi di casa
+    trasporto = TrasportoAlterno([False, True] * 1000)
+    with patch.object(pi.motore, "Transport", return_value=trasporto):
+        with pytest.raises(pi.Failure) as errore:
+            pi.rimanda_in_access_point(str(tmp_path), "192.168.1.161", attesa=0.05, pausa=0.001)
+    assert errore.value.code == "ap_not_applied"
+    assert trasporto.controlli >= 2
+
+
 async def test_toglie_entita_finestra_clona(hass: HomeAssistant) -> None:
     """Dopo la migrazione della Master le 18 entita' della Finestra Clona e le 27 della
     Finestra Prima Installazione VMC non piu' fornite vengono tolte dal registro;
@@ -759,6 +809,7 @@ async def test_modelli_della_scheda_senza_errori(hass: HomeAssistant) -> None:
 
 def test_link_del_readme() -> None:
     """Immagini e video del README vengono dal repository dell'integrazione e ci sono."""
+    _serve_checkout_completo()
     readme = (RADICE / "README.md").read_text(encoding="utf-8")
     percorsi = [unquote(p) for p in RE_FILE_9.findall(readme)]
     assert len(percorsi) == FILE_COLLEGATI_README
@@ -1055,7 +1106,7 @@ async def test_ripristino_wifi_all_avvio(hass: HomeAssistant) -> None:
     )
 
 
-def test_motore_identico_alla_release_8_6_0() -> None:
+def test_motore_identico_alla_copia_del_package() -> None:
     """motore_installa_vmc.py e' il programma della Finestra Prima Installazione VMC,
     carattere per carattere (comando vmc_master_installa_vmc_esegui del package)."""
     import yaml
@@ -1099,7 +1150,7 @@ def test_master_senza_prima_installazione() -> None:
         "192.168.1.160",
     )
     assert "installa_vmc" not in scheda and "Prima Installazione VMC" not in scheda
-    # package della master come lo scriveva la 9.0.0b11 (con la finestra)
+    # package della master come lo scriveva la 9.0.0b12 (con la finestra)
     yaml_master = (sorgenti / "vmc_master.yaml").read_text(encoding="utf-8")
     vecchio = adatta_link_repository(
         adatta_versione(sostituisci_ip(rimuovi_clona(yaml_master), "192.168.1.160"), "9.0.0b12")
@@ -1152,7 +1203,7 @@ async def test_cambia_ip_aggiorna_la_vmc_appena_collegata(hass: HomeAssistant) -
     )
     assert risultato["type"] is FlowResultType.FORM
     assert risultato["errors"] == {"host": "ip_in_uso"}
-    with patch(PROVA_VMC, return_value=True):
+    with patch(NOME_VMC, return_value="VMC Master"):
         risultato = await hass.config_entries.options.async_configure(
             risultato["flow_id"], {"host": "192.168.1.170"}
         )
@@ -1638,11 +1689,41 @@ async def test_toglie_il_vecchio_avviso_comune(hass: HomeAssistant) -> None:
 
 
 async def test_due_vmc_eliminate_insieme(hass: HomeAssistant, hass_storage) -> None:
-    """Due VMC eliminate insieme con entita' ancora fornite: si ricordano tutte e due."""
+    """Due VMC eliminate insieme con entita' ancora fornite: si ricordano tutte e due.
+    La prima lettura dell'elenco aspetta (al massimo 0,5 s) che parta la seconda, come
+    una lettura lenta dal disco nell'HA reale: senza il blocco le due eliminazioni
+    leggerebbero tutte e due l'elenco vuoto e la seconda scrittura cancellerebbe la prima."""
     import asyncio
+    import contextlib
     import shutil
 
     from homeassistant.helpers import entity_registry as er
+    from homeassistant.helpers.storage import Store
+
+    chiave = "vmc_master.vmc_eliminate"
+    carica_vero = Store.async_load
+    salva_vero = Store.async_save
+
+    letture: list[int] = []
+    seconda_lettura = asyncio.Event()
+
+    async def carica_lento(self):
+        if self.key != chiave:
+            return await carica_vero(self)
+        letture.append(1)
+        dati = hass_storage.get(chiave, {}).get("data")
+        if len(letture) == 1:
+            with contextlib.suppress(TimeoutError):
+                await asyncio.wait_for(seconda_lettura.wait(), 0.5)
+        else:
+            seconda_lettura.set()
+        return dati
+
+    async def salva_lento(self, dati):
+        if self.key != chiave:
+            return await salva_vero(self, dati)
+        await asyncio.sleep(0)
+        hass_storage[chiave] = {"version": 1, "minor_version": 1, "key": chiave, "data": dati}
 
     registro = er.async_get(hass)
     voci = []
@@ -1656,9 +1737,14 @@ async def test_due_vmc_eliminate_insieme(hass: HomeAssistant, hass_storage) -> N
         hass.states.async_set(entity_id, "ON-Line")
     await hass.async_block_till_done()
     shutil.rmtree(hass.config.path("packages"))
-    risultati = await asyncio.gather(
-        *(hass.config_entries.async_remove(voce.entry_id) for voce in voci)
-    )
+    with (
+        patch.object(Store, "async_load", carica_lento),
+        patch.object(Store, "async_save", salva_lento),
+    ):
+        risultati = await asyncio.gather(
+            *(hass.config_entries.async_remove(voce.entry_id) for voce in voci)
+        )
     assert all(risultati)
     await hass.async_block_till_done()
-    assert sorted(hass_storage["vmc_master.vmc_eliminate"]["data"]["nomi"]) == ["camera", "sala"]
+    assert sorted(hass_storage[chiave]["data"]["nomi"]) == ["camera", "sala"]
+    assert len(letture) == 2

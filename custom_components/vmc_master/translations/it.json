@@ -90,7 +90,7 @@
     "error": {
       "nome_non_valido": "Nome non valido: solo lettere minuscole, da 1 a 10 caratteri.",
       "nome_in_uso": "Nome già usato da un'altra VMC.",
-      "ip_non_valido": "IP non valido: quattro numeri da 0 a 255 separati da punti, senza zeri iniziali.",
+      "ip_non_valido": "IP non valido: quattro numeri da 0 a 255 separati da punti, senza zeri iniziali.\nNon sono ammessi 0.x.x.x, 127.x.x.x, 169.254.x.x e gli indirizzi da 224.0.0.0 in su.",
       "ip_in_uso": "IP già usato da un'altra VMC.",
       "motore": "{errore}",
       "password_server_mancante": "Il server ora è collegato alla rete {rete_del_server}, diversa dalla rete di casa scelta: scrivere la password di {rete_del_server} in «Password del Wi-Fi attuale del server».",
@@ -102,6 +102,9 @@
       "senza_supervisor": "Per collegare una VMC al Wi-Fi da qui servono Home Assistant OS (con il Supervisor) e una scheda Wi-Fi sul server. Questo Home Assistant non ha il Supervisor: collegare la VMC una volta con l'App Air Guard, poi ripetere l'aggiunta («Aggiungi integrazione» per la prima VMC, «Aggiungi dispositivo» per le altre) e scegliere «Sì, è già collegata».",
       "senza_wifi": "Home Assistant OS non trova una scheda Wi-Fi sul server. Serve un computer con il Wi-Fi integrato oppure una chiavetta USB Wi-Fi riconosciuta (Impostazioni → Sistema → Rete). In alternativa collegare la VMC una volta con l'App Air Guard, poi ripetere l'aggiunta («Aggiungi integrazione» per la prima VMC, «Aggiungi dispositivo» per le altre) e scegliere «Sì, è già collegata».",
       "already_in_progress": "L'aggiunta di questa VMC è già in corso in un'altra finestra."
+    },
+    "create_entry": {
+      "riavvio": "**{titolo}** è stata aggiunta.\n\nPer attivare la VMC serve un riavvio:\n1. aprire Impostazioni;\n2. premere «VMC Master: riavviare Home Assistant»;\n3. premere Invia."
     }
   },
   "options": {
@@ -145,7 +148,7 @@
       "access_point": "Invio del comando Access Point alla VMC ({ip}) e attesa che lasci il Wi-Fi di casa: al massimo un minuto."
     },
     "error": {
-      "ip_non_valido": "IP non valido: quattro numeri da 0 a 255 separati da punti, senza zeri iniziali.",
+      "ip_non_valido": "IP non valido: quattro numeri da 0 a 255 separati da punti, senza zeri iniziali.\nNon sono ammessi 0.x.x.x, 127.x.x.x, 169.254.x.x e gli indirizzi da 224.0.0.0 in su.",
       "ip_in_uso": "IP già usato da un'altra VMC.",
       "ip_non_risponde": "La VMC non risponde a questo IP sulla porta 5001. Controllare l'IP; per salvarlo comunque premere di nuovo Invia.",
       "ip_altro_dispositivo": "A questo IP risponde un dispositivo che non è una VMC (non manda il nome della VMC). Controllare l'IP.",
@@ -165,12 +168,19 @@
             "title": "Riavviare Home Assistant",
             "description": "I file del package VMC Master sono stati installati o aggiornati: serve un riavvio per caricarli. Premere Invia per riavviare ora."
           }
+        },
+        "abort": {
+          "riavvio_non_riuscito": "Home Assistant non si è riavviato:\n\n{errore}\n\nDi solito la configurazione non è valida. Controllare Impostazioni → Sistema → Registri, correggere l'errore e premere di nuovo «Riavviare Home Assistant» nelle Riparazioni."
         }
       }
     },
     "packages_non_abilitati": {
       "title": "VMC Master: package della VMC {nome} non caricati",
       "description": "I file della VMC sono installati ma Home Assistant non li carica. Nel file configuration.yaml devono esserci queste righe:\n\n```yaml\nhomeassistant:\n  packages: !include_dir_named packages/\n```\n\nSe la riga `homeassistant:` c'è già, aggiungere solo la riga `packages:` subito sotto, con due spazi davanti. Salvare e riavviare Home Assistant."
+    },
+    "voce_disabilitata": {
+      "title": "VMC Master: VMC {nome} disabilitata ma ancora attiva",
+      "description": "La voce **{titolo}** è disabilitata, ma il package della VMC resta in `/config/packages` e Home Assistant lo carica a ogni avvio: entità e automazione continuano a funzionare.\n\nDa disabilitata la VMC non riceve gli aggiornamenti dell'integrazione e la scheda «VMC Master» non viene mostrata.\n\n- Per usarla di nuovo: riabilitare la voce.\n- Per fermarla: riabilitare la voce, poi icona ingranaggio → «Elimina la VMC»."
     }
   },
   "exceptions": {

@@ -8,11 +8,15 @@ a mano, diventa il file vmc_<nome>_automazione.yaml dello stesso package.
 
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import json
 import logging
+import os
 import re
 import shutil
+import stat
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -36,6 +40,8 @@ FILE_MARCATORE = ".vmc_master_integrazione.json"
 CARTELLA_BACKUP = "vmc_master_backup"
 # Sottocartella di CARTELLA_BACKUP per i file del package modificati a mano
 SUFFISSO_MODIFICATI = "modificati"
+# File temporanei delle scritture atomiche (nascosti, non «.yaml»)
+SUFFISSO_TEMPORANEO = ".tmp"
 
 # Prima riga «host:» del package: e' l'IP della VMC (sensori TCP)
 _RE_HOST = re.compile(r"^\s+host:\s+([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)", re.MULTILINE)
@@ -73,9 +79,42 @@ def _leggi(percorso: Path) -> str:
         return file.read()
 
 
-def _scrivi(percorso: Path, testo: str) -> None:
-    with open(percorso, "w", encoding="utf-8", newline="") as file:
-        file.write(testo)
+def _scrivi(percorso: Path, testo: str, permessi: int | None = None) -> None:
+    """Scrittura atomica: un'interruzione (corrente, crash, disco pieno) lascia il file di
+    prima intatto. Il testo va in un file temporaneo nascosto della stessa cartella, con
+    nome che finisce in «.tmp» (Home Assistant carica solo i «.yaml»), poi fsync e
+    os.replace. newline="" mantiene CRLF e LF esattamente come nel testo.
+    Senza «permessi» il file nuovo tiene quelli del file che sostituisce."""
+    if permessi is None:
+        with contextlib.suppress(OSError):
+            permessi = stat.S_IMODE(os.stat(percorso).st_mode)
+    temporaneo = percorso.with_name(f".{percorso.name}.{uuid.uuid4().hex}{SUFFISSO_TEMPORANEO}")
+    try:
+        with open(temporaneo, "w", encoding="utf-8", newline="") as file:
+            file.write(testo)
+            file.flush()
+            os.fsync(file.fileno())
+        if permessi is not None:
+            os.chmod(temporaneo, permessi)
+        os.replace(temporaneo, percorso)
+    except BaseException:
+        with contextlib.suppress(OSError):
+            temporaneo.unlink()
+        raise
+    # la rinomina resta anche dopo una mancanza di corrente (dove il sistema lo permette)
+    with contextlib.suppress(OSError):
+        cartella = os.open(percorso.parent, os.O_RDONLY)
+        try:
+            os.fsync(cartella)
+        finally:
+            os.close(cartella)
+
+
+def _togli_temporanei(cartella: Path) -> None:
+    """File temporanei rimasti da una scrittura interrotta."""
+    for temporaneo in cartella.glob(f".*{SUFFISSO_TEMPORANEO}"):
+        with contextlib.suppress(OSError):
+            temporaneo.unlink()
 
 
 def _md5(testo: str) -> str:
@@ -324,8 +363,23 @@ def installa(config_dir: str, nome: str, ip: str, versione: str) -> EsitoInstall
         esito.backup = sposta_in_backup(config_dir, nome)
     cartella = cartella_vmc(config_dir, nome)
     cartella.mkdir(parents=True, exist_ok=True)
+    _togli_temporanei(cartella)
     nuovi = genera_file(nome, ip, versione)
     marcatore = leggi_marcatore(config_dir, nome)
+    file_marcatore = cartella / FILE_MARCATORE
+    if not file_marcatore.is_file():
+        # Prima installazione: marcatore provvisorio (senza md5) prima dei file. Se la
+        # scrittura si interrompe, al giro dopo la cartella non sembra un'installazione
+        # manuale e i file si riscrivono come sempre.
+        _scrivi(
+            file_marcatore,
+            json.dumps(
+                {"versione": versione, "nome": nome, "ip": ip, "in_corso": True},
+                indent=2,
+                ensure_ascii=False,
+            )
+            + "\n",
+        )
     md5_scritti = marcatore.get("md5")
     if not isinstance(md5_scritti, dict):
         md5_scritti = {}
@@ -348,10 +402,9 @@ def installa(config_dir: str, nome: str, ip: str, versione: str) -> EsitoInstall
         vecchio = vecchi.get(nome_file)
         if vecchio == testo:
             continue
-        _scrivi(percorso, testo)
+        _scrivi(percorso, testo, 0o755 if nome_file.endswith(".sh") else None)
         esito.file_scritti.append(nome_file)
         if nome_file.endswith(".sh"):
-            percorso.chmod(0o755)
             if vecchio is not None:
                 continue  # gli script si leggono a ogni esecuzione: niente riavvio
         servizi = None if vecchio is None else ricariche_necessarie(vecchio, testo)
@@ -366,7 +419,14 @@ def installa(config_dir: str, nome: str, ip: str, versione: str) -> EsitoInstall
         "master": nome == NOME_MASTER,
         "md5": {nome_file: _md5(testo) for nome_file, testo in nuovi.items()},
     }
-    _scrivi(cartella / FILE_MARCATORE, json.dumps(marcatore, indent=2, ensure_ascii=False) + "\n")
+    # marcatore per ultimo, solo se cambia: dice che tutti i file sono stati scritti
+    testo_marcatore = json.dumps(marcatore, indent=2, ensure_ascii=False) + "\n"
+    try:
+        marcatore_scritto = _leggi(file_marcatore)
+    except (OSError, ValueError):
+        marcatore_scritto = None
+    if marcatore_scritto != testo_marcatore:
+        _scrivi(file_marcatore, testo_marcatore)
     if esito.riavvio_necessario:
         esito.ricariche.clear()  # il riavvio carica gia' tutto
     if esito.file_scritti:

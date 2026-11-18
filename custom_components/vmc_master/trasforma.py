@@ -12,7 +12,7 @@ import re
 from .const import NOME_MASTER
 
 _RE_IP = re.compile(r"[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+")
-_RE_NC = re.compile(r"nc [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ 5001")
+_RE_NC = re.compile(r"nc -w 3 [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ 5001")
 
 _INIZIO_CLONA = ">>> INIZIO SEZIONE CLONA VMC"
 _FINE_CLONA = ">>> FINE SEZIONE CLONA VMC"
@@ -131,9 +131,9 @@ def sostituisci_ip(testo: str, ip: str) -> str:
 
 
 def sostituisci_ip_nc(testo: str, ip: str) -> str:
-    """s/nc [0-9]\\+\\.[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+ 5001/nc ip 5001/ (prima occorrenza di ogni riga)."""
+    """s/nc -w 3 [0-9]\\+\\.[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+ 5001/nc -w 3 ip 5001/ (prima occorrenza di ogni riga)."""
     return "".join(
-        _ricomponi(_RE_NC.sub(f"nc {ip} 5001", _corpo(riga), count=1), riga)
+        _ricomponi(_RE_NC.sub(f"nc -w 3 {ip} 5001", _corpo(riga), count=1), riga)
         for riga in _dividi_righe(testo)
     )
 

@@ -21,6 +21,7 @@ import copy
 import fcntl
 import ipaddress
 import json
+import logging
 import os
 from pathlib import Path
 import re
@@ -45,6 +46,9 @@ SUFFIX_ACCESS_POINT = "0" * 15 + "05001" + "0" * 30 + "01"
 NAME_PATTERN = r"[A-Za-z0-9_-]{1,12}"
 AP_PASSWORD_PATTERN = r"[A-Za-z0-9$@!%?&]{8,32}"
 ACTIONS = ("diagnose", "configure", "verify", "recover", "rename", "ap_password", "ap_mode", "scan")
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 class Failure(Exception):
@@ -248,8 +252,24 @@ class Supervisor:
         return data.get("accesspoints") or []
 
 
+def name_answer_complete(data):
+    """True se la risposta a VMNM? è completa. Il protocollo non ha un delimitatore fisso:
+    la risposta è completa con un a capo (CR/LF) o un NUL, con gli asterischi di
+    riempimento dopo il nome, oppure se non è una risposta «VMNM». «VMNM», «VMNM » e
+    «VMNM Pr» senza altro possono essere solo la prima parte di una risposta spezzata."""
+    text = bytes(data).lstrip(b"\x00\r\n ")
+    if any(c in text for c in b"\r\n\x00"):
+        return True
+    if len(text) < 5:
+        return not b"VMNM ".startswith(text)
+    return not text.startswith(b"VMNM ") or text.endswith(b"*")
+
+
 class Transport:
-    def exchange(self, ip, payload, interface="", timeout=2.0, read=True):
+    def exchange(self, ip, payload, interface="", timeout=2.0, read=True, complete=None):
+        """Invia payload e legge la risposta. Dopo il primo pezzo si attende 0,12 s al massimo;
+        se complete(risposta) dice che la risposta non è finita, si continua a leggere fino a
+        timeout secondi dall'invio."""
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             sock.settimeout(timeout)
             if interface:
@@ -261,6 +281,7 @@ class Transport:
             sock.sendall(payload)
             if not read:
                 return b""
+            deadline = time.monotonic() + timeout
             chunks = bytearray()
             while len(chunks) < 512:
                 try:
@@ -272,17 +293,23 @@ class Transport:
                 if not part:
                     break
                 chunks.extend(part)
-                sock.settimeout(0.12)
+                if complete is None or complete(chunks):
+                    sock.settimeout(0.12)
+                else:
+                    remaining = deadline - time.monotonic()
+                    if remaining <= 0:
+                        break
+                    sock.settimeout(remaining)
             return bytes(chunks)
 
-    def command(self, ip, text, interface=""):
+    def command(self, ip, text, interface="", complete=None):
         try:
-            return self.exchange(ip, text.encode("ascii"), interface).decode("ascii").strip("\x00\r\n ")
+            return self.exchange(ip, text.encode("ascii"), interface, complete=complete).decode("ascii").strip("\x00\r\n ")
         except UnicodeError:
             raise Failure("invalid_vmc", "La VMC ha restituito una risposta non leggibile.") from None
 
     def identify(self, ip, interface=""):
-        text = self.command(ip, "VMNM?", interface)
+        text = self.command(ip, "VMNM?", interface, complete=name_answer_complete)
         name = text[5:].rstrip("* ").strip() if text.startswith("VMNM ") else ""
         if not name:
             raise Failure("invalid_vmc", "Il dispositivo non risponde come una VMC Helty Air Guard.")
@@ -439,11 +466,29 @@ class Engine:
         self.status.emit("Server verificato" if wifi else "Wi-Fi non disponibile", 100, "Scheda Wi-Fi disponibile per il primo collegamento." if wifi else "Il Supervisor non rileva una scheda Wi-Fi. Per la prima configurazione serve una scheda Wi-Fi integrata nel computer di Home Assistant oppure una chiavetta USB Wi-Fi collegata e riconosciuta da Home Assistant OS.", wifi_interfaces=wifi, ethernet_interfaces=ethernet, wifi_available=bool(wifi), success=bool(wifi))
         return info
 
+    def read_restore(self, checkpoint):
+        """Contenuto di restore.json. Un file illeggibile (troncato, modificato a mano, senza
+        una chiave) viene messo da parte come restore.json.illeggibile, così non blocca
+        le procedure successive."""
+        try:
+            backup = json.loads(checkpoint.read_text(encoding="utf-8"))
+            if not isinstance(backup, dict) or not isinstance(backup.get("interface"), str) or not backup["interface"] or not isinstance(backup.get("payload"), dict):
+                raise ValueError("struttura non valida")
+        except (OSError, ValueError) as exc:
+            aside = checkpoint.with_name(checkpoint.name + ".illeggibile")
+            try:
+                os.replace(checkpoint, aside)
+                LOGGER.warning("File di ripristino del Wi-Fi del server non leggibile (%s): spostato in %s", exc, aside)
+            except OSError as error:
+                LOGGER.warning("File di ripristino del Wi-Fi del server non leggibile (%s) e non spostato: %s", exc, error)
+            raise Failure("restore_failed", "Il file di ripristino del Wi-Fi del server non era leggibile ed è stato messo da parte. Controllare che il server sia collegato alla sua rete, poi riprovare.") from exc
+        return backup
+
     def restore(self):
         checkpoint = self.root / "restore.json"
         if not checkpoint.exists():
             return
-        backup = json.loads(checkpoint.read_text())
+        backup = self.read_restore(checkpoint)
         self.status.emit("Ripristino rete server", max(self.status.data.get("progress", 0), 65), "Ripristino della connessione precedente del server.")
         self.supervisor.update(backup["interface"], backup["payload"])
         if backup.get("connected"):

@@ -9,6 +9,9 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import re
+import threading
+import time
 from functools import lru_cache
 from http import HTTPStatus
 from pathlib import Path
@@ -20,8 +23,9 @@ from aiohttp import web
 from homeassistant.components import persistent_notification
 from homeassistant.components.frontend import add_extra_js_url
 from homeassistant.components.http import HomeAssistantView, StaticPathConfig
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.exceptions import ConfigEntryError
 from homeassistant.helpers import (
     config_validation as cv,
     entity_registry as er,
@@ -48,7 +52,9 @@ from .const import (
 )
 from . import config_flow, prima_installazione
 from .installatore import (
+    _leggi,
     _rimetti_ip,
+    _scrivi,
     cartella_vmc,
     genera_file,
     installa,
@@ -66,11 +72,19 @@ _CARTELLA = Path(__file__).parent
 
 ISSUE_RIAVVIO = "riavvio_necessario"
 ISSUE_PACKAGES = "packages_non_abilitati"
+ISSUE_DISABILITATA = "voce_disabilitata"
 DATI_RICARICHE = f"{DOMAIN}_ricariche"
 # Nomi delle VMC eliminate: al prossimo avvio si tolgono dal registro le loro entita'
 CHIAVE_ELIMINATE = f"{DOMAIN}.vmc_eliminate"
 DATI_ELIMINATE = f"{DOMAIN}_eliminate"
 DATI_BLOCCO_ELIMINATE = f"{DOMAIN}_eliminate_blocco"
+# Errori dei sensori TCP con la VMC spenta: al massimo uno ogni 30 minuti per ogni VMC
+LOGGER_TCP = "homeassistant.components.tcp.entity"
+INTERVALLO_LOG_TCP = 30 * 60
+DATI_FILTRO_TCP = f"{DOMAIN}_filtro_tcp"
+_RE_IP_NEL_LOG = re.compile(r"(?<![0-9.])([0-9]{1,3}(?:\.[0-9]{1,3}){3})(?![0-9]|\.[0-9])")
+# Un solo controllo alla volta dell'IP scritto dalla scheda (voci avviate in parallelo)
+DATI_BLOCCO_IP = f"{DOMAIN}_ip_scheda_blocco"
 
 # Domini YAML in cui l'unique_id di un'entita' e' la sua chiave (piattaforma = dominio)
 DOMINI_CON_CHIAVE = (
@@ -169,34 +183,27 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     nome: str = entry.data[CONF_NOME]
     ip: str = entry.data[CONF_HOST]
 
-    marcatore = await hass.async_add_executor_job(leggi_marcatore, config_dir, nome)
-    ip_file = await hass.async_add_executor_job(ip_nel_package, config_dir, nome)
-    if marcatore and ip == marcatore.get("ip") and ip_file and ip_file != ip:
-        # IP cambiato dal campo «Cambia IP VMC» della scheda: vale quello del package,
-        # solo se e' valido e non e' gia' di un'altra VMC
-        altra = next(
-            (
-                voce.data.get(CONF_NOME)
-                for voce in hass.config_entries.async_entries(DOMAIN)
-                if voce.entry_id != entry.entry_id and voce.data.get(CONF_HOST) == ip_file
-            ),
-            None,
-        )
-        if config_flow.ip_valido(ip_file) and altra is None:
-            await hass.async_add_executor_job(
-                prima_installazione.aggiorna_ip, config_dir, ip, ip_file
-            )
-            ip = ip_file
-            hass.config_entries.async_update_entry(entry, data={**entry.data, CONF_HOST: ip})
-        else:
-            # si rimette l'IP di prima: i file tornano quelli scritti dall'integrazione
-            await hass.async_add_executor_job(_rimetti_ip_nel_package, config_dir, nome, ip_file, ip)
-            _segnala_ip_scheda_rifiutato(hass, nome, ip, ip_file, altra)
-            _segnala_riavvio(hass)  # Home Assistant ha gia' caricato il package con l'IP rifiutato
+    # voce di nuovo abilitata: l'avviso «voce disabilitata» non serve piu'
+    ir.async_delete_issue(hass, DOMAIN, f"{ISSUE_DISABILITATA}_{nome}")
 
-    esito = await hass.async_add_executor_job(
-        installa, config_dir, nome, ip, str(integrazione.version)
-    )
+    try:
+        ip = await _adotta_ip_della_scheda(hass, entry, config_dir, nome, ip)
+        esito = await hass.async_add_executor_job(
+            installa, config_dir, nome, ip, str(integrazione.version)
+        )
+    except OSError as errore:
+        # disco pieno o file non scrivibili: i file scritti restano quelli di prima
+        if _italiano(hass):
+            messaggio = (
+                f"File del package della VMC {nome} non scritti ({errore}): i file di prima "
+                "sono intatti. Controllare lo spazio libero sul disco, poi riavviare Home Assistant."
+            )
+        else:
+            messaggio = (
+                f"Package files of unit {nome} not written ({errore}): the previous files are "
+                "intact. Check the free disk space, then restart Home Assistant."
+            )
+        raise ConfigEntryError(messaggio) from errore
     if esito.backup is not None:
         # la 8.6.0 chiama «Automazione VMC Master» la principale e «Automazione VMC ‹nome›» le clonate
         nome_automazione = "Master" if nome == NOME_MASTER else nome
@@ -271,11 +278,69 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # IP con cui e' stato installato il package: la voce si ricarica solo se cambia
     entry.runtime_data = ip
     entry.async_on_unload(entry.add_update_listener(_async_aggiornata))
+    _installa_filtro_tcp(hass)
     return True
 
 
+async def _adotta_ip_della_scheda(
+    hass: HomeAssistant, entry: ConfigEntry, config_dir: str, nome: str, ip: str
+) -> str:
+    """IP cambiato dal campo «Cambia IP VMC» della scheda: vale quello del package, solo se
+    e' valido e non e' gia' di un'altra VMC. Restituisce l'IP con cui installare.
+
+    Home Assistant avvia insieme le voci dello stesso dominio: controllo e aggiornamento
+    della voce stanno in un'unica sezione protetta, cosi' due VMC non prendono lo stesso IP."""
+    async with hass.data.setdefault(DATI_BLOCCO_IP, asyncio.Lock()):
+        marcatore = await hass.async_add_executor_job(leggi_marcatore, config_dir, nome)
+        ip_file = await hass.async_add_executor_job(ip_nel_package, config_dir, nome)
+        if not (marcatore and ip == marcatore.get("ip") and ip_file and ip_file != ip):
+            return ip
+        altra = next(
+            (
+                voce.data.get(CONF_NOME)
+                for voce in hass.config_entries.async_entries(DOMAIN)
+                if voce.entry_id != entry.entry_id and voce.data.get(CONF_HOST) == ip_file
+            ),
+            None,
+        )
+        if config_flow.ip_valido(ip_file) and altra is None:
+            await hass.async_add_executor_job(
+                prima_installazione.aggiorna_ip, config_dir, ip, ip_file
+            )
+            hass.config_entries.async_update_entry(entry, data={**entry.data, CONF_HOST: ip_file})
+            return ip_file
+        # si rimette l'IP di prima: i file tornano quelli scritti dall'integrazione
+        await hass.async_add_executor_job(_rimetti_ip_nel_package, config_dir, nome, ip_file, ip)
+        _segnala_ip_scheda_rifiutato(hass, nome, ip, ip_file, altra)
+        _segnala_riavvio(hass)  # Home Assistant ha gia' caricato il package con l'IP rifiutato
+        return ip
+
+
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Niente da scaricare: il package resta caricato fino al prossimo riavvio."""
+    """Niente da scaricare: il package resta caricato fino al prossimo riavvio.
+
+    Una voce disabilitata non ferma il package (resta in /config/packages e si carica a ogni
+    avvio) e non lo aggiorna piu': lo dice un avviso, la scheda non viene piu' servita."""
+    if not any(
+        voce.state is ConfigEntryState.LOADED
+        for voce in hass.config_entries.async_entries(DOMAIN)
+        if voce.entry_id != entry.entry_id
+    ):
+        _togli_filtro_tcp(hass)  # ultima VMC scaricata
+    else:
+        _aggiorna_ip_filtro_tcp(hass)
+    if entry.disabled_by is not None:
+        nome = entry.data[CONF_NOME]
+        ir.async_create_issue(
+            hass,
+            DOMAIN,
+            f"{ISSUE_DISABILITATA}_{nome}",
+            is_fixable=False,
+            is_persistent=True,
+            severity=ir.IssueSeverity.WARNING,
+            translation_key=ISSUE_DISABILITATA,
+            translation_placeholders={"nome": nome, "titolo": entry.title},
+        )
     return True
 
 
@@ -292,6 +357,7 @@ async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
         sposta_in_backup, hass.config.config_dir, nome
     )
     ir.async_delete_issue(hass, DOMAIN, f"{ISSUE_PACKAGES}_{nome}")
+    ir.async_delete_issue(hass, DOMAIN, f"{ISSUE_DISABILITATA}_{nome}")
     id_package = None
     if destinazione is not None:
         _segnala_riavvio(hass)
@@ -454,12 +520,10 @@ def _rimetti_ip_nel_package(config_dir: str, nome: str, ip_scheda: str, ip: str)
         percorso = cartella / nome_file
         if not percorso.is_file():
             continue
-        with open(percorso, encoding="utf-8", newline="") as file:
-            testo = file.read()
+        testo = _leggi(percorso)
         nuovo = _rimetti_ip(testo, ip_scheda, ip)
         if nuovo != testo:
-            with open(percorso, "w", encoding="utf-8", newline="") as file:
-                file.write(nuovo)
+            _scrivi(percorso, nuovo)  # scrittura atomica, stessi fine riga e permessi
 
 
 @callback
@@ -471,7 +535,10 @@ def _segnala_ip_scheda_rifiutato(
         motivo = (
             f"è già usato dalla VMC {altra}"
             if altra is not None
-            else "non è valido: servono quattro numeri da 0 a 255, senza zeri iniziali"
+            else (
+                "non è valido: servono quattro numeri da 0 a 255, senza zeri iniziali. "
+                "Non sono ammessi 0.x.x.x, 127.x.x.x, 169.254.x.x e gli indirizzi da 224.0.0.0 in su"
+            )
         )
         testo = (
             f"L'IP {ip_scheda} scritto dalla scheda {motivo}.\n\n"
@@ -486,7 +553,10 @@ def _segnala_ip_scheda_rifiutato(
         motivo = (
             f"is already used by unit {altra}"
             if altra is not None
-            else "is not valid: four numbers from 0 to 255 are needed, without leading zeros"
+            else (
+                "is not valid: four numbers from 0 to 255 are needed, without leading zeros. "
+                "0.x.x.x, 127.x.x.x, 169.254.x.x and the addresses from 224.0.0.0 up are not allowed"
+            )
         )
         testo = (
             f"The IP {ip_scheda} written from the card {motivo}.\n\n"
@@ -502,8 +572,70 @@ def _segnala_ip_scheda_rifiutato(
     )
 
 
+class _FiltroTcpVmc(logging.Filter):
+    """Con una VMC spenta i suoi sensori TCP scrivono un errore «Unable to connect to ‹IP›
+    on port 5001» a ogni lettura (migliaia al giorno). Per gli IP delle VMC passa al massimo
+    un messaggio ogni 30 minuti per IP; i messaggi degli altri dispositivi passano tutti.
+    Gli intervalli di lettura dei sensori non cambiano."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.ips: frozenset[str] = frozenset()
+        self._ultimo: dict[str, float] = {}
+        self._blocco = threading.Lock()
+        self._ora = time.monotonic
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        ips = self.ips
+        if not ips:
+            return True
+        try:
+            messaggio = record.getMessage()
+        except Exception:  # noqa: BLE001 - messaggio non formattabile: passa com'e'
+            return True
+        ip = next((t for t in _RE_IP_NEL_LOG.findall(messaggio) if t in ips), None)
+        if ip is None:
+            return True
+        ora = self._ora()
+        with self._blocco:
+            ultimo = self._ultimo.get(ip)
+            if ultimo is not None and ora - ultimo < INTERVALLO_LOG_TCP:
+                return False
+            self._ultimo[ip] = ora
+        return True
+
+
+@callback
+def _installa_filtro_tcp(hass: HomeAssistant) -> None:
+    filtro = hass.data.get(DATI_FILTRO_TCP)
+    if filtro is None:
+        filtro = hass.data[DATI_FILTRO_TCP] = _FiltroTcpVmc()
+        logging.getLogger(LOGGER_TCP).addFilter(filtro)
+    _aggiorna_ip_filtro_tcp(hass)
+
+
+@callback
+def _aggiorna_ip_filtro_tcp(hass: HomeAssistant) -> None:
+    """IP di tutte le VMC configurate (anche disabilitate: il loro package resta attivo)."""
+    filtro: _FiltroTcpVmc | None = hass.data.get(DATI_FILTRO_TCP)
+    if filtro is not None:
+        filtro.ips = frozenset(
+            voce.data[CONF_HOST]
+            for voce in hass.config_entries.async_entries(DOMAIN)
+            if voce.data.get(CONF_HOST)
+        )
+
+
+@callback
+def _togli_filtro_tcp(hass: HomeAssistant) -> None:
+    filtro = hass.data.pop(DATI_FILTRO_TCP, None)
+    if filtro is not None:
+        logging.getLogger(LOGGER_TCP).removeFilter(filtro)
+
+
 async def _async_aggiornata(hass: HomeAssistant, entry: ConfigEntry) -> None:
     # IP cambiato dall'ingranaggio: si aggiorna il package. Il solo titolo non serve.
+    _aggiorna_ip_filtro_tcp(hass)
     if entry.data[CONF_HOST] != entry.runtime_data:
         await hass.config_entries.async_reload(entry.entry_id)
 
@@ -647,6 +779,10 @@ class VmcSchedaView(HomeAssistantView):
         voce = hass.config_entries.async_get_entry(entry_id)
         if voce is None or voce.domain != DOMAIN:
             return self.json_message("VMC non trovata", HTTPStatus.NOT_FOUND)
+        if voce.disabled_by is not None:
+            # il package della voce disabilitata non si aggiorna piu': la scheda della
+            # versione installata potrebbe non corrispondere
+            return self.json_message("VMC disabilitata", HTTPStatus.CONFLICT)
         configurazione = await hass.async_add_executor_job(
             _configurazione_scheda, voce.data[CONF_NOME], voce.data[CONF_HOST]
         )

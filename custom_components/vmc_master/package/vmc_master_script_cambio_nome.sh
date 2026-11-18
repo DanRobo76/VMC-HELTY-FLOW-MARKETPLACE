@@ -38,5 +38,9 @@
 #                                                                                                                                                                                                                         #
 ###########################################################################################################################################################################################################################
 #!/bin/bash
-# "$*" UNISCE TUTTE LE PAROLE DEL NOME (UN NOME CON SPAZI ARRIVA INTERO); timeout EVITA CHE IL COMANDO RESTI APPESO SE LA VMC NON RISPONDE
-echo "VMNM $*" | timeout 5 nc 999.999.999.999 5001
+# IL NOME VALIDO HA DA 1 A 10 CARATTERI TRA LETTERE SENZA ACCENTI, CIFRE, "_" E "-" (STESSA REGOLA DEL MOTORE DELL'INTEGRAZIONE): ALTRIMENTI NON INVIA NULLA
+# timeout 5 E -w 3 (COME GLI ALTRI COMANDI) EVITANO CHE IL COMANDO RESTI APPESO SE LA VMC NON RISPONDE O NON CHIUDE LA CONNESSIONE
+export LC_ALL=C
+NOME="$*"
+[[ $NOME =~ ^[A-Za-z0-9_-]{1,10}$ ]] || { echo "Nome non valido: '$NOME'"; exit 1; }
+echo "VMNM $NOME" | timeout 5 nc -w 3 999.999.999.999 5001

@@ -90,7 +90,7 @@
     "error": {
       "nome_non_valido": "Invalid name: lowercase letters only, 1 to 10 characters.",
       "nome_in_uso": "Name already used by another unit.",
-      "ip_non_valido": "Invalid IP: four numbers from 0 to 255 separated by dots, without leading zeros.",
+      "ip_non_valido": "Invalid IP: four numbers from 0 to 255 separated by dots, without leading zeros.\n0.x.x.x, 127.x.x.x, 169.254.x.x and the addresses from 224.0.0.0 up are not allowed.",
       "ip_in_uso": "IP already used by another unit.",
       "motore": "{errore}",
       "password_server_mancante": "The server is now connected to the {rete_del_server} network, which differs from the chosen home network: enter the {rete_del_server} password in «Current server Wi-Fi password».",
@@ -102,6 +102,9 @@
       "senza_supervisor": "Connecting a unit to the Wi-Fi from here needs Home Assistant OS (with the Supervisor) and a Wi-Fi adapter on the server. This Home Assistant has no Supervisor: connect the unit once with the Air Guard app, then add it again («Add integration» for the first unit, «Add device» for the others) and choose «Yes, it is connected».",
       "senza_wifi": "Home Assistant OS finds no Wi-Fi adapter on the server. You need a computer with built-in Wi-Fi or a recognised USB Wi-Fi dongle (Settings → System → Network). Otherwise connect the unit once with the Air Guard app, then add it again («Add integration» for the first unit, «Add device» for the others) and choose «Yes, it is connected».",
       "already_in_progress": "This unit is already being added in another window."
+    },
+    "create_entry": {
+      "riavvio": "**{titolo}** has been added.\n\nThe unit needs a restart to become active:\n1. open Settings;\n2. press «VMC Master: restart Home Assistant»;\n3. press Submit."
     }
   },
   "options": {
@@ -145,7 +148,7 @@
       "access_point": "Sending the Access Point command to the unit ({ip}) and waiting for it to leave the home Wi-Fi: one minute at most."
     },
     "error": {
-      "ip_non_valido": "Invalid IP: four numbers from 0 to 255 separated by dots, without leading zeros.",
+      "ip_non_valido": "Invalid IP: four numbers from 0 to 255 separated by dots, without leading zeros.\n0.x.x.x, 127.x.x.x, 169.254.x.x and the addresses from 224.0.0.0 up are not allowed.",
       "ip_in_uso": "IP already used by another unit.",
       "ip_non_risponde": "The unit does not answer at this IP on port 5001. Check the IP; to save it anyway press Submit again.",
       "ip_altro_dispositivo": "A device that is not a unit answers at this IP (it does not send a unit name). Check the IP.",
@@ -165,12 +168,19 @@
             "title": "Restart Home Assistant",
             "description": "The VMC Master package files were installed or updated: a restart is needed to load them. Press Submit to restart now."
           }
+        },
+        "abort": {
+          "riavvio_non_riuscito": "Home Assistant did not restart:\n\n{errore}\n\nUsually the configuration is not valid. Check Settings → System → Logs, fix the error and press «Restart Home Assistant» in Repairs again."
         }
       }
     },
     "packages_non_abilitati": {
       "title": "VMC Master: package of unit {nome} not loaded",
       "description": "The unit's files are installed but Home Assistant does not load them. configuration.yaml must contain these lines:\n\n```yaml\nhomeassistant:\n  packages: !include_dir_named packages/\n```\n\nIf the `homeassistant:` line is already there, add only the `packages:` line right below it, indented by two spaces. Save and restart Home Assistant."
+    },
+    "voce_disabilitata": {
+      "title": "VMC Master: unit {nome} disabled but still active",
+      "description": "The entry **{titolo}** is disabled, but the unit's package stays in `/config/packages` and Home Assistant loads it at every start: entities and automation keep working.\n\nWhile disabled, the unit does not receive the integration updates and the «VMC Master» card is not shown.\n\n- To use it again: enable the entry.\n- To stop it: enable the entry, then gear icon → «Delete the unit»."
     }
   },
   "exceptions": {
