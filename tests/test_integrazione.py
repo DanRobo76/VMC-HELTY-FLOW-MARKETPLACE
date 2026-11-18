@@ -36,7 +36,7 @@ def _nessuna_vmc_in_rete():
 
 # Link a immagini e video, contati uno per uno: 77 nella scheda (51 file diversi)
 # piu' il link «GitHub» del Pannello Informazioni; 14 nel README
-FILE_COLLEGATI_SCHEDA = 77
+FILE_COLLEGATI_SCHEDA = 76
 FILE_COLLEGATI_README = 10
 # Link al repository della release manuale (non seguito da «-MARKETPLACE»)
 RE_LINK_8 = re.compile(r"DanRobo76/VMC-HELTY-FLOW(?![-\w])")
@@ -129,7 +129,11 @@ async def test_aggiungi_master_e_sala(hass: HomeAssistant, hass_client) -> None:
             assert "vmc_master" not in testo and "vmc_sala_" in testo
         # Pannello Informazioni: «GitHub» apre il repository dell'integrazione
         assert testo.count('href="https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE">GitHub</a>') == 1
-        assert testo.count("VMC-HELTY-FLOW-MARKETPLACE/raw/main/Video/VMC_MASTER_promo_IT.mp4") == 2
+        assert testo.count("VMC-HELTY-FLOW-MARKETPLACE/raw/main/Video/VMC_MASTER_promo_IT.mp4") == 1
+        # l'immagine apre la pagina dell'integrazione nel Marketplace (pulsante «Aggiorna»)
+        assert testo.count(
+            '<a href="/marketplace/repository?owner=DanRobo76&repository=VMC-HELTY-FLOW-MARKETPLACE&category=integration"><img '
+        ) == 1
         # immagini e video: tutti dal repository dell'integrazione, e ci sono tutti
         assert _controlla_link(testo) == FILE_COLLEGATI_SCHEDA
     risposta = await client.get("/api/vmc_master/scheda/inesistente")
@@ -672,7 +676,7 @@ async def test_modelli_della_scheda_senza_errori(hass: HomeAssistant) -> None:
     for nome, ip in (("master", "192.168.1.160"), ("sala", "192.168.1.161")):
         testo = per_vmc(scheda, nome, ip)
         assert "is_state('on')" not in testo
-        assert testo.count("VMC-HELTY-FLOW/raw/main/Video/VMC_MASTER_promo_IT.mp4") == 2
+        assert testo.count("VMC-HELTY-FLOW/raw/main/Video/VMC_MASTER_promo_IT.mp4") == 1
         elenco = modelli(yaml.safe_load(testo), [])
         assert elenco
         errori = []
