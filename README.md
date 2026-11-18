@@ -208,8 +208,10 @@ actions:
    3. premere **Invia**.
 7. **Aggiungere la scheda**:
    - premere **Ctrl+F5**;
-   - nella plancia (va bene anche **Panoramica**) premere **matita → Aggiungi scheda → VMC Master**;
-   - scegliere la VMC;
+   - nella plancia (va bene anche **Panoramica**) premere **matita → Aggiungi scheda → Sfoglia tutte le schede**;
+   - nel campo **Cerca schede** digitare `vmc`;
+   - cliccare su **VMC Master**;
+   - scegliere la VMC nel campo **VMC\***;
    - premere **Salva**, poi **Fatto**.
 8. **Una volta per ogni VMC**, nel pannello **Opzioni** della scheda:
    - premere **Esegui** su **«VMC ‹nome› - Profilo Inizializzazione»**;
@@ -556,8 +558,10 @@ actions:
    3. press **Submit**.
 7. **Add the card**:
    - press **Ctrl+F5**;
-   - on the dashboard (**Overview** is fine too) press **pencil → Add card → VMC Master**;
-   - pick the unit;
+   - on the dashboard (**Overview** is fine too) press **pencil → Add card → Browse all cards**;
+   - in the **Search cards** field type `vmc`;
+   - click **VMC Master**;
+   - pick the unit in the **VMC\*** field;
    - press **Save**, then **Done**.
 8. **Once per unit**, in the card's **Opzioni** panel:
    - press **Esegui** on **«VMC ‹name› - Profilo Inizializzazione»**;
