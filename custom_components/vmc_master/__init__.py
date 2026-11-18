@@ -8,7 +8,9 @@ e serve la scheda «VMC Master», che si aggiunge dalla plancia senza incollare 
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
+import sys
 import re
 import threading
 import time
@@ -24,7 +26,8 @@ from homeassistant.components import persistent_notification
 from homeassistant.components.frontend import add_extra_js_url
 from homeassistant.components.http import HomeAssistantView, StaticPathConfig
 from homeassistant.config_entries import ConfigEntry, ConfigEntryState
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.const import EVENT_HOMEASSISTANT_STOP
+from homeassistant.core import Event, HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryError
 from homeassistant.helpers import (
     config_validation as cv,
@@ -137,7 +140,81 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     hass.http.register_view(VmcSchedaView())
     async_at_started(hass, _ripristina_wifi_server)
     async_at_started(hass, _togli_entita_vmc_eliminate)
+
+    async def _alla_fermata(_evento: Event) -> None:
+        await _prepara_aggiornamento(hass, str(integrazione.version))
+
+    hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, _alla_fermata)
     return True
+
+
+# Programma del processo separato: carica i moduli della versione su disco senza il loro
+# __init__.py (che importa Home Assistant) e avvia prepara.main
+_PROGRAMMA_PREPARA = (
+    "import importlib, sys, types\n"
+    "p = types.ModuleType('vmc_master_aggiornata'); p.__path__ = [sys.argv[1]]\n"
+    "sys.modules['vmc_master_aggiornata'] = p\n"
+    "sys.exit(importlib.import_module('vmc_master_aggiornata.prepara').main(sys.argv[2:]))\n"
+)
+TIMEOUT_PREPARA = 60
+
+
+def _versione_su_disco() -> str | None:
+    """Versione dell'integrazione su disco, se ha il modulo che prepara i package."""
+    if not (_CARTELLA / "prepara.py").is_file():
+        return None
+    try:
+        return str(json.loads((_CARTELLA / "manifest.json").read_text(encoding="utf-8"))["version"])
+    except (OSError, ValueError, KeyError):
+        return None
+
+
+async def _prepara_aggiornamento(hass: HomeAssistant, versione: str) -> None:
+    """Home Assistant si ferma con una versione nuova gia' su disco (aggiornamento
+    scaricato): i package si scrivono adesso con la versione nuova, cosi' al riavvio
+    Home Assistant li legge gia' aggiornati e non chiede un secondo riavvio."""
+    su_disco = await hass.async_add_executor_job(_versione_su_disco)
+    if su_disco is None or su_disco == versione:
+        return
+    voci = [
+        [voce.data[CONF_NOME], voce.data[CONF_HOST]]
+        for voce in hass.config_entries.async_entries(DOMAIN)
+        if voce.state is ConfigEntryState.LOADED
+    ]
+    if not voci:
+        return
+    try:
+        processo = await asyncio.create_subprocess_exec(
+            sys.executable,
+            "-I",
+            "-c",
+            _PROGRAMMA_PREPARA,
+            str(_CARTELLA),
+            hass.config.config_dir,
+            json.dumps(voci),
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+    except OSError as errore:
+        _LOGGER.warning("Package non preparati per la versione %s: %s", su_disco, errore)
+        return
+    try:
+        uscita, errori = await asyncio.wait_for(processo.communicate(), TIMEOUT_PREPARA)
+    except TimeoutError as errore:
+        processo.kill()  # le scritture sono atomiche: ogni file resta vecchio o nuovo
+        await processo.wait()
+        _LOGGER.warning("Package non preparati per la versione %s: %s", su_disco, errore)
+        return
+    if processo.returncode:
+        _LOGGER.warning(
+            "Package non preparati per la versione %s: %s",
+            su_disco,
+            errori.decode(errors="replace").strip()[-500:],
+        )
+        return
+    _LOGGER.info(
+        "Package preparati per la versione %s: %s", su_disco, uscita.decode(errors="replace").strip()
+    )
 
 
 def _italiano(hass: HomeAssistant) -> bool:

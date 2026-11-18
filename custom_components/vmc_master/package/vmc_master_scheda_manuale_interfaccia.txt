@@ -9914,15 +9914,33 @@ cards:
                       - entity: >-
                           sensor.vmc_master_status_led_pannello_lettura_codice_interpretato
                         secondary_info: last-updated
-                      - entity: sensor.vmc_master_status_calcolo_portata_ventola
-                        secondary_info: last-updated
+                      - type: conditional
+                        conditions:
+                          - condition: numeric_state
+                            entity: input_number.vmc_master_volume_da_inserire
+                            above: 0
+                        row:
+                          entity: sensor.vmc_master_status_calcolo_portata_ventola
+                          secondary_info: last-updated
                       - entity: >-
                           sensor.vmc_master_status_portata_ventola_lettura_codice_interpretato
                         secondary_info: last-updated
-                      - entity: sensor.vmc_master_tempo_mancante_ricambio
-                        secondary_info: last-updated
-                      - entity: sensor.vmc_master_cicli_ricambio_aria
-                        secondary_info: last-updated
+                      - type: conditional
+                        conditions:
+                          - condition: numeric_state
+                            entity: input_number.vmc_master_volume_da_inserire
+                            above: 0
+                        row:
+                          entity: sensor.vmc_master_tempo_mancante_ricambio
+                          secondary_info: last-updated
+                      - type: conditional
+                        conditions:
+                          - condition: numeric_state
+                            entity: input_number.vmc_master_volume_da_inserire
+                            above: 0
+                        row:
+                          entity: sensor.vmc_master_cicli_ricambio_aria
+                          secondary_info: last-updated
                       - entity: sensor.vmc_master_status_calcolo_aria_scambiata_totale
                         secondary_info: last-updated
                       - type: button
@@ -11962,7 +11980,7 @@ cards:
             cards:
               - type: markdown
                 content: >-
-                  <table align="center"><tr><td width="160"><a href="/marketplace/repository?owner=DanRobo76&repository=VMC-HELTY-FLOW-MARKETPLACE&category=integration"><img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/Video/anteprima_scene_IT.webp?v=20261114" width="160" alt="Apri la pagina del Marketplace"></a></td><td>
+                  <table align="center" width="94%"><tr><td width="45%"><a href="/marketplace/repository?owner=DanRobo76&repository=VMC-HELTY-FLOW-MARKETPLACE&category=integration"><img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/Video/anteprima_scene_IT.webp?v=20261114" width="100%" alt="Apri la pagina del Marketplace"></a></td><td>
                   <b>VMC HELTY FLOW Plus/Elite</b><br>
                   Release installata: <b>{{ states('sensor.vmc_master_versione_corrente') }}</b><br>
                   {% set _i = states('sensor.vmc_master_versione_corrente') | trim | regex_replace('^[^0-9]*', '') %}{% set _rr = states('sensor.vmc_master_versione_repository') | trim %}{% set _r = _rr | regex_replace('^[^0-9]*', '') %}{% if not (_i is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and _r is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$')) %}<ha-icon icon="mdi:cloud-alert-outline"></ha-icon> {% if _i is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and _rr in ['Errore Connessione', 'unavailable'] %}Controllo aggiornamenti non riuscito (nessuna connessione a GitHub){% else %}Controllo aggiornamenti non riuscito{% endif %}{% else %}{% set _nr = (_r.split('b'))[0].split('.') | map('int') | list %}{% set _ni = (_i.split('b'))[0].split('.') | map('int') | list %}{% if _nr + [0] * (3 - _nr | length) + ([0, (_r.split('b'))[1] | int] if 'b' in _r else [1, 0]) > _ni + [0] * (3 - _ni | length) + ([0, (_i.split('b'))[1] | int] if 'b' in _i else [1, 0]) %}<ha-icon icon="mdi:arrow-up-bold-circle-outline"></ha-icon> <b>Aggiornamento disponibile: {{ states('sensor.vmc_master_versione_repository') }}</b>{% else %}<ha-icon icon="mdi:check-circle-outline"></ha-icon> Nessun aggiornamento{% endif %}{% endif %}<br>
@@ -14104,8 +14122,8 @@ cards:
 
                   <table><tr><td align="justify">
                   <b>Valori impostabili.</b> [Volume ambiente Int.] da 0 a 1000 m³ (passo 0,5 m³). Con volume
-                  0 il N° Ricambi Aria resta 0 e il tempo di ricambio mostra «-». Le portate per velocità
-                  sono fisse.
+                  0 le righe Tempo ricambio, Tempo mancante e N° Ricambi Aria non vengono mostrate, mentre
+                  l'Aria Scambiata si conta comunque. Le portate per velocità sono fisse.
                   </td></tr></table>
                   </details>
 

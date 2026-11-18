@@ -4742,7 +4742,7 @@ input_number:
     unit_of_measurement: "°C"
     icon: mdi:counter
 
-  vmc_master_volume_da_inserire:                                                # [CONFIGURAZIONE, 6 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] SENSORE PER L'ACQUISIZIONE DEL VOLUME IMPIEGATO PER IL CALCOLO DEL TEMPO NECESSARIO PER RINNOVARE TUTTA L'ARIA, TRAMITE IL SENSORE vmc_master_status_calcolo_portata_ventola
+  vmc_master_volume_da_inserire:                                                # [CONFIGURAZIONE, 6 RICHIAMI] [INTERFACCIA, 5 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] SENSORE PER L'ACQUISIZIONE DEL VOLUME IMPIEGATO PER IL CALCOLO DEL TEMPO NECESSARIO PER RINNOVARE TUTTA L'ARIA, TRAMITE IL SENSORE vmc_master_status_calcolo_portata_ventola
     name: "Volume ambiente Int."
     min: 0
     max: 1000
@@ -6183,7 +6183,10 @@ script:
                           entity_id: input_select.vmc_master_selected_temp_external_entity
                         data:
                           option: "{{ states('input_text.vmc_master_last_temp_external_entity') }}"
-              # Se l'ultima entità non è valida, imposta il valore su "Aggiorna Elenco Entità Temperatura Esterna" e invia una notifica
+                      - action: persistent_notification.dismiss
+                        data:
+                          notification_id: vmc_master_aggiorna_entita_temperatura_esterna
+              # Se l'ultima entità non è valida, imposta il valore su "Aggiorna Elenco Entità Temperatura Esterna" e invia una notifica (solo se l'elenco contiene almeno un'entità)
               - choose:
                   - conditions:
                       - condition: template
@@ -6197,11 +6200,16 @@ script:
                           entity_id: input_select.vmc_master_selected_temp_external_entity
                         data:
                           option: "Aggiorna Elenco Entità Temperatura Esterna"
-                      - action: persistent_notification.create
-                        data:
-                          notification_id: vmc_master_aggiorna_entita_temperatura_esterna
-                          title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
-                          message: "Aggiornare Manualmente l'Entità Temperatura Esterna"
+                      # Notifica solo se nell'elenco esiste almeno un'entità sceglibile
+                      - if:
+                          - condition: template
+                            value_template: "{{ state_attr('input_select.vmc_master_selected_temp_external_entity', 'options') | reject('equalto', 'Aggiorna Elenco Entità Temperatura Esterna') | list | count > 0 }}"
+                        then:
+                          - action: persistent_notification.create
+                            data:
+                              notification_id: vmc_master_aggiorna_entita_temperatura_esterna
+                              title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
+                              message: "Aggiornare Manualmente l'Entità Temperatura Esterna"
               # Aggiorna l'ultima entità temperatura selezionata
               - action: input_text.set_value
                 target:
@@ -6222,6 +6230,9 @@ script:
                   entity_id: input_text.vmc_master_last_temp_external_entity
                 data:
                   value: "{{ states('input_select.vmc_master_selected_temp_external_entity') }}"
+              - action: persistent_notification.dismiss
+                data:
+                  notification_id: vmc_master_aggiorna_entita_temperatura_esterna
             alias: Aggiorna ultima entità temperatura valida
       - delay:
           hours: 0
@@ -6288,7 +6299,10 @@ script:
                           entity_id: input_select.vmc_master_selected_temp_internal_entity
                         data:
                           option: "{{ states('input_text.vmc_master_last_temp_internal_entity') }}"
-              # Se l'ultima entità non è valida, imposta il valore su "Aggiorna Elenco Entità Temperatura Interna" e invia una notifica
+                      - action: persistent_notification.dismiss
+                        data:
+                          notification_id: vmc_master_aggiorna_entita_temperatura_interna
+              # Se l'ultima entità non è valida, imposta il valore su "Aggiorna Elenco Entità Temperatura Interna" e invia una notifica (solo se l'elenco contiene almeno un'entità)
               - choose:
                   - conditions:
                       - condition: template
@@ -6302,11 +6316,16 @@ script:
                           entity_id: input_select.vmc_master_selected_temp_internal_entity
                         data:
                           option: "Aggiorna Elenco Entità Temperatura Interna"
-                      - action: persistent_notification.create
-                        data:
-                          notification_id: vmc_master_aggiorna_entita_temperatura_interna
-                          title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
-                          message: "Aggiornare Manualmente l'Entità Temperatura Interna"
+                      # Notifica solo se nell'elenco esiste almeno un'entità sceglibile
+                      - if:
+                          - condition: template
+                            value_template: "{{ state_attr('input_select.vmc_master_selected_temp_internal_entity', 'options') | reject('equalto', 'Aggiorna Elenco Entità Temperatura Interna') | list | count > 0 }}"
+                        then:
+                          - action: persistent_notification.create
+                            data:
+                              notification_id: vmc_master_aggiorna_entita_temperatura_interna
+                              title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
+                              message: "Aggiornare Manualmente l'Entità Temperatura Interna"
               # Aggiorna l'ultima entità temperatura selezionata
               - action: input_text.set_value
                 target:
@@ -6327,6 +6346,9 @@ script:
                   entity_id: input_text.vmc_master_last_temp_internal_entity
                 data:
                   value: "{{ states('input_select.vmc_master_selected_temp_internal_entity') }}"
+              - action: persistent_notification.dismiss
+                data:
+                  notification_id: vmc_master_aggiorna_entita_temperatura_interna
             alias: Aggiorna ultima entità temperatura valida
       - delay:
           hours: 0
@@ -6395,7 +6417,10 @@ script:
                           entity_id: input_select.vmc_master_selected_humidity_external_entity
                         data:
                           option: "{{ states('input_text.vmc_master_last_humidity_external_entity') }}"
-              # Se l'ultima entità non è valida, imposta il valore su "Aggiorna Elenco Entità Umidità Esterna" e invia una notifica
+                      - action: persistent_notification.dismiss
+                        data:
+                          notification_id: vmc_master_aggiorna_entita_umidita_esterna
+              # Se l'ultima entità non è valida, imposta il valore su "Aggiorna Elenco Entità Umidità Esterna" e invia una notifica (solo se l'elenco contiene almeno un'entità)
               - choose:
                   - conditions:
                       - condition: template
@@ -6409,11 +6434,16 @@ script:
                           entity_id: input_select.vmc_master_selected_humidity_external_entity
                         data:
                           option: "Aggiorna Elenco Entità Umidità Esterna"
-                      - action: persistent_notification.create
-                        data:
-                          notification_id: vmc_master_aggiorna_entita_umidita_esterna
-                          title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
-                          message: "Aggiornare Manualmente l'Entità Umidità Esterna"
+                      # Notifica solo se nell'elenco esiste almeno un'entità sceglibile
+                      - if:
+                          - condition: template
+                            value_template: "{{ state_attr('input_select.vmc_master_selected_humidity_external_entity', 'options') | reject('equalto', 'Aggiorna Elenco Entità Umidità Esterna') | list | count > 0 }}"
+                        then:
+                          - action: persistent_notification.create
+                            data:
+                              notification_id: vmc_master_aggiorna_entita_umidita_esterna
+                              title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
+                              message: "Aggiornare Manualmente l'Entità Umidità Esterna"
               # Aggiorna l'ultima entità umidità selezionata
               - action: input_text.set_value
                 target:
@@ -6434,6 +6464,9 @@ script:
                   entity_id: input_text.vmc_master_last_humidity_external_entity
                 data:
                   value: "{{ states('input_select.vmc_master_selected_humidity_external_entity') }}"
+              - action: persistent_notification.dismiss
+                data:
+                  notification_id: vmc_master_aggiorna_entita_umidita_esterna
             alias: Aggiorna ultima entità umidità valida
       - delay:
           hours: 0
@@ -6500,7 +6533,10 @@ script:
                           entity_id: input_select.vmc_master_selected_humidity_internal_entity
                         data:
                           option: "{{ states('input_text.vmc_master_last_humidity_internal_entity') }}"
-              # Se l'ultima entità non è valida, imposta il valore su "Aggiorna Elenco Entità Umidità Interna" e invia una notifica
+                      - action: persistent_notification.dismiss
+                        data:
+                          notification_id: vmc_master_aggiorna_entita_umidita_interna
+              # Se l'ultima entità non è valida, imposta il valore su "Aggiorna Elenco Entità Umidità Interna" e invia una notifica (solo se l'elenco contiene almeno un'entità)
               - choose:
                   - conditions:
                       - condition: template
@@ -6514,11 +6550,16 @@ script:
                           entity_id: input_select.vmc_master_selected_humidity_internal_entity
                         data:
                           option: "Aggiorna Elenco Entità Umidità Interna"
-                      - action: persistent_notification.create
-                        data:
-                          notification_id: vmc_master_aggiorna_entita_umidita_interna
-                          title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
-                          message: "Aggiornare Manualmente l'Entità Umidità Interna"
+                      # Notifica solo se nell'elenco esiste almeno un'entità sceglibile
+                      - if:
+                          - condition: template
+                            value_template: "{{ state_attr('input_select.vmc_master_selected_humidity_internal_entity', 'options') | reject('equalto', 'Aggiorna Elenco Entità Umidità Interna') | list | count > 0 }}"
+                        then:
+                          - action: persistent_notification.create
+                            data:
+                              notification_id: vmc_master_aggiorna_entita_umidita_interna
+                              title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
+                              message: "Aggiornare Manualmente l'Entità Umidità Interna"
               # Aggiorna l'ultima entità umidità selezionata
               - action: input_text.set_value
                 target:
@@ -6539,6 +6580,9 @@ script:
                   entity_id: input_text.vmc_master_last_humidity_internal_entity
                 data:
                   value: "{{ states('input_select.vmc_master_selected_humidity_internal_entity') }}"
+              - action: persistent_notification.dismiss
+                data:
+                  notification_id: vmc_master_aggiorna_entita_umidita_interna
             alias: Aggiorna ultima entità umidità valida
       - delay:
           hours: 0
@@ -6599,6 +6643,9 @@ script:
                           entity_id: input_select.vmc_master_selected_co2_internal_entity
                         data:
                           option: "{{ states('input_text.vmc_master_last_co2_internal_entity') }}"
+                      - action: persistent_notification.dismiss
+                        data:
+                          notification_id: vmc_master_aggiorna_entita_co2_interna
               - choose:
                   - conditions:
                       - condition: template
@@ -6612,11 +6659,16 @@ script:
                           entity_id: input_select.vmc_master_selected_co2_internal_entity
                         data:
                           option: "Aggiorna Elenco Entità CO₂ Interna"
-                      - action: persistent_notification.create
-                        data:
-                          notification_id: vmc_master_aggiorna_entita_co2_interna
-                          title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
-                          message: "Aggiornare Manualmente l'Entità CO2 Interna"
+                      # Notifica solo se nell'elenco esiste almeno un'entità sceglibile
+                      - if:
+                          - condition: template
+                            value_template: "{{ state_attr('input_select.vmc_master_selected_co2_internal_entity', 'options') | reject('equalto', 'Aggiorna Elenco Entità CO₂ Interna') | list | count > 0 }}"
+                        then:
+                          - action: persistent_notification.create
+                            data:
+                              notification_id: vmc_master_aggiorna_entita_co2_interna
+                              title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
+                              message: "Aggiornare Manualmente l'Entità CO2 Interna"
               - action: input_text.set_value
                 target:
                   entity_id: input_text.vmc_master_last_co2_internal_entity
@@ -6635,6 +6687,9 @@ script:
                   entity_id: input_text.vmc_master_last_co2_internal_entity
                 data:
                   value: "{{ states('input_select.vmc_master_selected_co2_internal_entity') }}"
+              - action: persistent_notification.dismiss
+                data:
+                  notification_id: vmc_master_aggiorna_entita_co2_interna
             alias: Aggiorna ultima entità anidride carbonica valida
       - delay:
           hours: 0
@@ -6693,6 +6748,9 @@ script:
                           entity_id: input_select.vmc_master_selected_notification_device
                         data:
                           option: "{{ states('input_text.vmc_master_last_notification_device') }}"
+                      - action: persistent_notification.dismiss
+                        data:
+                          notification_id: vmc_master_aggiorna_entita_dispositivo_notifica
               - choose:
                   - conditions:
                       - condition: template
@@ -6706,11 +6764,16 @@ script:
                           entity_id: input_select.vmc_master_selected_notification_device
                         data:
                           option: "Aggiorna Elenco Dispositivi per Invio Notifica"
-                      - action: persistent_notification.create
-                        data:
-                          notification_id: vmc_master_aggiorna_entita_dispositivo_notifica
-                          title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
-                          message: "Aggiornare Manualmente l'Entità Dispositivo di Notifica"
+                      # Notifica solo se nell'elenco esiste almeno un'entità sceglibile
+                      - if:
+                          - condition: template
+                            value_template: "{{ state_attr('input_select.vmc_master_selected_notification_device', 'options') | reject('equalto', 'Aggiorna Elenco Dispositivi per Invio Notifica') | list | count > 0 }}"
+                        then:
+                          - action: persistent_notification.create
+                            data:
+                              notification_id: vmc_master_aggiorna_entita_dispositivo_notifica
+                              title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
+                              message: "Aggiornare Manualmente l'Entità Dispositivo di Notifica"
               - action: input_text.set_value
                 target:
                   entity_id: input_text.vmc_master_last_notification_device
@@ -6729,6 +6792,9 @@ script:
                   entity_id: input_text.vmc_master_last_notification_device
                 data:
                   value: "{{ states('input_select.vmc_master_selected_notification_device') }}"
+              - action: persistent_notification.dismiss
+                data:
+                  notification_id: vmc_master_aggiorna_entita_dispositivo_notifica
             alias: Aggiorna ultima entità dispositivo di notifica valida
       - delay:
           hours: 0
@@ -6783,6 +6849,9 @@ script:
                           entity_id: input_select.vmc_master_selected_media_player_entity
                         data:
                           option: "{{ states('input_text.vmc_master_last_media_player_entity') }}"
+                      - action: persistent_notification.dismiss
+                        data:
+                          notification_id: vmc_master_aggiorna_entita_media_player
               - choose:
                   - conditions:
                       - condition: template
@@ -6797,11 +6866,16 @@ script:
                           entity_id: input_select.vmc_master_selected_media_player_entity
                         data:
                           option: "Aggiorna Elenco Media Player"
-                      - action: persistent_notification.create
-                        data:
-                          notification_id: vmc_master_aggiorna_entita_media_player
-                          title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
-                          message: "Aggiornare Manualmente l'Entità Media Player"
+                      # Notifica solo se nell'elenco esiste almeno un'entità sceglibile
+                      - if:
+                          - condition: template
+                            value_template: "{{ state_attr('input_select.vmc_master_selected_media_player_entity', 'options') | reject('equalto', 'Aggiorna Elenco Media Player') | list | count > 0 }}"
+                        then:
+                          - action: persistent_notification.create
+                            data:
+                              notification_id: vmc_master_aggiorna_entita_media_player
+                              title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
+                              message: "Aggiornare Manualmente l'Entità Media Player"
               - action: input_text.set_value
                 target:
                   entity_id: input_text.vmc_master_last_media_player_entity
@@ -6821,6 +6895,9 @@ script:
                   entity_id: input_text.vmc_master_last_media_player_entity
                 data:
                   value: "{{ states('input_select.vmc_master_selected_media_player_entity') }}"
+              - action: persistent_notification.dismiss
+                data:
+                  notification_id: vmc_master_aggiorna_entita_media_player
             alias: Aggiorna ultima entità media player valida
   
       - delay: "00:00:03"
@@ -18524,7 +18601,6 @@ automation:
         then:
           - action: persistent_notification.create
             data:
-              notification_id: vmc_master_vecchia_clona_eliminata
               title: "VMC: eliminati i file della vecchia Clona VMC"
               message: >-
                 Dalla release 8.5.0 la clonazione è inclusa in vmc_master.yaml, pertanto sono stati eliminati i file
