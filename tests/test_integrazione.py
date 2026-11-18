@@ -1137,9 +1137,10 @@ async def test_elimina_dalla_rete_con_la_finestra_chiusa(hass: HomeAssistant) ->
     assert not Path(hass.config.path("packages", "vmc_helty_flow", "sala")).exists()
 
 
-async def test_elimina_toglie_le_entita_dopo_il_riavvio(hass: HomeAssistant, hass_storage) -> None:
-    """Dopo «Elimina la VMC» e il riavvio le entita' della VMC non piu' fornite escono
-    dal registro; quelle di altre VMC, di altre integrazioni o ancora fornite restano."""
+async def test_elimina_toglie_subito_le_entita(hass: HomeAssistant, hass_storage) -> None:
+    """«Elimina la VMC» toglie subito dal registro le entita' della VMC (la cartella e'
+    gia' nel backup), anche se ancora fornite; quelle di altre VMC o di altre
+    integrazioni restano e non serve ricordare il nome per il riavvio."""
     from homeassistant.helpers import entity_registry as er
 
     from custom_components.vmc_master import _togli_entita_vmc_eliminate
@@ -1168,22 +1169,13 @@ async def test_elimina_toglie_le_entita_dopo_il_riavvio(hass: HomeAssistant, has
 
     assert await hass.config_entries.async_remove(voce.entry_id)
     await hass.async_block_till_done()
-    assert hass_storage["vmc_master.vmc_eliminate"]["data"] == {"nomi": ["sala"]}
-
-    # senza riavvio le entita' sono ancora fornite: non si tocca niente, il nome resta
-    await _togli_entita_vmc_eliminate(hass)
-    assert all(registro.async_get(e) is not None for e in della_sala)
-    assert hass_storage["vmc_master.vmc_eliminate"]["data"] == {"nomi": ["sala"]}
-
-    # dopo il riavvio: entita' ripristinate «non disponibili» o senza stato
-    for entity_id in della_sala[:2]:
-        hass.states.async_set(entity_id, "unavailable", {"restored": True})
-    for entity_id in della_sala[2:]:
-        hass.states.async_remove(entity_id)
-    await _togli_entita_vmc_eliminate(hass)
     assert [e for e in della_sala if registro.async_get(e) is not None] == []
     assert all(registro.async_get(e) is not None for e in (*altre, "sensor.vmc_sala_altra"))
-    assert hass_storage["vmc_master.vmc_eliminate"]["data"] == {"nomi": []}
+    assert "vmc_master.vmc_eliminate" not in hass_storage
+
+    # all'avvio non resta niente da togliere
+    await _togli_entita_vmc_eliminate(hass)
+    assert all(registro.async_get(e) is not None for e in (*altre, "sensor.vmc_sala_altra"))
 
 
 async def test_entita_della_vmc_eliminata_all_avvio(hass: HomeAssistant, hass_storage) -> None:

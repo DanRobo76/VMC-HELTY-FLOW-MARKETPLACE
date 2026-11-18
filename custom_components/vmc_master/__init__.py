@@ -232,20 +232,23 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """VMC eliminata: la sua cartella va in /config/vmc_master_backup e serve un riavvio.
 
-    Il nome si ricorda: dopo il riavvio le entita' della VMC rimaste nel registro
-    («non piu' fornite») si tolgono da sole."""
+    Le entita' della VMC escono subito dal registro (la cartella e' gia' nel backup,
+    quindi al riavvio non tornano), anche quando e' l'ultima VMC e l'integrazione non
+    si avviera' piu'. Se qualcuna resta, il nome si ricorda e si toglie al riavvio."""
     nome = entry.data[CONF_NOME]
     destinazione = await hass.async_add_executor_job(
         sposta_in_backup, hass.config.config_dir, nome
     )
     ir.async_delete_issue(hass, DOMAIN, f"{ISSUE_PACKAGES}_{nome}")
+    if destinazione is not None:
+        _segnala_riavvio(hass)
+    if _togli_entita_della_vmc(hass, nome, anche_fornite=destinazione is not None):
+        return
     store = _store_eliminate(hass)
     dati = await store.async_load() or {}
     nomi = [n for n in dati.get("nomi", []) if isinstance(n, str)]
     if nome not in nomi:
         await store.async_save({"nomi": [*nomi, nome]})
-    if destinazione is not None:
-        _segnala_riavvio(hass)
 
 
 def _store_eliminate(hass: HomeAssistant) -> Store[dict[str, Any]]:
@@ -278,9 +281,12 @@ async def _togli_entita_vmc_eliminate(hass: HomeAssistant) -> None:
 
 
 @callback
-def _togli_entita_della_vmc(hass: HomeAssistant, nome: str) -> bool:
+def _togli_entita_della_vmc(
+    hass: HomeAssistant, nome: str, anche_fornite: bool = False
+) -> bool:
     """Toglie dal registro le entita' del package della VMC (‹dominio›.vmc_‹nome›_… e
-    l'automazione principale) non piu' fornite. False se qualcuna e' ancora fornita.
+    l'automazione principale) non piu' fornite, o tutte con anche_fornite (VMC appena
+    eliminata, cartella gia' nel backup). False se qualcuna resta.
     Il nome ha solo lettere, quindi «vmc_‹nome›_» non comprende altre VMC."""
     registro = er.async_get(hass)
     modello = re.compile(rf"^[a-z_]+\.vmc_{nome}_")
@@ -298,7 +304,7 @@ def _togli_entita_della_vmc(hass: HomeAssistant, nome: str) -> bool:
     tutte = True
     for entity_id in da_togliere:
         stato = hass.states.get(entity_id)
-        if stato is None or stato.attributes.get("restored"):
+        if anche_fornite or stato is None or stato.attributes.get("restored"):
             registro.async_remove(entity_id)
         else:
             tutte = False

@@ -188,7 +188,7 @@ Ogni script chiede conferma con il popup «Vuoi Procedere?». Per i dettagli apr
 
   In tutti e due i casi:
   - la cartella della VMC va in `config/vmc_master_backup`;
-  - riavviare Home Assistant: dopo il riavvio l'integrazione toglie da sola le entità rimaste della VMC;
+  - le entità della VMC spariscono subito, poi riavviare Home Assistant;
   - togliere la sua scheda dalla plancia.
 
   Anche **tre puntini → Elimina** funziona, ma elimina la VMC solo da Home Assistant.
@@ -497,7 +497,7 @@ Every script asks for confirmation with the «Vuoi Procedere?» popup. For detai
 
   In both cases:
   - the unit's folder goes to `config/vmc_master_backup`;
-  - restart Home Assistant: after the restart the integration removes the unit's leftover entities by itself;
+  - the unit's entities disappear right away, then restart Home Assistant;
   - remove its card from the dashboard.
 
   **Three dots → Delete** also works, but only removes the unit from Home Assistant.
