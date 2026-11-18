@@ -17,7 +17,7 @@ const ATTESA_DOPO_ERRORE_MS = 30 * 1000;
 const ATTESA_CONTROLLO_MS = 5 * 60 * 1000;
 const RE_SENSORE_REPOSITORY = /sensor\.vmc_[a-z]+_versione_repository/;
 const TITOLO_INFORMAZIONI = "Informazioni";
-// Ora dell'ultimo controllo aggiornamenti per ogni sensore, salvata nella pagina e non
+// Ora dell'ultimo controllo aggiornamenti (di tutte le VMC), salvata nella pagina e non
 // nella singola scheda: cambiando vista la scheda si ricrea ma il limite resta
 const ULTIMI_CONTROLLI = (window.__vmcMasterUltimiControlli = window.__vmcMasterUltimiControlli || {});
 
@@ -128,23 +128,36 @@ class VmcMasterCard extends HTMLElement {
   }
 
   _controllaAggiornamenti() {
-    const sensore = this._trovaSensoreRepository();
+    // L'integrazione e' una sola per tutte le VMC: si aggiornano i sensori «Versione
+    // Repository» di tutte, cosi' ogni scheda mostra subito lo stesso avviso
+    const sensori = this._sensoriRepository();
     const adesso = Date.now();
     if (
-      !sensore ||
+      !sensori.length ||
       !this._hass ||
-      adesso - (ULTIMI_CONTROLLI[sensore] || 0) < ATTESA_CONTROLLO_MS
+      adesso - (ULTIMI_CONTROLLI.tutte || 0) < ATTESA_CONTROLLO_MS
     ) {
       return;
     }
-    ULTIMI_CONTROLLI[sensore] = adesso;
+    ULTIMI_CONTROLLI.tutte = adesso;
     Promise.resolve()
       .then(() =>
-        this._hass.callService("homeassistant", "update_entity", { entity_id: sensore })
+        this._hass.callService("homeassistant", "update_entity", { entity_id: sensori })
       )
       .catch(() => {
         // controllo non riuscito: la scheda mostra lo stato del sensore
       });
+  }
+
+  _sensoriRepository() {
+    const tutti = Object.keys((this._hass && this._hass.states) || {}).filter((id) =>
+      new RegExp(`^${RE_SENSORE_REPOSITORY.source}$`).test(id)
+    );
+    const sensore = this._trovaSensoreRepository();
+    if (sensore && !tutti.includes(sensore)) {
+      tutti.push(sensore);
+    }
+    return tutti;
   }
 
   _trovaSensoreRepository() {

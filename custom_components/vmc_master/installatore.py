@@ -56,7 +56,8 @@ SERVIZI_RICARICA = {
     "timer": "timer.reload",
 }
 # Sensori della chiave «sensor:» che si ricaricano: piattaforma -> servizio.
-# I sensori TCP e la chiave «recorder:» vogliono il riavvio.
+# I sensori TCP e la chiave «recorder:» vogliono il riavvio (tranne il solo elenco
+# delle entita' escluse, che vale dal riavvio successivo).
 SERVIZI_RICARICA_SENSORI = {
     "command_line": "command_line.reload",
     "rest": "rest.reload",
@@ -226,32 +227,27 @@ def _ricariche_sensori(prima: object, dopo: object) -> set[str] | None:
     return servizi
 
 
-def _solo_esclusioni_tolte(prima: object, dopo: object, nuovo: str) -> bool:
-    """«recorder:» cambiato solo perche' dall'elenco delle entita' escluse sono uscite
-    entita' che il package non definisce piu' (per esempio la Finestra Prima Installazione
-    VMC): non c'e' niente da applicare, quindi non serve il riavvio."""
+def _solo_esclusioni_cambiate(prima: object, dopo: object) -> bool:
+    """«recorder:» cambiato solo nell'elenco delle entita' escluse (entita' aggiunte o
+    tolte). Il recorder lo legge solo all'avvio: il nuovo elenco vale dal prossimo riavvio
+    e fino ad allora cambia solo quali entita' finiscono nella cronologia, quindi non si
+    chiede un riavvio in piu' (dopo un aggiornamento ne basta uno)."""
     if not isinstance(prima, dict) or not isinstance(dopo, dict):
         return False
     escl_prima, escl_dopo = prima.get("exclude"), dopo.get("exclude")
     if not isinstance(escl_prima, dict) or not isinstance(escl_dopo, dict):
         return False
-    entita_prima = escl_prima.get("entities") or []
-    entita_dopo = escl_dopo.get("entities") or []
-    if not isinstance(entita_prima, list) or not isinstance(entita_dopo, list):
+    if not isinstance(escl_prima.get("entities") or [], list) or not isinstance(
+        escl_dopo.get("entities") or [], list
+    ):
         return False
-    tolte = [e for e in entita_prima if e not in entita_dopo]
-    if [e for e in entita_prima if e in entita_dopo] != entita_dopo:
-        return False  # entita' aggiunte o riordinate
     if {k: v for k, v in prima.items() if k != "exclude"} != {
         k: v for k, v in dopo.items() if k != "exclude"
     }:
         return False
-    if {k: v for k, v in escl_prima.items() if k != "entities"} != {
+    return {k: v for k, v in escl_prima.items() if k != "entities"} == {
         k: v for k, v in escl_dopo.items() if k != "entities"
-    }:
-        return False
-    # le entita' tolte non devono comparire da nessun'altra parte del nuovo package
-    return all(isinstance(e, str) and e.split(".", 1)[-1] not in nuovo for e in tolte)
+    }
 
 
 def ricariche_necessarie(vecchio: str, nuovo: str) -> set[str] | None:
@@ -273,8 +269,8 @@ def ricariche_necessarie(vecchio: str, nuovo: str) -> set[str] | None:
             continue
         if chiave in SERVIZI_RICARICA:
             servizi.add(SERVIZI_RICARICA[chiave])
-        elif chiave == "recorder" and _solo_esclusioni_tolte(
-            prima.get(chiave), dopo.get(chiave), nuovo
+        elif chiave == "recorder" and _solo_esclusioni_cambiate(
+            prima.get(chiave), dopo.get(chiave)
         ):
             continue
         elif chiave == "sensor":
