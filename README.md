@@ -215,7 +215,7 @@ actions:
    - premere **Salva**, poi **Fatto**.
 8. **Una volta per ogni VMC**, nel pannello **Opzioni** della scheda:
    - premere **Esegui** su **«VMC ‹nome› - Profilo Inizializzazione»**;
-   - confermare con **OK**: Home Assistant si riavvia da solo;
+   - confermare con **OK** e attendere 10 s;
    - premere **Sensori Opzionati** (icona chip di memoria);
    - scegliere i sensori.
 
@@ -565,7 +565,7 @@ actions:
    - press **Save**, then **Done**.
 8. **Once per unit**, in the card's **Opzioni** panel:
    - press **Esegui** on **«VMC ‹name› - Profilo Inizializzazione»**;
-   - confirm with **OK**: Home Assistant restarts by itself;
+   - confirm with **OK** and wait 10 s;
    - press **Sensori Opzionati** (memory chip icon);
    - pick the sensors.
 

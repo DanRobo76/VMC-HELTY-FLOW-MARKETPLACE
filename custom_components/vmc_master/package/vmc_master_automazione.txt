@@ -1,6 +1,6 @@
 ###########################################################################################################################################################################################################################
 #                                                                                                                                                                                                                         #
-#                                                          AUTOMAZIONE VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b22]                                                                                                        #
+#                                                          AUTOMAZIONE VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b24]                                                                                                        #
 #                                                                                                                                                                                                                         #
 # SVILUPPATO DA ING. DANILO ROBOTTI, ALLE PRIME ARMI CON HOME ASSISTANT :)                                                                                                                                                #
 #                                                                                                                                                                                                                         #
@@ -29373,6 +29373,7 @@ actions:
           - action: persistent_notification.create
             metadata: {}
             data:
+              notification_id: vmc_master_entita_non_disponibile_temperatura_esterna
               title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
               message: >-
                 Non Disponibile: {{
@@ -29396,6 +29397,7 @@ actions:
           - action: persistent_notification.create
             metadata: {}
             data:
+              notification_id: vmc_master_entita_non_disponibile_temperatura_interna
               title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
               message: >-
                 Non Disponibile: {{
@@ -29419,6 +29421,7 @@ actions:
           - action: persistent_notification.create
             metadata: {}
             data:
+              notification_id: vmc_master_entita_non_disponibile_umidita_esterna
               title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
               message: >-
                 Non Disponibile: {{
@@ -29440,6 +29443,7 @@ actions:
           - action: persistent_notification.create
             metadata: {}
             data:
+              notification_id: vmc_master_entita_non_disponibile_umidita_interna
               title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
               message: >-
                 Non Disponibile: {{
@@ -29463,6 +29467,7 @@ actions:
           - action: persistent_notification.create
             metadata: {}
             data:
+              notification_id: vmc_master_entita_non_disponibile_co2_interna
               title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
               message: >-
                 Non Disponibile: {{
@@ -29493,6 +29498,7 @@ actions:
           - action: persistent_notification.create
             metadata: {}
             data:
+              notification_id: vmc_master_verifica_filtro
               title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
               message: >-
                 Avviso ogni 24 ore: Verificare Filtro, data {{
