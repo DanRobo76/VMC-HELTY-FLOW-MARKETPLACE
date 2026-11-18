@@ -255,6 +255,14 @@ sensor:
     port: 5001                                 # PORTA 5001 DELLA VMC IMPOSTAZIONE DI DEFAULT
     timeout: 3
     payload: "VMSL?"                           # INVIO COMANDO VMSL? ALLA VMC MASTER, PER OTTENERE INFORMAZIONI SUI DATI LAN DELLA VMC]
+    # LA RISPOSTA E' "VMSL " + RETE 32 + PASSWORD 32 + IP 15 + PORTA 5 + GATEWAY 15 + MASCHERA 15 + MODALITA' 2: LA PASSWORD DEL WI-FI (CARATTERI 37-68) E' SOSTITUITA DA 32 ASTERISCHI, GLI ALTRI CAMPI RESTANO
+    value_template: >-
+      {%- set v = value | trim -%}
+      {%- if v[:5] == 'VMSL ' and v | length > 37 -%}
+        {{ v[:37] ~ '*' * ([v | length, 69] | min - 37) ~ v[69:] }}
+      {%- else -%}
+        {{ v }}
+      {%- endif -%}
     scan_interval:
       seconds: 57641                           # OGNI N° SECONDI RIPETE LA SCANSIONE [16 ORE + 41 secondi di margine]
 
@@ -1301,7 +1309,7 @@ template:
             {% set componenti = sensor_value.split(',') %}
             {% if componenti | length > 2 %}
               {% set raw_temp = componenti[2] %}
-              {% if raw_temp.isdigit() or (raw_temp.startswith('1') and raw_temp[1:].isdigit()) %}
+              {% if (raw_temp.isdigit() or (raw_temp.startswith('1') and raw_temp[1:].isdigit())) and not (temp_sign == "negativo" and raw_temp | length < 2) %}  {#- UN SOLO CARATTERE CON SEGNO NEGATIVO NON HA CIFRE DOPO L'1: NON DISPONIBILE -#}
                 {% if temp_sign == "negativo" %}
                   {% set temp_value = - (float(int(raw_temp[1:]) / 10)) %}
                 {% else %}
@@ -1352,7 +1360,7 @@ template:
             {% set componenti = sensor_value.split(',') %}
             {% if componenti | length > 1 %}
               {% set raw_temp = componenti[1] %}
-              {% if raw_temp.isdigit() or (raw_temp.startswith('1') and raw_temp[1:].isdigit()) %}
+              {% if (raw_temp.isdigit() or (raw_temp.startswith('1') and raw_temp[1:].isdigit())) and not (temp_sign == "negativo" and raw_temp | length < 2) %}  {#- UN SOLO CARATTERE CON SEGNO NEGATIVO NON HA CIFRE DOPO L'1: NON DISPONIBILE -#}
                 {% if temp_sign == "negativo" %}
                   {% set temp_value = - (float(int(raw_temp[1:]) / 10)) %}
                 {% else %}
@@ -3800,9 +3808,10 @@ input_text:
     initial: ""
     min: 0
     max: 10
+    pattern: '^[A-Za-z0-9_-]{0,10}$'                                          # DA 1 A 10 CARATTERI: LETTERE SENZA ACCENTI, CIFRE, _ E - (COME IL MOTORE DELL'INTEGRAZIONE); VUOTO DOPO L'INVIO
     icon: mdi:form-textbox
         
-  vmc_master_ip_insert:                                                         # [CONFIGURAZIONE, 8 RICHIAMI] [INTERFACCIA, 4 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI]
+  vmc_master_ip_insert:                                                         # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 4 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI]
     name: "Cambia IP VMC (Riavvio di H.A.)"
     initial: ""
     icon: mdi:form-textbox
@@ -5478,7 +5487,7 @@ input_boolean:
 
 ################### Inizio Creazione Switch Booleano impiegato nell'Automazione, per l'Audio all'Avvio di Home Assistant ############################
 
-  vmc_master_avvio_home_assistant_in_corso_per_audio:                           # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 3 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] SENSORE TRACCIAMENTO AUDIO ALL'AVVIO DI HOME ASSISTANT PER LA LETTURA DEI VARI SENSORI
+  vmc_master_avvio_home_assistant_in_corso_per_audio:                           # [CONFIGURAZIONE, 9 RICHIAMI] [INTERFACCIA, 3 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] SENSORE TRACCIAMENTO AUDIO ALL'AVVIO DI HOME ASSISTANT PER LA LETTURA DEI VARI SENSORI
     name: "Spia Audio all'Avvio di Home Assistant"
     initial: false
     icon: mdi:memory
@@ -18690,19 +18699,38 @@ automation:
       - Allerta/Nessuna Allerta PdR
       - Allerta Free Heating/Cooling
       - Allerta/Nessuna Allerta Umidità
+      Se il riepilogo si interrompe, per esempio perché il servizio TTS non è configurato,
+      dopo 10 minuti spegne comunque la spia dell'audio all'avvio.
     triggers:
       - trigger: homeassistant
         event: start
+      - trigger: state                                                         # RIEPILOGO INTERROTTO (PER ESEMPIO SENZA TTS): IL RIEPILOGO NORMALE DURA MENO DI 10 MINUTI
+        entity_id: input_boolean.vmc_master_avvio_home_assistant_in_corso_per_audio
+        to: "on"
+        for: "00:10:00"
+        id: spia_avvio_rimasta_accesa
 
     conditions:
-      - condition: state
-        entity_id: input_boolean.vmc_master_notifica_audio
-        state: "on"
-      - condition: state
-        entity_id: input_boolean.vmc_master_notifica_allerta_riepilogo
-        state: "on"
+      - condition: or
+        conditions:
+          - condition: trigger
+            id: spia_avvio_rimasta_accesa
+          - condition: and
+            conditions:
+              - condition: state
+                entity_id: input_boolean.vmc_master_notifica_audio
+                state: "on"
+              - condition: state
+                entity_id: input_boolean.vmc_master_notifica_allerta_riepilogo
+                state: "on"
   
     actions:
+      - if: "{{ trigger.id == 'spia_avvio_rimasta_accesa' }}"
+        then:
+          - action: input_boolean.turn_off
+            target:
+              entity_id: input_boolean.vmc_master_avvio_home_assistant_in_corso_per_audio
+          - stop: "Spia dell'audio all'avvio spenta"
       - action: input_boolean.turn_on
         target:
           entity_id: input_boolean.vmc_master_avvio_home_assistant_in_corso_per_audio
@@ -19068,6 +19096,8 @@ automation:
             sequence:
               - action: shell_command.vmc_master_rimuovi_caratteri_di_ritorno
               - action: shell_command.vmc_master_aggiorna_indirizzo_ip
+                data:
+                  ip: "{{ ip }}"                                        # IP GIA' CONTROLLATO QUI SOPRA: LO SCRIPT NON RILEGGE IL CAMPO, CHE PUO' ESSERE CAMBIATO NEL FRATTEMPO
               - delay:
                   seconds: 2
               - action: homeassistant.restart
@@ -26933,6 +26963,7 @@ shell_command:
     import fcntl
     import ipaddress
     import json
+    import logging
     import os
     from pathlib import Path
     import re
@@ -26957,6 +26988,9 @@ shell_command:
     NAME_PATTERN = r"[A-Za-z0-9_-]{1,12}"
     AP_PASSWORD_PATTERN = r"[A-Za-z0-9$@!%?&]{8,32}"
     ACTIONS = ("diagnose", "configure", "verify", "recover", "rename", "ap_password", "ap_mode", "scan")
+
+
+    LOGGER = logging.getLogger(__name__)
 
 
     class Failure(Exception):
@@ -27160,8 +27194,24 @@ shell_command:
             return data.get("accesspoints") or []
 
 
+    def name_answer_complete(data):
+        """True se la risposta a VMNM? è completa. Il protocollo non ha un delimitatore fisso:
+        la risposta è completa con un a capo (CR/LF) o un NUL, con gli asterischi di
+        riempimento dopo il nome, oppure se non è una risposta «VMNM». «VMNM», «VMNM » e
+        «VMNM Pr» senza altro possono essere solo la prima parte di una risposta spezzata."""
+        text = bytes(data).lstrip(b"\x00\r\n ")
+        if any(c in text for c in b"\r\n\x00"):
+            return True
+        if len(text) < 5:
+            return not b"VMNM ".startswith(text)
+        return not text.startswith(b"VMNM ") or text.endswith(b"*")
+
+
     class Transport:
-        def exchange(self, ip, payload, interface="", timeout=2.0, read=True):
+        def exchange(self, ip, payload, interface="", timeout=2.0, read=True, complete=None):
+            """Invia payload e legge la risposta. Dopo il primo pezzo si attende 0,12 s al massimo;
+            se complete(risposta) dice che la risposta non è finita, si continua a leggere fino a
+            timeout secondi dall'invio."""
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
                 sock.settimeout(timeout)
                 if interface:
@@ -27173,6 +27223,7 @@ shell_command:
                 sock.sendall(payload)
                 if not read:
                     return b""
+                deadline = time.monotonic() + timeout
                 chunks = bytearray()
                 while len(chunks) < 512:
                     try:
@@ -27184,17 +27235,23 @@ shell_command:
                     if not part:
                         break
                     chunks.extend(part)
-                    sock.settimeout(0.12)
+                    if complete is None or complete(chunks):
+                        sock.settimeout(0.12)
+                    else:
+                        remaining = deadline - time.monotonic()
+                        if remaining <= 0:
+                            break
+                        sock.settimeout(remaining)
                 return bytes(chunks)
 
-        def command(self, ip, text, interface=""):
+        def command(self, ip, text, interface="", complete=None):
             try:
-                return self.exchange(ip, text.encode("ascii"), interface).decode("ascii").strip("\x00\r\n ")
+                return self.exchange(ip, text.encode("ascii"), interface, complete=complete).decode("ascii").strip("\x00\r\n ")
             except UnicodeError:
                 raise Failure("invalid_vmc", "La VMC ha restituito una risposta non leggibile.") from None
 
         def identify(self, ip, interface=""):
-            text = self.command(ip, "VMNM?", interface)
+            text = self.command(ip, "VMNM?", interface, complete=name_answer_complete)
             name = text[5:].rstrip("* ").strip() if text.startswith("VMNM ") else ""
             if not name:
                 raise Failure("invalid_vmc", "Il dispositivo non risponde come una VMC Helty Air Guard.")
@@ -27351,11 +27408,29 @@ shell_command:
             self.status.emit("Server verificato" if wifi else "Wi-Fi non disponibile", 100, "Scheda Wi-Fi disponibile per il primo collegamento." if wifi else "Il Supervisor non rileva una scheda Wi-Fi. Per la prima configurazione serve una scheda Wi-Fi integrata nel computer di Home Assistant oppure una chiavetta USB Wi-Fi collegata e riconosciuta da Home Assistant OS.", wifi_interfaces=wifi, ethernet_interfaces=ethernet, wifi_available=bool(wifi), success=bool(wifi))
             return info
 
+        def read_restore(self, checkpoint):
+            """Contenuto di restore.json. Un file illeggibile (troncato, modificato a mano, senza
+            una chiave) viene messo da parte come restore.json.illeggibile, così non blocca
+            le procedure successive."""
+            try:
+                backup = json.loads(checkpoint.read_text(encoding="utf-8"))
+                if not isinstance(backup, dict) or not isinstance(backup.get("interface"), str) or not backup["interface"] or not isinstance(backup.get("payload"), dict):
+                    raise ValueError("struttura non valida")
+            except (OSError, ValueError) as exc:
+                aside = checkpoint.with_name(checkpoint.name + ".illeggibile")
+                try:
+                    os.replace(checkpoint, aside)
+                    LOGGER.warning("File di ripristino del Wi-Fi del server non leggibile (%s): spostato in %s", exc, aside)
+                except OSError as error:
+                    LOGGER.warning("File di ripristino del Wi-Fi del server non leggibile (%s) e non spostato: %s", exc, error)
+                raise Failure("restore_failed", "Il file di ripristino del Wi-Fi del server non era leggibile ed è stato messo da parte. Controllare che il server sia collegato alla sua rete, poi riprovare.") from exc
+            return backup
+
         def restore(self):
             checkpoint = self.root / "restore.json"
             if not checkpoint.exists():
                 return
-            backup = json.loads(checkpoint.read_text())
+            backup = self.read_restore(checkpoint)
             self.status.emit("Ripristino rete server", max(self.status.data.get("progress", 0), 65), "Ripristino della connessione precedente del server.")
             self.supervisor.update(backup["interface"], backup["payload"])
             if backup.get("connected"):
@@ -27881,8 +27956,8 @@ shell_command:
 # >>> FINE SEZIONE CLONA VMC (SOLO MASTER, RIMOSSA DA VMC_SCRIPT_CLONA.SH) <<<
 
   vmc_master_rimuovi_caratteri_di_ritorno: find /config/packages/vmc_helty_flow/master -type f -name "*.sh" -exec sed -i 's/\r$//' {} \; # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 0 RICHIAMI] [AUTOMAZIONE, 1 RICHIAMO] TROVA E RIMUOVE CARATTERI DI RITORNO IN TUTTI I FILES *.sh CONTENUTI NELLA CARTELLA
-  vmc_master_aggiorna_indirizzo_ip:        bash /config/packages/vmc_helty_flow/master/vmc_master_script_cambio_ip.sh   {{ states('input_text.vmc_master_ip_insert') }} # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 0 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] TROVA E SOSTITUISCE NEL FILE CORRENTE L'INDIRIZZO IP INSERITO NELL'INTERFACCIA, VIENE LANCIATO SOLO SE IL SENSORE VERIFICA IP INSERITO CONFERMA UN INDIRIZZO VALIDO (LO SCRIPT NON HA UN INDIRIZZO DI DEFAULT)
-  vmc_master_cambia_nome:                  bash /config/packages/vmc_helty_flow/master/vmc_master_script_cambio_nome.sh "{{ states('input_text.vmc_master_nome_da_inserire') | replace('"', '') }}" # [CONFIGURAZIONE, 1 RICHIAMO] [INTERFACCIA, 0 RICHIAMI] [AUTOMAZIONE, 1 RICHIAMO] INVIO COMANDO PER CAMBIARE NOME ALLA VMC
+  vmc_master_aggiorna_indirizzo_ip:        bash /config/packages/vmc_helty_flow/master/vmc_master_script_cambio_ip.sh   {{ ip | default('') }} # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 0 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] TROVA E SOSTITUISCE NEL FILE CORRENTE L'INDIRIZZO IP INSERITO NELL'INTERFACCIA; RICEVE DALL'AUTOMAZIONE CAMBIO IP L'INDIRIZZO GIA' CONTROLLATO (VARIABILE ip) E LO SCRIPT LO CONTROLLA DI NUOVO PER INTERO (LO SCRIPT NON HA UN INDIRIZZO DI DEFAULT)
+  vmc_master_cambia_nome:                  bash /config/packages/vmc_helty_flow/master/vmc_master_script_cambio_nome.sh "{{ states('input_text.vmc_master_nome_da_inserire') | replace('"', '') | replace('\\', '') }}" # [CONFIGURAZIONE, 1 RICHIAMO] [INTERFACCIA, 0 RICHIAMI] [AUTOMAZIONE, 1 RICHIAMO] INVIO COMANDO PER CAMBIARE NOME ALLA VMC
   vmc_master_freecooling:                  printf 'VMWH0000007\n' | timeout 5 nc -w 3 999.999.999.999 5001 # [CONFIGURAZIONE, 79 RICHIAMI] [INTERFACCIA, 6 RICHIAMI] [AUTOMAZIONE, 25 RICHIAMI] INVIO COMANDO Free Cool./Heat. ALLA VMC
   vmc_master_notturna:                     printf 'VMWH0000006\n' | timeout 5 nc -w 3 999.999.999.999 5001 # [CONFIGURAZIONE, 27 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 14 RICHIAMI] INVIO COMANDO NOTTURNA ALLA VMC
   vmc_master_iperventilazione:             printf 'VMWH0000005\n' | timeout 5 nc -w 3 999.999.999.999 5001 # [CONFIGURAZIONE, 27 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 14 RICHIAMI] INVIO COMANDO IPERVENTILAZIONE ALLA VMC

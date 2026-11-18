@@ -8,11 +8,15 @@ a mano, diventa il file vmc_<nome>_automazione.yaml dello stesso package.
 
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import json
 import logging
+import os
 import re
 import shutil
+import stat
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -36,6 +40,8 @@ FILE_MARCATORE = ".vmc_master_integrazione.json"
 CARTELLA_BACKUP = "vmc_master_backup"
 # Sottocartella di CARTELLA_BACKUP per i file del package modificati a mano
 SUFFISSO_MODIFICATI = "modificati"
+# File temporanei delle scritture atomiche (nascosti, non «.yaml»)
+SUFFISSO_TEMPORANEO = ".tmp"
 
 # Prima riga «host:» del package: e' l'IP della VMC (sensori TCP)
 _RE_HOST = re.compile(r"^\s+host:\s+([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)", re.MULTILINE)
@@ -56,7 +62,8 @@ SERVIZI_RICARICA = {
     "timer": "timer.reload",
 }
 # Sensori della chiave «sensor:» che si ricaricano: piattaforma -> servizio.
-# I sensori TCP e la chiave «recorder:» vogliono il riavvio.
+# I sensori TCP e la chiave «recorder:» vogliono il riavvio (tranne il solo elenco
+# delle entita' escluse, che vale dal riavvio successivo).
 SERVIZI_RICARICA_SENSORI = {
     "command_line": "command_line.reload",
     "rest": "rest.reload",
@@ -72,9 +79,42 @@ def _leggi(percorso: Path) -> str:
         return file.read()
 
 
-def _scrivi(percorso: Path, testo: str) -> None:
-    with open(percorso, "w", encoding="utf-8", newline="") as file:
-        file.write(testo)
+def _scrivi(percorso: Path, testo: str, permessi: int | None = None) -> None:
+    """Scrittura atomica: un'interruzione (corrente, crash, disco pieno) lascia il file di
+    prima intatto. Il testo va in un file temporaneo nascosto della stessa cartella, con
+    nome che finisce in «.tmp» (Home Assistant carica solo i «.yaml»), poi fsync e
+    os.replace. newline="" mantiene CRLF e LF esattamente come nel testo.
+    Senza «permessi» il file nuovo tiene quelli del file che sostituisce."""
+    if permessi is None:
+        with contextlib.suppress(OSError):
+            permessi = stat.S_IMODE(os.stat(percorso).st_mode)
+    temporaneo = percorso.with_name(f".{percorso.name}.{uuid.uuid4().hex}{SUFFISSO_TEMPORANEO}")
+    try:
+        with open(temporaneo, "w", encoding="utf-8", newline="") as file:
+            file.write(testo)
+            file.flush()
+            os.fsync(file.fileno())
+        if permessi is not None:
+            os.chmod(temporaneo, permessi)
+        os.replace(temporaneo, percorso)
+    except BaseException:
+        with contextlib.suppress(OSError):
+            temporaneo.unlink()
+        raise
+    # la rinomina resta anche dopo una mancanza di corrente (dove il sistema lo permette)
+    with contextlib.suppress(OSError):
+        cartella = os.open(percorso.parent, os.O_RDONLY)
+        try:
+            os.fsync(cartella)
+        finally:
+            os.close(cartella)
+
+
+def _togli_temporanei(cartella: Path) -> None:
+    """File temporanei rimasti da una scrittura interrotta."""
+    for temporaneo in cartella.glob(f".*{SUFFISSO_TEMPORANEO}"):
+        with contextlib.suppress(OSError):
+            temporaneo.unlink()
 
 
 def _md5(testo: str) -> str:
@@ -226,32 +266,27 @@ def _ricariche_sensori(prima: object, dopo: object) -> set[str] | None:
     return servizi
 
 
-def _solo_esclusioni_tolte(prima: object, dopo: object, nuovo: str) -> bool:
-    """«recorder:» cambiato solo perche' dall'elenco delle entita' escluse sono uscite
-    entita' che il package non definisce piu' (per esempio la Finestra Prima Installazione
-    VMC): non c'e' niente da applicare, quindi non serve il riavvio."""
+def _solo_esclusioni_cambiate(prima: object, dopo: object) -> bool:
+    """«recorder:» cambiato solo nell'elenco delle entita' escluse (entita' aggiunte o
+    tolte). Il recorder lo legge solo all'avvio: il nuovo elenco vale dal prossimo riavvio
+    e fino ad allora cambia solo quali entita' finiscono nella cronologia, quindi non si
+    chiede un riavvio in piu' (dopo un aggiornamento ne basta uno)."""
     if not isinstance(prima, dict) or not isinstance(dopo, dict):
         return False
     escl_prima, escl_dopo = prima.get("exclude"), dopo.get("exclude")
     if not isinstance(escl_prima, dict) or not isinstance(escl_dopo, dict):
         return False
-    entita_prima = escl_prima.get("entities") or []
-    entita_dopo = escl_dopo.get("entities") or []
-    if not isinstance(entita_prima, list) or not isinstance(entita_dopo, list):
+    if not isinstance(escl_prima.get("entities") or [], list) or not isinstance(
+        escl_dopo.get("entities") or [], list
+    ):
         return False
-    tolte = [e for e in entita_prima if e not in entita_dopo]
-    if [e for e in entita_prima if e in entita_dopo] != entita_dopo:
-        return False  # entita' aggiunte o riordinate
     if {k: v for k, v in prima.items() if k != "exclude"} != {
         k: v for k, v in dopo.items() if k != "exclude"
     }:
         return False
-    if {k: v for k, v in escl_prima.items() if k != "entities"} != {
+    return {k: v for k, v in escl_prima.items() if k != "entities"} == {
         k: v for k, v in escl_dopo.items() if k != "entities"
-    }:
-        return False
-    # le entita' tolte non devono comparire da nessun'altra parte del nuovo package
-    return all(isinstance(e, str) and e.split(".", 1)[-1] not in nuovo for e in tolte)
+    }
 
 
 def ricariche_necessarie(vecchio: str, nuovo: str) -> set[str] | None:
@@ -273,8 +308,8 @@ def ricariche_necessarie(vecchio: str, nuovo: str) -> set[str] | None:
             continue
         if chiave in SERVIZI_RICARICA:
             servizi.add(SERVIZI_RICARICA[chiave])
-        elif chiave == "recorder" and _solo_esclusioni_tolte(
-            prima.get(chiave), dopo.get(chiave), nuovo
+        elif chiave == "recorder" and _solo_esclusioni_cambiate(
+            prima.get(chiave), dopo.get(chiave)
         ):
             continue
         elif chiave == "sensor":
@@ -328,8 +363,23 @@ def installa(config_dir: str, nome: str, ip: str, versione: str) -> EsitoInstall
         esito.backup = sposta_in_backup(config_dir, nome)
     cartella = cartella_vmc(config_dir, nome)
     cartella.mkdir(parents=True, exist_ok=True)
+    _togli_temporanei(cartella)
     nuovi = genera_file(nome, ip, versione)
     marcatore = leggi_marcatore(config_dir, nome)
+    file_marcatore = cartella / FILE_MARCATORE
+    if not file_marcatore.is_file():
+        # Prima installazione: marcatore provvisorio (senza md5) prima dei file. Se la
+        # scrittura si interrompe, al giro dopo la cartella non sembra un'installazione
+        # manuale e i file si riscrivono come sempre.
+        _scrivi(
+            file_marcatore,
+            json.dumps(
+                {"versione": versione, "nome": nome, "ip": ip, "in_corso": True},
+                indent=2,
+                ensure_ascii=False,
+            )
+            + "\n",
+        )
     md5_scritti = marcatore.get("md5")
     if not isinstance(md5_scritti, dict):
         md5_scritti = {}
@@ -352,10 +402,9 @@ def installa(config_dir: str, nome: str, ip: str, versione: str) -> EsitoInstall
         vecchio = vecchi.get(nome_file)
         if vecchio == testo:
             continue
-        _scrivi(percorso, testo)
+        _scrivi(percorso, testo, 0o755 if nome_file.endswith(".sh") else None)
         esito.file_scritti.append(nome_file)
         if nome_file.endswith(".sh"):
-            percorso.chmod(0o755)
             if vecchio is not None:
                 continue  # gli script si leggono a ogni esecuzione: niente riavvio
         servizi = None if vecchio is None else ricariche_necessarie(vecchio, testo)
@@ -370,7 +419,14 @@ def installa(config_dir: str, nome: str, ip: str, versione: str) -> EsitoInstall
         "master": nome == NOME_MASTER,
         "md5": {nome_file: _md5(testo) for nome_file, testo in nuovi.items()},
     }
-    _scrivi(cartella / FILE_MARCATORE, json.dumps(marcatore, indent=2, ensure_ascii=False) + "\n")
+    # marcatore per ultimo, solo se cambia: dice che tutti i file sono stati scritti
+    testo_marcatore = json.dumps(marcatore, indent=2, ensure_ascii=False) + "\n"
+    try:
+        marcatore_scritto = _leggi(file_marcatore)
+    except (OSError, ValueError):
+        marcatore_scritto = None
+    if marcatore_scritto != testo_marcatore:
+        _scrivi(file_marcatore, testo_marcatore)
     if esito.riavvio_necessario:
         esito.ricariche.clear()  # il riavvio carica gia' tutto
     if esito.file_scritti:

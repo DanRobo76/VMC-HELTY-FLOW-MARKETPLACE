@@ -10,6 +10,7 @@ Le funzioni sono bloccanti: si chiamano con hass.async_add_executor_job.
 from __future__ import annotations
 
 import ipaddress
+import logging
 import threading
 import time
 from collections.abc import Callable
@@ -17,6 +18,8 @@ from pathlib import Path
 from typing import Any
 
 from . import motore_installa_vmc as motore
+
+_LOGGER = logging.getLogger(__name__)
 
 # Stessa cartella della Finestra Prima Installazione VMC (identity.json, restore.json, ...)
 CARTELLA_MOTORE = ".vmc_master_installa_vmc"
@@ -87,6 +90,8 @@ def esegui(
     except Failure:
         raise
     except Exception as errore:  # stesso messaggio del worker della 8.6.0
+        # la causa vera resta nel log: il messaggio per l'utente e' generico
+        _LOGGER.exception("Procedura Wi-Fi «%s» interrotta da un errore inatteso", azione)
         raise Failure(
             "communication_error",
             "Errore di comunicazione. Verificare la raggiungibilità della VMC e del Supervisor.",
@@ -238,6 +243,7 @@ def rimanda_in_access_point(
     except Failure:
         raise
     except Exception as errore:  # stesso messaggio del worker della 8.6.0
+        _LOGGER.exception("Passaggio in Access Point della VMC %s interrotto da un errore inatteso", ip)
         raise Failure(
             "communication_error",
             "Errore di comunicazione. Verificare la raggiungibilità della VMC.",

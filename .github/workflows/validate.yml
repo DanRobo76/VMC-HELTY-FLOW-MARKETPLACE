@@ -15,7 +15,8 @@ jobs:
     name: Controllo HACS
     runs-on: ubuntu-latest
     steps:
-      - uses: hacs/action@main
+      # SHA del ramo main (la documentazione indica @main): lo aggiorna Dependabot
+      - uses: hacs/action@1ebf01c408f29afcb6406bd431bc98fd8cbb15aa # main
         with:
           category: integration
 
@@ -23,24 +24,36 @@ jobs:
     name: Controllo hassfest
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: home-assistant/actions/hassfest@master
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # SHA del ramo master (la documentazione indica @master): lo aggiorna Dependabot
+      - uses: home-assistant/actions/hassfest@86d4564712fa02543c808e3a693dd04f9d3f8361 # master
 
   pytest:
     name: Test pytest
     runs-on: ubuntu-latest
+    env:
+      # Home Assistant dei test: almeno il minimo dichiarato in hacs.json (2026.11.0)
+      HA_VERSION: "2026.11.2"
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.14"
       - name: Installa le dipendenze dei test
         run: |
           python -m pip install --upgrade pip
-          # Versione fissata (Python 3.14, Home Assistant 2026.10.4): aggiornarla a mano
-          pip install pytest-homeassistant-custom-component==0.13.375
+          pip install -r requirements_test.txt
+          # Il plugin fissa homeassistant==2026.10.4: si installa sopra la versione dei test
+          pip install "homeassistant==${HA_VERSION}"
           # Il frontend deve essere la versione richiesta da Home Assistant installato
           FRONTEND=$(grep '^home-assistant-frontend==' "$(python -c 'import homeassistant, pathlib; print(pathlib.Path(homeassistant.__file__).parent / "package_constraints.txt")')")
           pip install "$FRONTEND"
+      - name: Controlla la versione di Home Assistant
+        run: |
+          python -c "from homeassistant.const import __version__ as v; import sys; print('Home Assistant', v); sys.exit(v != '${HA_VERSION}')"
       - name: Esegui i test
         run: pytest -q

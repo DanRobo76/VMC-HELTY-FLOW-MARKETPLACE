@@ -1,0 +1,37 @@
+name: Controllo release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: Tag, versione e pre-release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.release.tag_name }}
+      - name: Confronta tag e versione del manifest
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+          PRERELEASE: ${{ github.event.release.prerelease }}
+        run: |
+          VERSIONE=$(python3 -c 'import json; print(json.load(open("custom_components/vmc_master/manifest.json", encoding="utf-8"))["version"])')
+          ERRORE=0
+          if [ "$TAG" != "v$VERSIONE" ]; then
+            echo "::error::Il tag «$TAG» non corrisponde alla versione del manifest: il tag deve essere «v$VERSIONE» (oppure va aggiornato \"version\" in custom_components/vmc_master/manifest.json)."
+            ERRORE=1
+          fi
+          if [ "$PRERELEASE" = "true" ]; then
+            echo "::error::La release «$TAG» è segnata come pre-release: il controllo aggiornamenti legge releases/latest, che ignora le pre-release, e l'avviso di aggiornamento non arriverebbe. Togliere la spunta «Set as a pre-release»."
+            ERRORE=1
+          fi
+          if [ "$ERRORE" = 0 ]; then
+            echo "Release $TAG: versione del manifest $VERSIONE, non pre-release."
+          fi
+          exit "$ERRORE"
