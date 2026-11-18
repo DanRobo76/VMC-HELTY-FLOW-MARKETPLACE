@@ -35,9 +35,10 @@ def _nessuna_vmc_in_rete():
 
 
 # Link a immagini e video, contati uno per uno: 75 nella scheda (50 file diversi),
-# 10 nel README (9 file diversi)
+# 10 in ciascuno dei due README (9 file diversi): README.md nella radice, che il
+# Marketplace mostra, e .github/README.md, che GitHub mostra al suo posto
 FILE_COLLEGATI_SCHEDA = 75
-FILE_COLLEGATI_README = 10
+FILE_COLLEGATI_README = {"README.md": 10, ".github/README.md": 10}
 # Link al repository della release manuale (non seguito da «-MARKETPLACE»)
 RE_LINK_8 = re.compile(r"DanRobo76/VMC-HELTY-FLOW(?![-\w])")
 # File letti dal repository dell'integrazione (immagini, video)
@@ -808,13 +809,46 @@ async def test_modelli_della_scheda_senza_errori(hass: HomeAssistant) -> None:
 
 
 def test_link_del_readme() -> None:
-    """Immagini e video del README vengono dal repository dell'integrazione e ci sono."""
+    """Immagini e video dei due README vengono dal repository dell'integrazione e ci sono."""
     _serve_checkout_completo()
-    readme = (RADICE / "README.md").read_text(encoding="utf-8")
-    percorsi = [unquote(p) for p in RE_FILE_9.findall(readme)]
-    assert len(percorsi) == FILE_COLLEGATI_README
-    assert [p for p in percorsi if not (RADICE / p).is_file()] == []
-    assert "VMC-HELTY-FLOW/main/" not in readme and "VMC-HELTY-FLOW/raw/main/" not in readme
+    for nome, quanti in FILE_COLLEGATI_README.items():
+        readme = (RADICE / nome).read_text(encoding="utf-8")
+        assert _controlla_link(readme) == quanti, nome
+        assert "VMC-HELTY-FLOW/main/" not in readme and "VMC-HELTY-FLOW/raw/main/" not in readme
+        # nessun link relativo: in .github/ porterebbe a un altro percorso
+        assert re.findall(r"\]\((?!https?:|#|mailto:)", readme) == [], nome
+        assert re.findall(r"(?:src|href|srcset)=\"(?!https?:|#|mailto:)", readme) == [], nome
+
+
+def test_readme_marketplace_e_github() -> None:
+    """Il Marketplace mostra README.md, GitHub .github/README.md: chi è nel Marketplace
+    ha già aggiunto il repository e non vede i passi per farlo."""
+    marketplace = (RADICE / "README.md").read_text(encoding="utf-8")
+    github = (RADICE / ".github" / "README.md").read_text(encoding="utf-8")
+    for testo in ("2. **Aggiungere il repository**:", "2. **Add the repository**:",
+                  "3. **Installare**: cercare **VMC Master** nel Marketplace e premere **Installa**.",
+                  "3. **Install**: search for **VMC Master** in the Marketplace and press **Install**.",
+                  "7. **Una volta per ogni VMC**, nel pannello **Opzioni** della scheda:",
+                  "7. **Once per unit**, in the card's **Opzioni** panel:",
+                  "poi come dal punto 4.", "then as from step 4.",
+                  "**VMC nuova** (senza l'App Air Guard", "**New unit** (without the Air Guard app",
+                  "Dopo l'installazione tutto si regola", "After installation everything is set"):
+        assert testo in github and testo not in marketplace, testo
+    for testo in ("1. **Installare**: cercare il pulsante **Installa** in alto a destra e premerlo.",
+                  "1. **Install**: look for the **Install** button at the top right and press it.",
+                  "3. **Aggiungere la VMC**: *Impostazioni",
+                  "3. **Add the unit**: *Settings",
+                  "poi come dal punto 3.", "then as from step 3."):
+        assert testo in marketplace and testo not in github, testo
+    # nel Marketplace l'Installazione finisce con la scheda: niente rimando a Configurazione
+    for testo in ("**: vedere **Configurazione**", "**: see **Configuration**", "6. **"):
+        assert testo not in marketplace, testo
+    for testo in (marketplace, github):
+        assert "<audio" not in testo
+        # il primo riavvio non serve: basta quello della riparazione
+        assert "Strumenti → Riavvia" not in testo and "Developer tools → Restart" not in testo
+        assert testo.count("cliccare **«VMC Master: riavviare Home Assistant»**") == 1
+        assert testo.count("click **«VMC Master: restart Home Assistant»**") == 1
 
 
 def test_ricariche_dopo_aggiornamento() -> None:
@@ -1391,7 +1425,7 @@ def test_id_del_package(tmp_path: Path) -> None:
     # 133 unique_id e 10 automazioni, piu' le chiavi di aiutanti, timer e script
     assert sum(1 for d, p, _u in id_package if p in ("template", "command_line", "rest")) == 133
     assert sum(1 for d, _p, _u in id_package if d == "automation") == 10
-    assert len(id_package) == 459
+    assert len(id_package) == 460
     # nessun id in comune con un'altra VMC
     assert id_package.isdisjoint(_id_del_package_generato("salab"))
     # tag di Home Assistant e unique_id di blocco dei template

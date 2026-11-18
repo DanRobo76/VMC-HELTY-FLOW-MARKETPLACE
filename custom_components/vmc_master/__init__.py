@@ -74,6 +74,10 @@ CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 _CARTELLA = Path(__file__).parent
 
 ISSUE_RIAVVIO = "riavvio_necessario"
+# Riparazione del Marketplace di Home Assistant che chiede il riavvio dopo un'installazione
+# o un aggiornamento: quando c'e' lei, quella della VMC non serve (ne resta una sola)
+DOMINIO_MARKETPLACE = "marketplace"
+PREFISSO_RIAVVIO_MARKETPLACE = "restart_required_"
 ISSUE_PACKAGES = "packages_non_abilitati"
 ISSUE_DISABILITATA = "voce_disabilitata"
 DATI_RICARICHE = f"{DOMAIN}_ricariche"
@@ -152,6 +156,14 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         await _prepara_aggiornamento(hass, str(integrazione.version))
 
     hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, _alla_fermata)
+
+    @callback
+    def _riparazione_cambiata(evento: Event) -> None:
+        # Il Marketplace chiede il riavvio dopo la VMC: si toglie quella della VMC
+        if evento.data["domain"] == DOMINIO_MARKETPLACE and _riavvio_chiesto_dal_marketplace(hass):
+            ir.async_delete_issue(hass, DOMAIN, ISSUE_RIAVVIO)
+
+    hass.bus.async_listen(ir.EVENT_REPAIRS_ISSUE_REGISTRY_UPDATED, _riparazione_cambiata)
     return True
 
 
@@ -782,7 +794,22 @@ def _aggiorna_titolo_dopo_avvio(hass: HomeAssistant, entry: ConfigEntry) -> None
 
 
 @callback
+def _riavvio_chiesto_dal_marketplace(hass: HomeAssistant) -> bool:
+    """Il Marketplace ha gia' la sua riparazione «Restart required» per questa integrazione."""
+    return any(
+        dominio == DOMINIO_MARKETPLACE
+        and issue_id.startswith(PREFISSO_RIAVVIO_MARKETPLACE)
+        and issue.issue_domain == DOMAIN
+        and issue.active
+        for (dominio, issue_id), issue in ir.async_get(hass).issues.items()
+    )
+
+
+@callback
 def _segnala_riavvio(hass: HomeAssistant) -> None:
+    """Chiede il riavvio con una riparazione, se non lo chiede gia' il Marketplace."""
+    if _riavvio_chiesto_dal_marketplace(hass):
+        return
     ir.async_create_issue(
         hass,
         DOMAIN,
