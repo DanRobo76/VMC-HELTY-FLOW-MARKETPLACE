@@ -92,7 +92,7 @@
   - <sub>differenza tra temperatura interna ed esterna;</sub>
   - <sub>superamento del Set Lim. Δ Punto di Rugiada;</sub>
   - <sub>riscaldamento o raffrescamento indesiderato (Free Heating / Free Cooling).</sub>
-- <sub>Mostra sulla scheda se c'è un aggiornamento disponibile, anche per le versioni beta. L'avviso arriva dalle release di GitHub, controllate all'avvio di Home Assistant, ogni 24 ore, con «Agg. Sensori» e all'apertura del pannello «Informazioni» (in questo caso al massimo ogni 5 minuti). Se GitHub non risponde, la scheda scrive «Controllo aggiornamenti non riuscito (nessuna connessione a GitHub)».</sub>
+- <sub>Mostra sulla scheda se c'è un aggiornamento disponibile, anche per le versioni beta. L'avviso arriva dalle release di GitHub, controllate all'avvio di Home Assistant, ogni 24 ore, con «Agg. Sensori» e all'apertura del pannello «Informazioni» (in questo caso al massimo una volta al minuto). Se GitHub non risponde, la scheda scrive «Controllo aggiornamenti non riuscito (nessuna connessione a GitHub)».</sub>
 - <sub>Permette di selezionare la «Condizione Climatica Esterna» da introdurre tramite il «Set Lim. Δ Punto di Rugiada».</sub>
 
 <br>
@@ -442,7 +442,7 @@ I file del package non vanno modificati: un file modificato a mano viene riprist
   - <sub>difference between indoor and outdoor temperature;</sub>
   - <sub>exceeding the Set Lim. Δ Punto di Rugiada (dew point Δ limit);</sub>
   - <sub>unwanted heating or cooling (Free Heating / Free Cooling).</sub>
-- <sub>Shows on the card whether an update is available, beta versions included. The notice comes from the GitHub releases, checked when Home Assistant starts, every 24 hours, when «Agg. Sensori» is pressed and when the «Informazioni» panel is opened (in this case at most every 5 minutes). If GitHub cannot be reached, the card says «Controllo aggiornamenti non riuscito (nessuna connessione a GitHub)» (update check failed, no connection to GitHub).</sub>
+- <sub>Shows on the card whether an update is available, beta versions included. The notice comes from the GitHub releases, checked when Home Assistant starts, every 24 hours, when «Agg. Sensori» is pressed and when the «Informazioni» panel is opened (in this case at most once a minute). If GitHub cannot be reached, the card says «Controllo aggiornamenti non riuscito (nessuna connessione a GitHub)» (update check failed, no connection to GitHub).</sub>
 - <sub>Lets you select the «Condizione Climatica Esterna» (outdoor climate condition) applied through the «Set Lim. Δ Punto di Rugiada».</sub>
 
 <br>

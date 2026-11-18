@@ -13,8 +13,12 @@ const DOMINIO = "vmc_master";
 // Dopo un errore la scheda si richiede di nuovo solo dopo questo tempo (o se cambia la VMC)
 const ATTESA_DOPO_ERRORE_MS = 30 * 1000;
 // Controllo aggiornamenti all'apertura del Pannello Informazioni: al massimo una volta
-// ogni 5 minuti (GitHub accetta 60 richieste all'ora senza autenticazione)
-const ATTESA_CONTROLLO_MS = 5 * 60 * 1000;
+// al minuto (GitHub accetta 60 richieste all'ora senza autenticazione e tiene in cache
+// la risposta di releases/latest per 60 s: un limite piu' lungo nasconde la release
+// appena pubblicata anche riaprendo il pannello)
+const ATTESA_CONTROLLO_MS = 60 * 1000;
+// Versione di questo file JavaScript (?v=... messo dall'integrazione nell'indirizzo)
+const VERSIONE_JS = new URL(import.meta.url).searchParams.get("v") || "";
 const RE_SENSORE_REPOSITORY = /sensor\.vmc_[a-z]+_versione_repository/;
 const TITOLO_INFORMAZIONI = "Informazioni";
 // Ora dell'ultimo controllo aggiornamenti (di tutte le VMC), salvata nella pagina e non
@@ -62,6 +66,7 @@ class VmcMasterCard extends HTMLElement {
     // aggiornamento. Vale per la configurazione della scheda; questo file JavaScript resta
     // quello gia' caricato fino al ricaricamento della pagina.
     this._alRicollegamento = () => {
+      this._avvisaVersioneVecchia();
       if (this._scheda) {
         this._aggiorna();
         return;
@@ -75,6 +80,32 @@ class VmcMasterCard extends HTMLElement {
     // interne (shadow DOM): composedPath() da' anche gli elementi al loro interno.
     this._alClic = (evento) => this._clicInformazioni(evento);
     this.addEventListener("click", this._alClic);
+  }
+
+  // Dopo un aggiornamento dell'integrazione il browser si ricollega senza ricaricare la
+  // pagina e questo file resta quello vecchio (per esempio una versione senza il controllo
+  // all'apertura del Pannello Informazioni): lo si dice una volta, nella console e con un
+  // avviso di Home Assistant, finche' la pagina non viene ricaricata.
+  _avvisaVersioneVecchia() {
+    const stati = (this._hass && this._hass.states) || {};
+    const id = Object.keys(stati).find((x) => /^sensor\.vmc_[a-z]+_versione_corrente$/.test(x));
+    const stato = id && stati[id];
+    const installata = stato ? String(stato.state).replace(/^[^0-9]*/, "").trim() : "";
+    if (!VERSIONE_JS || !/^[0-9]/.test(installata) || installata === VERSIONE_JS) {
+      return;
+    }
+    if (window.__vmcMasterAvvisoVersione === installata) {
+      return;
+    }
+    window.__vmcMasterAvvisoVersione = installata;
+    console.warn(`VMC Master: scheda ${VERSIONE_JS} caricata, integrazione ${installata}: ricaricare la pagina`);
+    this.dispatchEvent(
+      new CustomEvent("hass-notification", {
+        detail: { message: `VMC Master aggiornata a ${installata}: ricaricare la pagina`, duration: 10000 },
+        bubbles: true,
+        composed: true,
+      })
+    );
   }
 
   _clicInformazioni(evento) {
@@ -132,11 +163,12 @@ class VmcMasterCard extends HTMLElement {
     // Repository» di tutte, cosi' ogni scheda mostra subito lo stesso avviso
     const sensori = this._sensoriRepository();
     const adesso = Date.now();
-    if (
-      !sensori.length ||
-      !this._hass ||
-      adesso - (ULTIMI_CONTROLLI.tutte || 0) < ATTESA_CONTROLLO_MS
-    ) {
+    if (!sensori.length || !this._hass) {
+      console.info("VMC Master: controllo aggiornamenti non possibile (sensore non trovato)");
+      return;
+    }
+    if (adesso - (ULTIMI_CONTROLLI.tutte || 0) < ATTESA_CONTROLLO_MS) {
+      console.info("VMC Master: controllo aggiornamenti gia' fatto da meno di un minuto");
       return;
     }
     ULTIMI_CONTROLLI.tutte = adesso;
@@ -144,8 +176,10 @@ class VmcMasterCard extends HTMLElement {
       .then(() =>
         this._hass.callService("homeassistant", "update_entity", { entity_id: sensori })
       )
-      .catch(() => {
-        // controllo non riuscito: la scheda mostra lo stato del sensore
+      .catch((errore) => {
+        // controllo non riuscito: si potra' riprovare subito riaprendo il pannello
+        ULTIMI_CONTROLLI.tutte = 0;
+        console.warn("VMC Master: controllo aggiornamenti non riuscito", errore);
       });
   }
 
@@ -249,6 +283,7 @@ class VmcMasterCard extends HTMLElement {
 
   set hass(hass) {
     this._hass = hass;
+    this._avvisaVersioneVecchia();
     if (this.isConnected) {
       this._ascolta(hass.connection);
     }
