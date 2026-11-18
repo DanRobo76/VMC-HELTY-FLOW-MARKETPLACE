@@ -98,3 +98,12 @@ def test_notifiche_aggiorna_elenco_condizionate_e_chiuse_da_sole():
         dismiss = _trova(passi, "persistent_notification.dismiss")
         assert len(dismiss) == 2, nome
         assert all(d["data"]["notification_id"] == nid for d, _ in dismiss), nome
+
+
+def test_inizializzazione_spegne_gli_interruttori_prima_di_tutto():
+    corpo = _script_inizializzazione()
+    spegni = corpo.index("action: input_boolean.turn_off")
+    assert spegni < corpo.index("action: script.vmc_master_azzera_booleans")
+    for nome in ("pdr", "umidita", "calendario", "freeheating", "freecooling", "co2_e_voc"):
+        voce = f"input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_{nome}"
+        assert spegni < corpo.index(voce) < corpo.index("action: script.vmc_master_azzera_booleans")

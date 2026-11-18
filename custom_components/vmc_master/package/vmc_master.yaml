@@ -5091,19 +5091,19 @@ input_boolean:
     initial: false
     icon: mdi:test-tube
 
-  vmc_master_opzioni_accendi_spegni_vmc_vs_pdr:                                 # [CONFIGURAZIONE, 166 RICHIAMI] [INTERFACCIA, 34 RICHIAMI] [AUTOMAZIONE, 91 RICHIAMI] VERIFICA IL VALORE DEL SENZORE vmc_master_punto_di_rugiada_verifica_confronto OVVERO SE IL VALORE DIVENTE "SE NE SCONSIGLIA L'IMPIEGO"; SOLAMENTE SE VIENE ACCESO (ON), LA VMC VERRA' SPENTA IN AUTOMATICO SE IL VALORE DIVENTA "SE NE SCONSIGLIA L'IMPIEGO"
+  vmc_master_opzioni_accendi_spegni_vmc_vs_pdr:                                 # [CONFIGURAZIONE, 167 RICHIAMI] [INTERFACCIA, 34 RICHIAMI] [AUTOMAZIONE, 91 RICHIAMI] VERIFICA IL VALORE DEL SENZORE vmc_master_punto_di_rugiada_verifica_confronto OVVERO SE IL VALORE DIVENTE "SE NE SCONSIGLIA L'IMPIEGO"; SOLAMENTE SE VIENE ACCESO (ON), LA VMC VERRA' SPENTA IN AUTOMATICO SE IL VALORE DIVENTA "SE NE SCONSIGLIA L'IMPIEGO"
     name: "VMC ON/OFF, in Funzione del Lim. Δ P. di Rugiada"
     icon: mdi:light-switch-off
 
-  vmc_master_opzioni_accendi_spegni_vmc_vs_calendario:                          # [CONFIGURAZIONE, 62 RICHIAMI] [INTERFACCIA, 6 RICHIAMI] [AUTOMAZIONE, 37 RICHIAMI] VERIFICA SE RENDERE AUTONOMA LA VMC, SE "ON" VERRA' IMPIEGATO IL CALENDARIO AVVIANDO IN AUTONOMIA L'ACCENSIONE E LO SPEGNIMENTO; SE "OFF" NON VERRA' IMPIEGATO IL CALENDARIO PERTENDO L'AUTONOMIA DI ACCENSIONE E SPEGNIMENTO AUTOMATICO
+  vmc_master_opzioni_accendi_spegni_vmc_vs_calendario:                          # [CONFIGURAZIONE, 63 RICHIAMI] [INTERFACCIA, 6 RICHIAMI] [AUTOMAZIONE, 37 RICHIAMI] VERIFICA SE RENDERE AUTONOMA LA VMC, SE "ON" VERRA' IMPIEGATO IL CALENDARIO AVVIANDO IN AUTONOMIA L'ACCENSIONE E LO SPEGNIMENTO; SE "OFF" NON VERRA' IMPIEGATO IL CALENDARIO PERTENDO L'AUTONOMIA DI ACCENSIONE E SPEGNIMENTO AUTOMATICO
     name: "VMC ON/OFF, in Funzione del Calendario"
     icon: mdi:light-switch-off
 
-  vmc_master_opzioni_accendi_spegni_vmc_vs_freeheating:                         # [CONFIGURAZIONE, 8 RICHIAMI] [INTERFACCIA, 5 RICHIAMI] [AUTOMAZIONE, 2 RICHIAMI]
+  vmc_master_opzioni_accendi_spegni_vmc_vs_freeheating:                         # [CONFIGURAZIONE, 9 RICHIAMI] [INTERFACCIA, 5 RICHIAMI] [AUTOMAZIONE, 2 RICHIAMI]
     name: "VMC ON/OFF, in Funzione della Vel. Free Heating"
     icon: mdi:light-switch-off
 
-  vmc_master_opzioni_accendi_spegni_vmc_vs_freecooling:                         # [CONFIGURAZIONE, 8 RICHIAMI] [INTERFACCIA, 5 RICHIAMI] [AUTOMAZIONE, 2 RICHIAMI]
+  vmc_master_opzioni_accendi_spegni_vmc_vs_freecooling:                         # [CONFIGURAZIONE, 9 RICHIAMI] [INTERFACCIA, 5 RICHIAMI] [AUTOMAZIONE, 2 RICHIAMI]
     name: "VMC ON/OFF, in Funzione della Vel. Free Cooling"
     icon: mdi:light-switch-off
 
@@ -5111,7 +5111,7 @@ input_boolean:
     name: "Mostra o Nascondi gli Avvisi"
     icon: mdi:light-switch-off
 
-  vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc:                           # [CONFIGURAZIONE, 117 RICHIAMI] [INTERFACCIA, 42 RICHIAMI] [AUTOMAZIONE, 33 RICHIAMI] VERIFICA IL VALORE DI PERICOLOSITA' DEI SENZORE CO2 E VOC; SOLAMENTE; LA VMC VERRA' SI AVVIERA' IN AUTOMATICO SE VIENE ACCESO (ON), QUALORA I VALORI RISULTINO PERICOLOSI
+  vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc:                           # [CONFIGURAZIONE, 118 RICHIAMI] [INTERFACCIA, 42 RICHIAMI] [AUTOMAZIONE, 33 RICHIAMI] VERIFICA IL VALORE DI PERICOLOSITA' DEI SENZORE CO2 E VOC; SOLAMENTE; LA VMC VERRA' SI AVVIERA' IN AUTOMATICO SE VIENE ACCESO (ON), QUALORA I VALORI RISULTINO PERICOLOSI
     name: "VMC ON/OFF, in Funzione del Lim. CO₂ e/o VOC"
     icon: mdi:light-switch-off
 
@@ -5119,7 +5119,7 @@ input_boolean:
     name: "Spia Avvisi"
     icon: mdi:alert-rhombus-outline
 
-  vmc_master_opzioni_accendi_spegni_vmc_vs_umidita:                             # [CONFIGURAZIONE, 27 RICHIAMI] [INTERFACCIA, 16 RICHIAMI] [AUTOMAZIONE, 24 RICHIAMI] VERIFICA IL VALORE DI PERICOLOSITA' DELL'UMIDITA' SETTATA; LA VMC VERRA' SI AVVIERA' IN AUTOMATICO SE VIENE ACCESO (ON), QUALORA IL VALORE RISULTI PERICOLOSO
+  vmc_master_opzioni_accendi_spegni_vmc_vs_umidita:                             # [CONFIGURAZIONE, 28 RICHIAMI] [INTERFACCIA, 16 RICHIAMI] [AUTOMAZIONE, 24 RICHIAMI] VERIFICA IL VALORE DI PERICOLOSITA' DELL'UMIDITA' SETTATA; LA VMC VERRA' SI AVVIERA' IN AUTOMATICO SE VIENE ACCESO (ON), QUALORA IL VALORE RISULTI PERICOLOSO
     name: "VMC ON/OFF, in Funzione dell'Umidità Interna"
     icon: mdi:light-switch-off
 ################### Fine Creazione Switch Booleani impiegati nell'Interfaccia Lovelace per mostrare o meno le Opzioni ####################################################################################
@@ -8332,7 +8332,7 @@ script:
     alias: VMC Master - Profilo Inizializzazione
     description: >
       Da eseguire solo la prima volta, subito dopo aver aggiunto la VMC.
-      In sequenza: porta tutte le variabili booleane su OFF, azzera gli Offset dei sensori, esegue i
+      In sequenza: spegne gli interruttori VMC ON/OFF, porta tutte le variabili booleane su OFF, azzera gli Offset dei sensori, esegue i
       Profili Calendario, Free Heating/Cooling, Lim. Δ P. di Rugiada, Umidità e Audio, riporta i Tempi di
       Attesa ai valori originali, arresta la VMC (Velocità 0), dopo 5 s disattiva lo Status Routine
       Sensori, dopo altri 5 s attiva lo Status Pannello Led, attiva gli Avvisi, la Notifica Status VMC e
@@ -8345,6 +8345,15 @@ script:
       - action: timer.start                                                 # COUNTDOWN IN SCHEDA SOTTO IL PULSANTE
         target:
           entity_id: timer.vmc_master_countdown_script_inizializzazione
+      - action: input_boolean.turn_off                                      # SPEGNE GLI INTERRUTTORI VMC ON/OFF: RIACCESI A FINE SCRIPT, RIARMANO I TRIGGER DELLE ALLERTE GIA' IN CORSO
+        target:
+          entity_id:
+            - input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr
+            - input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_umidita
+            - input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_calendario
+            - input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_freeheating
+            - input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_freecooling
+            - input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc
       - action: script.vmc_master_azzera_booleans
         data: {}
       - action: input_boolean.turn_on                                       # RIAPRE LA FINESTRA OPZIONI, CHIUSA DA AZZERA BOOLEANS, PER MOSTRARE IL COUNTDOWN SOTTO IL PULSANTE
