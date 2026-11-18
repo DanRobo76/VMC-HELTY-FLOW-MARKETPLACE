@@ -190,7 +190,10 @@ description: >-
   il Black-Out resta memorizzato nella Spia Black-Out del Calendario, così la
   VMC riparte anche dopo un riavvio di Home Assistant o se la corrente torna a
   Home Assistant spento: in questo caso riparte dall'ultima fase del
-  riallineamento (140 Secondi dall'avvio) più i 32 Secondi;
+  riallineamento (140 Secondi dall'avvio) più i 32 Secondi; se la corrente
+  torna durante il riallineamento al riavvio (fasi 1-3) dopo almeno 32 Secondi
+  OFF-Line, la VMC riparte 32 Secondi dopo il ritorno anche se il Black-Out non
+  è stato ancora memorizzato;
 
   - Avvisi (riquadro degli Avvisi e avviso di aggiornamento del Package):
   5 Secondi.
@@ -2906,6 +2909,17 @@ triggers:
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
     id: calendario_ritorno_da_black_out
     trigger: template
+    for:
+      seconds: "{{ states('input_number.vmc_master_attesa_blackout_ripristino') | int(32) }}"
+  - alias: >-
+      Calendario - VMC di nuovo ON-Line durante il riallineamento al riavvio [la
+      VMC riparte in funzione della Spia Calendario accesa anche se il Black-Out
+      non è stato ancora memorizzato]
+    trigger: state
+    entity_id: sensor.vmc_master_status_ip_interfaccia
+    from: OFF-Line
+    to: ON-Line
+    id: calendario_ritorno_da_black_out_riallineamento
     for:
       seconds: "{{ states('input_number.vmc_master_attesa_blackout_ripristino') | int(32) }}"
   - alias: >-
@@ -18232,6 +18246,65 @@ actions:
         alias: >-
           Calendario - Black-Out durante una Fascia: al ritorno della corrente la VMC riparte in funzione
           della Spia Calendario accesa (velocità della Fascia in corso) [Foglio Logiche]
+      - conditions:
+          - condition: trigger
+            id: calendario_ritorno_da_black_out_riallineamento
+          - alias: >-
+              Riallineamento al riavvio in corso (fasi 1-3, quando il ritorno con la Spia Black-Out del Calendario non può
+              scattare) e VMC rimasta OFF-Line almeno per il tempo di rilevazione del Black-Out (un breve disturbo della rete non è un Black-Out)
+            condition: template
+            value_template: >-
+              {{ states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 1
+              and states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) <= 3
+              and (trigger.to_state.last_changed - trigger.from_state.last_changed).total_seconds() >= states('input_number.vmc_master_attesa_blackout_rilevazione') | int(32) }}
+        sequence:
+          - alias: Spia Black-Out del Calendario OFF (il ritorno della corrente si gestisce una sola volta)
+            data: {}
+            target:
+              entity_id: input_boolean.vmc_master_spia_calendario_black_out
+            action: input_boolean.turn_off
+          - alias: Interruttore del Calendario acceso, VMC ON-Line e velocità della VMC disponibile
+            condition: template
+            value_template: >-
+              {{ states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_calendario') == 'on'
+              and states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line'
+              and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile' }}
+          - choose:
+              - alias: Spia 1° Fascia accesa -> la VMC riparte con la velocità della 1° Fascia
+                conditions:
+                  - condition: template
+                    value_template: >-
+                      {{
+                      states('input_boolean.vmc_master_spia_calendario_lunedi_1') == 'on' or
+                      states('input_boolean.vmc_master_spia_calendario_martedi_1') == 'on' or
+                      states('input_boolean.vmc_master_spia_calendario_mercoledi_1') == 'on' or
+                      states('input_boolean.vmc_master_spia_calendario_giovedi_1') == 'on' or
+                      states('input_boolean.vmc_master_spia_calendario_venerdi_1') == 'on' or
+                      states('input_boolean.vmc_master_spia_calendario_sabato_1') == 'on' or
+                      states('input_boolean.vmc_master_spia_calendario_domenica_1') == 'on'
+                      }}
+                sequence:
+                  - action: script.vmc_master_calendario_fascia_1_on
+                    data: {}
+              - alias: Spia 2° Fascia accesa -> la VMC riparte con la velocità della 2° Fascia
+                conditions:
+                  - condition: template
+                    value_template: >-
+                      {{
+                      states('input_boolean.vmc_master_spia_calendario_lunedi_2') == 'on' or
+                      states('input_boolean.vmc_master_spia_calendario_martedi_2') == 'on' or
+                      states('input_boolean.vmc_master_spia_calendario_mercoledi_2') == 'on' or
+                      states('input_boolean.vmc_master_spia_calendario_giovedi_2') == 'on' or
+                      states('input_boolean.vmc_master_spia_calendario_venerdi_2') == 'on' or
+                      states('input_boolean.vmc_master_spia_calendario_sabato_2') == 'on' or
+                      states('input_boolean.vmc_master_spia_calendario_domenica_2') == 'on'
+                      }}
+                sequence:
+                  - action: script.vmc_master_calendario_fascia_2_on
+                    data: {}
+        alias: >-
+          Calendario - VMC di nuovo ON-Line durante il riallineamento al riavvio di Home Assistant (Black-Out a cavallo del
+          riavvio, anche se non ancora memorizzato): la VMC riparte con la velocità della Fascia in corso [Foglio Logiche]
       - conditions:
           - condition: trigger
             id: 1° Lunedì On

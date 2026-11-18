@@ -125,3 +125,26 @@ def test_pulisci_cronologia_e_scheda_hanno_le_stesse_entita():
     elenco = scheda[scheda.index("{%- set elenco = [") :]
     della_scheda = set(re.findall(r"'([a-z_]+\.vmc_master_[a-z0-9_]+)'", elenco[: elenco.index("] -%}")]))
     assert dello_script and dello_script <= della_scheda
+
+
+def test_ritorno_da_black_out_durante_il_riallineamento():
+    """Corrente tornata nelle fasi 1-3: agisce il trigger di stato, una volta sola (spegne prima la spia)."""
+    automazione = hay.load_yaml(str(PKG / "vmc_master_automazione.txt"))
+    per_id = {str(t.get("id")): t for t in automazione["triggers"]}
+    assert per_id["calendario_ritorno_da_black_out"]["trigger"] == "template"
+    nuovo = per_id["calendario_ritorno_da_black_out_riallineamento"]
+    assert (nuovo["trigger"], nuovo["entity_id"], nuovo["from"], nuovo["to"]) == (
+        "state", "sensor.vmc_master_status_ip_interfaccia", "OFF-Line", "ON-Line"
+    )
+    assert nuovo["for"] == per_id["calendario_ritorno_da_black_out"]["for"]
+    testo = (PKG / "vmc_master_automazione.txt").read_text(encoding="utf-8")
+    ramo = testo[testo.index("            id: calendario_ritorno_da_black_out_riallineamento") :]
+    ramo = ramo[: ramo.index("\n      - conditions:")]
+    assert "float(0) >= 1" in ramo and "float(0) <= 3" in ramo
+    assert "attesa_blackout_rilevazione" in ramo
+    assert ramo.index(f"entity_id: {SPIA_BLACK_OUT}\n            action: input_boolean.turn_off") < ramo.index("choose:")
+    pacchetto = (PKG / "vmc_master.yaml").read_text(encoding="utf-8")
+    for verso in ("ON", "OFF"):
+        assert pacchetto.count(
+            f'id: "{verso}|blackout_ripristino|blackout_ripristino|Calendario - VMC di nuovo ON-Line durante il riallineamento al riavvio"'
+        ) == 1

@@ -604,7 +604,7 @@ template:
         icon: mdi:ip
 
   - sensor:
-      - default_entity_id: sensor.vmc_master_status_ip_interfaccia              # [CONFIGURAZIONE, 325 RICHIAMI] [INTERFACCIA, 115 RICHIAMI] [AUTOMAZIONE, 319 RICHIAMI] SENSORE IMPIEGATO PER LA VISUALIZZAZIONE NELL'INTERFACCIA SE LA VMC E' IN RETE O MENO
+      - default_entity_id: sensor.vmc_master_status_ip_interfaccia              # [CONFIGURAZIONE, 327 RICHIAMI] [INTERFACCIA, 115 RICHIAMI] [AUTOMAZIONE, 321 RICHIAMI] SENSORE IMPIEGATO PER LA VISUALIZZAZIONE NELL'INTERFACCIA SE LA VMC E' IN RETE O MENO
         name: "Status VMC"
         unique_id: vmc_master_status_ip_interfaccia
         state: >
@@ -4850,7 +4850,7 @@ input_number:
     mode: box
     unit_of_measurement: s
     icon: mdi:timer-cog-outline
-  vmc_master_attesa_blackout_rilevazione:                                      # [CONFIGURAZIONE, 5 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 12 RICHIAMI] TEMPO DI ATTESA [s] DI 11 TRIGGER DELL'AUTOMAZIONE VMC MASTER (VALORE ORIGINALE 32 s), LETTO ANCHE DAL COUNTDOWN
+  vmc_master_attesa_blackout_rilevazione:                                      # [CONFIGURAZIONE, 5 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 13 RICHIAMI] TEMPO DI ATTESA [s] DI 12 TRIGGER DELL'AUTOMAZIONE VMC MASTER (VALORE ORIGINALE 32 s), LETTO ANCHE DAL COUNTDOWN
     name: "Attesa Rilevazione Black-Out"
     min: 1
     max: 300
@@ -4858,7 +4858,7 @@ input_number:
     mode: box
     unit_of_measurement: s
     icon: mdi:timer-cog-outline
-  vmc_master_attesa_blackout_ripristino:                                       # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 9 RICHIAMI] TEMPO DI ATTESA [s] DI 9 TRIGGER DELL'AUTOMAZIONE VMC MASTER (VALORE ORIGINALE 32 s), LETTO ANCHE DAL COUNTDOWN
+  vmc_master_attesa_blackout_ripristino:                                       # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 10 RICHIAMI] TEMPO DI ATTESA [s] DI 10 TRIGGER DELL'AUTOMAZIONE VMC MASTER (VALORE ORIGINALE 32 s), LETTO ANCHE DAL COUNTDOWN
     name: "Attesa Ripristino dopo Black-Out"
     min: 1
     max: 300
@@ -5102,7 +5102,7 @@ input_boolean:
     name: "VMC ON/OFF, in Funzione del Lim. Δ P. di Rugiada"
     icon: mdi:light-switch-off
 
-  vmc_master_opzioni_accendi_spegni_vmc_vs_calendario:                          # [CONFIGURAZIONE, 63 RICHIAMI] [INTERFACCIA, 6 RICHIAMI] [AUTOMAZIONE, 37 RICHIAMI] VERIFICA SE RENDERE AUTONOMA LA VMC, SE "ON" VERRA' IMPIEGATO IL CALENDARIO AVVIANDO IN AUTONOMIA L'ACCENSIONE E LO SPEGNIMENTO; SE "OFF" NON VERRA' IMPIEGATO IL CALENDARIO PERTENDO L'AUTONOMIA DI ACCENSIONE E SPEGNIMENTO AUTOMATICO
+  vmc_master_opzioni_accendi_spegni_vmc_vs_calendario:                          # [CONFIGURAZIONE, 63 RICHIAMI] [INTERFACCIA, 6 RICHIAMI] [AUTOMAZIONE, 38 RICHIAMI] VERIFICA SE RENDERE AUTONOMA LA VMC, SE "ON" VERRA' IMPIEGATO IL CALENDARIO AVVIANDO IN AUTONOMIA L'ACCENSIONE E LO SPEGNIMENTO; SE "OFF" NON VERRA' IMPIEGATO IL CALENDARIO PERTENDO L'AUTONOMIA DI ACCENSIONE E SPEGNIMENTO AUTOMATICO
     name: "VMC ON/OFF, in Funzione del Calendario"
     icon: mdi:light-switch-off
 
@@ -5167,63 +5167,63 @@ input_boolean:
     name: "Spia Velocità Free Cool./Heat."
     icon: mdi:memory    
 
-  vmc_master_spia_calendario_lunedi_1:                                          # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 76 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL LUNEDì 1° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_lunedi_1:                                          # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 77 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL LUNEDì 1° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Lunedì 1°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_lunedi_2:                                          # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 76 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL LUNEDì 2° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_lunedi_2:                                          # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 77 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL LUNEDì 2° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Lunedì 2°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_martedi_1:                                         # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 76 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL MARTEDì 1° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_martedi_1:                                         # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 77 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL MARTEDì 1° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Martedì 1°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_martedi_2:                                         # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 76 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL MARTEDì 2° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_martedi_2:                                         # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 77 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL MARTEDì 2° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Martedì 2°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_mercoledi_1:                                       # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 76 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL MERCOLEDì 1° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_mercoledi_1:                                       # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 77 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL MERCOLEDì 1° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Mercoledì 1°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_mercoledi_2:                                       # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 76 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL MERCOLEDì 2° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_mercoledi_2:                                       # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 77 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL MERCOLEDì 2° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Mercoledì 2°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_giovedi_1:                                         # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 76 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL GIOVEDì 1° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_giovedi_1:                                         # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 77 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL GIOVEDì 1° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Giovedì 1°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_giovedi_2:                                         # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 76 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL GIOVEDì 2° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_giovedi_2:                                         # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 77 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL GIOVEDì 2° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Giovedì 2°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_venerdi_1:                                         # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 76 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL VENERDì 1° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_venerdi_1:                                         # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 77 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL VENERDì 1° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Venerdì 1°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_venerdi_2:                                         # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 76 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL VENERDì 2° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_venerdi_2:                                         # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 77 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL VENERDì 2° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Venerdì 2°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_sabato_1:                                          # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 76 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL SABATO 1° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_sabato_1:                                          # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 77 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL SABATO 1° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Sabato 1°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_sabato_2:                                          # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 76 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL SABATO 2° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_sabato_2:                                          # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 77 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL SABATO 2° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Sabato 2°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_domenica_1:                                        # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 76 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL DOMENICA 1° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_domenica_1:                                        # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 77 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL DOMENICA 1° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Domenica 1°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_domenica_2:                                        # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 76 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL DOMENICA 2° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_domenica_2:                                        # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 77 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL DOMENICA 2° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Domenica 2°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_black_out:                                         # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 8 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO UN BLACK-OUT INIZIA ALL'INTERNO DI UNA FASCIA DEL CALENDARIO (AL RITORNO DELLA CORRENTE LA VMC RIPARTE CON LA VELOCITA' DELLA FASCIA, ANCHE DOPO UN RIAVVIO DI HOME ASSISTANT)
+  vmc_master_spia_calendario_black_out:                                         # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 9 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO UN BLACK-OUT INIZIA ALL'INTERNO DI UNA FASCIA DEL CALENDARIO (AL RITORNO DELLA CORRENTE LA VMC RIPARTE CON LA VELOCITA' DELLA FASCIA, ANCHE DOPO UN RIAVVIO DI HOME ASSISTANT)
     name: "Spia Black-Out all'interno del Calendario"
     icon: mdi:memory
 
@@ -5756,7 +5756,7 @@ timer:
   vmc_master_countdown_blackout_rilevazione:                     # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 4 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] COUNTDOWN DELL'ATTESA IN CORSO DI UNO DEI 12 TRIGGER «RILEVAZIONE BLACK-OUT» DELL'AUTOMAZIONE (AVVIATO DA vmc_master_countdown_attese_automazione)
     name: "Rilevazione Black-Out"
     icon: mdi:timer-sand
-  vmc_master_countdown_blackout_ripristino:                      # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 6 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] COUNTDOWN DELL'ATTESA IN CORSO DI UNO DEI 9 TRIGGER «RIPRISTINO DOPO BLACK-OUT» DELL'AUTOMAZIONE (AVVIATO DA vmc_master_countdown_attese_automazione)
+  vmc_master_countdown_blackout_ripristino:                      # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 6 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] COUNTDOWN DELL'ATTESA IN CORSO DI UNO DEI 10 TRIGGER «RIPRISTINO DOPO BLACK-OUT» DELL'AUTOMAZIONE (AVVIATO DA vmc_master_countdown_attese_automazione)
     name: "Ripristino dopo Black-Out"
     icon: mdi:timer-sand
   vmc_master_countdown_calendario_inizio:                        # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 4 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] COUNTDOWN DELL'ATTESA IN CORSO DI UNO DEI 14 TRIGGER «INIZIO FASCIA» DELL'AUTOMAZIONE (AVVIATO DA vmc_master_countdown_attese_automazione)
@@ -8513,7 +8513,7 @@ script:
     icon: mdi:fingerprint-off
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  vmc_master_calendario_fascia_1_on:                                            # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 8 RICHIAMI]
+  vmc_master_calendario_fascia_1_on:                                            # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 9 RICHIAMI]
     alias: VMC Master - Calendario Fascia 1 On
     sequence:
       - delay:
@@ -12946,7 +12946,7 @@ script:
       senza allerta va in Free Cooling; nei mesi non programmati va in Free Cooling.
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  vmc_master_calendario_fascia_2_on:                                            # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 8 RICHIAMI]
+  vmc_master_calendario_fascia_2_on:                                            # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 9 RICHIAMI]
     alias: VMC Master - Calendario Fascia 2 On
     sequence:
       - delay:
@@ -19226,9 +19226,10 @@ automation:
       e quale. Non comanda la VMC e non cambia spie: per ogni famiglia di allerte avvia e ferma un timer e scrive
       il testo dell'azione in attesa. Quando la condizione di un trigger diventa vera parte il timer della sua
       famiglia con la stessa durata dell'attesa; se la condizione torna falsa prima della fine, il timer si ferma.
-      Copre tutti i 132 trigger con attesa dell'automazione; per il ritorno della corrente durante una Fascia del
+      Copre tutti i 133 trigger con attesa dell'automazione; per il ritorno della corrente durante una Fascia del
       Calendario il timer parte solo se valgono anche le condizioni del ramo dell'automazione (interruttore del
-      Calendario acceso, spia di una Fascia accesa).
+      Calendario acceso, spia di una Fascia accesa; per il ritorno durante il riallineamento al riavvio anche
+      fase 1-3 e VMC rimasta OFF-Line almeno per il tempo di rilevazione del Black-Out).
     mode: parallel
     max: 300
     triggers:
@@ -22796,6 +22797,15 @@ automation:
           {%- endset -%}
           {%- set vmc_master_esito = vmc_master_esito | trim | lower -%}
           {{ not (vmc_master_esito in ['true', 'yes', 'on', 'enable'] or (vmc_master_esito | is_number and vmc_master_esito | float(0) != 0)) }}
+      - trigger: state                                                     # calendario_ritorno_da_black_out_riallineamento (ATTESA: input_number.vmc_master_attesa_blackout_ripristino; FILTRATO DALLA CONDIZIONE conditions DI QUESTA AUTOMAZIONE)
+        entity_id: sensor.vmc_master_status_ip_interfaccia
+        from: OFF-Line
+        to: ON-Line
+        id: "ON|blackout_ripristino|blackout_ripristino|Calendario - VMC di nuovo ON-Line durante il riallineamento al riavvio"
+      - trigger: state
+        entity_id: sensor.vmc_master_status_ip_interfaccia
+        from: ON-Line
+        id: "OFF|blackout_ripristino|blackout_ripristino|Calendario - VMC di nuovo ON-Line durante il riallineamento al riavvio"
       - trigger: template                                                  # 1° Lunedì On (ATTESA: input_number.vmc_master_attesa_calendario_inizio)
         id: "ON|calendario_inizio|calendario_inizio|All'Interno della 1° Fascia Lunedì"
         value_template: |-
@@ -26854,12 +26864,20 @@ automation:
           {%- endset -%}
           {%- set vmc_master_esito = vmc_master_esito | trim | lower -%}
           {{ not (vmc_master_esito in ['true', 'yes', 'on', 'enable'] or (vmc_master_esito | is_number and vmc_master_esito | float(0) != 0)) }}
-    conditions:                                                               # SOLO PER IL RITORNO DELLA CORRENTE DURANTE UNA FASCIA: STESSE CONDIZIONI DEL RAMO DELL'AUTOMAZIONE VMC MASTER (INTERRUTTORE CALENDARIO, SPIA DI UNA FASCIA ACCESA)
+    conditions:                                                               # SOLO PER IL RITORNO DELLA CORRENTE DURANTE UNA FASCIA: STESSE CONDIZIONI DEL RAMO DELL'AUTOMAZIONE VMC MASTER (INTERRUTTORE CALENDARIO, SPIA DI UNA FASCIA ACCESA; PER IL RITORNO DURANTE IL RIALLINEAMENTO AL RIAVVIO ANCHE FASE 1-3 E OFF-LINE ALMENO QUANTO LA RILEVAZIONE DEL BLACK-OUT)
       - condition: template
         value_template: >-
           {{ not trigger.id.startswith('ON|blackout_ripristino|blackout_ripristino|Calendario')
           or (
             states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_calendario') == 'on'
+            and (
+              trigger.platform != 'state'
+              or (
+                states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 1
+                and states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) <= 3
+                and (trigger.to_state.last_changed - trigger.from_state.last_changed).total_seconds() >= states('input_number.vmc_master_attesa_blackout_rilevazione') | int(32)
+              )
+            )
             and (
               states('input_boolean.vmc_master_spia_calendario_lunedi_1') == 'on' or
               states('input_boolean.vmc_master_spia_calendario_martedi_1') == 'on' or
