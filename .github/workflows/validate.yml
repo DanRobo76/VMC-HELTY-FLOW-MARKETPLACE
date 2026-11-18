@@ -55,5 +55,6 @@ jobs:
       - name: Controlla la versione di Home Assistant
         run: |
           python -c "from homeassistant.const import __version__ as v; import sys; print('Home Assistant', v); sys.exit(v != '${HA_VERSION}')"
-      - name: Esegui i test
-        run: pytest -q
+      - name: Esegui i test con la copertura
+        # Codice Python dell'integrazione coperto al 100 %, righe e rami (impostazioni in .coveragerc)
+        run: pytest -q --cov=custom_components/vmc_master --cov-branch --cov-report=term-missing --cov-fail-under=100
