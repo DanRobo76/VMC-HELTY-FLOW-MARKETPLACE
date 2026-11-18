@@ -40,7 +40,8 @@ SUFFISSO_MODIFICATI = "modificati"
 # Prima riga «host:» del package: e' l'IP della VMC (sensori TCP)
 _RE_HOST = re.compile(r"^\s+host:\s+([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)", re.MULTILINE)
 
-# Parti del package che Home Assistant sa ricaricare senza riavvio: chiave -> servizio
+# Parti del package che Home Assistant sa ricaricare senza riavvio: chiave -> servizio.
+# «shell_command» non ha un servizio di ricarica: un suo cambio chiede il riavvio.
 SERVIZI_RICARICA = {
     "automation": "automation.reload",
     "command_line": "command_line.reload",
@@ -51,7 +52,6 @@ SERVIZI_RICARICA = {
     "input_select": "input_select.reload",
     "input_text": "input_text.reload",
     "script": "script.reload",
-    "shell_command": "shell_command.reload",
     "template": "template.reload",
     "timer": "timer.reload",
 }

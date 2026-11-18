@@ -9,6 +9,7 @@ Le funzioni sono bloccanti: si chiamano con hass.async_add_executor_job.
 
 from __future__ import annotations
 
+import ipaddress
 import threading
 import time
 from collections.abc import Callable
@@ -69,7 +70,13 @@ def esegui(
         elif azione == "configure":
             if (engine.root / "restore.json").exists():
                 engine.restore()
-            engine.run(dati or {})
+            dati = dict(dati or {})
+            if not dati.get("lan_cidr"):
+                try:
+                    dati["lan_cidr"] = rete_di_ricerca(engine.supervisor.info())
+                except Failure:
+                    pass  # lo stesso errore lo da' il motore, con il suo messaggio
+            engine.run(dati)
         elif azione == "verify":
             engine.verify(dati or {})
         elif azione == "recover":
@@ -113,6 +120,54 @@ def rete_del_server(config_dir: str) -> str:
         if interfaccia.get("type") == "wireless" and interfaccia.get("connected"):
             return (interfaccia.get("wifi") or {}).get("ssid", "")
     return ""
+
+
+def rete_di_ricerca(info: dict[str, Any]) -> str:
+    """Rete in cui il motore cerca la VMC dopo il collegamento ("" = quella del server).
+
+    Il motore cerca al massimo 256 indirizzi (una rete /24): con una rete di casa piu'
+    ampia (/23, /22, ...) si cerca nei 256 indirizzi intorno all'IP del server, dove di
+    solito il router assegna anche quello della VMC. Se la VMC prende un IP fuori da
+    questi, il collegamento riesce lo stesso e la VMC si aggiunge poi scrivendo l'IP."""
+    for interfaccia in motore.interfaces(info):
+        if not interfaccia.get("connected"):
+            continue
+        for indirizzo in motore.addresses(interfaccia):
+            try:
+                rete = ipaddress.ip_interface(indirizzo)
+            except ValueError:
+                continue
+            if (
+                rete.version == 4
+                and rete.network.num_addresses > 256
+                and any(rete.network.subnet_of(n) for n in motore.PRIVATE)
+            ):
+                return str(ipaddress.ip_network(f"{rete.ip}/24", strict=False))
+    return ""
+
+
+def rete_da_ripristinare(config_dir: str) -> str:
+    """Rete Wi-Fi del server che il motore deve ripristinare con una password: e' quella
+    della scheda Wi-Fi che il motore usera' (stessa scelta del motore). "" se non serve
+    una password (scheda Wi-Fi libera, rete aperta, server senza Wi-Fi o senza Supervisor)."""
+    try:
+        info = motore.Supervisor().info()
+        scheda = motore.Engine.choose_wifi(None, info, "")
+        motore.restore_payload(scheda, "")
+    except Failure as errore:
+        if errore.code == "restore_password_required":
+            return (scheda.get("wifi") or {}).get("ssid", "")
+    return ""
+
+
+def aggiorna_ip(config_dir: str, ip_vecchio: str, ip_nuovo: str) -> None:
+    """IP della VMC cambiato: se e' l'ultima collegata dal motore, identity.json prende il
+    nuovo IP (cosi' «Continua con la VMC appena collegata» non la ripropone)."""
+    radice = cartella(config_dir)
+    identita = motore.read_identity(radice)
+    if identita.get("ip") and identita["ip"] == ip_vecchio and ip_nuovo != ip_vecchio:
+        identita["ip"] = ip_nuovo
+        motore.atomic_json(radice / "identity.json", identita)
 
 
 def rimanda_in_access_point(
