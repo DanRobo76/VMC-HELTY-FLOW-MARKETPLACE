@@ -59,8 +59,9 @@ def test_nessun_attendere_fisso_nelle_quattro_schede() -> None:
 
 
 def test_conteggio_dei_messaggi_con_attesa() -> None:
-    """Ogni «ATTENDERE..» della b31 e' diventato la variabile (conteggio esatto per scheda)."""
-    attesi = {"inquinanti": (10, 3), "pdr": (12, 0), "free": (8, 0), "umidita": (5, 0)}
+    """Ogni «ATTENDERE..» della b31 e' diventato la variabile (conteggio esatto per scheda); nella scheda PdR il Msg 1
+    «ARRESTO DELLA VMC» ha ora l'attesa come il Msg 2 (verifica profonda, A2-7)."""
+    attesi = {"inquinanti": (10, 3), "pdr": (13, 0), "free": (8, 0), "umidita": (5, 0)}
     for chiave, contenuto in _schede().items():
         assert (contenuto.count("{{ attendere }}"), contenuto.count("{{ attendere_avvio }}")) == attesi[chiave], chiave
 
