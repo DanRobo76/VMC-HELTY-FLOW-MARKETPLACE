@@ -850,7 +850,7 @@ def test_readme_marketplace_e_github() -> None:
                   "Cosa lo rende diverso", "Scenario tipico", "What makes it different",
                   "Typical scenario", "Servono proprio", "These exact lines",
                   "si aggiunge con il suo IP", "add each unit with its IP",
-                  "riavviare una volta sola", "restart once"):
+                  "riavviare una volta sola", "restart once", "ASPIRATORE MASTER"):
         assert testo not in marketplace, testo
     for testo in (marketplace, github):
         assert "<audio" not in testo

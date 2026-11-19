@@ -29,10 +29,6 @@
   <strong>La tua ventilazione meccanica controllata in Home Assistant.</strong>
 </p>
 
-<p align="center">
-  Hai già provato <strong><a href="https://github.com/DanRobo76/Aspiratore">ASPIRATORE MASTER</a></strong>?
-</p>
-
 ---
 <details>
 <summary><strong>Perché VMC MASTER</strong></summary>
@@ -249,10 +245,6 @@ Per ogni VMC nel pannello **Opzioni** della scheda:
   </a>
   <br>
   <sub>Presentation video · 1 minute 17 seconds · click to download</sub>
-</p>
-
-<p align="center">
-  Have you tried <strong><a href="https://github.com/DanRobo76/Aspiratore">ASPIRATORE MASTER</a></strong>?
 </p>
 
 ---
