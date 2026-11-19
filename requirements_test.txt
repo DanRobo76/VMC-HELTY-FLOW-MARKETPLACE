@@ -3,7 +3,11 @@
 #   pip install homeassistant==2026.11.2
 #   pip install home-assistant-frontend==<versione in homeassistant/package_constraints.txt>
 #   pytest
+# Copertura (righe e rami, impostazioni in .coveragerc), come la CI:
+#   pytest --cov=custom_components/vmc_master --cov-branch --cov-fail-under=100
 # Il plugin 0.13.375 è l'ultimo pubblicato e fissa homeassistant==2026.10.4, sotto il
 # minimo dichiarato in hacs.json (2026.11.0): HA 2026.11.2 si installa sopra (pip
 # avvisa del conflitto, è previsto). tests/conftest.py rende il plugin compatibile.
 pytest-homeassistant-custom-component==0.13.375
+# stessa versione fissata dal plugin 0.13.375
+pytest-cov==7.1.0

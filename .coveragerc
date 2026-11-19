@@ -1,0 +1,19 @@
+# Copertura del codice Python dell'integrazione (pytest-cov), righe e rami.
+# In CI: pytest --cov=custom_components/vmc_master --cov-branch --cov-fail-under=100
+[run]
+branch = True
+source = custom_components/vmc_master
+# Tracer classico (CTracer) al posto di sys.monitoring, predefinito con Python 3.14: con
+# sys.monitoring coverage non riconosce l'uscita dalla funzione dal ramo di un «finally»
+# percorso durante un'eccezione (motore_installa_vmc.py, Engine.ap_session: errore prima di
+# modificare il Wi-Fi, con restore.json già tolto) e la segnala come ramo mai percorso.
+core = ctrace
+
+[report]
+show_missing = True
+# Nessuna riga esclusa con «pragma: no cover»: anche le righe marcate così vanno provate
+# (prepara.py, avvio come programma). Restano le altre esclusioni predefinite di coverage:
+# stub «...» e blocchi TYPE_CHECKING.
+exclude_lines =
+    ^\s*(((async )?def .*?)?[\])]+(\s*->.*?)?:\s*)?\.\.\.\s*(#|$)
+    if (typing\.)?TYPE_CHECKING:

@@ -160,10 +160,11 @@ actions:
 <details>
 <summary><strong>Installazione</strong></summary>
 
-1. **Modificare `configuration.yaml`** (una volta sola):
+1. **Installare**: cercare il pulsante **Installa** in alto a destra e premerlo.
+2. **Modificare `configuration.yaml`** (una volta sola):
    - installare l'app **File editor**: *Impostazioni → Applicazioni → Installa app → File editor → Installa*;
    - premere **Avvia**, poi **Apri l'interfaccia web**;
-   - aprire `configuration.yaml` con l'icona della **cartella** in alto a sinistra;
+   - premere l'icona della **cartella** in alto a sinistra e scegliere `configuration.yaml`;
    - aggiungere in fondo:
 
      ```yaml
@@ -181,128 +182,32 @@ actions:
 
      Servono proprio queste righe: aggiungere Google Translate solo da *Impostazioni → Dispositivi e servizi* non basta e le Notifiche Audio resterebbero mute;
    - salvare con l'icona del **dischetto**.
-2. **Aggiungere il repository**:
-   - aprire *Impostazioni → Marketplace → ⋮ → Repository personalizzate*;
-   - scrivere `https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE`;
-   - scegliere il tipo **Integrazione** e premere **Aggiungi**;
-   - chiudere la finestra.
-3. **Installare**: cercare **VMC Master** nel Marketplace e premere **Installa**.
-4. **Riavviare**: *Impostazioni → Strumenti → Riavvia*, poi **Riavvia Home Assistant**.
-5. **Aggiungere la VMC**: *Impostazioni → Dispositivi e servizi → + Aggiungi integrazione → VMC Master*.
-   - VMC nuova, mai collegata: vedere **VMC nuova** qui sotto.
-   - VMC già collegata al Wi-Fi di casa:
-     1. scegliere **«Sì, è già collegata: scrivo solo l'IP»**;
-     2. scrivere l'IP: si legge nell'elenco dei dispositivi del router (l'App Air Guard non lo mostra);
-     3. premere **Invia**;
-     4. se la VMC è spenta compare «VMC non raggiungibile»: premere **Invia**, la VMC si aggiunge lo stesso;
-     5. premere **Finito**.
-
-     Suggerimento: usare lo stesso nome della VMC per conservare la cronologia.
-
-     L'integrazione controlla:
-     - che l'IP non sia già usato da un'altra VMC;
-     - che a quell'IP la VMC risponda sulla porta 5001.
-6. **Riavviare**:
+3. **Aggiungere la VMC**: *Impostazioni → Dispositivi e servizi → + Aggiungi integrazione → VMC Master*.
+4. **Riavviare**:
    1. aprire *Impostazioni*;
    2. cliccare **«VMC Master: riavviare Home Assistant»**;
    3. premere **Invia**.
-7. **Aggiungere la scheda**:
+5. **Aggiungere la scheda**:
    - premere **Ctrl+F5**;
    - nella plancia (va bene anche **Panoramica**) premere **matita → Aggiungi scheda → Sfoglia tutte le schede**;
    - nel campo **Cerca schede** digitare `vmc`;
    - cliccare su **VMC Master**;
    - scegliere la VMC nel campo **VMC\***;
    - premere **Salva**, poi **Fatto**.
-8. **Una volta per ogni VMC**, nel pannello **Opzioni** della scheda:
-   - premere **Esegui** su **«VMC ‹nome› - Profilo Inizializzazione»**;
-   - confermare con **OK** e attendere 10 s;
-   - premere **Sensori Opzionati** (icona chip di memoria);
-   - scegliere i sensori.
 
-**Altre VMC**: *Impostazioni → Dispositivi e servizi → VMC Master → Aggiungi dispositivo*, poi come dal punto 5. Si possono aggiungere più VMC e riavviare una volta sola.
-
-**VMC nuova** (senza l'App Air Guard, vedere *Requisiti*):
-1. accendere la VMC: crea la rete `VMC_xxxxxxxx`;
-2. al punto 5 dell'Installazione scegliere **«No, va installata da zero (senza l'App Air Guard)»**;
-3. scegliere la rete `VMC_xxxxxxxx` (password `12345678`);
-4. scegliere la **Rete Wi-Fi di casa**;
-5. scrivere la **Password del Wi-Fi di casa**;
-6. solo se il server di Home Assistant è collegato a una rete Wi-Fi diversa dalla «Rete Wi-Fi di casa», scrivere anche la **«Password del Wi-Fi attuale del server»**;
-7. premere **Invia**;
-8. attendere da 1 a 3 minuti;
-9. se la finestra si chiude:
-   1. ripetere il punto 5 dell'Installazione;
-   2. scegliere **«Continua con la VMC appena collegata (VMC_xxxxxxxx, IP …)»**;
-10. prenotare sul router un IP fisso per la VMC;
-11. se l'IP prenotato è uguale a quello mostrato, premere **Invia**;
-12. se è diverso:
-    1. spegnere e riaccendere la VMC dal suo interruttore, perché prenda l'IP prenotato;
-    2. scrivere l'IP prenotato;
-    3. premere **Invia**;
-13. premere **Invia** nelle finestre successive;
-14. premere **Finito**;
-15. continuare dal punto 6 dell'Installazione.
-
-Al punto 12 qui sopra l'integrazione controlla:
-- che l'IP non sia già usato da un'altra VMC;
-- che a quell'IP risponda la stessa VMC.
-
-Se il collegamento non riesce, la finestra mostra il motivo e permette di riprovare.
-
-**Aggiornare**:
-1. quando il Marketplace segnala una nuova versione, premere **Aggiorna**;
-2. riavviare Home Assistant.
-
-Per controllare subito se c'è una nuova versione: pagina di VMC Master **⋮ → Aggiorna le informazioni**.
-
-I file del package non vanno modificati: un file modificato a mano viene ripristinato all'avvio (la copia resta in `/config/vmc_master_backup`).
-
-Se subito dopo un riavvio di Home Assistant la scheda mostra «Custom element doesn't exist», ricaricare la pagina.
+**Altre VMC**: *Impostazioni → Dispositivi e servizi → VMC Master → Aggiungi dispositivo*, poi come dal punto 3. Si possono aggiungere più VMC e riavviare una volta sola.
 
 </details>
 
 <details>
 <summary><strong>Configurazione</strong></summary>
 
-Dopo l'installazione tutto si regola dall'interfaccia, senza modificare lo YAML.
+**Una volta per ogni VMC**, nel pannello **Opzioni** della scheda:
+- premere **Esegui** su **«VMC ‹nome› - Profilo Inizializzazione»**;
+- confermare con **OK** e attendere 10 s;
+- premere **Sensori Opzionati** (icona chip di memoria);
+- scegliere i sensori.
 
-**Dalla scheda «VMC Master»:**
-- indirizzo IP e nome della VMC («Cambia IP VMC (Riavvio di H.A.)» e «Cambia Nome VMC»);
-- selezione delle entità: Temperatura (interna ed esterna), Umidità (interna ed esterna), CO₂ interna, Dispositivo Mobile e Media Player;
-- offset dei sensori;
-- `Set Lim. Δ Punto di Rugiada` e Condizione Climatica Esterna;
-- calendario (2 fasce orarie per ogni giorno) e mesi di Free Heating / Free Cooling;
-- interruttori ON/OFF di ogni funzione: inquinanti, punto di rugiada, Free Cooling, Free Heating, umidità, calendario;
-- Notifiche Audio: Media Player, volume, orari e categorie di allerta.
-
-Ogni script chiede conferma con il popup «Vuoi Procedere?». Per i dettagli aprire il **Pannello Informazioni** della scheda, con 22 voci illustrate.
-
-**Da *Impostazioni → Dispositivi e servizi → VMC Master*:**
-- **nome della VMC**: la riga mostra il nome dell'App Air Guard e si aggiorna a ogni avvio; con **tre puntini → Rinomina** se ne può mostrare un altro. Il nome interno (cartella, entità, scheda) non cambia;
-- **cambiare l'IP** (in alternativa al campo della scheda):
-  1. icona ingranaggio sulla riga della VMC → **«Cambia l'IP della VMC»**;
-  2. scrivere il nuovo IP;
-  3. premere **Invia**.
-
-  L'integrazione controlla:
-  - che l'IP non sia già usato da un'altra VMC;
-  - che a quell'IP, sulla porta 5001, risponda una VMC e non un altro dispositivo;
-  - che risponda la stessa VMC (stesso nome).
-
-  Se risponde una VMC con un altro nome, oppure non risponde nessuno (per esempio la VMC è spenta), compare un avviso: un secondo **Invia** salva l'IP lo stesso;
-- **eliminare una VMC**:
-  1. icona ingranaggio → **«Elimina la VMC»**;
-  2. scegliere una delle due voci:
-     - **«Solo da Home Assistant (resta sulla rete di casa)»**: per riaggiungerla basta scrivere l'IP;
-     - **«Anche dalla rete (torna in Access Point)»**: la VMC mostra di nuovo la sua rete VMC_…; per ricollegarla scegliere **«No, va installata da zero (senza l'App Air Guard)»**, oppure usare l'App Air Guard.
-
-  In tutti e due i casi:
-  - la cartella della VMC va in `/config/vmc_master_backup`;
-  - le entità della VMC spariscono subito, poi riavviare Home Assistant;
-  - togliere la sua scheda dalla plancia;
-  - per riaggiungere la VMC: **Aggiungi dispositivo** (**Aggiungi integrazione** se non restano altre VMC).
-
-  Anche **tre puntini → Elimina** funziona, ma elimina la VMC solo da Home Assistant.
 </details>
 
 <details>
@@ -510,10 +415,11 @@ actions:
 <details>
 <summary><strong>Installation</strong></summary>
 
-1. **Edit `configuration.yaml`** (once):
+1. **Install**: look for the **Install** button at the top right and press it.
+2. **Edit `configuration.yaml`** (once):
    - install the **File editor** app: *Settings → Apps → Install app → File editor → Install*;
    - press **Start**, then **Open web UI**;
-   - open `configuration.yaml` with the **folder** icon at the top left;
+   - press the **folder** icon at the top left and choose `configuration.yaml`;
    - add at the end:
 
      ```yaml
@@ -531,128 +437,32 @@ actions:
 
      These exact lines are needed: adding Google Translate only from *Settings → Devices & services* is not enough and the audio notifications stay silent;
    - save with the **disk** icon.
-2. **Add the repository**:
-   - open *Settings → Marketplace → ⋮ → Custom repositories*;
-   - enter `https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE`;
-   - set the type to **Integration** and press **Add**;
-   - close the window.
-3. **Install**: search for **VMC Master** in the Marketplace and press **Install**.
-4. **Restart**: *Settings → Developer tools → Restart*, then **Restart Home Assistant**.
-5. **Add the unit**: *Settings → Devices & services → + Add integration → VMC Master*.
-   - New unit, never connected: see **New unit** below.
-   - Unit already on the home Wi-Fi:
-     1. choose **«Yes, it is connected: I only enter the IP»**;
-     2. type the IP: it is shown in the router's device list (the Air Guard app does not show it);
-     3. press **Submit**;
-     4. if the unit is off, «Unit not reachable» appears: press **Submit**, the unit is added anyway;
-     5. press **Finish**.
-
-     Tip: use the same VMC name to keep the history.
-
-     The integration checks:
-     - that no other unit uses the IP;
-     - that the unit answers at that IP on port 5001.
-6. **Restart**:
+3. **Add the unit**: *Settings → Devices & services → + Add integration → VMC Master*.
+4. **Restart**:
    1. open *Settings*;
    2. click **«VMC Master: restart Home Assistant»**;
    3. press **Submit**.
-7. **Add the card**:
+5. **Add the card**:
    - press **Ctrl+F5**;
    - on the dashboard (**Overview** is fine too) press **pencil → Add card → Browse all cards**;
    - in the **Search cards** field type `vmc`;
    - click **VMC Master**;
    - pick the unit in the **VMC\*** field;
    - press **Save**, then **Done**.
-8. **Once per unit**, in the card's **Opzioni** panel:
-   - press **Esegui** on **«VMC ‹name› - Profilo Inizializzazione»**;
-   - confirm with **OK** and wait 10 s;
-   - press **Sensori Opzionati** (memory chip icon);
-   - pick the sensors.
 
-**More units**: *Settings → Devices & services → VMC Master → Add device*, then as from step 5. You can add several units and restart once.
-
-**New unit** (without the Air Guard app, see *Requirements*):
-1. power on the unit: it creates the `VMC_xxxxxxxx` network;
-2. at step 5 of the Installation choose **«No, it must be set up from scratch (without the Air Guard app)»**;
-3. pick the `VMC_xxxxxxxx` network (password `12345678`);
-4. pick the **Home Wi-Fi network**;
-5. enter the **Home Wi-Fi password**;
-6. only if the Home Assistant server is connected to a Wi-Fi network other than the «Home Wi-Fi network», also enter the **«Current server Wi-Fi password»**;
-7. press **Submit**;
-8. wait 1 to 3 minutes;
-9. if the window closes:
-   1. repeat step 5 of the Installation;
-   2. choose **«Continue with the unit just connected (VMC_xxxxxxxx, IP …)»**;
-10. reserve a fixed IP for the unit on the router;
-11. if the reserved IP is the same as the one shown, press **Submit**;
-12. if it is different:
-    1. switch the unit off and on with its switch, so it takes the reserved IP;
-    2. type the reserved IP;
-    3. press **Submit**;
-13. press **Submit** in the next windows;
-14. press **Finish**;
-15. continue from step 6 of the Installation.
-
-At step 12 above the integration checks:
-- that no other unit uses the IP;
-- that the same unit answers at that IP.
-
-If the connection fails, the window shows the reason and lets you retry.
-
-**Update**:
-1. when the Marketplace shows a new version, press **Update**;
-2. restart Home Assistant.
-
-To check at once for a new version: VMC Master page **⋮ → Refresh information**.
-
-Do not edit the package files: a hand-edited file is restored at startup (the copy stays in `/config/vmc_master_backup`).
-
-If the card shows «Custom element doesn't exist» right after a Home Assistant restart, reload the page.
+**More units**: *Settings → Devices & services → VMC Master → Add device*, then as from step 3. You can add several units and restart once.
 
 </details>
 
 <details>
 <summary><strong>Configuration</strong></summary>
 
-After installation everything is set from the interface, without editing YAML.
+**Once per unit**, in the card's **Opzioni** panel:
+- press **Esegui** on **«VMC ‹name› - Profilo Inizializzazione»**;
+- confirm with **OK** and wait 10 s;
+- press **Sensori Opzionati** (memory chip icon);
+- pick the sensors.
 
-**From the «VMC Master» card:**
-- unit IP address and name («Cambia IP VMC (Riavvio di H.A.)» and «Cambia Nome VMC»);
-- entity selection: Temperature (indoor and outdoor), Humidity (indoor and outdoor), indoor CO₂, Mobile Device and Media Player;
-- sensor offsets;
-- `Set Lim. Δ Punto di Rugiada` (dew point Δ limit) and outdoor climate condition;
-- calendar (2 time slots per day) and Free Heating / Free Cooling months;
-- ON/OFF switches for each function: pollutants, dew point, Free Cooling, Free Heating, humidity, calendar;
-- audio notifications («Notifiche Audio»): Media Player, volume, time window and alert categories.
-
-Every script asks for confirmation with the «Vuoi Procedere?» popup. For details open the card's **Pannello Informazioni**, with 22 illustrated items.
-
-**From *Settings → Devices & services → VMC Master*:**
-- **unit name**: the row shows the Air Guard name and is refreshed at every start; **three dots → Rename** shows another one. The internal name (folder, entities, card) never changes;
-- **change the IP** (as an alternative to the card field):
-  1. gear icon on the unit's row → **«Change the unit's IP»**;
-  2. enter the new IP;
-  3. press **Submit**.
-
-  The integration checks:
-  - that no other unit uses the IP;
-  - that a unit, not another device, answers at that IP on port 5001;
-  - that the same unit answers (same name).
-
-  If a unit with another name answers, or nothing answers (for example the unit is off), a warning appears: a second **Submit** saves the IP anyway;
-- **delete a unit**:
-  1. gear icon → **«Delete the unit»**;
-  2. pick one of the two items:
-     - **«Only from Home Assistant (stays on the home network)»**: to add it again, entering the IP is enough;
-     - **«From the network too (back to Access Point)»**: the unit shows its VMC_… network again; to connect it again choose **«No, it must be set up from scratch (without the Air Guard app)»**, or use the Air Guard app.
-
-  In both cases:
-  - the unit's folder goes to `/config/vmc_master_backup`;
-  - the unit's entities disappear right away, then restart Home Assistant;
-  - remove its card from the dashboard;
-  - to add the unit again: **Add device** (**Add integration** if no other unit is left).
-
-  **Three dots → Delete** also works, but only removes the unit from Home Assistant.
 </details>
 
 <details>
