@@ -182,7 +182,9 @@ def test_timer_di_riattivazione_coerente_con_le_fasi() -> None:
     )
     azioni = riallineamento["actions"]
     avviati = [a["target"]["entity_id"] for a in azioni if a.get("action") == "timer.start"]
-    assert avviati == ["timer.vmc_master_countdown_avvio_home_assistant", TIMER]
+    # b30: piu' il countdown di gruppo da 40 s, avviato prima della fase 2 e prima della fase 3
+    gruppo = "timer.vmc_master_countdown_fase_allerte"
+    assert avviati == ["timer.vmc_master_countdown_avvio_home_assistant", TIMER, gruppo, gruppo]
     # secondi dall'avvio a cui la fase diventa 2, 3, 4 e 0
     trascorsi, fasi = 0, {}
     for azione in azioni:
@@ -196,17 +198,15 @@ def test_timer_di_riattivazione_coerente_con_le_fasi() -> None:
 
 
 def test_scheda_con_il_countdown_di_riattivazione() -> None:
+    """b30: il pannello resta visibile con il timer da 140 s e la VMC ON-Line; le righe dei
+    gruppi sono nei test della b30 (tests/test_b30.py)."""
     scheda = hay.load_yaml(str(PKG / "vmc_master_scheda_manuale_interfaccia.txt"))
     carte = [c for c in scheda["cards"] if TIMER in str(c.get("conditions"))]
     assert len(carte) == 1
     carta = carte[0]
+    assert {"condition": "state", "entity": TIMER, "state": "active"} in carta["conditions"]
     assert {"condition": "state", "entity": "sensor.vmc_master_status_ip_interfaccia", "state": "ON-Line"} in carta["conditions"]
-    righe = carta["card"]["entities"]
-    per_fase = {r["conditions"][0]["state"]: r["row"]["label"] for r in righe if r.get("type") == "conditional"}
-    assert set(per_fase) == {"1.0", "2.0", "3.0"}
-    assert "Tra 60 s" in per_fase["1.0"] and "Tra 40 s: Inquinanti" in per_fase["2.0"]
-    assert "Umidità" in per_fase["3.0"]
-    assert righe[-1]["entity"] == TIMER
+    assert carta["card"]["title"] == "Riattivazione delle Allerte"
     # resta anche per le altre VMC (fuori dalle sezioni solo Master)
     assert TIMER.replace("master", "sala") in per_vmc(
         (PKG / "vmc_master_scheda_manuale_interfaccia.txt").read_text(encoding="utf-8"), "sala", "192.168.1.161"

@@ -3996,6 +3996,7 @@ recorder:
       - timer.vmc_master_countdown_script_reset_filtro
       - timer.vmc_master_countdown_avvio_home_assistant
       - timer.vmc_master_countdown_riattivazione_allerte
+      - timer.vmc_master_countdown_fase_allerte
       - script.vmc_master_ripristina_tempi_attesa
       - sensor.vmc_master_velocita_registrata
       - binary_sensor.vmc_master_tasto_velocita_0
@@ -4778,7 +4779,7 @@ input_number:
     icon: mdi:knob
 
 ################### Inizio Creazione Fase di Riallineamento delle Allerte al Riavvio di Home Assistant ###################
-  vmc_master_fase_riallineamento_al_riavvio:                                    # [CONFIGURAZIONE, 525 RICHIAMI] [INTERFACCIA, 4 RICHIAMI] [AUTOMAZIONE, 566 RICHIAMI] FASE DEL RIALLINEAMENTO DELLE ALLERTE FINITE A HOME ASSISTANT SPENTO (0 = FUNZIONAMENTO NORMALE)
+  vmc_master_fase_riallineamento_al_riavvio:                                    # [CONFIGURAZIONE, 525 RICHIAMI] [INTERFACCIA, 8 RICHIAMI] [AUTOMAZIONE, 566 RICHIAMI] FASE DEL RIALLINEAMENTO DELLE ALLERTE FINITE A HOME ASSISTANT SPENTO (0 = FUNZIONAMENTO NORMALE)
     name: "Fase Riallineamento Allerte al Riavvio"
     min: 0
     max: 4
@@ -5805,13 +5806,17 @@ timer:
     name: "Reset Filtro in corso"
     duration: "00:00:05"
     icon: mdi:timer-sand
-  vmc_master_countdown_avvio_home_assistant:                     # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 3 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] COUNTDOWN IN SCHEDA DEI 60 s DOPO L'AVVIO DI HOME ASSISTANT IN CUI LE FINI ALLERTA SONO SOSPESE (AVVIATO DA vmc_master_riallineamento_allerte_al_riavvio), POI PARTE IL RIPRISTINO DOPO BLACK-OUT
+  vmc_master_countdown_avvio_home_assistant:                     # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 5 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] COUNTDOWN IN SCHEDA DEI 60 s DOPO L'AVVIO DI HOME ASSISTANT IN CUI LE FINI ALLERTA SONO SOSPESE (AVVIATO DA vmc_master_riallineamento_allerte_al_riavvio), POI PARTE IL RIPRISTINO DOPO BLACK-OUT; E' ANCHE IL COUNTDOWN DEL 1° GRUPPO DI ALLERTE DEL PANNELLO «RIATTIVAZIONE DELLE ALLERTE»
     name: "Avvio di Home Assistant"
     duration: "00:01:00"
     icon: mdi:timer-sand
-  vmc_master_countdown_riattivazione_allerte:                    # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 3 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] COUNTDOWN IN SCHEDA DEI 140 s DOPO L'AVVIO DI HOME ASSISTANT FINO ALLA RIATTIVAZIONE DI TUTTE LE ALLERTE (FASE 4 DI vmc_master_riallineamento_allerte_al_riavvio), SOLO VISUALIZZAZIONE
+  vmc_master_countdown_riattivazione_allerte:                    # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] TIMER DEI 140 s DOPO L'AVVIO DI HOME ASSISTANT FINO ALLA RIATTIVAZIONE DI TUTTE LE ALLERTE (FASE 4 DI vmc_master_riallineamento_allerte_al_riavvio): IL PANNELLO «RIATTIVAZIONE DELLE ALLERTE» DELLA SCHEDA E' VISIBILE FINCHE' E' ATTIVO, SOLO VISUALIZZAZIONE
     name: "Riattivazione Allerte"
     duration: "00:02:20"
+    icon: mdi:timer-sand
+  vmc_master_countdown_fase_allerte:                             # [CONFIGURAZIONE, 5 RICHIAMI] [INTERFACCIA, 5 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] COUNTDOWN IN SCHEDA DEI 40 s DEL 2° GRUPPO DI ALLERTE (FASE 2, INQUINANTI) E, RIAVVIATO, DEL 3° GRUPPO (FASE 3, PUNTO DI RUGIADA, FREE HEATING/COOLING, CALENDARIO E UMIDITA') DI vmc_master_riallineamento_allerte_al_riavvio, SOLO VISUALIZZAZIONE
+    name: "Riattivazione Gruppo di Allerte"
+    duration: "00:00:40"
     icon: mdi:timer-sand
 ################### Fine Creazione Timer per il Countdown in Scheda delle Attese dell'Automazione ###################
 
@@ -7324,6 +7329,7 @@ script:
             - timer.vmc_master_countdown_script_reset_filtro
             - timer.vmc_master_countdown_avvio_home_assistant
             - timer.vmc_master_countdown_riattivazione_allerte
+            - timer.vmc_master_countdown_fase_allerte
             - script.vmc_master_ripristina_tempi_attesa
             - sensor.vmc_master_velocita_registrata
             - binary_sensor.vmc_master_tasto_velocita_0
@@ -19123,8 +19129,10 @@ automation:
       VMC letti) e poi li riattiva per gradi: Black-Out, Congelamento e Diff. Temp.; dopo 40 s Inquinanti; dopo altri 40 s
       Punto di Rugiada, Free Heating/Cooling, Calendario e Umidità. Ogni allerta riparte o si chiude così come un inizio o
       una fine allerta normale, con la propria attesa; dopo altri 60 s la fase torna a 0 (nessun effetto): in tutto 200 s
-      dall'avvio. I primi 60 s sono mostrati in scheda con il countdown «Avvio di Home Assistant»; i 140 s fino alla
-      riattivazione di tutte le allerte con il countdown «Tutte le allerte attive tra», sempre visibile con la VMC ON-Line.
+      dall'avvio. Nella scheda il pannello «Riattivazione delle Allerte», visibile con la VMC ON-Line fino alla
+      riattivazione di tutte le allerte, mostra un countdown per gruppo, uno dopo l'altro: 60 s per Black-Out, Congelamento
+      e Diff. Temp., poi 40 s per Inquinanti, poi 40 s per gli altri; i gruppi successivi sono «In attesa», i precedenti
+      «Già attive». Dopo un Black-Out i primi 60 s compaiono anche nel riquadro della VMC con il countdown «Avvio di Home Assistant».
     mode: restart
     triggers:
       - trigger: homeassistant
@@ -19141,8 +19149,16 @@ automation:
       - action: timer.start                                                   # SOLO VISUALIZZAZIONE IN SCHEDA: COUNTDOWN DEI 140 s FINO ALLA FASE 4 (TUTTE LE ALLERTE RIATTIVATE)
         target:
           entity_id: timer.vmc_master_countdown_riattivazione_allerte
+      - action: timer.cancel                                                  # SOLO VISUALIZZAZIONE IN SCHEDA: NESSUN COUNTDOWN DI GRUPPO RIMASTO DA UN RIALLINEAMENTO INTERROTTO
+        target:
+          entity_id: timer.vmc_master_countdown_fase_allerte
       - delay:
           seconds: 60
+      - action: timer.start                                                   # SOLO VISUALIZZAZIONE IN SCHEDA: COUNTDOWN DEI 40 s DEL 2° GRUPPO (FASE 2, INQUINANTI), AVVIATO PRIMA DEL CAMBIO DI FASE
+        target:
+          entity_id: timer.vmc_master_countdown_fase_allerte
+        data:
+          duration: "00:00:40"
       - action: input_number.set_value
         target:
           entity_id: input_number.vmc_master_fase_riallineamento_al_riavvio
@@ -19150,6 +19166,11 @@ automation:
           value: 2
       - delay:
           seconds: 40
+      - action: timer.start                                                   # SOLO VISUALIZZAZIONE IN SCHEDA: COUNTDOWN DEI 40 s DEL 3° GRUPPO (FASE 3), RIAVVIATO PRIMA DEL CAMBIO DI FASE
+        target:
+          entity_id: timer.vmc_master_countdown_fase_allerte
+        data:
+          duration: "00:00:40"
       - action: input_number.set_value
         target:
           entity_id: input_number.vmc_master_fase_riallineamento_al_riavvio
