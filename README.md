@@ -26,8 +26,7 @@
 </h1>
 
 <p align="center">
-  <strong>La tua ventilazione meccanica controllata in Home Assistant.</strong><br>
-  Integrazione per VMC Helty Flow Plus / Elite: si installa dal Marketplace di Home Assistant e ogni VMC si aggiunge con il suo IP.
+  <strong>La tua ventilazione meccanica controllata in Home Assistant.</strong>
 </p>
 
 <p align="center">
@@ -41,25 +40,6 @@
 <sub>**VMC MASTER** è un'integrazione per Home Assistant progettata per la gestione delle VMC **Helty Flow Plus / Elite** (le stesse che si comandano con l'App Air Guard). L'App funziona solo con il telefono collegato al Wi-Fi di casa; con Home Assistant la VMC si comanda in casa e anche da fuori casa.</sub>
 <br>
 <sub>Non è un semplice telecomando, ma una logica evoluta che confronta in continuo le condizioni interne ed esterne (temperatura, umidità, punto di rugiada, inquinanti) e decide se e a quale velocità far funzionare la VMC, con priorità precise tra le allerte e la ripresa automatica della velocità impostata.</sub>
-</details>
-
-<details>
-<summary><strong>Cosa lo rende diverso</strong></summary>
-
-| <sub>Funzione</sub> | <sub>Vantaggio</sub> |
-|---|---|
-| <sub>**Installazione dal Marketplace**</sub> | <sub>Nessun file da copiare: basta aggiungere due righe a `configuration.yaml` (altre due per le Notifiche Audio); gli aggiornamenti arrivano dal Marketplace</sub> |
-| <sub>**Logiche con priorità**</sub> | <sub>Congelamento, Δ temperatura, inquinanti, punto di rugiada, Free Cooling / Free Heating, umidità e black-out gestiti in un ordine preciso, con ripresa automatica</sub> |
-| <sub>**Controllo del punto di rugiada**</sub> | <sub>La VMC si arresta quando porterebbe in casa umidità dall'esterno</sub> |
-| <sub>**Free Cooling / Free Heating**</sub> | <sub>Nessun raffrescamento o riscaldamento indesiderato nei mesi programmati; aria calda o fresca gratuita quando conviene</sub> |
-| <sub>**Qualità dell'aria**</sub> | <sub>Avvio e arresto in funzione di CO₂ e VOC (sensori della VMC Flow Elite; CO₂ anche da un'entità di Home Assistant)</sub> |
-| <sub>**Controllo dell'umidità interna**</sub> | <sub>Avvio automatico alla velocità programmata, anche con aria secca (≤ 35%), e ritorno alla velocità memorizzata</sub> |
-| <sub>**Calendario**</sub> | <sub>2 fasce orarie per ogni giorno della settimana e 2 fasce mensili</sub> |
-| <sub>**Selezione dinamica delle entità**</sub> | <sub>Sensori di Home Assistant e servizi meteo al posto dei sensori della VMC, con offset</sub> |
-| <sub>**Intestazione animata**</sub> | <sub>Il flusso d'aria scorre in funzione della portata e il colore del LED indica lo stato: bianco normale, giallo allerta (che respira a VMC ferma con Avvisi presenti), blu umidità, rosso inquinanti, grigio OFF-Line; le scritte «Alert», «Alert Δ Temp.» e «Alert Free» sotto i tasti avvisano, prima di avviare la VMC, che un'allerta la bloccherebbe o la ridurrebbe [Pannello Informazioni → voce 22]</sub> |
-| <sub>**Avvisi e notifiche**</sub> | <sub>Su dispositivo mobile e tramite Media Player</sub> |
-| <sub>**Più VMC**</sub> | <sub>Ogni VMC si aggiunge da *Dispositivi e servizi*: per una VMC già in rete basta l'IP</sub> |
-| <sub>**Prima installazione**</sub> | <sub>Collegamento della VMC nuova al Wi-Fi di casa da *Aggiungi dispositivo*, senza l'App Air Guard, che poi resta comunque utilizzabile</sub> |
 </details>
 
 <details>
@@ -134,18 +114,6 @@ actions:
 </details>
 
 <details>
-<summary><strong>Scenario tipico</strong></summary>
-
-<sub>Un classico caso d'uso è un'abitazione con:</sub>
-- <sub>VMC Helty Flow Plus o Flow Elite collegata alla rete di casa (con l'App Air Guard oppure da *Aggiungi dispositivo* dell'integrazione)</sub>
-- <sub>Home Assistant 2026.11 o successivo</sub>
-- <sub>sensori di temperatura e umidità, interni ed esterni, oppure un servizio meteo</sub>
-- <sub>un dispositivo mobile per le notifiche</sub>
-
-<sub>**Risultato:** la VMC ventila quando serve, si ferma quando l'aria esterna porterebbe umidità, freddo o caldo indesiderati e riparte da sola alla velocità impostata.</sub>
-</details>
-
-<details>
   <summary><strong>Requisiti</strong></summary>
 
 - <sub>**[Home Assistant](https://www.home-assistant.io/installation/) 2026.11** o successivo, con il Marketplace integrato. La versione si legge in *Impostazioni → Informazioni*.</sub>
@@ -160,8 +128,7 @@ actions:
 <details>
 <summary><strong>Installazione</strong></summary>
 
-1. **Installare**: cercare il pulsante **Installa** in alto a destra e premerlo.
-2. **Modificare `configuration.yaml`** (una volta sola):
+1. **Modificare `configuration.yaml`** (una volta sola):
    - installare l'app **File editor**: *Impostazioni → Applicazioni → Installa app → File editor → Installa*;
    - premere **Avvia**, poi **Apri l'interfaccia web**;
    - premere l'icona della **cartella** in alto a sinistra e scegliere `configuration.yaml`;
@@ -179,9 +146,8 @@ actions:
      tts:
        - platform: google_translate
      ```
-
-     Servono proprio queste righe: aggiungere Google Translate solo da *Impostazioni → Dispositivi e servizi* non basta e le Notifiche Audio resterebbero mute;
    - salvare con l'icona del **dischetto**.
+2. **Installare**: cercare il pulsante **Installa** in alto a destra e premerlo.
 3. **Aggiungere la VMC**: *Impostazioni → Dispositivi e servizi → + Aggiungi integrazione → VMC Master*.
 4. **Riavviare**:
    1. aprire *Impostazioni*;
@@ -195,14 +161,14 @@ actions:
    - scegliere la VMC nel campo **VMC\***;
    - premere **Salva**, poi **Fatto**.
 
-**Altre VMC**: *Impostazioni → Dispositivi e servizi → VMC Master → Aggiungi dispositivo*, poi come dal punto 3. Si possono aggiungere più VMC e riavviare una volta sola.
+**Altre VMC**: *Impostazioni → Dispositivi e servizi → VMC Master → Aggiungi dispositivo*, poi come dal punto 3.
 
 </details>
 
 <details>
 <summary><strong>Configurazione</strong></summary>
 
-**Una volta per ogni VMC**, nel pannello **Opzioni** della scheda:
+Per ogni VMC nel pannello **Opzioni** della scheda:
 - premere **Esegui** su **«VMC ‹nome› - Profilo Inizializzazione»**;
 - confermare con **OK** e attendere 10 s;
 - premere **Sensori Opzionati** (icona chip di memoria);
@@ -274,8 +240,7 @@ actions:
 </h1>
 
 <p align="center">
-  <strong>Your mechanical ventilation, controlled in Home Assistant.</strong><br>
-  Integration for Helty Flow Plus / Elite MVHR units: install it from the Home Assistant Marketplace and add each unit with its IP.
+  <strong>Your mechanical ventilation, controlled in Home Assistant.</strong>
 </p>
 
 <p align="center">
@@ -297,25 +262,6 @@ actions:
 <sub>**VMC MASTER** is a Home Assistant integration designed to manage **Helty Flow Plus / Elite** ventilation units (the same ones controlled with the Air Guard app). The app only works with the phone on the home Wi-Fi; with Home Assistant the unit can be controlled at home and away from home.</sub>
 <br>
 <sub>It is not just a remote control, but an evolved logic that continuously compares indoor and outdoor conditions (temperature, humidity, dew point, pollutants) and decides whether and at which speed the unit should run, with precise priorities between alerts and automatic return to the set speed.</sub>
-</details>
-
-<details>
-<summary><strong>What makes it different</strong></summary>
-
-| <sub>Function</sub> | <sub>Advantage</sub> |
-|---|---|
-| <sub>**Marketplace install**</sub> | <sub>No files to copy: just add two lines to `configuration.yaml` (two more for audio notifications); updates come from the Marketplace</sub> |
-| <sub>**Prioritized logic**</sub> | <sub>Freezing, temperature Δ, pollutants, dew point, Free Cooling / Free Heating, humidity and power failure handled in a precise order, with automatic recovery</sub> |
-| <sub>**Dew point control**</sub> | <sub>The unit stops when it would bring outdoor humidity indoors</sub> |
-| <sub>**Free Cooling / Free Heating**</sub> | <sub>No unwanted cooling or heating in the scheduled months; free warm or cool air when it pays off</sub> |
-| <sub>**Air quality**</sub> | <sub>Start and stop based on CO₂ and VOC (Flow Elite sensors; CO₂ also from a Home Assistant entity)</sub> |
-| <sub>**Indoor humidity control**</sub> | <sub>Automatic start at the scheduled speed, also with dry air (≤ 35%), and return to the stored speed</sub> |
-| <sub>**Calendar**</sub> | <sub>2 time slots for each day of the week and 2 monthly periods</sub> |
-| <sub>**Dynamic entity selection**</sub> | <sub>Home Assistant sensors and weather services instead of the unit's own sensors, with offsets</sub> |
-| <sub>**Animated header**</sub> | <sub>The airflow moves according to the flow rate and the LED colour shows the state: white normal, yellow alert (breathing when the unit is stopped with warnings present), blue humidity, red pollutants, grey off-line; the «Alert», «Alert Δ Temp.» and «Alert Free» labels under the buttons warn, before you start the unit, that an alert would stop it or slow it down [Pannello Informazioni → item 22]</sub> |
-| <sub>**Alerts and notifications**</sub> | <sub>On mobile devices and through Media Players</sub> |
-| <sub>**Multiple units**</sub> | <sub>Each unit is added from *Devices & services*: for a unit already on the network the IP is enough</sub> |
-| <sub>**First installation**</sub> | <sub>Connect a new unit to the home Wi-Fi from *Add device*, without the Air Guard app; afterwards the unit can still be used from the Air Guard app</sub> |
 </details>
 
 <details>
@@ -390,18 +336,6 @@ actions:
 </details>
 
 <details>
-<summary><strong>Typical scenario</strong></summary>
-
-<sub>A typical use case is a home with:</sub>
-- <sub>a Helty Flow Plus or Flow Elite unit connected to the home network (with the Air Guard app or from the integration's *Add device*)</sub>
-- <sub>Home Assistant 2026.11 or later</sub>
-- <sub>indoor and outdoor temperature and humidity sensors, or a weather service</sub>
-- <sub>a mobile device for notifications</sub>
-
-<sub>**Result:** the unit ventilates when needed, stops when the outdoor air would bring in unwanted humidity, cold or heat, and restarts by itself at the set speed.</sub>
-</details>
-
-<details>
 <summary><strong>Requirements</strong></summary>
 
 - <sub>**[Home Assistant](https://www.home-assistant.io/installation/) 2026.11** or later, with the built-in Marketplace. The version is shown in *Settings → About*.</sub>
@@ -415,8 +349,7 @@ actions:
 <details>
 <summary><strong>Installation</strong></summary>
 
-1. **Install**: look for the **Install** button at the top right and press it.
-2. **Edit `configuration.yaml`** (once):
+1. **Edit `configuration.yaml`** (once):
    - install the **File editor** app: *Settings → Apps → Install app → File editor → Install*;
    - press **Start**, then **Open web UI**;
    - press the **folder** icon at the top left and choose `configuration.yaml`;
@@ -434,9 +367,8 @@ actions:
      tts:
        - platform: google_translate
      ```
-
-     These exact lines are needed: adding Google Translate only from *Settings → Devices & services* is not enough and the audio notifications stay silent;
    - save with the **disk** icon.
+2. **Install**: look for the **Install** button at the top right and press it.
 3. **Add the unit**: *Settings → Devices & services → + Add integration → VMC Master*.
 4. **Restart**:
    1. open *Settings*;
@@ -450,14 +382,14 @@ actions:
    - pick the unit in the **VMC\*** field;
    - press **Save**, then **Done**.
 
-**More units**: *Settings → Devices & services → VMC Master → Add device*, then as from step 3. You can add several units and restart once.
+**More units**: *Settings → Devices & services → VMC Master → Add device*, then as from step 3.
 
 </details>
 
 <details>
 <summary><strong>Configuration</strong></summary>
 
-**Once per unit**, in the card's **Opzioni** panel:
+For each unit in the card's **Opzioni** panel:
 - press **Esegui** on **«VMC ‹name› - Profilo Inizializzazione»**;
 - confirm with **OK** and wait 10 s;
 - press **Sensori Opzionati** (memory chip icon);
