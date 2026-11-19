@@ -1,6 +1,6 @@
 ###########################################################################################################################################################################################################################
 #                                                                                                                                                                                                                         #
-#                                                          AUTOMAZIONE VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b28]                                                                                                        #
+#                                                          AUTOMAZIONE VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b29]                                                                                                        #
 #                                                                                                                                                                                                                         #
 # SVILUPPATO DA ING. DANILO ROBOTTI, ALLE PRIME ARMI CON HOME ASSISTANT :)                                                                                                                                                #
 #                                                                                                                                                                                                                         #
@@ -4793,6 +4793,26 @@ triggers:
       Al Riavvio di Home Assistant Verifica se è impostata una Entità
       Temperatura, Umidità, Anidride Carbonica, Mobile e Media Player installate
       in H.A., diversamente avvisa
+  - trigger: state
+    entity_id: sensor.vmc_master_status_ip_interfaccia
+    from:
+      - OFF-Line
+      - unavailable
+    to: ON-Line
+    id: VMC Master Elenco Entità con VMC di nuovo ON-Line
+    alias: >-
+      VMC di nuovo ON-Line (anche quando al Riavvio di Home Assistant non era
+      ancora in rete): ripete la Verifica delle Entità Temperatura, Umidità,
+      Anidride Carbonica e Mobile, diversamente avvisa
+  - trigger: state
+    entity_id: input_boolean.vmc_master_notifica_status_vmc
+    from: 'off'
+    to: 'on'
+    id: VMC Master Elenco Entità con Invio Notifica acceso
+    alias: >-
+      Invio Notifica acceso (per esempio con il Profilo Inizializzazione di una
+      VMC appena aggiunta): ripete la Verifica delle Entità Temperatura,
+      Umidità, Anidride Carbonica e Mobile, diversamente avvisa
   - alias: Trigger Attivazione Sotto Finestra Opzioni - Finestra Sensori Opzionati
     entity_id:
       - input_boolean.vmc_master_opzioni_scelta_sensori
@@ -29478,6 +29498,8 @@ actions:
               - >-
                 VMC Master Elenco Entità Temperatura e Umidità installate in
                 H.A.
+              - VMC Master Elenco Entità con VMC di nuovo ON-Line
+              - VMC Master Elenco Entità con Invio Notifica acceso
         sequence:
           - action: script.turn_on
             metadata: {}

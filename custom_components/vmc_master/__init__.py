@@ -8,6 +8,7 @@ e serve la scheda «VMC Master», che si aggiunge dalla plancia senza incollare 
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import json
 import logging
 import sys
@@ -17,7 +18,7 @@ import time
 from functools import lru_cache
 from http import HTTPStatus
 from pathlib import Path
-from typing import Any
+from typing import Any, Final
 
 import yaml
 from aiohttp import web
@@ -25,6 +26,7 @@ from aiohttp import web
 from homeassistant.components import persistent_notification
 from homeassistant.components.frontend import add_extra_js_url
 from homeassistant.components.http import HomeAssistantView, StaticPathConfig
+from homeassistant.components.lovelace import LOVELACE_DATA
 from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import Event, HomeAssistant, callback
@@ -146,7 +148,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         [StaticPathConfig(URL_FRONTEND, str(_CARTELLA / "frontend"), False)]
     )
     # Il numero di versione nell'indirizzo fa ricaricare la scheda dopo ogni aggiornamento
-    add_extra_js_url(hass, f"{URL_FRONTEND}/{FILE_SCHEDA_JS}?v={integrazione.version}")
+    await _registra_scheda(hass, str(integrazione.version))
     hass.http.register_view(VmcSchedaView())
     async_at_started(hass, _ripristina_wifi_server)
     async_at_started(hass, _togli_entita_vmc_eliminate)
@@ -167,6 +169,107 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
     hass.bus.async_listen(ir.EVENT_REPAIRS_ISSUE_REGISTRY_UPDATED, _riparazione_cambiata)
     return True
+
+
+# Copia della scheda in <config>/www/vmc_master: Home Assistant serve /local appena parte il
+# frontend, prima che l'integrazione venga avviata. Una pagina aperta (o ricaricata) mentre
+# Home Assistant si avvia riceve gli indirizzi «extra_module_url» di quel momento, senza la
+# scheda, e il frontend non li richiede piu' fino al ricaricamento della pagina: la risorsa
+# della plancia (/local/...) invece c'e' gia' e si carica all'apertura della plancia.
+CARTELLA_WWW_SCHEDA: Final = "vmc_master"
+URL_LOCALE_SCHEDA: Final = f"/local/{CARTELLA_WWW_SCHEDA}/{FILE_SCHEDA_JS}"
+
+
+def _copia_scheda_in_www(config_dir: str) -> None:
+    """Copia il file JavaScript della scheda in www/vmc_master (solo se e' cambiato)."""
+    cartella = Path(config_dir) / "www" / CARTELLA_WWW_SCHEDA
+    cartella.mkdir(parents=True, exist_ok=True)
+    destinazione = cartella / FILE_SCHEDA_JS
+    dati = (_CARTELLA / "frontend" / FILE_SCHEDA_JS).read_bytes()
+    if destinazione.is_file() and destinazione.read_bytes() == dati:
+        return
+    temporaneo = destinazione.with_suffix(".tmp")
+    temporaneo.write_bytes(dati)
+    temporaneo.replace(destinazione)
+
+
+def _local_servito(hass: HomeAssistant) -> bool:
+    """True se /local (cartella www) e' servito: il frontend lo registra all'avvio solo se
+    www esisteva gia'."""
+    return any(
+        getattr(risorsa, "canonical", None) == "/local"
+        for risorsa in hass.http.app.router.resources()
+    )
+
+
+async def _registra_risorsa_plancia(hass: HomeAssistant, url: str) -> None:
+    """Risorsa «module» delle plance (solo risorse in modalita' storage): una sola voce
+    /local/vmc_master/vmc-master-card.js con la versione installata."""
+    dati = hass.data.get(LOVELACE_DATA)
+    if dati is None or getattr(dati, "resource_mode", None) != "storage":
+        return
+    risorse = dati.resources
+    await risorse.async_get_info()  # carica le risorse salvate
+    nostre = [
+        voce
+        for voce in risorse.async_items()
+        if str(voce.get("url", "")).split("?", 1)[0] == URL_LOCALE_SCHEDA
+    ]
+    if not nostre:
+        await risorse.async_create_item({"res_type": "module", "url": url})
+        return
+    if nostre[0].get("url") != url or nostre[0].get("type") != "module":
+        await risorse.async_update_item(nostre[0]["id"], {"res_type": "module", "url": url})
+    for doppia in nostre[1:]:
+        await risorse.async_delete_item(doppia["id"])
+
+
+def _togli_scheda_da_www(config_dir: str) -> None:
+    """Toglie la copia della scheda da www/vmc_master; la cartella solo se resta vuota."""
+    cartella = Path(config_dir) / "www" / CARTELLA_WWW_SCHEDA
+    for nome_file in (FILE_SCHEDA_JS, f"{Path(FILE_SCHEDA_JS).stem}.tmp"):
+        (cartella / nome_file).unlink(missing_ok=True)
+    with contextlib.suppress(OSError):
+        cartella.rmdir()
+
+
+async def _togli_scheda_da_www_e_plance(hass: HomeAssistant) -> None:
+    """Ultima VMC eliminata: via la risorsa delle plance e la copia della scheda in www."""
+    dati = hass.data.get(LOVELACE_DATA)
+    try:
+        if dati is not None and getattr(dati, "resource_mode", None) == "storage":
+            risorse = dati.resources
+            await risorse.async_get_info()
+            for voce in list(risorse.async_items()):
+                if str(voce.get("url", "")).split("?", 1)[0] == URL_LOCALE_SCHEDA:
+                    await risorse.async_delete_item(voce["id"])
+        await hass.async_add_executor_job(_togli_scheda_da_www, hass.config.config_dir)
+    except Exception:  # noqa: BLE001 - l'eliminazione della VMC continua comunque
+        _LOGGER.exception("Scheda VMC Master non tolta da www o dalle risorse delle plance")
+
+
+async def _registra_scheda(hass: HomeAssistant, versione: str) -> None:
+    """File JavaScript della scheda per il frontend.
+
+    Con /local servito: stesso indirizzo /local/... per «extra_module_url» e per la risorsa
+    delle plance (il browser lo carica una volta sola). Senza /local (cartella www creata
+    adesso): indirizzo dell'integrazione; la risorsa si aggiunge al prossimo avvio."""
+    url_integrazione = f"{URL_FRONTEND}/{FILE_SCHEDA_JS}?v={versione}"
+    try:
+        await hass.async_add_executor_job(_copia_scheda_in_www, hass.config.config_dir)
+    except OSError as errore:
+        _LOGGER.warning("Scheda VMC Master non copiata in www: %s", errore)
+        add_extra_js_url(hass, url_integrazione)
+        return
+    if not _local_servito(hass):
+        add_extra_js_url(hass, url_integrazione)
+        return
+    url_locale = f"{URL_LOCALE_SCHEDA}?v={versione}"
+    add_extra_js_url(hass, url_locale)
+    try:
+        await _registra_risorsa_plancia(hass, url_locale)
+    except Exception:  # noqa: BLE001 - la scheda resta comunque caricata da extra_module_url
+        _LOGGER.exception("Risorsa della plancia per la scheda VMC Master non registrata")
 
 
 # Programma del processo separato: carica i moduli della versione su disco senza il loro
@@ -451,6 +554,10 @@ async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     spostati nel backup): le entita' create dall'utente restano, anche se si chiamano
     «vmc_‹nome›_…». Se qualcuna resta, il nome si ricorda e si toglie al riavvio."""
     nome = entry.data[CONF_NOME]
+    if not any(
+        voce.entry_id != entry.entry_id for voce in hass.config_entries.async_entries(DOMAIN)
+    ):
+        await _togli_scheda_da_www_e_plance(hass)  # ultima VMC: la scheda non serve piu'
     destinazione = await hass.async_add_executor_job(
         sposta_in_backup, hass.config.config_dir, nome
     )
@@ -821,6 +928,9 @@ def _segnala_riavvio(hass: HomeAssistant) -> None:
         severity=ir.IssueSeverity.WARNING,
         translation_key=ISSUE_RIAVVIO,
     )
+    # Un «Ignora» di una volta resterebbe valido anche per i riavvii chiesti dopo (HA
+    # ricorda la scelta fino al suo prossimo aggiornamento): ogni nuova richiesta si vede
+    ir.async_ignore_issue(hass, DOMAIN, ISSUE_RIAVVIO, False)
 
 
 @callback

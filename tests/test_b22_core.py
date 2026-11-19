@@ -17,7 +17,6 @@ import pytest
 from homeassistant.config_entries import ConfigEntryDisabler, ConfigEntryState
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.data_entry_flow import FlowResultType
-from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import issue_registry as ir
 from homeassistant.setup import async_setup_component
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -39,6 +38,8 @@ from custom_components.vmc_master.installatore import (
 NOME_VMC = "custom_components.vmc_master.config_flow.async_nome_vmc"
 PI = "custom_components.vmc_master.prima_installazione"
 CARTELLA = Path(__file__).parent.parent / "custom_components" / "vmc_master"
+# Controllo della configurazione fatto dalla riparazione «Riavviare» prima del riavvio
+CONTROLLO_CONFIG = "homeassistant.config.async_check_ha_config_file"
 
 
 @pytest.fixture(autouse=True)
@@ -375,19 +376,22 @@ async def test_cambia_ip_seconda_prova_stessa_vmc(hass: HomeAssistant) -> None:
 
 
 async def test_riparazione_riavvio_rifiutato(hass: HomeAssistant) -> None:
-    """Il riavvio viene rifiutato (configurazione non valida): la riparazione non si chiude
-    come riuscita ma con un messaggio tradotto, e l'avviso resta."""
+    """Configurazione non valida (b29: controllata dalla riparazione, come fa il servizio
+    di riavvio): niente riavvio, la riparazione non si chiude come riuscita ma con un
+    messaggio tradotto, e l'avviso resta."""
+    from pytest_homeassistant_custom_component.common import async_mock_service
+
     from custom_components.vmc_master.repairs import RiavvioFlow
 
-    async def riavvio_rifiutato(_chiamata: ServiceCall) -> None:
-        raise HomeAssistantError("The system cannot restart because the configuration is not valid")
-
-    hass.services.async_register("homeassistant", "restart", riavvio_rifiutato)
+    riavvii = async_mock_service(hass, "homeassistant", "restart")
     flusso = RiavvioFlow()
     flusso.hass = hass
     flusso.flow_id = "prova"
     flusso.handler = DOMAIN
-    risultato = await flusso.async_step_confirm({})
+    with patch(CONTROLLO_CONFIG, return_value="Invalid config for 'sensor': configuration is not valid"):
+        risultato = await flusso.async_step_confirm({})
+    await hass.async_block_till_done()
+    assert riavvii == []
     assert risultato["type"] is FlowResultType.ABORT
     assert risultato["reason"] == "riavvio_non_riuscito"
     assert "configuration is not valid" in risultato["description_placeholders"]["errore"]
@@ -409,10 +413,12 @@ async def test_riparazione_riavvio_rifiutato_avviso_resta(hass: HomeAssistant, h
     assert await async_setup_component(hass, DOMAIN, {})
     await hass.async_block_till_done()
 
-    async def riavvio_rifiutato(_chiamata: ServiceCall) -> None:
-        raise HomeAssistantError("configuration is not valid")
+    riavvii: list[ServiceCall] = []
 
-    hass.services.async_register("homeassistant", "restart", riavvio_rifiutato)
+    async def riavvio(chiamata: ServiceCall) -> None:
+        riavvii.append(chiamata)
+
+    hass.services.async_register("homeassistant", "restart", riavvio)
     _segnala_riavvio(hass)
     client = await hass_client()
     risposta = await client.post(
@@ -420,10 +426,14 @@ async def test_riparazione_riavvio_rifiutato_avviso_resta(hass: HomeAssistant, h
     )
     assert risposta.status == 200
     flusso = await risposta.json()
-    risposta = await client.post(f"/api/repairs/issues/fix/{flusso['flow_id']}", json={})
+    with patch(CONTROLLO_CONFIG, return_value="configuration is not valid"):
+        risposta = await client.post(f"/api/repairs/issues/fix/{flusso['flow_id']}", json={})
     assert risposta.status == 200
     dati = await risposta.json()
     assert dati["type"] == "abort" and dati["reason"] == "riavvio_non_riuscito"
+    assert dati["description_placeholders"] == {"errore": "configuration is not valid"}
+    await hass.async_block_till_done()
+    assert riavvii == []
     assert ir.async_get(hass).async_get_issue(DOMAIN, "riavvio_necessario") is not None
 
 

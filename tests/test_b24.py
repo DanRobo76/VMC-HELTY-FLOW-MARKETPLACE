@@ -86,6 +86,12 @@ def test_notifiche_aggiorna_elenco_condizionate_e_chiuse_da_sole():
     for nome, (select, voce, nid) in SCRIPT_AGGIORNA_ELENCO.items():
         passi = script[f"vmc_master_aggiorna_elenco_entita_{nome}"]["sequence"]
         create = _trova(passi, "persistent_notification.create")
+        if nome == "media_player":
+            # Nessuna notifica per il Media Player: restano i due dismiss (tolgono quella delle versioni precedenti)
+            assert not create, nome
+            dismiss = _trova(passi, "persistent_notification.dismiss")
+            assert len(dismiss) == 2 and all(d["data"]["notification_id"] == nid for d, _ in dismiss), nome
+            continue
         assert len(create) == 1, nome
         nodo, antenati = create[0]
         assert nodo["data"]["notification_id"] == nid, nome
@@ -107,3 +113,35 @@ def test_inizializzazione_spegne_gli_interruttori_prima_di_tutto():
     for nome in ("pdr", "umidita", "calendario", "freeheating", "freecooling", "co2_e_voc"):
         voce = f"input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_{nome}"
         assert spegni < corpo.index(voce) < corpo.index("action: script.vmc_master_azzera_booleans")
+
+
+def test_verifica_entita_ripetuta_con_vmc_di_nuovo_on_line():
+    """La verifica delle entita' del riavvio si ripete quando la VMC torna ON-Line (anche se al riavvio
+    non era ancora in rete) e, se presente, quando si accende Invio Notifica."""
+    import yaml
+
+    class Loader(yaml.SafeLoader):
+        pass
+
+    Loader.add_multi_constructor("!", lambda loader, suffix, node: None)
+    automazione = yaml.load((PKG / "vmc_master_automazione.txt").read_text(encoding="utf-8"), Loader=Loader)
+    per_id = {str(t.get("id")): t for t in automazione["triggers"]}
+    on_line = per_id["VMC Master Elenco Entità con VMC di nuovo ON-Line"]
+    assert (on_line["trigger"], on_line["entity_id"], on_line["from"], on_line["to"]) == (
+        "state", "sensor.vmc_master_status_ip_interfaccia", ["OFF-Line", "unavailable"], "ON-Line"
+    )
+    assert "for" not in on_line
+    ids_aggiuntivi = ["VMC Master Elenco Entità con VMC di nuovo ON-Line"]
+    if "VMC Master Elenco Entità con Invio Notifica acceso" in per_id:
+        notifica = per_id["VMC Master Elenco Entità con Invio Notifica acceso"]
+        assert (notifica["entity_id"], notifica["from"], notifica["to"]) == (
+            "input_boolean.vmc_master_notifica_status_vmc", "off", "on"
+        )
+        ids_aggiuntivi.append("VMC Master Elenco Entità con Invio Notifica acceso")
+    ramo = next(
+        r for r in automazione["actions"][1]["choose"]
+        if any("VMC Master Elenco Entità Temperatura e Umidità installate in H.A." in str(c.get("id")) for c in r["conditions"])
+    )
+    assert all(i in ramo["conditions"][0]["id"] for i in ids_aggiuntivi)
+    assert ramo["sequence"][0]["action"] == "script.turn_on"
+    assert len(ramo["sequence"][0]["target"]["entity_id"]) == 7

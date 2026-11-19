@@ -604,7 +604,7 @@ template:
         icon: mdi:ip
 
   - sensor:
-      - default_entity_id: sensor.vmc_master_status_ip_interfaccia              # [CONFIGURAZIONE, 327 RICHIAMI] [INTERFACCIA, 116 RICHIAMI] [AUTOMAZIONE, 323 RICHIAMI] SENSORE IMPIEGATO PER LA VISUALIZZAZIONE NELL'INTERFACCIA SE LA VMC E' IN RETE O MENO
+      - default_entity_id: sensor.vmc_master_status_ip_interfaccia              # [CONFIGURAZIONE, 327 RICHIAMI] [INTERFACCIA, 116 RICHIAMI] [AUTOMAZIONE, 324 RICHIAMI] SENSORE IMPIEGATO PER LA VISUALIZZAZIONE NELL'INTERFACCIA SE LA VMC E' IN RETE O MENO
         name: "Status VMC"
         unique_id: vmc_master_status_ip_interfaccia
         state: >
@@ -968,7 +968,7 @@ template:
           {{ 'mdi:power-plug-off' if is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') else 'mdi:power-plug' }}
 
   - sensor:
-      - default_entity_id: sensor.vmc_master_nome_status                        # [CONFIGURAZIONE, 35 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 8 RICHIAMI] SENSORE DI VERIFICA DI AVVENUTA LETTURA NOME MEMORIZZATA NELLA VMC
+      - default_entity_id: sensor.vmc_master_nome_status                        # [CONFIGURAZIONE, 34 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 8 RICHIAMI] SENSORE DI VERIFICA DI AVVENUTA LETTURA NOME MEMORIZZATA NELLA VMC
         name: "Nome"
         unique_id: vmc_master_nome_status
         state: >
@@ -4633,7 +4633,7 @@ input_select:
       - "Aggiorna Elenco Dispositivi per Invio Notifica"
     icon: mdi:form-textbox
 
-  vmc_master_selected_media_player_entity:                                      # [CONFIGURAZIONE, 67 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 1 RICHIAMO]
+  vmc_master_selected_media_player_entity:                                      # [CONFIGURAZIONE, 66 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 1 RICHIAMO]
     name: Seleziona Media Player
     options:
       - "Aggiorna Elenco Media Player"
@@ -5444,7 +5444,7 @@ input_boolean:
 
 ################### Inizio Creazione Switch Booleano impiegato nell'Automazione, per invio Notifica al Dispositivio ############################
 
-  vmc_master_notifica_status_vmc:                                               # [CONFIGURAZIONE, 11 RICHIAMI] [INTERFACCIA, 5 RICHIAMI] [AUTOMAZIONE, 27 RICHIAMI] SENSORE TRACCIAMENTO NOTIFICA
+  vmc_master_notifica_status_vmc:                                               # [CONFIGURAZIONE, 11 RICHIAMI] [INTERFACCIA, 5 RICHIAMI] [AUTOMAZIONE, 28 RICHIAMI] SENSORE TRACCIAMENTO NOTIFICA
     name: "Invio Notifica"
     icon: mdi:light-switch-off
 
@@ -6887,16 +6887,7 @@ script:
                           entity_id: input_select.vmc_master_selected_media_player_entity
                         data:
                           option: "Aggiorna Elenco Media Player"
-                      # Notifica solo se nell'elenco esiste almeno un'entità sceglibile
-                      - if:
-                          - condition: template
-                            value_template: "{{ state_attr('input_select.vmc_master_selected_media_player_entity', 'options') | reject('equalto', 'Aggiorna Elenco Media Player') | list | count > 0 }}"
-                        then:
-                          - action: persistent_notification.create
-                            data:
-                              notification_id: vmc_master_aggiorna_entita_media_player
-                              title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
-                              message: "Aggiornare Manualmente l'Entità Media Player"
+                      # NESSUNA NOTIFICA PERSISTENTE PER IL MEDIA PLAYER: I persistent_notification.dismiss DI QUESTO SCRIPT TOLGONO SOLO QUELLA RIMASTA DALLE VERSIONI PRECEDENTI
               - action: input_text.set_value
                 target:
                   entity_id: input_text.vmc_master_last_media_player_entity
@@ -6935,7 +6926,7 @@ script:
     description: >
       Permette di selezionare l'entità Media Player preferita tra quelle installate.
       L'opzione "Aggiorna Elenco Media Player" serve per aggiornare manualmente la lista.
-      Mostra una notifica persistente se l'entità selezionata non è più valida. Aggiorna l'elenco in circa 5 s (pause di 2 s + 3 s).
+      Non mostra notifiche persistenti (toglie solo quella delle versioni precedenti, se presente). Aggiorna l'elenco in circa 5 s (pause di 2 s + 3 s).
 ################### Fine Creazione Scripts SELEZIONA ENTITA' installate su Home Assistant #####################
 
 ################### Inzio Creazione Scripts Invio Notifiche su Mobile installate su Home Assistant ###################

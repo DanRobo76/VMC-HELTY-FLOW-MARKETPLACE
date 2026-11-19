@@ -1648,8 +1648,8 @@ def test_motore_password_del_server_e_reti_grandi() -> None:
 
 
 async def test_riparazione_riavvio(hass: HomeAssistant) -> None:
-    """«Riavviare Home Assistant» nelle Riparazioni: chiede conferma, poi riavvia. Gli
-    altri avvisi si chiudono con una semplice conferma."""
+    """«Riavviare Home Assistant» nelle Riparazioni: chiede conferma, controlla la
+    configurazione, poi riavvia. Gli altri avvisi si chiudono con una semplice conferma."""
     from homeassistant.components.repairs import ConfirmRepairFlow
     from pytest_homeassistant_custom_component.common import async_mock_service
 
@@ -1664,7 +1664,8 @@ async def test_riparazione_riavvio(hass: HomeAssistant) -> None:
     risultato = await flusso.async_step_init()
     assert risultato["type"] is FlowResultType.FORM and risultato["step_id"] == "confirm"
     assert riavvii == []
-    risultato = await flusso.async_step_confirm({})
+    with patch("homeassistant.config.async_check_ha_config_file", return_value=None):
+        risultato = await flusso.async_step_confirm({})
     assert risultato["type"] is FlowResultType.CREATE_ENTRY
     await hass.async_block_till_done()
     assert len(riavvii) == 1
