@@ -1435,7 +1435,9 @@ def test_id_del_package(tmp_path: Path) -> None:
     # 133 unique_id e 10 automazioni, piu' le chiavi di aiutanti, timer e script
     assert sum(1 for d, p, _u in id_package if p in ("template", "command_line", "rest")) == 133
     assert sum(1 for d, _p, _u in id_package if d == "automation") == 10
-    assert len(id_package) == 463  # b28: timer del countdown di riattivazione; b30: timer del countdown di gruppo
+    # b28: timer del countdown di riattivazione; b30: timer del countdown di gruppo;
+    # b31: campo di esito della verifica dell'IP (input_text ..._ip_insert_esito)
+    assert len(id_package) == 464
     # nessun id in comune con un'altra VMC
     assert id_package.isdisjoint(_id_del_package_generato("salab"))
     # tag di Home Assistant e unique_id di blocco dei template

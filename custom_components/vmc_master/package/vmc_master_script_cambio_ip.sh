@@ -1,6 +1,6 @@
 ###########################################################################################################################################################################################################################
 #                                                                                                                                                                                                                         #
-#                                                          SCRIPT CAMBIO IP VMC HELTY FLOW PLUS RELEASE [VER. 1.0]                                                                                                        #
+#                                                          SCRIPT CAMBIO IP VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b31]                                                                                                   #
 #                                                                                                                                                                                                                         #
 # SVILUPPATO DA ING. DANILO ROBOTTI, ALLE PRIME ARMI CON HOME ASSISTANT :)                                                                                                                                                #
 #                                                                                                                                                                                                                         #
@@ -47,6 +47,10 @@ IP="$1"  # Imposta l'indirizzo IP specificato come argomento
 # (stessa regola del controllo dell'Automazione Cambio IP), così nei comandi sed qui sotto non può entrare altro testo.
 OTTETTO='(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])'
 [[ $# -eq 1 && $IP =~ ^($OTTETTO\.){3}$OTTETTO$ ]] || { echo "Indirizzo IP non valido: '$IP'"; exit 1; }
+# Deve poter essere l'IP di un dispositivo, come per l'integrazione: non sono ammessi 0.x.x.x, 127.x.x.x, 169.254.x.x
+# e gli indirizzi da 224.x.x.x in su (senza zeri iniziali i numeri non sono letti in base 8).
+IFS=. read -r A B _ <<< "$IP"
+(( A != 0 && A != 127 && A < 224 && (A != 169 || B != 254) )) || { echo "Indirizzo IP non valido: '$IP'"; exit 1; }
 
 # Esegui la sostituzione dell'indirizzo IP nel file YAML
 sed -i "s/[0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+/$IP/g" "/config/packages/vmc_helty_flow/master/vmc_master.yaml"

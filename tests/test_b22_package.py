@@ -10,7 +10,7 @@ from datetime import timedelta
 from pathlib import Path
 
 import pytest
-from homeassistant.core import HomeAssistant, ServiceCall
+from homeassistant.core import HomeAssistant, ServiceCall, SupportsResponse
 from homeassistant.helpers.template import Template
 from homeassistant.setup import async_setup_component
 from homeassistant.util import dt as dt_util
@@ -37,7 +37,9 @@ IP_RIFIUTATI = [
     "192.168.1",
     "",
 ]
-IP_ACCETTATI = ["192.168.1.77", "10.0.0.1", "0.0.0.0", "255.255.255.255", "172.16.250.9"]
+# Dalla 9.0.0b31 lo script rifiuta anche 0.x.x.x, 127.x.x.x, 169.254.x.x e da 224.x.x.x in su
+# (stessa regola di ip_valido dell'integrazione: vedi tests/test_b31_ip.py)
+IP_ACCETTATI = ["192.168.1.77", "10.0.0.1", "172.16.250.9", "1.0.0.1", "128.0.0.1", "169.253.1.1", "223.255.255.254"]
 
 
 def _file_prova() -> dict[str, str]:
@@ -134,9 +136,8 @@ async def test_automazione_cambio_ip_passa_l_ip_controllato(hass: HomeAssistant,
     comando = package["shell_command"]["vmc_prova_aggiorna_indirizzo_ip"]
     comando = f"{spia} " + comando.split("   ", 1)[1]
 
-    assert await async_setup_component(
-        hass, "input_text", {"input_text": {"vmc_prova_ip_insert": package["input_text"]["vmc_prova_ip_insert"]}}
-    )
+    campi = {nome: package["input_text"][nome] for nome in ("vmc_prova_ip_insert", "vmc_prova_ip_insert_esito")}
+    assert await async_setup_component(hass, "input_text", {"input_text": campi})
     assert await async_setup_component(
         hass, "shell_command", {"shell_command": {"vmc_prova_aggiorna_indirizzo_ip": comando}}
     )
@@ -154,8 +155,13 @@ async def test_automazione_cambio_ip_passa_l_ip_controllato(hass: HomeAssistant,
     async def _riavvio(call: ServiceCall) -> None:
         riavvii.append(call)
 
+    async def _verifica_ip(call: ServiceCall) -> dict:
+        # dalla 9.0.0b31 prima del riavvio risponde la VMC (servizio dell'integrazione)
+        return {"risponde": True, "nome": "VMC Prova", "esito": "ok"}
+
     hass.services.async_register("shell_command", "vmc_prova_rimuovi_caratteri_di_ritorno", _cambia_il_campo)
     hass.services.async_register("homeassistant", "restart", _riavvio)
+    hass.services.async_register("vmc_master", "verifica_ip", _verifica_ip, supports_response=SupportsResponse.ONLY)
     automazione = next(a for a in package["automation"] if a["id"] == "vmc_prova_cambio_ip_vmc")
     assert await async_setup_component(hass, "automation", {"automation": [automazione]})
     await hass.async_block_till_done()
