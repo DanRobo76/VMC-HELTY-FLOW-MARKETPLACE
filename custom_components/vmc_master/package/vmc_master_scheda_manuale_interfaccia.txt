@@ -493,6 +493,9 @@ cards:
                 - Nome VMC diverso
                 - unknown
                 - unavailable
+            - condition: state
+              entity: input_text.vmc_master_ip_insert
+              state_not: ''
           row:
             type: section
             label: IP salvato. Home Assistant si sta riavviando, la pagina tornerà da sola tra 1-3 minuti.
@@ -10688,6 +10691,9 @@ cards:
                           - Nome VMC diverso
                           - unknown
                           - unavailable
+                      - condition: state
+                        entity: input_text.vmc_master_ip_insert
+                        state_not: ''
                     row:
                       type: section
                       label: IP salvato. Home Assistant si sta riavviando, la pagina tornerà da sola tra 1-3 minuti.
@@ -14857,6 +14863,9 @@ cards:
                           - Nome VMC diverso
                           - unknown
                           - unavailable
+                      - condition: state
+                        entity: input_text.vmc_master_ip_insert
+                        state_not: ''
                     row:
                       type: section
                       label: IP salvato. Home Assistant si sta riavviando, la pagina tornerà da sola tra 1-3 minuti.

@@ -131,3 +131,16 @@ def test_richiami_interfaccia(entita: str) -> None:
 
 def test_versione_della_scheda() -> None:
     assert "RELEASE [VER. 9.0.0b31]" in _testo("vmc_master_scheda_manuale_interfaccia.txt")[:2000]
+
+
+def test_ip_salvato_nascosto_con_il_campo_vuoto() -> None:
+    """Dopo il riavvio il sensore di verifica ripristina per un attimo il valore di prima: con il campo
+    vuoto (initial "") la riga «IP salvato…» non deve ricomparire."""
+    righe = _testo("vmc_master_scheda_manuale_interfaccia.txt").splitlines()
+    etichette = [k for k, r in enumerate(righe) if r.strip().startswith("label: IP salvato.")]
+    assert len(etichette) == 3
+    for k in etichette:
+        inizio = max(j for j in range(k) if righe[j].strip() == "conditions:")
+        blocco = [r.strip() for r in righe[inizio:k]]
+        i = blocco.index("entity: input_text.vmc_master_ip_insert")
+        assert blocco[i - 1] == "- condition: state" and blocco[i + 1] == "state_not: ''"

@@ -3829,7 +3829,7 @@ input_text:
     pattern: '^[A-Za-z0-9_-]{0,10}$'                                          # DA 1 A 10 CARATTERI: LETTERE SENZA ACCENTI, CIFRE, _ E - (COME IL MOTORE DELL'INTEGRAZIONE); VUOTO DOPO L'INVIO
     icon: mdi:form-textbox
         
-  vmc_master_ip_insert:                                                         # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 4 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI]
+  vmc_master_ip_insert:                                                         # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 7 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI]
     name: "Cambia IP VMC (Riavvio di H.A.)"
     initial: ""
     max: 15                                                                     # UN IP HA AL MASSIMO 15 CARATTERI. NESSUN pattern: HOME ASSISTANT SCARTA SENZA AVVISO UN VALORE CHE NON LO RISPETTA, L'AUTOMAZIONE NON PARTE E SOTTO IL CAMPO NON COMPARE «IP non valido»
