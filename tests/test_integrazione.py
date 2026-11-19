@@ -837,17 +837,17 @@ def test_readme_marketplace_e_github() -> None:
     for testo in ("1. **Modificare `configuration.yaml`** (una volta sola):",
                   "1. **Edit `configuration.yaml`** (once):"):
         assert testo in marketplace and testo in github, testo
-    for testo in ("2. **Installare**: cercare il pulsante **Installa** in alto a destra e premerlo.",
-                  "2. **Install**: look for the **Install** button at the top right and press it.",
+    for testo in ("2. **Installare**: cercare il pulsante **Installa** in alto a destra, premerlo e seguire le indicazioni a schermo.",
+                  "2. **Install**: look for the **Install** button at the top right, press it and follow the on-screen instructions.",
                   "Per ogni VMC nel pannello **Opzioni** della scheda:",
                   "For each unit in the card's **Opzioni** panel:",
-                  "3. **Aggiungere la VMC**: *Impostazioni",
-                  "3. **Add the unit**: *Settings",
-                  "seguire i punti **Aggiungere la VMC**, **Riavviare** e **Aggiungere la scheda**.",
-                  "follow the steps **Add the unit**, **Restart** and **Add the card**."):
+                  "3. **Riavviare**:",
+                  "3. **Restart**:",
+                  "**Altre VMC**: cliccare su *Impostazioni → Dispositivi e servizi → VMC Master → Aggiungi dispositivo*.",
+                  "**More units**: click *Settings → Devices & services → VMC Master → Add device*."):
         assert testo in marketplace and testo not in github, testo
     # nel Marketplace l'Installazione finisce con la scheda: niente rimando a Configurazione
-    for testo in ("**: vedere **Configurazione**", "**: see **Configuration**", "6. **",
+    for testo in ("**: vedere **Configurazione**", "**: see **Configuration**", "5. **", "**Aggiungere la VMC**", "**Add the unit**",
                   "Cosa lo rende diverso", "Scenario tipico", "What makes it different",
                   "Typical scenario", "Servono proprio", "These exact lines",
                   "si aggiunge con il suo IP", "add each unit with its IP",
