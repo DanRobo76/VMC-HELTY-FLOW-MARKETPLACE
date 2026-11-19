@@ -84,7 +84,6 @@ def test_velocita_scelta_negli_ultimi_secondi_del_pdr_resta() -> None:
     Iperventilazione, Free) e 5 con Inquinanti (2, 3, 4, Notturna, Iperventilazione; il ramo 1 non invia comandi)."""
     testo = _automazione()
     assert testo.count("- stop: Velocità scelta dall'utente durante l'allerta PdR mantenuta") == 13
-    dati = hay.load_yaml(str(PKG / "vmc_master_automazione.txt"))
     rami = {}
     righe = testo.split("\n")
     for i, riga in enumerate(righe):
