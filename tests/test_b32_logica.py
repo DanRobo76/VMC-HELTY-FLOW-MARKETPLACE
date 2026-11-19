@@ -97,3 +97,18 @@ def test_velocita_scelta_negli_ultimi_secondi_del_pdr_resta() -> None:
     assert rami["Vel. 2 No PdR"].startswith("'Velocità 0', 'Velocità 2', 'Non disponibile'")
     assert rami["Free Cool./Heat. No PdR"].startswith("'Velocità 0', 'Free Cooling', 'Non disponibile'")
     assert rami["Vel. 3 No PdR  se Spia Inquinanti ON"].startswith("'Velocità 0', 'Velocità 1', 'Velocità 3', 'Non")
+
+
+def test_ripristino_free_dopo_black_out_manda_sempre_un_comando() -> None:
+    """A4-3: «Black-Out Off Free Cool./Heat.» con Inquinanti appena rilevati (memoria della Velocita' 1 degli
+    Inquinanti ancora spenta) e Free programmato non mandava nessun comando: ora il default manda la Velocita' 1 con
+    gli Inquinanti in corso, altrimenti Free Cool./Heat. (Foglio A23)."""
+    dati = hay.load_yaml(str(PKG / "vmc_master_automazione.txt"))
+    rami = [r for blocco in dati["actions"] if "choose" in blocco for r in blocco["choose"]]
+    ramo = next(r for r in rami if r["conditions"][0].get("id") == "Black-Out Off Free Cool./Heat.")
+    scelta = next(passo for passo in ramo["sequence"] if "choose" in passo)
+    assert len(scelta["choose"]) == 4
+    interno = scelta["default"][0]
+    assert interno["choose"][0]["conditions"][0]["entity_id"] == "input_boolean.vmc_master_spia_co2_o_voc"
+    assert interno["choose"][0]["sequence"][0]["action"] == "shell_command.vmc_master_velocita_1"
+    assert interno["default"][0]["action"] == "shell_command.vmc_master_freecooling"

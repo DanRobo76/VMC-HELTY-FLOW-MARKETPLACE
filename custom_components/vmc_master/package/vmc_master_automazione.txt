@@ -18514,6 +18514,24 @@ actions:
                   - action: shell_command.vmc_master_velocita_1
                     metadata: {}
                     data: {}
+            default:
+              - alias: >-
+                  Combinazioni non coperte dai 4 casi (per esempio Inquinanti appena rilevati e memoria della Velocità 1
+                  degli Inquinanti non ancora accesa) [Foglio Logiche A23]
+                choose:
+                  - conditions:
+                      - condition: state
+                        entity_id: input_boolean.vmc_master_spia_co2_o_voc
+                        state: "on"
+                    sequence:
+                      - action: shell_command.vmc_master_velocita_1
+                        metadata: {}
+                        data: {}
+                    alias: Inquinanti in corso, Velocità 1 come chiedono gli Inquinanti
+                default:
+                  - action: shell_command.vmc_master_freecooling
+                    metadata: {}
+                    data: {}
           - alias: >-
               Ripristino dopo il Black-Out: attende che la VMC esegua il comando (al massimo 12 s) prima di spegnere le spie,
               così le allerte in attesa della fine del Black-Out memorizzano la velocità ripristinata
