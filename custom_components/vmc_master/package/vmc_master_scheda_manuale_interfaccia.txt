@@ -1,6 +1,6 @@
 ###########################################################################################################################################################################################################################
 #                                                                                                                                                                                                                         #
-#                                                          SCHEDA MANUALE INTERFACCIA VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b31]                                                                                         #
+#                                                          SCHEDA MANUALE INTERFACCIA VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b32]                                                                                         #
 #                                                                                                                                                                                                                         #
 # SVILUPPATO DA ING. DANILO ROBOTTI, ALLE PRIME ARMI CON HOME ASSISTANT :)                                                                                                                                                #
 #                                                                                                                                                                                                                         #
@@ -2709,6 +2709,15 @@ cards:
     card:
       type: markdown
       content: >-
+        {% set fase_riavvio =
+        states('input_number.vmc_master_fase_riallineamento_al_riavvio') |
+        float(0) %}
+
+        {% set attendere = 'ATTENDERE LA RIATTIVAZIONE DEL 2° GRUPPO (IN CIMA ALLA SCHEDA)..' if fase_riavvio > 0 and fase_riavvio < 3 else 'ATTENDERE..' %}
+
+        {% set attendere_avvio = attendere if
+        is_state('input_boolean.vmc_master_spia_co2_o_voc', 'off') else 'ATTENDERE..' %}
+
         {% set spia_co2_o_voc_partenza_ritorno_velocita_0 =
         states('input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0')
         %}
@@ -2999,7 +3008,7 @@ cards:
 
 
         <strong>AVVIO VMC A VELOCITA' 1 PER DARE PRIORITA' ALL' ASPIRAZIONE DI
-        INQUINANTI, ATTENDERE..</strong>
+        INQUINANTI, {{ attendere_avvio }}</strong>
 
 
         Msg. 6, VMC ON/OFF, in Funzione del Lim. CO₂ Allarmato
@@ -3256,7 +3265,7 @@ cards:
 
 
         <strong>AVVIO VMC A VELOCITA' 1 PER DARE PRIORITA' ALL' ASPIRAZIONE DI
-        INQUINANTI, ATTENDERE..</strong>
+        INQUINANTI, {{ attendere_avvio }}</strong>
 
 
         Msg. 6, VMC ON/OFF, in Funzione del Lim. VOC Allarmato
@@ -3552,7 +3561,7 @@ cards:
 
 
         <strong>AVVIO VMC A VELOCITA' 1 PER DARE PRIORITA' ALL' ASPIRAZIONE DI
-        INQUINANTI, ATTENDERE..</strong>
+        INQUINANTI, {{ attendere_avvio }}</strong>
 
 
         Msg. 6, VMC ON/OFF, in Funzione del Lim. CO₂ e VOC Allarmato
@@ -3575,27 +3584,27 @@ cards:
 
 
         {% if spia_co2_o_voc_partenza_ritorno_velocita_0 == "on" %}RIPRISTINO
-        AUTOMATICO DELLA VMC SULLA <strong>VELOCITA' 0</strong>, ATTENDERE..{%
+        AUTOMATICO DELLA VMC SULLA <strong>VELOCITA' 0</strong>, {{ attendere }}{%
         elif spia_co2_o_voc_velocita_1 == "on" %}RIPRISTINO AUTOMATICO DELLA VMC
-        SULLA <strong>VELOCITA' 1</strong>, ATTENDERE..{% elif
+        SULLA <strong>VELOCITA' 1</strong>, {{ attendere }}{% elif
         spia_co2_o_voc_velocita_2 == "on" %}RIPRISTINO AUTOMATICO DELLA VMC
-        SULLA <strong>VELOCITA' 2</strong>, ATTENDERE..{% elif
+        SULLA <strong>VELOCITA' 2</strong>, {{ attendere }}{% elif
         spia_co2_o_voc_velocita_3 == "on" %}RIPRISTINO AUTOMATICO DELLA VMC
-        SULLA <strong>VELOCITA' 3</strong>, ATTENDERE..{% elif
+        SULLA <strong>VELOCITA' 3</strong>, {{ attendere }}{% elif
         spia_co2_o_voc_velocita_4 == "on" %}RIPRISTINO AUTOMATICO DELLA VMC
-        SULLA <strong>VELOCITA' 4</strong>, ATTENDERE..{% elif
+        SULLA <strong>VELOCITA' 4</strong>, {{ attendere }}{% elif
         spia_co2_o_voc_velocita_notturna == "on" %}RIPRISTINO AUTOMATICO DELLA
-        VMC SULLA <strong>VELOCITA' NOTTURNA</strong>, ATTENDERE..{% elif
+        VMC SULLA <strong>VELOCITA' NOTTURNA</strong>, {{ attendere }}{% elif
         spia_co2_o_voc_velocita_freecooling == "on" %}{% if freeheating_cooling
         == "Free Heating" %}RIPRISTINO AUTOMATICO DELLA VMC SULLA
-        <strong>VELOCITA' FREE HEATING</strong>, ATTENDERE..{% elif
+        <strong>VELOCITA' FREE HEATING</strong>, {{ attendere }}{% elif
         freeheating_cooling == "Free Cooling" %}RIPRISTINO AUTOMATICO DELLA VMC
-        SULLA <strong>VELOCITA' FREE COOLING</strong>, ATTENDERE..{% elif
+        SULLA <strong>VELOCITA' FREE COOLING</strong>, {{ attendere }}{% elif
         freeheating_cooling == "Disabilitata" %}RIPRISTINO AUTOMATICO DELLA VMC
-        SULLA <strong>VELOCITA' FREE COOL./HEAT.</strong>, ATTENDERE..{% endif
+        SULLA <strong>VELOCITA' FREE COOL./HEAT.</strong>, {{ attendere }}{% endif
         %}{% elif spia_co2_o_voc_velocita_iperventilazione == "on" %}RIPRISTINO
         AUTOMATICO DELLA VMC SULLA <strong>VELOCITA' IPERVENTILAZIONE</strong>,
-        ATTENDERE..{% endif %}
+        {{ attendere }}{% endif %}
 
 
         Msg. 7
@@ -3699,6 +3708,12 @@ cards:
     card:
       type: markdown
       content: >-
+        {% set fase_riavvio =
+        states('input_number.vmc_master_fase_riallineamento_al_riavvio') |
+        float(0) %}
+
+        {% set attendere = 'ATTENDERE LA RIATTIVAZIONE DEL 3° GRUPPO (IN CIMA ALLA SCHEDA)..' if fase_riavvio > 0 and fase_riavvio < 4 else 'ATTENDERE..' %}
+
         {% set spia_velocita_0 =
         states('input_boolean.vmc_master_spia_velocita_0_un_solo_avvio') %}
 
@@ -3824,7 +3839,7 @@ cards:
 
 
         {%if spia_velocita_1_co2_o_voc_pdr!="on"%}<strong>ARRESTO DELLA
-        VMC</strong>, ATTENDERE..{% else %}{% endif %}
+        VMC</strong>, {{ attendere }}{% else %}{% endif %}
 
 
         {% if spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
@@ -5244,40 +5259,40 @@ cards:
 
 
         {% if not is_state('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr', 'on') %}{% elif spia_velocita_0=="on"%}FINE DEL MANTENIMENTO DELLA VMC SU
-        <strong>VELOCITA' 0</strong>, ATTENDERE..
+        <strong>VELOCITA' 0</strong>, {{ attendere }}
 
         {% elif spia_velocita_1=="on" %}RIPRESA AUTOMATICA DELLA VMC SULLA
-        <strong>VELOCITA' 1</strong>, ATTENDERE..
+        <strong>VELOCITA' 1</strong>, {{ attendere }}
 
         {% elif spia_velocita_2=="on" %}RIPRESA AUTOMATICA DELLA VMC SULLA
-        <strong>VELOCITA' 2</strong>, ATTENDERE..
+        <strong>VELOCITA' 2</strong>, {{ attendere }}
 
         {% elif spia_velocita_3=="on" %}RIPRESA AUTOMATICA DELLA VMC SULLA
-        <strong>VELOCITA' 3</strong>, ATTENDERE..
+        <strong>VELOCITA' 3</strong>, {{ attendere }}
 
         {% elif spia_velocita_4=="on" %}RIPRESA AUTOMATICA DELLA VMC SULLA
-        <strong>VELOCITA' 4</strong>, ATTENDERE..
+        <strong>VELOCITA' 4</strong>, {{ attendere }}
 
         {% elif spia_notturna=="on" %}RIPRESA AUTOMATICA DELLA VMC SULLA
-        <strong>VELOCITA' NOTTURNA</strong>, ATTENDERE..
+        <strong>VELOCITA' NOTTURNA</strong>, {{ attendere }}
 
         {% elif spia_freecooling=="on" and freeheating_cooling=="Free Heating"
         %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITA' FREE
-        HEATING</strong>, ATTENDERE..
+        HEATING</strong>, {{ attendere }}
 
         {% elif spia_freecooling=="on" and freeheating_cooling=="Free Cooling"
         %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITA’ FREE
-        COOLING</strong>, ATTENDERE..
+        COOLING</strong>, {{ attendere }}
 
         {% elif spia_freecooling=="on" and freeheating_cooling=="Disabilitata"
         %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITA' FREE
-        COOL./HEAT.</strong>, ATTENDERE..
+        COOL./HEAT.</strong>, {{ attendere }}
 
         {% elif spia_iperventilazione=="on" %}RIPRESA AUTOMATICA DELLA VMC SULLA
-        <strong>VELOCITA' IPERVENTILAZIONE</strong>, ATTENDERE..
+        <strong>VELOCITA' IPERVENTILAZIONE</strong>, {{ attendere }}
 
         {%elif spia_velocita_1_co2_o_voc_pdr=="on" and is_state('input_boolean.vmc_master_spia_co2_o_voc', 'off')%}RIPRESA AUTOMATICA DELLA VMC
-        SULLA <strong>VELOCITA' 0</strong>, ATTENDERE..{% else %}{% endif %}
+        SULLA <strong>VELOCITA' 0</strong>, {{ attendere }}{% else %}{% endif %}
 
 
         Msg. 23
@@ -5365,6 +5380,12 @@ cards:
     card:
       type: markdown
       content: >-
+        {% set fase_riavvio =
+        states('input_number.vmc_master_fase_riallineamento_al_riavvio') |
+        float(0) %}
+
+        {% set attendere = 'ATTENDERE LA RIATTIVAZIONE DEL 3° GRUPPO (IN CIMA ALLA SCHEDA)..' if fase_riavvio > 0 and fase_riavvio < 4 else 'ATTENDERE..' %}
+
         {% set spia_free_cooling =
         states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling')
         %}
@@ -6616,7 +6637,7 @@ cards:
         [°C]
 
 
-        {% if spia_free_heating == "on" %}RIPRISTINO SULLA VELOCITA' FREE HEATING, ATTENDERE..{% endif %}
+        {% if spia_free_heating == "on" %}RIPRISTINO SULLA VELOCITA' FREE HEATING, {{ attendere }}{% endif %}
 
 
         Msg. 11 Free Heating
@@ -6640,7 +6661,7 @@ cards:
         [°C]
 
 
-        {% if spia_free_heating == "on" %}RIPRISTINO SULLA VELOCITA' FREE HEATING, ATTENDERE..{% endif %}
+        {% if spia_free_heating == "on" %}RIPRISTINO SULLA VELOCITA' FREE HEATING, {{ attendere }}{% endif %}
 
 
         Msg. 11.1 Free Heating
@@ -6665,7 +6686,7 @@ cards:
         [°C]
 
 
-        {% if spia_free_heating == "on" %}RIPRISTINO SULLA VELOCITA' FREE HEATING, ATTENDERE..{% endif %}
+        {% if spia_free_heating == "on" %}RIPRISTINO SULLA VELOCITA' FREE HEATING, {{ attendere }}{% endif %}
 
 
         Msg. 12 Free Heating
@@ -6690,7 +6711,7 @@ cards:
         [°C]
 
 
-        {% if spia_free_heating == "on" %}RIPRISTINO SULLA VELOCITA' FREE HEATING, ATTENDERE..{% endif %}
+        {% if spia_free_heating == "on" %}RIPRISTINO SULLA VELOCITA' FREE HEATING, {{ attendere }}{% endif %}
 
 
         Msg. 12.1 Free Heating
@@ -6895,7 +6916,7 @@ cards:
         [°C]
 
 
-        {% if spia_free_cooling == "on" %}RIPRISTINO SULLA VELOCITA' FREE COOLING, ATTENDERE..{% endif %}
+        {% if spia_free_cooling == "on" %}RIPRISTINO SULLA VELOCITA' FREE COOLING, {{ attendere }}{% endif %}
 
 
         Msg. 11 Free Cooling
@@ -6919,7 +6940,7 @@ cards:
         [°C]
 
 
-        {% if spia_free_cooling == "on" %}RIPRISTINO SULLA VELOCITA' FREE COOLING, ATTENDERE..{% endif %}
+        {% if spia_free_cooling == "on" %}RIPRISTINO SULLA VELOCITA' FREE COOLING, {{ attendere }}{% endif %}
 
 
         Msg. 11.1 Free Cooling
@@ -6944,7 +6965,7 @@ cards:
         [°C]
 
 
-        {% if spia_free_cooling == "on" %}RIPRISTINO SULLA VELOCITA' FREE COOLING, ATTENDERE..{% endif %}
+        {% if spia_free_cooling == "on" %}RIPRISTINO SULLA VELOCITA' FREE COOLING, {{ attendere }}{% endif %}
 
 
         Msg. 12 Free Cooling
@@ -6969,7 +6990,7 @@ cards:
         [°C]
 
 
-        {% if spia_free_cooling == "on" %}RIPRISTINO SULLA VELOCITA' FREE COOLING, ATTENDERE..{% endif %}
+        {% if spia_free_cooling == "on" %}RIPRISTINO SULLA VELOCITA' FREE COOLING, {{ attendere }}{% endif %}
 
 
         Msg. 12.1 Free Cooling
@@ -7240,6 +7261,12 @@ cards:
     card:
       type: markdown
       content: >-
+        {% set fase_riavvio =
+        states('input_number.vmc_master_fase_riallineamento_al_riavvio') |
+        float(0) %}
+
+        {% set attendere = 'ATTENDERE LA RIATTIVAZIONE DEL 3° GRUPPO (IN CIMA ALLA SCHEDA)..' if fase_riavvio > 0 and fase_riavvio < 4 else 'ATTENDERE..' %}
+
         {% set messaggio =
         states('sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi')
         %}
@@ -7404,11 +7431,11 @@ cards:
               ))%}
           PREPARAZIONE AL MANTENIMENTO AUTOMATICO DELLA VMC SU <strong>Velocità 1</strong> IMPOSTATA PER ALLERTA {% if is_state('sensor.vmc_master_status_mese_corrente_freeheating_o_freecooling', 'Free Heating') %}FREE HEATING{% elif is_state('sensor.vmc_master_status_mese_corrente_freeheating_o_freecooling', 'Free Cooling') %}FREE COOLING{% elif is_state('sensor.vmc_master_status_mese_corrente_freeheating_o_freecooling', 'Disabilitata') %}FREE COOL./HEAT.{% endif %}
 
-          ATTENDERE..
+          {{ attendere }}
               {% else %}
           PREPARAZIONE AL MANTENIMENTO AUTOMATICO DELLA VMC SU <strong>{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') }}</strong>
 
-          ATTENDERE..
+          {{ attendere }}
               {% endif %}
 
           Msg. 0
@@ -7654,11 +7681,11 @@ cards:
               )) %}{% if velocita_1_per_free %}
           AVVIO AUTOMATICO DELLA VMC SU <strong>Velocità 1</strong> IMPOSTATA PER ALLERTA FREE COOLING O FREE HEATING
           
-          ATTENDERE..
+          {{ attendere }}
               {% else %}
           AVVIO AUTOMATICO DELLA VMC SU <strong>{{ states('input_select.vmc_master_speed_umidita') }}</strong> IMPOSTATA
           
-          ATTENDERE..
+          {{ attendere }}
               {% endif %}
 
         {% if not velocita_1_per_free %}
@@ -8342,7 +8369,7 @@ cards:
           NON E' POSSIBILE DISABILITARE L'OPZIONE [VMC ON/OFF, in Funzione dell'Umidità Interna] FINO AL TERMINE DELL'ALTRA ALLERTA
           {% endif %}
           
-          ATTENDERE ..
+          {{ attendere }}
           
         Msg. 7
 
@@ -13399,9 +13426,11 @@ cards:
                   l'Umidità). Il pannello «Riattivazione delle Allerte», in
                   cima alla scheda, mostra un countdown per gruppo, uno dopo
                   l'altro: il gruppo in corso conta i secondi, i successivi
-                  sono «In attesa», i precedenti «Già attive». Non serve fare
-                  nulla, anche se nel frattempo si preme Profilo
-                  Inizializzazione.
+                  sono «In attesa», i precedenti «Già attive». Intanto le
+                  schede delle allerte di un gruppo non ancora riattivato
+                  dicono «ATTENDERE LA RIATTIVAZIONE DEL 2° GRUPPO» o «DEL 3°
+                  GRUPPO». Non serve fare nulla, anche se nel frattempo si
+                  preme Profilo Inizializzazione.
 
                   <br>
 
