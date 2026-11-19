@@ -88,3 +88,55 @@ def test_free_tempi_di_ripresa() -> None:
     """A3-12: la voce 14 dice i tempi di ripresa in Free (24 secondi, 20 con Inquinanti)."""
     assert "riparte in Free Cool./Heat. quando la condizione torna favorevole (dopo 24 secondi; 20 con Inquinanti)." in (
         _piatto(_scheda()))
+
+
+async def test_avvio_inquinanti_con_memoria_pdr(hass) -> None:
+    """A2-4: il Msg 6 delle 3 schede inquinanti annuncia la velocita' a cui la VMC partira' davvero (la memoria PdR
+    2, 3, 4, Notturna, Iperventilazione o Free senza programmazione; altrimenti Velocita' 1)."""
+    from homeassistant.helpers.template import Template
+
+    righe = _scheda().split("\n")
+    pezzi = [righe[i] + "\n" + righe[i + 1] + "\n" + righe[i + 2] for i, r in enumerate(righe)
+             if "{% set velocita_avvio = \"2\" %}" in r]
+    assert len(pezzi) == 3 and len(set(pezzi)) == 1
+    spia = "input_boolean.vmc_master_spia_velocita_"
+    casi = [({}, "1"), ({"2": "on"}, "2"), ({"notturna": "on"}, "NOTTURNA"), ({"1": "on"}, "1"),
+            ({"freecooling": "on"}, "FREE COOL./HEAT."),
+            ({"freecooling": "on", "freecooling_un_solo_avvio_per_programmazione_freeheating": "on"}, "1")]
+    for accese, atteso in casi:
+        for k in ("1", "2", "3", "4", "notturna", "iperventilazione", "freecooling"):
+            hass.states.async_set(f"{spia}{k}_un_solo_avvio", accese.get(k, "off"))
+        for k in ("freecooling", "freeheating"):
+            nome = f"freecooling_un_solo_avvio_per_programmazione_{k}"
+            hass.states.async_set(f"{spia}{nome}", accese.get(nome, "off"))
+        reso = Template("{% set attendere_avvio = 'ATTENDERE..' %}" + pezzi[0], hass).async_render(parse_result=False)
+        assert f"AVVIO VMC A VELOCITA' {atteso} PER DARE PRIORITA'" in reso, (accese, reso)
+
+
+async def test_umidita_rientrata_con_inquinanti(hass) -> None:
+    """A3-6: a Umidita' rientrata con Inquinanti in corso la scheda Umidita' annuncia la Velocita' 1 fino al rientro
+    degli Inquinanti, come fa il codice (anche con avvio in Free Cool./Heat., A3-1); altrimenti la Velocita' 0."""
+    from homeassistant.helpers.template import Template
+
+    scheda = _scheda()
+    inizio = scheda.index("          {% if is_state('input_boolean.vmc_master_spia_umidita_velocita_0', 'on') %}\n"
+                          "        {% if is_state('input_boolean.vmc_master_spia_co2_o_voc', 'on')")
+    pezzo = scheda[inizio : scheda.index("{% endif %}\n\n        {% endif %}", inizio) + len("{% endif %}\n\n        {% endif %}")]
+    base = {
+        "input_boolean.vmc_master_spia_umidita_velocita_0": "on",
+        "input_boolean.vmc_master_spia_co2_o_voc": "on",
+        "input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc": "on",
+        "sensor.vmc_master_alert_monitoraggio_co2": "Allerta",
+        "sensor.vmc_master_alert_monitoraggio_voc": "Nessuna Allerta",
+        "sensor.vmc_master_status_ventola_lettura_codice_interpretato": "Velocità 2",
+        "input_select.vmc_master_speed_umidita": "Velocità 2",
+    }
+    casi = [({}, "PASSAGGIO"), ({"input_boolean.vmc_master_spia_co2_o_voc": "off"}, "RIPRISTINO"),
+            ({"sensor.vmc_master_status_ventola_lettura_codice_interpretato": "Velocità 3"}, "RIPRISTINO"),
+            ({"input_select.vmc_master_speed_umidita": "Free Cool./Heat.",
+              "sensor.vmc_master_status_ventola_lettura_codice_interpretato": "Free Cooling"}, "PASSAGGIO")]
+    for diversi, atteso in casi:
+        for entita, stato in {**base, **diversi}.items():
+            hass.states.async_set(entita, stato)
+        reso = Template(pezzo, hass).async_render(parse_result=False)
+        assert f"PROGRAMMATO IL {atteso} DELLA VMC" in reso, (diversi, reso)

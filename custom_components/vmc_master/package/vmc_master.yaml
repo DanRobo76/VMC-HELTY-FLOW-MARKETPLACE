@@ -1019,7 +1019,7 @@ template:
         icon: mdi:code-array
 
   - sensor:
-      - default_entity_id: sensor.vmc_master_status_ventola_lettura_codice_interpretato # [CONFIGURAZIONE, 134 RICHIAMI] [INTERFACCIA, 53 RICHIAMI] [AUTOMAZIONE, 800 RICHIAMI] SENSORE DI INTERPRETAZIONE DELLA LETTURA DEI DATI "VELOCITA'" MEMORIZZATI NELLA VMC CONVERITA IN "STRINGA", PREVIA VERIFICA DI AVVENUTA LETTURA DEI DATI "VELOCITA'"" MEMORIZZATI NELLA VMC
+      - default_entity_id: sensor.vmc_master_status_ventola_lettura_codice_interpretato # [CONFIGURAZIONE, 134 RICHIAMI] [INTERFACCIA, 55 RICHIAMI] [AUTOMAZIONE, 800 RICHIAMI] SENSORE DI INTERPRETAZIONE DELLA LETTURA DEI DATI "VELOCITA'" MEMORIZZATI NELLA VMC CONVERITA IN "STRINGA", PREVIA VERIFICA DI AVVENUTA LETTURA DEI DATI "VELOCITA'"" MEMORIZZATI NELLA VMC
         name: "Status Ventilazione"
         unique_id: vmc_master_status_ventola_lettura_codice_interpretato
         state: >
@@ -2733,7 +2733,7 @@ template:
         icon: mdi:alarm-light-outline
 
   - sensor:
-      - default_entity_id: sensor.vmc_master_alert_monitoraggio_co2             # [CONFIGURAZIONE, 387 RICHIAMI] [INTERFACCIA, 42 RICHIAMI] [AUTOMAZIONE, 30 RICHIAMI] SENSORE POP-UP MONITORAGGIO SUPERAMENTO DEL Livello di Concentrazione CO₂ [ppm]
+      - default_entity_id: sensor.vmc_master_alert_monitoraggio_co2             # [CONFIGURAZIONE, 387 RICHIAMI] [INTERFACCIA, 43 RICHIAMI] [AUTOMAZIONE, 30 RICHIAMI] SENSORE POP-UP MONITORAGGIO SUPERAMENTO DEL Livello di Concentrazione CO₂ [ppm]
         name: "Monitoraggio CO₂"
         unique_id: vmc_master_alert_monitoraggio_co2
         state: >
@@ -2751,7 +2751,7 @@ template:
         icon: mdi:alarm-light-outline
 
   - sensor:
-      - default_entity_id: sensor.vmc_master_alert_monitoraggio_voc             # [CONFIGURAZIONE, 387 RICHIAMI] [INTERFACCIA, 43 RICHIAMI] [AUTOMAZIONE, 30 RICHIAMI] SENSORE POP-UP MONITORAGGIO SUPERAMENTO DEL Livello di Concentrazione VOC [ppb]
+      - default_entity_id: sensor.vmc_master_alert_monitoraggio_voc             # [CONFIGURAZIONE, 387 RICHIAMI] [INTERFACCIA, 44 RICHIAMI] [AUTOMAZIONE, 30 RICHIAMI] SENSORE POP-UP MONITORAGGIO SUPERAMENTO DEL Livello di Concentrazione VOC [ppb]
         name: "Monitoraggio VOC"
         unique_id: vmc_master_alert_monitoraggio_voc
         state: >
@@ -4604,7 +4604,7 @@ input_select:
       - Dicembre
     icon: mdi:calendar-month-outline  
 
-  vmc_master_speed_umidita:                                                     # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 18 RICHIAMI] [AUTOMAZIONE, 26 RICHIAMI] SENSORE DI MEMORIZZAZIONE DELLA VELOCITA' CHE SI DESIDERA IMPOSTARE NELLA VMC
+  vmc_master_speed_umidita:                                                     # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 20 RICHIAMI] [AUTOMAZIONE, 26 RICHIAMI] SENSORE DI MEMORIZZAZIONE DELLA VELOCITA' CHE SI DESIDERA IMPOSTARE NELLA VMC
     name: "Set Velocità Umidità di Avvio"
     options:
       - Velocità 0
@@ -5140,7 +5140,7 @@ input_boolean:
     name: "Mostra o Nascondi gli Avvisi"
     icon: mdi:light-switch-off
 
-  vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc:                           # [CONFIGURAZIONE, 118 RICHIAMI] [INTERFACCIA, 42 RICHIAMI] [AUTOMAZIONE, 33 RICHIAMI] VERIFICA IL VALORE DI PERICOLOSITA' DEI SENZORE CO2 E VOC; SOLAMENTE; LA VMC VERRA' SI AVVIERA' IN AUTOMATICO SE VIENE ACCESO (ON), QUALORA I VALORI RISULTINO PERICOLOSI
+  vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc:                           # [CONFIGURAZIONE, 118 RICHIAMI] [INTERFACCIA, 43 RICHIAMI] [AUTOMAZIONE, 33 RICHIAMI] VERIFICA IL VALORE DI PERICOLOSITA' DEI SENZORE CO2 E VOC; SOLAMENTE; LA VMC VERRA' SI AVVIERA' IN AUTOMATICO SE VIENE ACCESO (ON), QUALORA I VALORI RISULTINO PERICOLOSI
     name: "VMC ON/OFF, in Funzione del Lim. CO₂ e/o VOC"
     icon: mdi:light-switch-off
 
@@ -5257,35 +5257,35 @@ input_boolean:
     name: "Spia Velocità 1 1° Avvio"
     icon: mdi:memory
 
-  vmc_master_spia_velocita_2_un_solo_avvio:                                     # [CONFIGURAZIONE, 57 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 247 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' 2, IN CASO SUPERAMENTO del Lim. Δ P. di Rugiada
+  vmc_master_spia_velocita_2_un_solo_avvio:                                     # [CONFIGURAZIONE, 57 RICHIAMI] [INTERFACCIA, 31 RICHIAMI] [AUTOMAZIONE, 247 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' 2, IN CASO SUPERAMENTO del Lim. Δ P. di Rugiada
     name: "Spia Velocità 2 1° Avvio"
     icon: mdi:memory
 
-  vmc_master_spia_velocita_3_un_solo_avvio:                                     # [CONFIGURAZIONE, 57 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 247 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' 3, IN CASO SUPERAMENTO del Lim. Δ P. di Rugiada
+  vmc_master_spia_velocita_3_un_solo_avvio:                                     # [CONFIGURAZIONE, 57 RICHIAMI] [INTERFACCIA, 31 RICHIAMI] [AUTOMAZIONE, 247 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' 3, IN CASO SUPERAMENTO del Lim. Δ P. di Rugiada
     name: "Spia Velocità 3 1° Avvio"
     icon: mdi:memory
 
-  vmc_master_spia_velocita_4_un_solo_avvio:                                     # [CONFIGURAZIONE, 57 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 247 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' 4, IN CASO SUPERAMENTO del Lim. Δ P. di Rugiada
+  vmc_master_spia_velocita_4_un_solo_avvio:                                     # [CONFIGURAZIONE, 57 RICHIAMI] [INTERFACCIA, 31 RICHIAMI] [AUTOMAZIONE, 247 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' 4, IN CASO SUPERAMENTO del Lim. Δ P. di Rugiada
     name: "Spia Velocità 4 1° Avvio"
     icon: mdi:memory
 
-  vmc_master_spia_velocita_iperventilazione_un_solo_avvio:                      # [CONFIGURAZIONE, 57 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 247 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' IPERVENTILAZIONE, IN CASO SUPERAMENTO del Lim. Δ P. di Rugiada
+  vmc_master_spia_velocita_iperventilazione_un_solo_avvio:                      # [CONFIGURAZIONE, 57 RICHIAMI] [INTERFACCIA, 31 RICHIAMI] [AUTOMAZIONE, 247 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' IPERVENTILAZIONE, IN CASO SUPERAMENTO del Lim. Δ P. di Rugiada
     name: "Spia Velocità Iperventilazione 1° Avvio"
     icon: mdi:memory
 
-  vmc_master_spia_velocita_notturna_un_solo_avvio:                              # [CONFIGURAZIONE, 57 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 247 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' NOTTURNA, IN CASO SUPERAMENTO del Lim. Δ P. di Rugiada
+  vmc_master_spia_velocita_notturna_un_solo_avvio:                              # [CONFIGURAZIONE, 57 RICHIAMI] [INTERFACCIA, 31 RICHIAMI] [AUTOMAZIONE, 247 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' NOTTURNA, IN CASO SUPERAMENTO del Lim. Δ P. di Rugiada
     name: "Spia Velocità notturna 1° Avvio"
     icon: mdi:memory
 
-  vmc_master_spia_velocita_freecooling_un_solo_avvio:                           # [CONFIGURAZIONE, 95 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 258 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' FREE-COOLING, IN CASO SUPERAMENTO del Lim. Δ P. di Rugiada
+  vmc_master_spia_velocita_freecooling_un_solo_avvio:                           # [CONFIGURAZIONE, 95 RICHIAMI] [INTERFACCIA, 31 RICHIAMI] [AUTOMAZIONE, 258 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' FREE-COOLING, IN CASO SUPERAMENTO del Lim. Δ P. di Rugiada
     name: "Spia Velocità freecooling 1° Avvio"
     icon: mdi:memory
 
-  vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling: # [CONFIGURAZIONE, 72 RICHIAMI] [INTERFACCIA, 17 RICHIAMI] [AUTOMAZIONE, 210 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' FREE-COOLING, IN CASO DI ALLERTA PROGRAMMATA DEL FREE COOLING
+  vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling: # [CONFIGURAZIONE, 72 RICHIAMI] [INTERFACCIA, 20 RICHIAMI] [AUTOMAZIONE, 210 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' FREE-COOLING, IN CASO DI ALLERTA PROGRAMMATA DEL FREE COOLING
     name: "Spia su Programmazione Velocità Free Cooling 1° Avvio"
     icon: mdi:memory
 
-  vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating: # [CONFIGURAZIONE, 96 RICHIAMI] [INTERFACCIA, 17 RICHIAMI] [AUTOMAZIONE, 209 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' FREE-COOLING, IN CASO DI ALLERTA PROGRAMMATA DEL FREE HEATING
+  vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating: # [CONFIGURAZIONE, 96 RICHIAMI] [INTERFACCIA, 20 RICHIAMI] [AUTOMAZIONE, 209 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' FREE-COOLING, IN CASO DI ALLERTA PROGRAMMATA DEL FREE HEATING
     name: "Spia su Programmazione Velocità Free Heating 1° Avvio"
     icon: mdi:memory
 
@@ -5327,7 +5327,7 @@ input_boolean:
 ################### Fine Creazione Switch Booleani impiegati nell'Automazione, per valutare la Velocità in caso di Black-Out e/o SUPERAMENTO DEL Set Lim. Δ Punto di Rugiada ##############################################
 ################### Inizio Creazione Switch Booleani impiegati nell'Automazione, per valutare gli inquinanti CO2 e VOC ##############################################
 
-  vmc_master_spia_co2_o_voc:                                                    # [CONFIGURAZIONE, 146 RICHIAMI] [INTERFACCIA, 16 RICHIAMI] [AUTOMAZIONE, 284 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER LA VERIFICA DI INQUINANTI CO2 E VOC
+  vmc_master_spia_co2_o_voc:                                                    # [CONFIGURAZIONE, 146 RICHIAMI] [INTERFACCIA, 17 RICHIAMI] [AUTOMAZIONE, 284 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER LA VERIFICA DI INQUINANTI CO2 E VOC
     name: "Spia Inquinanti CO₂ e/o VOC"
     icon: mdi:memory
 

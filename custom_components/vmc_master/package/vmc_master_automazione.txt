@@ -95,7 +95,7 @@ description: >-
   ambientali sono favorevoli;
 
   - Permette l'accensione e lo spegnimento Automatico, in funzione dell'Umidità
-  Interna Settata (sopra il valore impostato, oppure con aria secca ≤ 35% per
+  Interna Settata (uguale o sopra il valore impostato, oppure con aria secca ≤ 35% per
   far entrare aria dall'esterno) [ad Esclusione nel Range del Calendario];
 
   - Permette l'accensione e lo spegnimento Automatico, in funzione delle 2 fasce
@@ -156,8 +156,8 @@ description: >-
   Secondi la VMC riparte a Velocità 1 e al rientro degli Inquinanti torna a
   Velocità 0, anche se prima dell'allerta era a un'altra Velocità; se un'allerta
   Lim. Δ PdR è iniziata con la VMC a Velocità 0, all'arrivo degli Inquinanti la
-  sua memoria di Velocità 0 si azzera dopo 4 Secondi e la VMC parte a Velocità 1
-  dopo 8 Secondi;
+  sua memoria di Velocità 0 si azzera e la VMC parte a Velocità 1 dopo 4
+  Secondi;
 
   - Sup. Lim. Δ PdR con Inquinanti: 12 Secondi;
 
@@ -221,7 +221,8 @@ description: >-
   Velocità 0;
 
   - Inquinanti (CO₂ e VOC): si sceglie un'altra Velocità → viene mantenuta, anche
-  dopo il rientro degli Inquinanti; si sceglie Velocità 0 → dopo circa 8 Secondi
+  dopo il rientro degli Inquinanti (anche la Velocità 1 scelta con la VMC in Free
+  Cool./Heat. e PdR superato); si sceglie Velocità 0 → dopo circa 8 Secondi
   riparte a Velocità 1; al rientro degli Inquinanti torna a Velocità 0;
 
   - Lim. Δ Punto di Rugiada: si sceglie un'altra Velocità → viene riportata a

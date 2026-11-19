@@ -3007,7 +3007,8 @@ cards:
         <strong>PRIORITA' ALL' ASPIRAZIONE DI INQUINANTI</strong>
 
 
-        <strong>AVVIO VMC A VELOCITA' 1 PER DARE PRIORITA' ALL' ASPIRAZIONE DI
+        {% if is_state('input_boolean.vmc_master_spia_velocita_2_un_solo_avvio','on') %}{% set velocita_avvio = "2" %}{% elif is_state('input_boolean.vmc_master_spia_velocita_3_un_solo_avvio','on') %}{% set velocita_avvio = "3" %}{% elif is_state('input_boolean.vmc_master_spia_velocita_4_un_solo_avvio','on') %}{% set velocita_avvio = "4" %}{% elif is_state('input_boolean.vmc_master_spia_velocita_notturna_un_solo_avvio','on') %}{% set velocita_avvio = "NOTTURNA" %}{% elif is_state('input_boolean.vmc_master_spia_velocita_iperventilazione_un_solo_avvio','on') %}{% set velocita_avvio = "IPERVENTILAZIONE" %}{% elif is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio','on') and is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling','off') and is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating','off') %}{% set velocita_avvio = "FREE COOL./HEAT." %}{% else %}{% set velocita_avvio = "1" %}{% endif %}
+        <strong>AVVIO VMC A VELOCITA' {{ velocita_avvio }} PER DARE PRIORITA' ALL' ASPIRAZIONE DI
         INQUINANTI, {{ attendere_avvio }}</strong>
 
 
@@ -3264,7 +3265,8 @@ cards:
         <strong>PRIORITA' ALL' ASPIRAZIONE DI INQUINANTI</strong>
 
 
-        <strong>AVVIO VMC A VELOCITA' 1 PER DARE PRIORITA' ALL' ASPIRAZIONE DI
+        {% if is_state('input_boolean.vmc_master_spia_velocita_2_un_solo_avvio','on') %}{% set velocita_avvio = "2" %}{% elif is_state('input_boolean.vmc_master_spia_velocita_3_un_solo_avvio','on') %}{% set velocita_avvio = "3" %}{% elif is_state('input_boolean.vmc_master_spia_velocita_4_un_solo_avvio','on') %}{% set velocita_avvio = "4" %}{% elif is_state('input_boolean.vmc_master_spia_velocita_notturna_un_solo_avvio','on') %}{% set velocita_avvio = "NOTTURNA" %}{% elif is_state('input_boolean.vmc_master_spia_velocita_iperventilazione_un_solo_avvio','on') %}{% set velocita_avvio = "IPERVENTILAZIONE" %}{% elif is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio','on') and is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling','off') and is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating','off') %}{% set velocita_avvio = "FREE COOL./HEAT." %}{% else %}{% set velocita_avvio = "1" %}{% endif %}
+        <strong>AVVIO VMC A VELOCITA' {{ velocita_avvio }} PER DARE PRIORITA' ALL' ASPIRAZIONE DI
         INQUINANTI, {{ attendere_avvio }}</strong>
 
 
@@ -3560,7 +3562,8 @@ cards:
         <strong>PRIORITA' ALL' ASPIRAZIONE DI INQUINANTI</strong>
 
 
-        <strong>AVVIO VMC A VELOCITA' 1 PER DARE PRIORITA' ALL' ASPIRAZIONE DI
+        {% if is_state('input_boolean.vmc_master_spia_velocita_2_un_solo_avvio','on') %}{% set velocita_avvio = "2" %}{% elif is_state('input_boolean.vmc_master_spia_velocita_3_un_solo_avvio','on') %}{% set velocita_avvio = "3" %}{% elif is_state('input_boolean.vmc_master_spia_velocita_4_un_solo_avvio','on') %}{% set velocita_avvio = "4" %}{% elif is_state('input_boolean.vmc_master_spia_velocita_notturna_un_solo_avvio','on') %}{% set velocita_avvio = "NOTTURNA" %}{% elif is_state('input_boolean.vmc_master_spia_velocita_iperventilazione_un_solo_avvio','on') %}{% set velocita_avvio = "IPERVENTILAZIONE" %}{% elif is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio','on') and is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling','off') and is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating','off') %}{% set velocita_avvio = "FREE COOL./HEAT." %}{% else %}{% set velocita_avvio = "1" %}{% endif %}
+        <strong>AVVIO VMC A VELOCITA' {{ velocita_avvio }} PER DARE PRIORITA' ALL' ASPIRAZIONE DI
         INQUINANTI, {{ attendere_avvio }}</strong>
 
 
@@ -8225,8 +8228,16 @@ cards:
           {{states('sensor.vmc_master_umidita_interna_status_verifica_soglia_valore')}}
 
           {% if is_state('input_boolean.vmc_master_spia_umidita_velocita_0', 'on') %}
+        {% if is_state('input_boolean.vmc_master_spia_co2_o_voc', 'on') and is_state('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc', 'on') and
+        (is_state('sensor.vmc_master_alert_monitoraggio_co2', 'Allerta') or is_state('sensor.vmc_master_alert_monitoraggio_voc', 'Allerta')) and
+        (states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == states('input_select.vmc_master_speed_umidita') or
+        (states('input_select.vmc_master_speed_umidita') == 'Free Cool./Heat.' and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') in ['Free Cooling', 'Velocità 1'])) %}
+        PROGRAMMATO IL PASSAGGIO DELLA VMC A <strong>VELOCITA' 1</strong> FINO AL RIENTRO DEGLI INQUINANTI, POI A <strong>VELOCITA' 0</strong>,
+        FINCHE’:
+        {% else %}
         PROGRAMMATO IL RIPRISTINO DELLA VMC SULLA <strong>VELOCITA' 0</strong>,
         FINCHE’:
+        {% endif %}
 
         {% endif %}
 
@@ -14259,7 +14270,7 @@ cards:
                     (On oppure Off) e con «Verificare Filtro» il tasto «Led Pannello On» mostra l'icona del filtro.</i><br><br>
                     - Congelamento ≤ -18 [°C] Temp. Ext.: 0 Secondi. Durante il Congelamento la VMC resta ferma: se si prova a cambiarle Velocità viene riportata subito a Velocità 0 e, se non si ferma, il comando di arresto viene ripetuto finché non si ferma (circa ogni 4 Secondi);<br>
                     - VMC Sensori Int. Δ Temp. > 23 [°C]: 4 Secondi; se durante l'allerta si cambia Velocità, la VMC viene riportata a Velocità 1 e la Velocità scelta viene memorizzata dopo 4 Secondi e impostata a fine allerta;<br>
-                    - Inquinanti (CO₂ e VOC): 8 Secondi. Se la VMC è partita da Velocità 0 resta a Velocità 1 fino al rientro degli Inquinanti, poi torna a Velocità 0; se nel frattempo l'utente sceglie un'altra Velocità diversa da 0 (anche durante il Congelamento o il Δ Temp.) questa viene mantenuta, anche dopo il rientro; se invece sceglie Velocità 0 con gli Inquinanti ancora presenti, dopo circa 8 Secondi la VMC riparte a Velocità 1 e al rientro degli Inquinanti torna a Velocità 0, anche se prima dell'allerta era a un'altra Velocità; se un'allerta Lim. Δ PdR è iniziata con la VMC a Velocità 0, all'arrivo degli Inquinanti la sua memoria di Velocità 0 si azzera dopo 4 Secondi e la VMC parte a Velocità 1 dopo 8 Secondi;<br>
+                    - Inquinanti (CO₂ e VOC): 8 Secondi. Se la VMC è partita da Velocità 0 resta a Velocità 1 fino al rientro degli Inquinanti, poi torna a Velocità 0; se nel frattempo l'utente sceglie un'altra Velocità diversa da 0 (anche durante il Congelamento o il Δ Temp.) questa viene mantenuta, anche dopo il rientro; se invece sceglie Velocità 0 con gli Inquinanti ancora presenti, dopo circa 8 Secondi la VMC riparte a Velocità 1 e al rientro degli Inquinanti torna a Velocità 0, anche se prima dell'allerta era a un'altra Velocità; se un'allerta Lim. Δ PdR è iniziata con la VMC a Velocità 0, all'arrivo degli Inquinanti la sua memoria di Velocità 0 si azzera e la VMC parte a Velocità 1 dopo 4 Secondi;<br>
                     - Sup. Lim. Δ PdR con Inquinanti: 12 Secondi;<br>
                     - Sup. Lim. Δ PdR: 16 Secondi. Se l'allerta inizia con la VMC a Velocità 0, l'Umidità non la avvia fino al termine dell'allerta; se durante l'allerta si cambia Velocità, la VMC viene riportata a Velocità 0 e la nuova Velocità viene memorizzata e ripristinata al termine dell'allerta, anche al posto della ripresa in Free Cool./Heat.;<br>
                     - Free Cool./Heat. con Inquinanti: 20 Secondi;<br>
@@ -14279,7 +14290,7 @@ cards:
                     <tr><th style="padding: 4px 8px; border: 1px solid #c3c2b7;">Allerta in corso</th><th style="padding: 4px 8px; border: 1px solid #c3c2b7;">Si sceglie un'altra Velocità</th><th style="padding: 4px 8px; border: 1px solid #c3c2b7;">Si sceglie Velocità 0</th></tr>
                     <tr><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Congelamento</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Viene riportata subito a Velocità 0; a fine allerta va alla Velocità scelta</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">La VMC è già ferma: nessun effetto; a fine allerta torna alla Velocità di prima</td></tr>
                     <tr><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Δ Temp. &gt; 23 °C</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Viene riportata a Velocità 1; la Velocità scelta viene memorizzata dopo 4 Secondi e impostata a fine allerta</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Viene riportata a Velocità 1; a fine allerta resta a Velocità 0</td></tr>
-                    <tr><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Inquinanti (CO₂ e VOC)</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Viene mantenuta, anche dopo il rientro degli Inquinanti</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Dopo circa 8 Secondi riparte a Velocità 1; al rientro degli Inquinanti torna a Velocità 0</td></tr>
+                    <tr><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Inquinanti (CO₂ e VOC)</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Viene mantenuta, anche dopo il rientro degli Inquinanti (anche la Velocità 1 scelta con la VMC in Free Cool./Heat. e PdR superato)</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Dopo circa 8 Secondi riparte a Velocità 1; al rientro degli Inquinanti torna a Velocità 0</td></tr>
                     <tr><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Lim. Δ Punto di Rugiada</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Viene riportata a Velocità 0; la Velocità scelta viene memorizzata e ripristinata a fine allerta</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">La VMC è già ferma: nessun effetto; a fine allerta torna alla Velocità di prima</td></tr>
                     <tr><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Free Cool./Heat. sfavorevole (VMC ferma in attesa)</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">La VMC va alla Velocità scelta e la ripresa automatica in Free Cool./Heat. viene annullata dopo 20 Secondi</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">La VMC è già ferma: nessun effetto; quando le condizioni tornano favorevoli riprende in Free Cool./Heat.</td></tr>
                     <tr><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Umidità, con la VMC già in moto all'inizio</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Memorizzata dopo 4 Secondi e mantenuta a fine Umidità</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">La VMC si ferma e resta a Velocità 0, anche a fine Umidità</td></tr>
