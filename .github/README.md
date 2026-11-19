@@ -182,10 +182,10 @@ actions:
      Servono proprio queste righe: aggiungere Google Translate solo da *Impostazioni → Dispositivi e servizi* non basta e le Notifiche Audio resterebbero mute;
    - salvare con l'icona del **dischetto**.
 2. **Aggiungere il repository**:
-   - aprire *Impostazioni → Marketplace → ⋮ → Repository personalizzate*;
-   - scrivere `https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE`;
-   - scegliere il tipo **Integrazione** e premere **Aggiungi**;
-   - chiudere la finestra.
+   - aprire *Impostazioni → Marketplace → ⋮ → Repository personalizzate → Aggiungi dal collegamento*;
+   - incollare `https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE`;
+   - premere **Aggiungi**, poi **Continue**;
+   - seguire le indicazioni di Home Assistant, autorizzando HACS.
 3. **Installare**: cercare **VMC Master** nel Marketplace e premere **Installa**.
 4. **Aggiungere la VMC**: *Impostazioni → Dispositivi e servizi → + Aggiungi integrazione → VMC Master*.
    - VMC nuova, mai collegata: vedere **VMC nuova** qui sotto.
@@ -531,10 +531,10 @@ actions:
      These exact lines are needed: adding Google Translate only from *Settings → Devices & services* is not enough and the audio notifications stay silent;
    - save with the **disk** icon.
 2. **Add the repository**:
-   - open *Settings → Marketplace → ⋮ → Custom repositories*;
-   - enter `https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE`;
-   - set the type to **Integration** and press **Add**;
-   - close the window.
+   - open *Settings → Marketplace → ⋮ → Custom repositories → Add from link*;
+   - paste `https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE`;
+   - press **Add**, then **Continue**;
+   - follow Home Assistant's instructions, authorizing HACS.
 3. **Install**: search for **VMC Master** in the Marketplace and press **Install**.
 4. **Add the unit**: *Settings → Devices & services → + Add integration → VMC Master*.
    - New unit, never connected: see **New unit** below.
