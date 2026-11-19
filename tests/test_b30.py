@@ -141,9 +141,11 @@ G3 = "3° gruppo: Punto di Rugiada, Free Heating/Cooling, Calendario, Umidità"
         ("1.0", "active", "idle", [INTRO, G1, f"Si riattivano tra | countdown {T60}", G2, "In attesa | dopo il 1° gruppo", G3, "In attesa | dopo il 2° gruppo"]),
         ("2.0", "idle", "active", [INTRO, G1, "Già attive | ✓", G2, f"Si riattiva tra | countdown {T40}", G3, "In attesa | dopo il 2° gruppo"]),
         ("3.0", "idle", "active", [INTRO, G1, "Già attive | ✓", G2, "Già attiva | ✓", G3, f"Si riattivano tra | countdown {T40}"]),
-        # timer finito meno di 1 s prima del cambio di fase: la riga sparisce, mai «Inattivo»
-        ("1.0", "idle", "idle", [INTRO, G1, G2, "In attesa | dopo il 1° gruppo", G3, "In attesa | dopo il 2° gruppo"]),
-        ("2.0", "idle", "idle", [INTRO, G1, "Già attive | ✓", G2, G3, "In attesa | dopo il 2° gruppo"]),
+        # timer finito fino a 1 s prima del cambio di fase (HA tronca l'avvio al secondo):
+        # resta la riga con «0», mai «Inattivo» e il pannello non si accorcia
+        ("1.0", "idle", "idle", [INTRO, G1, "Si riattivano tra | 0", G2, "In attesa | dopo il 1° gruppo", G3, "In attesa | dopo il 2° gruppo"]),
+        ("2.0", "idle", "idle", [INTRO, G1, "Già attive | ✓", G2, "Si riattiva tra | 0", G3, "In attesa | dopo il 2° gruppo"]),
+        ("3.0", "idle", "idle", [INTRO, G1, "Già attive | ✓", G2, "Già attiva | ✓", G3, "Si riattivano tra | 0"]),
     ],
 )
 def test_un_countdown_per_gruppo(fase: str, t60: str, t40: str, attese: list[str]) -> None:

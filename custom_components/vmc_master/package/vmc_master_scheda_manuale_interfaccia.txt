@@ -581,6 +581,19 @@ cards:
           conditions:
             - condition: state
               entity: input_number.vmc_master_fase_riallineamento_al_riavvio
+              state: '1.0'
+            - condition: state
+              entity: timer.vmc_master_countdown_avvio_home_assistant
+              state: idle
+          row:
+            type: text
+            name: "Si riattivano tra"
+            text: "0"
+            icon: mdi:timer-sand
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
               state:
                 - '2.0'
                 - '3.0'
@@ -613,6 +626,19 @@ cards:
           row:
             entity: timer.vmc_master_countdown_fase_allerte
             name: "Si riattiva tra"
+            icon: mdi:timer-sand
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
+              state: '2.0'
+            - condition: state
+              entity: timer.vmc_master_countdown_fase_allerte
+              state: idle
+          row:
+            type: text
+            name: "Si riattiva tra"
+            text: "0"
             icon: mdi:timer-sand
         - type: conditional
           conditions:
@@ -651,6 +677,19 @@ cards:
           row:
             entity: timer.vmc_master_countdown_fase_allerte
             name: "Si riattivano tra"
+            icon: mdi:timer-sand
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
+              state: '3.0'
+            - condition: state
+              entity: timer.vmc_master_countdown_fase_allerte
+              state: idle
+          row:
+            type: text
+            name: "Si riattivano tra"
+            text: "0"
             icon: mdi:timer-sand
   - type: conditional
     conditions:
