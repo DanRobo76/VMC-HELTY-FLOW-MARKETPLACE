@@ -22,7 +22,7 @@ VELOCITA = {
     "4": "Velocità 4",
     "notturna": "Notturna",
     "iperventilazione": "Iperventilazione",
-    "freecooling": "Free Heating/Cooling",
+    "freecooling": "Free Cool./Heat.",
 }
 SPIE = [f"input_boolean.vmc_master_spia_velocita_{k}" for k in VELOCITA]
 OFF = {"condition": "state", "entity": STATO, "state": "OFF-Line"}
@@ -79,7 +79,7 @@ def test_righe_nuove_sotto_il_ripristino() -> None:
         assert riga["conditions"] == [
             {"condition": "state", "entity": f"input_boolean.vmc_master_spia_velocita_{chiave}", "state": "on"}
         ]
-        assert riga["row"] == {"type": "text", "name": "Velocità memorizzata", "text": testo, "icon": "mdi:fan"}
+        assert riga["row"] == {"type": "text", "name": "Velocità salvata", "text": testo, "icon": "mdi:fan"}
 
     # 4) Black-Out durante una fascia del Calendario
     assert righe[-1]["conditions"] == [OFF, {"condition": "state", "entity": CAL, "state": "on"}]
@@ -108,7 +108,7 @@ def test_nota_informazioni() -> None:
     assert i < scheda.index("<strong>Nota VMC di nuovo ON-Line</strong>")
     nota = re.sub(r"\s+", " ", scheda[i : scheda.index("<br>", i)])
     assert "«Rilevazione Black-Out tra» (32 secondi)" in nota
-    assert "«Velocità memorizzata»" in nota
+    assert "«Velocità salvata»" in nota
     assert "Fascia del Calendario" in nota
 
 

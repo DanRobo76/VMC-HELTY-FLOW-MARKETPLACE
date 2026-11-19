@@ -24,12 +24,12 @@ SPIA = "input_boolean.vmc_master_spia_velocita_2"
 ON = {"condition": "state", "entity": STATO, "state": "ON-Line"}
 SEZIONE = (
     "VMC di nuovo ON-Line, ripristino della velocità in uso prima del Black-Out in corso... "
-    "Non serve fare nulla, attendi la fine del countdown."
+    "Non serve fare nulla."
 )
 DOPO = "Ripristino Velocità | dopo il 1° gruppo"
 CONFERMA = "Ripristino Velocità | conferma della VMC in corso"
 COUNTDOWN = f"Ripristino Velocità tra | countdown {RIP}"
-MEMORIZZATA = "Velocità memorizzata | Velocità 2"
+MEMORIZZATA = "Velocità salvata | Velocità 2"
 NOMI_VMC = ("sala", "camera", "cucina")
 
 
@@ -39,8 +39,7 @@ def _testo(nome: str) -> str:
 
 def _righe_ridotta() -> list:
     scheda = hay.load_yaml(str(PKG / SCHEDA))
-    ridotta = scheda["cards"][0]
-    assert "ferma_off_line" in str(ridotta["card"]["header"])
+    (ridotta,) = [c for c in scheda["cards"] if "ferma_off_line" in str(c.get("card", {}).get("header"))]
     righe = ridotta["card"]["entities"]
     fine = next(k for k, r in enumerate(righe) if r.get("entity") == "script.vmc_master_upgrade_sensors")
     return righe[:fine]
@@ -171,7 +170,7 @@ def _nota(scheda: str, titolo: str) -> str:
 
 def test_nota_vmc_di_nuovo_on_line() -> None:
     nota = _nota(_testo(SCHEDA), "<strong>Nota VMC di nuovo ON-Line</strong>")
-    assert "«Velocità memorizzata»" in nota
+    assert "«Velocità salvata»" in nota
     assert "«Ripristino Velocità tra» (32 secondi)" in nota
     assert "«Ripristino Velocità» indica «dopo il 1° gruppo», fino alla riattivazione del 1° gruppo di allerte" in nota
     assert "(vedere la Nota Avvio di Home Assistant)" in nota

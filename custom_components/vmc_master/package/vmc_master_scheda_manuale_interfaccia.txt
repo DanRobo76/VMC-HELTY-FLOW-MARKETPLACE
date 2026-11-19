@@ -262,7 +262,7 @@ cards:
                   state: 'on'
           row:
             type: section
-            label: VMC di nuovo ON-Line, ripristino della velocità in uso prima del Black-Out in corso... Non serve fare nulla, attendi la fine del countdown.
+            label: VMC di nuovo ON-Line, ripristino della velocità in uso prima del Black-Out in corso... Non serve fare nulla.
         - type: conditional
           conditions:
             - condition: state
@@ -357,7 +357,7 @@ cards:
                   state: 'on'
           row:
             type: section
-            label: "Black-Out rilevato: al ritorno della corrente la VMC torna alla velocità memorizzata. Non serve fare nulla."
+            label: "Black-Out rilevato: al ritorno della corrente la VMC torna alla velocità salvata. Non serve fare nulla."
         - type: conditional
           conditions:
             - condition: state
@@ -365,7 +365,7 @@ cards:
               state: 'on'
           row:
             type: text
-            name: "Velocità memorizzata"
+            name: "Velocità salvata"
             text: "Velocità 0"
             icon: mdi:fan
         - type: conditional
@@ -375,7 +375,7 @@ cards:
               state: 'on'
           row:
             type: text
-            name: "Velocità memorizzata"
+            name: "Velocità salvata"
             text: "Velocità 1"
             icon: mdi:fan
         - type: conditional
@@ -385,7 +385,7 @@ cards:
               state: 'on'
           row:
             type: text
-            name: "Velocità memorizzata"
+            name: "Velocità salvata"
             text: "Velocità 2"
             icon: mdi:fan
         - type: conditional
@@ -395,7 +395,7 @@ cards:
               state: 'on'
           row:
             type: text
-            name: "Velocità memorizzata"
+            name: "Velocità salvata"
             text: "Velocità 3"
             icon: mdi:fan
         - type: conditional
@@ -405,7 +405,7 @@ cards:
               state: 'on'
           row:
             type: text
-            name: "Velocità memorizzata"
+            name: "Velocità salvata"
             text: "Velocità 4"
             icon: mdi:fan
         - type: conditional
@@ -415,7 +415,7 @@ cards:
               state: 'on'
           row:
             type: text
-            name: "Velocità memorizzata"
+            name: "Velocità salvata"
             text: "Notturna"
             icon: mdi:fan
         - type: conditional
@@ -425,7 +425,7 @@ cards:
               state: 'on'
           row:
             type: text
-            name: "Velocità memorizzata"
+            name: "Velocità salvata"
             text: "Iperventilazione"
             icon: mdi:fan
         - type: conditional
@@ -435,8 +435,8 @@ cards:
               state: 'on'
           row:
             type: text
-            name: "Velocità memorizzata"
-            text: "Free Heating/Cooling"
+            name: "Velocità salvata"
+            text: "Free Cool./Heat."
             icon: mdi:fan
         - type: conditional
           conditions:
@@ -13265,7 +13265,7 @@ cards:
                   Quando la VMC non risponde la scheda mostra il countdown
                   «Rilevazione Black-Out tra» (32 secondi): non serve fare
                   nulla. Allo zero compare «Black-Out rilevato...» con la
-                  «Velocità memorizzata», che la VMC riprende al ritorno
+                  «Velocità salvata», che la VMC riprende al ritorno
                   della corrente. Durante una Fascia del Calendario compare
                   invece «Black-Out durante la fascia del Calendario...» e la
                   VMC riparte con la velocità della fascia. Nei primi 60
@@ -13280,7 +13280,7 @@ cards:
                   l'inserimento di una nuova VMC, la scheda mostra «VMC di
                   nuovo ON-Line, ripristino della velocità in uso prima del
                   Black-Out in corso...», la velocità da riprendere
-                  («Velocità memorizzata») e il countdown «Ripristino Velocità
+                  («Velocità salvata») e il countdown «Ripristino Velocità
                   tra» (32 secondi): non serve fare nulla. Se Home Assistant
                   si è appena avviato (per esempio dopo Cambia IP VMC), prima
                   del countdown «Ripristino Velocità» indica «dopo il 1°

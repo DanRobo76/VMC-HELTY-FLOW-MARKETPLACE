@@ -604,7 +604,7 @@ template:
         icon: mdi:ip
 
   - sensor:
-      - default_entity_id: sensor.vmc_master_status_ip_interfaccia              # [CONFIGURAZIONE, 327 RICHIAMI] [INTERFACCIA, 120 RICHIAMI] [AUTOMAZIONE, 324 RICHIAMI] SENSORE IMPIEGATO PER LA VISUALIZZAZIONE NELL'INTERFACCIA SE LA VMC E' IN RETE O MENO
+      - default_entity_id: sensor.vmc_master_status_ip_interfaccia              # [CONFIGURAZIONE, 327 RICHIAMI] [INTERFACCIA, 121 RICHIAMI] [AUTOMAZIONE, 324 RICHIAMI] SENSORE IMPIEGATO PER LA VISUALIZZAZIONE NELL'INTERFACCIA SE LA VMC E' IN RETE O MENO
         name: "Status VMC"
         unique_id: vmc_master_status_ip_interfaccia
         state: >
@@ -4779,7 +4779,7 @@ input_number:
     icon: mdi:knob
 
 ################### Inizio Creazione Fase di Riallineamento delle Allerte al Riavvio di Home Assistant ###################
-  vmc_master_fase_riallineamento_al_riavvio:                                    # [CONFIGURAZIONE, 525 RICHIAMI] [INTERFACCIA, 11 RICHIAMI] [AUTOMAZIONE, 566 RICHIAMI] FASE DEL RIALLINEAMENTO DELLE ALLERTE FINITE A HOME ASSISTANT SPENTO (0 = FUNZIONAMENTO NORMALE)
+  vmc_master_fase_riallineamento_al_riavvio:                                    # [CONFIGURAZIONE, 525 RICHIAMI] [INTERFACCIA, 14 RICHIAMI] [AUTOMAZIONE, 566 RICHIAMI] FASE DEL RIALLINEAMENTO DELLE ALLERTE FINITE A HOME ASSISTANT SPENTO (0 = FUNZIONAMENTO NORMALE)
     name: "Fase Riallineamento Allerte al Riavvio"
     min: 0
     max: 4
@@ -5763,7 +5763,7 @@ timer:
   vmc_master_countdown_blackout_rilevazione:                     # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 7 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] COUNTDOWN DELL'ATTESA IN CORSO DI UNO DEI 12 TRIGGER «RILEVAZIONE BLACK-OUT» DELL'AUTOMAZIONE (AVVIATO DA vmc_master_countdown_attese_automazione)
     name: "Rilevazione Black-Out"
     icon: mdi:timer-sand
-  vmc_master_countdown_blackout_ripristino:                      # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 6 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] COUNTDOWN DELL'ATTESA IN CORSO DI UNO DEI 10 TRIGGER «RIPRISTINO DOPO BLACK-OUT» DELL'AUTOMAZIONE (AVVIATO DA vmc_master_countdown_attese_automazione)
+  vmc_master_countdown_blackout_ripristino:                      # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 7 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] COUNTDOWN DELL'ATTESA IN CORSO DI UNO DEI 10 TRIGGER «RIPRISTINO DOPO BLACK-OUT» DELL'AUTOMAZIONE (AVVIATO DA vmc_master_countdown_attese_automazione)
     name: "Ripristino dopo Black-Out"
     icon: mdi:timer-sand
   vmc_master_countdown_calendario_inizio:                        # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 4 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] COUNTDOWN DELL'ATTESA IN CORSO DI UNO DEI 14 TRIGGER «INIZIO FASCIA» DELL'AUTOMAZIONE (AVVIATO DA vmc_master_countdown_attese_automazione)
@@ -5806,11 +5806,11 @@ timer:
     name: "Reset Filtro in corso"
     duration: "00:00:05"
     icon: mdi:timer-sand
-  vmc_master_countdown_avvio_home_assistant:                     # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 6 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] COUNTDOWN IN SCHEDA DEI 60 s DOPO L'AVVIO DI HOME ASSISTANT IN CUI LE FINI ALLERTA SONO SOSPESE (AVVIATO DA vmc_master_riallineamento_allerte_al_riavvio), POI PARTE IL RIPRISTINO DOPO BLACK-OUT; E' MOSTRATO SOLO COME COUNTDOWN DEL 1° GRUPPO DI ALLERTE DEL PANNELLO «RIATTIVAZIONE DELLE ALLERTE»
+  vmc_master_countdown_avvio_home_assistant:                     # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 4 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] COUNTDOWN IN SCHEDA DEI 60 s DOPO L'AVVIO DI HOME ASSISTANT IN CUI LE FINI ALLERTA SONO SOSPESE (AVVIATO DA vmc_master_riallineamento_allerte_al_riavvio), POI PARTE IL RIPRISTINO DOPO BLACK-OUT; E' MOSTRATO SOLO COME COUNTDOWN DEL 1° GRUPPO DI ALLERTE DEL PANNELLO «RIATTIVAZIONE DELLE ALLERTE»
     name: "Avvio di Home Assistant"
     duration: "00:01:00"
     icon: mdi:timer-sand
-  vmc_master_countdown_riattivazione_allerte:                    # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] TIMER DEI 140 s DOPO L'AVVIO DI HOME ASSISTANT FINO ALLA RIATTIVAZIONE DI TUTTE LE ALLERTE (FASE 4 DI vmc_master_riallineamento_allerte_al_riavvio): IL PANNELLO «RIATTIVAZIONE DELLE ALLERTE» DELLA SCHEDA E' VISIBILE FINCHE' E' ATTIVO, SOLO VISUALIZZAZIONE
+  vmc_master_countdown_riattivazione_allerte:                    # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] TIMER DEI 140 s DOPO L'AVVIO DI HOME ASSISTANT FINO ALLA RIATTIVAZIONE DI TUTTE LE ALLERTE (FASE 4 DI vmc_master_riallineamento_allerte_al_riavvio): IL PANNELLO «RIATTIVAZIONE DELLE ALLERTE» DELLA SCHEDA E' VISIBILE FINCHE' E' ATTIVO O LA FASE E' 3, SOLO VISUALIZZAZIONE
     name: "Riattivazione Allerte"
     duration: "00:02:20"
     icon: mdi:timer-sand
