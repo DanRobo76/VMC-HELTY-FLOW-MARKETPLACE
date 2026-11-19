@@ -223,7 +223,7 @@ command_line:
 ################### Inizio Creazione Sensori Principali della VMC  ########################################################################################################################################################
 sensor:
   - platform: tcp
-    name: vmc_master_status_ventola                                             # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 171 RICHIAMI] CREAZIONE DEL SENSORE LETTURA STATI DI VENTILAZIONE; N.b non tutti i valori sono identificabili
+    name: vmc_master_status_ventola                                             # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 172 RICHIAMI] CREAZIONE DEL SENSORE LETTURA STATI DI VENTILAZIONE; N.b non tutti i valori sono identificabili
     host: 999.999.999.999                        # INDIRIZZO IP DELLA VMC MASTER
     port: 5001                                 # PORTA 5001 DELLA VMC IMPOSTAZIONE DI DEFAULT
     timeout: 3
@@ -630,7 +630,7 @@ template:
           {% endif %}
 
   - binary_sensor:
-      - default_entity_id: binary_sensor.vmc_master_black_out_rilevato          # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 240 RICHIAMI] BLACK-OUT RILEVATO: ON QUANDO UNA DELLE CONDIZIONI DEI TRIGGER «BLACK-OUT» DELL'AUTOMAZIONE (STESSO TESTO, 1:1) E' VERA DA ALMENO «ATTESA BLACK-OUT RILEVAZIONE» SECONDI; CON L'AUTOMAZIONE IN MODALITA' QUEUED FA USCIRE I CICLI DI CONFERMA DELLA VELOCITA', COME FACEVA IL RIAVVIO DELLA MODALITA' RESTART
+      - default_entity_id: binary_sensor.vmc_master_black_out_rilevato          # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 241 RICHIAMI] BLACK-OUT RILEVATO: ON QUANDO UNA DELLE CONDIZIONI DEI TRIGGER «BLACK-OUT» DELL'AUTOMAZIONE (STESSO TESTO, 1:1) E' VERA DA ALMENO «ATTESA BLACK-OUT RILEVAZIONE» SECONDI; CON L'AUTOMAZIONE IN MODALITA' QUEUED FA USCIRE I CICLI DI CONFERMA DELLA VELOCITA', COME FACEVA IL RIAVVIO DELLA MODALITA' RESTART
         name: "Black-Out Rilevato"
         unique_id: vmc_master_black_out_rilevato
         state: >
@@ -1019,7 +1019,7 @@ template:
         icon: mdi:code-array
 
   - sensor:
-      - default_entity_id: sensor.vmc_master_status_ventola_lettura_codice_interpretato # [CONFIGURAZIONE, 130 RICHIAMI] [INTERFACCIA, 53 RICHIAMI] [AUTOMAZIONE, 792 RICHIAMI] SENSORE DI INTERPRETAZIONE DELLA LETTURA DEI DATI "VELOCITA'" MEMORIZZATI NELLA VMC CONVERITA IN "STRINGA", PREVIA VERIFICA DI AVVENUTA LETTURA DEI DATI "VELOCITA'"" MEMORIZZATI NELLA VMC
+      - default_entity_id: sensor.vmc_master_status_ventola_lettura_codice_interpretato # [CONFIGURAZIONE, 130 RICHIAMI] [INTERFACCIA, 53 RICHIAMI] [AUTOMAZIONE, 796 RICHIAMI] SENSORE DI INTERPRETAZIONE DELLA LETTURA DEI DATI "VELOCITA'" MEMORIZZATI NELLA VMC CONVERITA IN "STRINGA", PREVIA VERIFICA DI AVVENUTA LETTURA DEI DATI "VELOCITA'"" MEMORIZZATI NELLA VMC
         name: "Status Ventilazione"
         unique_id: vmc_master_status_ventola_lettura_codice_interpretato
         state: >
@@ -1169,7 +1169,7 @@ template:
           {{ (ns.righe | join(' · '))[:255] if ns.righe | count > 0 and att != 'Non disponibile' else 'Nessuna' }}
 
   - sensor:
-      - default_entity_id: sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia # [CONFIGURAZIONE, 254 RICHIAMI] [INTERFACCIA, 99 RICHIAMI] [AUTOMAZIONE, 268 RICHIAMI] SENSORE DI INTERPRETAZIONE DELLA LETTURA DEI DATI "VELOCITA'" MEMORIZZATI NELLA VMC CONVERITA IN "STRINGA" CON LA POSSIBILITA' DI VISUALIZZARE FREE COOLING O FREE HEATING O FREE C./H. (IN FUNZIONE DEL VALORE LETTO DEL SENSORE vmc_master_status_mese_corrente_freeheating_o_freecooling), PREVIA VERIFICA DI AVVENUTA LETTURA DEI DATI "VELOCITA'"" MEMORIZZATI NELLA VMC
+      - default_entity_id: sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia # [CONFIGURAZIONE, 254 RICHIAMI] [INTERFACCIA, 99 RICHIAMI] [AUTOMAZIONE, 270 RICHIAMI] SENSORE DI INTERPRETAZIONE DELLA LETTURA DEI DATI "VELOCITA'" MEMORIZZATI NELLA VMC CONVERITA IN "STRINGA" CON LA POSSIBILITA' DI VISUALIZZARE FREE COOLING O FREE HEATING O FREE C./H. (IN FUNZIONE DEL VALORE LETTO DEL SENSORE vmc_master_status_mese_corrente_freeheating_o_freecooling), PREVIA VERIFICA DI AVVENUTA LETTURA DEI DATI "VELOCITA'"" MEMORIZZATI NELLA VMC
         name: "Status Ventilazione"
         unique_id: vmc_master_status_ventola_lettura_codice_interpretato_interfaccia
         state: >
@@ -2715,7 +2715,7 @@ template:
 
 ########################################################################################### INIZIO SENSORI PER POP-UP MONITORAGGIO ##################################################################
   - sensor:
-      - default_entity_id: sensor.vmc_master_alert_monitoraggio_umidita         # [CONFIGURAZIONE, 15 RICHIAMI] [INTERFACCIA, 15 RICHIAMI] [AUTOMAZIONE, 6 RICHIAMI] SENSORE POP-UP MONITORAGGIO UMIDITA'; SENSORE MONITORAGGIO SCHEDA AVVISI
+      - default_entity_id: sensor.vmc_master_alert_monitoraggio_umidita         # [CONFIGURAZIONE, 17 RICHIAMI] [INTERFACCIA, 15 RICHIAMI] [AUTOMAZIONE, 14 RICHIAMI] SENSORE POP-UP MONITORAGGIO UMIDITA'; SENSORE MONITORAGGIO SCHEDA AVVISI
         name: "Monitoraggio Umidità"
         unique_id: vmc_master_alert_monitoraggio_umidita
         state: >
@@ -3826,7 +3826,7 @@ input_text:
     initial: ""
     min: 0
     max: 10
-    pattern: '^[A-Za-z0-9_-]{0,10}$'                                          # DA 1 A 10 CARATTERI: LETTERE SENZA ACCENTI, CIFRE, _ E - (COME IL MOTORE DELL'INTEGRAZIONE); VUOTO DOPO L'INVIO
+    pattern: '^[A-Za-z0-9_-]{0,10}$'                                          # DA 1 A 10 CARATTERI: LETTERE SENZA ACCENTI, CIFRE, _ E - (IL MOTORE DELL'INTEGRAZIONE NE AMMETTE FINO A 12); VUOTO DOPO L'INVIO
     icon: mdi:form-textbox
         
   vmc_master_ip_insert:                                                         # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 7 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI]
@@ -4617,31 +4617,31 @@ input_select:
       - Free Cool./Heat.
     icon: mdi:fan 
 
-  vmc_master_selected_temp_external_entity:                                     # [CONFIGURAZIONE, 16 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 5 RICHIAMI] SENSORE DI MEMORIZZAZIONE DI TUTTE LE ENTITA' DI TEMPERATURA INSTALLATI IN HOME ASSISTANT
+  vmc_master_selected_temp_external_entity:                                     # [CONFIGURAZIONE, 17 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 5 RICHIAMI] SENSORE DI MEMORIZZAZIONE DI TUTTE LE ENTITA' DI TEMPERATURA INSTALLATI IN HOME ASSISTANT
     name: Seleziona Entità Temperatura Esterna
     options:
       - "Aggiorna Elenco Entità Temperatura Esterna"
     icon: mdi:form-textbox
 
-  vmc_master_selected_temp_internal_entity:                                     # [CONFIGURAZIONE, 16 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 5 RICHIAMI] SENSORE DI MEMORIZZAZIONE DI TUTTE LE ENTITA' DI TEMPERATURA INSTALLATI IN HOME ASSISTANT
+  vmc_master_selected_temp_internal_entity:                                     # [CONFIGURAZIONE, 17 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 5 RICHIAMI] SENSORE DI MEMORIZZAZIONE DI TUTTE LE ENTITA' DI TEMPERATURA INSTALLATI IN HOME ASSISTANT
     name: Seleziona Entità Temperatura Interna
     options:
       - "Aggiorna Elenco Entità Temperatura Interna"
     icon: mdi:form-textbox
 
-  vmc_master_selected_humidity_external_entity:                                 # [CONFIGURAZIONE, 16 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 5 RICHIAMI] SENSORE DI MEMORIZZAZIONE DI TUTTE LE ENTITA' DI UMIDITA' INSTALLATI IN HOME ASSISTANT
+  vmc_master_selected_humidity_external_entity:                                 # [CONFIGURAZIONE, 17 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 5 RICHIAMI] SENSORE DI MEMORIZZAZIONE DI TUTTE LE ENTITA' DI UMIDITA' INSTALLATI IN HOME ASSISTANT
     name: Seleziona Entità Umidità Esterna
     options:
       - "Aggiorna Elenco Entità Umidità Esterna"
     icon: mdi:form-textbox
 
-  vmc_master_selected_humidity_internal_entity:                                 # [CONFIGURAZIONE, 16 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 5 RICHIAMI] SENSORE DI MEMORIZZAZIONE DI TUTTE LE ENTITA' DI UMIDITA' INSTALLATI IN HOME ASSISTANT
+  vmc_master_selected_humidity_internal_entity:                                 # [CONFIGURAZIONE, 17 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 5 RICHIAMI] SENSORE DI MEMORIZZAZIONE DI TUTTE LE ENTITA' DI UMIDITA' INSTALLATI IN HOME ASSISTANT
     name: Seleziona Entità Umidità Interna
     options:
       - "Aggiorna Elenco Entità Umidità Interna"
     icon: mdi:form-textbox
 
-  vmc_master_selected_co2_internal_entity:                                      # [CONFIGURAZIONE, 16 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 5 RICHIAMI] SENSORE DI MEMORIZZAZIONE DI TUTTE LE ENTITA' DI CO₂ INSTALLATI IN HOME ASSISTANT
+  vmc_master_selected_co2_internal_entity:                                      # [CONFIGURAZIONE, 17 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 5 RICHIAMI] SENSORE DI MEMORIZZAZIONE DI TUTTE LE ENTITA' DI CO₂ INSTALLATI IN HOME ASSISTANT
     name: Seleziona Entità CO₂ Interna
     options:
       - "Aggiorna Elenco Entità CO₂ Interna"
@@ -4653,7 +4653,7 @@ input_select:
       - "Aggiorna Elenco Dispositivi per Invio Notifica"
     icon: mdi:form-textbox
 
-  vmc_master_selected_media_player_entity:                                      # [CONFIGURAZIONE, 66 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 1 RICHIAMO]
+  vmc_master_selected_media_player_entity:                                      # [CONFIGURAZIONE, 67 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 1 RICHIAMO]
     name: Seleziona Media Player
     options:
       - "Aggiorna Elenco Media Player"
@@ -4872,7 +4872,7 @@ input_number:
     mode: box
     unit_of_measurement: s
     icon: mdi:timer-cog-outline
-  vmc_master_attesa_blackout_rilevazione:                                      # [CONFIGURAZIONE, 6 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 13 RICHIAMI] TEMPO DI ATTESA [s] DI 12 TRIGGER DELL'AUTOMAZIONE VMC MASTER (VALORE ORIGINALE 32 s), LETTO ANCHE DAL COUNTDOWN
+  vmc_master_attesa_blackout_rilevazione:                                      # [CONFIGURAZIONE, 5 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 13 RICHIAMI] TEMPO DI ATTESA [s] DI 12 TRIGGER DELL'AUTOMAZIONE VMC MASTER (VALORE ORIGINALE 32 s), LETTO ANCHE DAL COUNTDOWN
     name: "Attesa Rilevazione Black-Out"
     min: 1
     max: 300
@@ -4880,7 +4880,7 @@ input_number:
     mode: box
     unit_of_measurement: s
     icon: mdi:timer-cog-outline
-  vmc_master_attesa_blackout_ripristino:                                       # [CONFIGURAZIONE, 4 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 10 RICHIAMI] TEMPO DI ATTESA [s] DI 10 TRIGGER DELL'AUTOMAZIONE VMC MASTER (VALORE ORIGINALE 32 s), LETTO ANCHE DAL COUNTDOWN
+  vmc_master_attesa_blackout_ripristino:                                       # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 10 RICHIAMI] TEMPO DI ATTESA [s] DI 10 TRIGGER DELL'AUTOMAZIONE VMC MASTER (VALORE ORIGINALE 32 s), LETTO ANCHE DAL COUNTDOWN
     name: "Attesa Ripristino dopo Black-Out"
     min: 1
     max: 300
@@ -28216,7 +28216,7 @@ shell_command:
   vmc_master_velocita_4:                   printf 'VMWH0000004\n' | timeout 5 nc -w 3 999.999.999.999 5001 # [CONFIGURAZIONE, 27 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 14 RICHIAMI] INVIO COMANDO VELOCITA' 4 ALLA VMC
   vmc_master_velocita_3:                   printf 'VMWH0000003\n' | timeout 5 nc -w 3 999.999.999.999 5001 # [CONFIGURAZIONE, 27 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 14 RICHIAMI] INVIO COMANDO VELOCITA' 3 ALLA VMC
   vmc_master_velocita_2:                   printf 'VMWH0000002\n' | timeout 5 nc -w 3 999.999.999.999 5001 # [CONFIGURAZIONE, 27 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 14 RICHIAMI] INVIO COMANDO VELOCITA' 2 ALLA VMC
-  vmc_master_velocita_1:                   printf 'VMWH0000001\n' | timeout 5 nc -w 3 999.999.999.999 5001 # [CONFIGURAZIONE, 47 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 66 RICHIAMI] INVIO COMANDO VELOCITA' 1 ALLA VMC
+  vmc_master_velocita_1:                   printf 'VMWH0000001\n' | timeout 5 nc -w 3 999.999.999.999 5001 # [CONFIGURAZIONE, 47 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 67 RICHIAMI] INVIO COMANDO VELOCITA' 1 ALLA VMC
   vmc_master_velocita_0:                   printf 'VMWH0000000\n' | timeout 5 nc -w 3 999.999.999.999 5001 # [CONFIGURAZIONE, 110 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 53 RICHIAMI] INVIO COMANDO VELOCITA' 0 ALLA VMC
   vmc_master_sensori_on:                   printf 'VMWH0300000\n' | timeout 5 nc -w 3 999.999.999.999 5001 # [CONFIGURAZIONE, 1 RICHIAMO] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 0 RICHIAMI] INVIO COMANDO SENSORI ON ALLA VMC PER ACCENDERE I SENSORI DELLA VMC; I valori rilevati dai sensori nella schermata INFO dell'App Mobile saranno disponibili e i relativi allarmi verrano segnalati
   vmc_master_sensori_off:                  printf 'VMWH0300002\n' | timeout 5 nc -w 3 999.999.999.999 5001 # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 0 RICHIAMI] INVIO COMANDO SENSORI OFF ALLA VMC PER DISATTIVARE I SENSORI DELLA VMC; I valori rilevati dai sensori nella schermata INFO dell'App Mobile NON saranno disponibili e i relativi allarmi NON verrano segnalati
