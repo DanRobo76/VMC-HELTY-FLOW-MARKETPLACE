@@ -5249,43 +5249,43 @@ input_boolean:
     name: "Spia Black-Out all'interno del Calendario"
     icon: mdi:memory
 
-  vmc_master_spia_velocita_0_un_solo_avvio:                                     # [CONFIGURAZIONE, 51 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 231 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' 0, IN CASO SUPERAMENTO del Lim. Δ P. di Rugiada
+  vmc_master_spia_velocita_0_un_solo_avvio:                                     # [CONFIGURAZIONE, 51 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 244 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' 0, IN CASO SUPERAMENTO del Lim. Δ P. di Rugiada
     name: "Spia Velocità 0 1° Avvio"
     icon: mdi:memory
 
-  vmc_master_spia_velocita_1_un_solo_avvio:                                     # [CONFIGURAZIONE, 57 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 238 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' 1, IN CASO SUPERAMENTO del Lim. Δ P. di Rugiada
+  vmc_master_spia_velocita_1_un_solo_avvio:                                     # [CONFIGURAZIONE, 57 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 251 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' 1, IN CASO SUPERAMENTO del Lim. Δ P. di Rugiada
     name: "Spia Velocità 1 1° Avvio"
     icon: mdi:memory
 
-  vmc_master_spia_velocita_2_un_solo_avvio:                                     # [CONFIGURAZIONE, 57 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 234 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' 2, IN CASO SUPERAMENTO del Lim. Δ P. di Rugiada
+  vmc_master_spia_velocita_2_un_solo_avvio:                                     # [CONFIGURAZIONE, 57 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 247 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' 2, IN CASO SUPERAMENTO del Lim. Δ P. di Rugiada
     name: "Spia Velocità 2 1° Avvio"
     icon: mdi:memory
 
-  vmc_master_spia_velocita_3_un_solo_avvio:                                     # [CONFIGURAZIONE, 57 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 234 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' 3, IN CASO SUPERAMENTO del Lim. Δ P. di Rugiada
+  vmc_master_spia_velocita_3_un_solo_avvio:                                     # [CONFIGURAZIONE, 57 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 247 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' 3, IN CASO SUPERAMENTO del Lim. Δ P. di Rugiada
     name: "Spia Velocità 3 1° Avvio"
     icon: mdi:memory
 
-  vmc_master_spia_velocita_4_un_solo_avvio:                                     # [CONFIGURAZIONE, 57 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 234 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' 4, IN CASO SUPERAMENTO del Lim. Δ P. di Rugiada
+  vmc_master_spia_velocita_4_un_solo_avvio:                                     # [CONFIGURAZIONE, 57 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 247 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' 4, IN CASO SUPERAMENTO del Lim. Δ P. di Rugiada
     name: "Spia Velocità 4 1° Avvio"
     icon: mdi:memory
 
-  vmc_master_spia_velocita_iperventilazione_un_solo_avvio:                      # [CONFIGURAZIONE, 57 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 234 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' IPERVENTILAZIONE, IN CASO SUPERAMENTO del Lim. Δ P. di Rugiada
+  vmc_master_spia_velocita_iperventilazione_un_solo_avvio:                      # [CONFIGURAZIONE, 57 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 247 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' IPERVENTILAZIONE, IN CASO SUPERAMENTO del Lim. Δ P. di Rugiada
     name: "Spia Velocità Iperventilazione 1° Avvio"
     icon: mdi:memory
 
-  vmc_master_spia_velocita_notturna_un_solo_avvio:                              # [CONFIGURAZIONE, 57 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 234 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' NOTTURNA, IN CASO SUPERAMENTO del Lim. Δ P. di Rugiada
+  vmc_master_spia_velocita_notturna_un_solo_avvio:                              # [CONFIGURAZIONE, 57 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 247 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' NOTTURNA, IN CASO SUPERAMENTO del Lim. Δ P. di Rugiada
     name: "Spia Velocità notturna 1° Avvio"
     icon: mdi:memory
 
-  vmc_master_spia_velocita_freecooling_un_solo_avvio:                           # [CONFIGURAZIONE, 95 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 245 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' FREE-COOLING, IN CASO SUPERAMENTO del Lim. Δ P. di Rugiada
+  vmc_master_spia_velocita_freecooling_un_solo_avvio:                           # [CONFIGURAZIONE, 95 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 258 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' FREE-COOLING, IN CASO SUPERAMENTO del Lim. Δ P. di Rugiada
     name: "Spia Velocità freecooling 1° Avvio"
     icon: mdi:memory
 
-  vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling: # [CONFIGURAZIONE, 72 RICHIAMI] [INTERFACCIA, 17 RICHIAMI] [AUTOMAZIONE, 197 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' FREE-COOLING, IN CASO DI ALLERTA PROGRAMMATA DEL FREE COOLING
+  vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling: # [CONFIGURAZIONE, 72 RICHIAMI] [INTERFACCIA, 17 RICHIAMI] [AUTOMAZIONE, 210 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' FREE-COOLING, IN CASO DI ALLERTA PROGRAMMATA DEL FREE COOLING
     name: "Spia su Programmazione Velocità Free Cooling 1° Avvio"
     icon: mdi:memory
 
-  vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating: # [CONFIGURAZIONE, 96 RICHIAMI] [INTERFACCIA, 17 RICHIAMI] [AUTOMAZIONE, 196 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' FREE-COOLING, IN CASO DI ALLERTA PROGRAMMATA DEL FREE HEATING
+  vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating: # [CONFIGURAZIONE, 96 RICHIAMI] [INTERFACCIA, 17 RICHIAMI] [AUTOMAZIONE, 209 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' FREE-COOLING, IN CASO DI ALLERTA PROGRAMMATA DEL FREE HEATING
     name: "Spia su Programmazione Velocità Free Heating 1° Avvio"
     icon: mdi:memory
 

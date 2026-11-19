@@ -76,3 +76,25 @@ def test_scelta_durante_la_sospensione_free_con_umidita_annulla_la_ripresa() -> 
              "states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 1')")
     assert _automazione().count(nuova) == 2
     assert (PKG / "vmc_master.yaml").read_text(encoding="utf-8").count(nuova) == 2
+
+
+def test_velocita_scelta_negli_ultimi_secondi_del_pdr_resta() -> None:
+    """A2-1: una velocita' scelta durante l'allerta PdR e non ancora memorizzata (allerta finita prima dei 16 s, 12 s
+    con Inquinanti) resta a fine allerta (Foglio F6): 8 rami senza Inquinanti (memoria 0, 1, 2, 3, 4, Notturna,
+    Iperventilazione, Free) e 5 con Inquinanti (2, 3, 4, Notturna, Iperventilazione; il ramo 1 non invia comandi)."""
+    testo = _automazione()
+    assert testo.count("- stop: Velocità scelta dall'utente durante l'allerta PdR mantenuta") == 13
+    dati = hay.load_yaml(str(PKG / "vmc_master_automazione.txt"))
+    rami = {}
+    righe = testo.split("\n")
+    for i, riga in enumerate(righe):
+        if "- stop: Velocità scelta dall'utente durante l'allerta PdR mantenuta" in riga:
+            j = max(k for k in range(i) if "vel_prima_del_comando not in [" in righe[k])
+            escluse = righe[j].split("not in [", 1)[1].split("]", 1)[0]
+            k = max(k for k in range(j) if " Rip. " in righe[k] and ("id: " in righe[k] or righe[k].strip().startswith("- Rip.")))
+            rami[righe[k].split("Rip. ", 1)[1].strip()] = escluse
+    assert len(rami) == 13
+    assert rami["Vel. 0 No PdR -> Spia PdR Velocità 0 OFF"].startswith("'Velocità 0', 'Non disponibile'")
+    assert rami["Vel. 2 No PdR"].startswith("'Velocità 0', 'Velocità 2', 'Non disponibile'")
+    assert rami["Free Cool./Heat. No PdR"].startswith("'Velocità 0', 'Free Cooling', 'Non disponibile'")
+    assert rami["Vel. 3 No PdR  se Spia Inquinanti ON"].startswith("'Velocità 0', 'Velocità 1', 'Velocità 3', 'Non")
