@@ -117,15 +117,16 @@ cards:
         - type: conditional
           conditions:
             - condition: state
-              entity: timer.vmc_master_countdown_avvio_home_assistant
-              state: active
+              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
+              state: '1.0'
             - condition: state
               entity: sensor.vmc_master_status_ip_interfaccia
               state: ON-Line
           row:
-            entity: timer.vmc_master_countdown_avvio_home_assistant
-            name: "Avvio di Home Assistant"
-            icon: mdi:timer-sand
+            type: text
+            name: "Ripristino Velocità"
+            text: "dopo il 1° gruppo"
+            icon: mdi:pause-circle-outline
         - type: conditional
           conditions:
             - condition: state
@@ -135,6 +136,22 @@ cards:
             entity: timer.vmc_master_countdown_blackout_ripristino
             name: "Ripristino Velocità tra"
             icon: mdi:timer-sand
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: sensor.vmc_master_status_ip_interfaccia
+              state: ON-Line
+            - condition: state
+              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
+              state_not: '1.0'
+            - condition: state
+              entity: timer.vmc_master_countdown_blackout_ripristino
+              state: idle
+          row:
+            type: text
+            name: "Ripristino Velocità"
+            text: "conferma della VMC in corso"
+            icon: mdi:progress-clock
         - type: conditional
           conditions:
             - condition: state
@@ -13257,13 +13274,15 @@ cards:
                   Quando la VMC torna ON-Line dopo un Black-Out, o dopo
                   l'inserimento di una nuova VMC, la scheda mostra «VMC di
                   nuovo ON-Line, ripristino della velocità in uso prima del
-                  Black-Out in corso...» con il countdown «Ripristino Velocità
+                  Black-Out in corso...», la velocità da riprendere
+                  («Velocità memorizzata») e il countdown «Ripristino Velocità
                   tra» (32 secondi): non serve fare nulla. Se Home Assistant
                   si è appena avviato (per esempio dopo Cambia IP VMC), prima
-                  compare il countdown «Avvio di Home Assistant» (60 secondi)
-                  e poi quello del ripristino. Allo zero la VMC riceve la
-                  velocità e, dopo pochi secondi di conferma, compare la
-                  scheda completa.
+                  del countdown «Ripristino Velocità» indica «dopo il 1°
+                  gruppo», fino alla riattivazione del 1° gruppo di allerte
+                  (vedere la Nota Avvio di Home Assistant). Allo zero la VMC
+                  riceve la velocità: per pochi secondi compare «conferma
+                  della VMC in corso», poi la scheda completa.
 
                   <br>
 
@@ -14682,9 +14701,10 @@ cards:
                   <b>Avanzamento ed esito.</b> Nel riquadro in fondo compaiono l'avanzamento della procedura e poi l'esito, che arriva
                   anche come notifica. Lo stato viene letto ogni 5 secondi solo con la finestra aperta o con una procedura in corso.
                   <br><br>
-                  <b>Dopo il collegamento.</b> Al riavvio di Home Assistant la scheda mostra «VMC di nuovo ON-Line...» con i countdown
-                  «Avvio di Home Assistant» (60 secondi) e «Ripristino Velocità tra» (32 secondi): non serve fare nulla, al termine
-                  compare la scheda completa. Mentre la VMC passa dalla sua rete VMC_xxxxxxxx al Wi-Fi di casa e si riavvia, il
+                  <b>Dopo il collegamento.</b> Al riavvio di Home Assistant la scheda mostra «VMC di nuovo ON-Line...» con «Ripristino
+                  Velocità: dopo il 1° gruppo» (vedere la Nota Avvio di Home Assistant), poi il countdown «Ripristino Velocità tra» (32
+                  secondi) e per pochi secondi «conferma della VMC in corso»: non serve fare nulla, al termine compare la scheda
+                  completa. Mentre la VMC passa dalla sua rete VMC_xxxxxxxx al Wi-Fi di casa e si riavvia, il
                   registro di Home Assistant può riportare per qualche minuto errori dell'integrazione TCP sulla porta 5001 («timed out»,
                   «Host is unreachable», «Connection refused»): è normale, la VMC non è ancora raggiungibile, e gli errori cessano da
                   soli appena risponde. Vanno verificati solo se continuano con la VMC ON-Line.

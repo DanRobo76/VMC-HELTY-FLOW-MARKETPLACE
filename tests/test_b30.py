@@ -167,8 +167,9 @@ def test_testi_aggiornati() -> None:
     assert "Tutte le allerte attive tra" not in scheda
     assert "Tutte le allerte attive tra" not in _testo("vmc_master.yaml")
     assert "un countdown per gruppo, uno dopo l'altro: il gruppo in corso conta i secondi" in scheda
-    # la riga «Avvio di Home Assistant» del riquadro della VMC resta (Black-Out, VMC nuova)
-    assert 'name: "Avvio di Home Assistant"' in _testo("vmc_master_scheda_manuale_interfaccia.txt")
+    # b31: la riga «Avvio di Home Assistant» del riquadro della VMC non c'e' piu' (il countdown
+    # dei 60 s resta solo nel pannello, al suo posto «Ripristino Velocità: dopo il 1° gruppo»)
+    assert 'name: "Avvio di Home Assistant"' not in _testo("vmc_master_scheda_manuale_interfaccia.txt")
     versione = re.search(r"\[VER\. 9\.0\.0b(\d+)\]", _testo("vmc_master_scheda_manuale_interfaccia.txt")[:1000])
     assert versione and int(versione.group(1)) >= 30  # la scheda cambia in b30 (poi solo versioni successive)
 

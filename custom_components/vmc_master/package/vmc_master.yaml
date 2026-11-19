@@ -5806,7 +5806,7 @@ timer:
     name: "Reset Filtro in corso"
     duration: "00:00:05"
     icon: mdi:timer-sand
-  vmc_master_countdown_avvio_home_assistant:                     # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 6 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] COUNTDOWN IN SCHEDA DEI 60 s DOPO L'AVVIO DI HOME ASSISTANT IN CUI LE FINI ALLERTA SONO SOSPESE (AVVIATO DA vmc_master_riallineamento_allerte_al_riavvio), POI PARTE IL RIPRISTINO DOPO BLACK-OUT; E' ANCHE IL COUNTDOWN DEL 1° GRUPPO DI ALLERTE DEL PANNELLO «RIATTIVAZIONE DELLE ALLERTE»
+  vmc_master_countdown_avvio_home_assistant:                     # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 6 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] COUNTDOWN IN SCHEDA DEI 60 s DOPO L'AVVIO DI HOME ASSISTANT IN CUI LE FINI ALLERTA SONO SOSPESE (AVVIATO DA vmc_master_riallineamento_allerte_al_riavvio), POI PARTE IL RIPRISTINO DOPO BLACK-OUT; E' MOSTRATO SOLO COME COUNTDOWN DEL 1° GRUPPO DI ALLERTE DEL PANNELLO «RIATTIVAZIONE DELLE ALLERTE»
     name: "Avvio di Home Assistant"
     duration: "00:01:00"
     icon: mdi:timer-sand
@@ -19138,7 +19138,8 @@ automation:
       dall'avvio. Nella scheda il pannello «Riattivazione delle Allerte», visibile con la VMC ON-Line fino alla
       riattivazione di tutte le allerte, mostra un countdown per gruppo, uno dopo l'altro: 60 s per Black-Out, Congelamento
       e Diff. Temp., poi 40 s per Inquinanti, poi 40 s per gli altri; i gruppi successivi sono «In attesa», i precedenti
-      «Già attive». Dopo un Black-Out i primi 60 s compaiono anche nel riquadro della VMC con il countdown «Avvio di Home Assistant».
+      «Già attive». Dopo un Black-Out il riquadro della VMC mostra «Ripristino Velocità: dopo il 1° gruppo» finché il 1° gruppo
+      non si riattiva: solo allora parte il ripristino della velocità.
     mode: restart
     triggers:
       - trigger: homeassistant
