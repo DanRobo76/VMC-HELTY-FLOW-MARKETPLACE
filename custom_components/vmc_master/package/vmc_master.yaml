@@ -575,7 +575,7 @@ template:
         icon: mdi:check-decagram-outline
 
   - sensor:
-      - default_entity_id: sensor.vmc_master_verifica_ip_inserito               # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 10 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] VERIFICA DEL VALORE INSERITO NEL CAMPO "vmc_master_ip_insert" (STESSI CONTROLLI DELL'AUTOMAZIONE CAMBIO IP): Nessun IP (CAMPO VUOTO) / IP non Valido (FORMATO O INTERVALLO NON AMMESSO, STESSA REGOLA DELL'INTEGRAZIONE) / IP già impostato (E' GIA' L'IP DI QUESTA VMC) / IP già in uso (E' L'IP DI UN'ALTRA VMC DEL PACKAGE) / Verifica VMC in corso / VMC non risponde / Non è una VMC / Nome VMC diverso (ESITO DEL SERVIZIO verifica_ip SCRITTO DALL'AUTOMAZIONE IN "vmc_master_ip_insert_esito") / IP (VMC VERIFICATA: RIAVVIO IN CORSO)
+      - default_entity_id: sensor.vmc_master_verifica_ip_inserito               # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 25 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] VERIFICA DEL VALORE INSERITO NEL CAMPO "vmc_master_ip_insert" (STESSI CONTROLLI DELL'AUTOMAZIONE CAMBIO IP): Nessun IP (CAMPO VUOTO) / IP non Valido (FORMATO O INTERVALLO NON AMMESSO, STESSA REGOLA DELL'INTEGRAZIONE) / IP già impostato (E' GIA' L'IP DI QUESTA VMC) / IP già in uso (E' L'IP DI UN'ALTRA VMC DEL PACKAGE) / Verifica VMC in corso / VMC non risponde / Non è una VMC / Nome VMC diverso (ESITO DEL SERVIZIO verifica_ip SCRITTO DALL'AUTOMAZIONE IN "vmc_master_ip_insert_esito") / IP (VMC VERIFICATA: RIAVVIO IN CORSO)
         name: "IP"
         unique_id: vmc_master_verifica_ip_inserito
         state: >
@@ -980,7 +980,7 @@ template:
           {{ 'mdi:power-plug-off' if is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') else 'mdi:power-plug' }}
 
   - sensor:
-      - default_entity_id: sensor.vmc_master_nome_status                        # [CONFIGURAZIONE, 35 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 8 RICHIAMI] SENSORE DI VERIFICA DI AVVENUTA LETTURA NOME MEMORIZZATA NELLA VMC
+      - default_entity_id: sensor.vmc_master_nome_status                        # [CONFIGURAZIONE, 36 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 8 RICHIAMI] SENSORE DI VERIFICA DI AVVENUTA LETTURA NOME MEMORIZZATA NELLA VMC
         name: "Nome"
         unique_id: vmc_master_nome_status
         state: >

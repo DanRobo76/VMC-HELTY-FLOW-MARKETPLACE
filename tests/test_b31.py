@@ -44,8 +44,8 @@ def _righe_ridotta() -> list:
 def _dopo_ripristino() -> list:
     righe = _righe_ridotta()
     i = next(k for k, r in enumerate(righe) if r.get("row", {}).get("entity") == RIP)
-    # subito sotto il countdown c'e' «Ripristino Velocità: conferma della VMC in corso» (prove in test_b31_ridotta)
-    assert righe[i + 1]["row"].get("text") == "conferma della VMC in corso"
+    # subito sotto il countdown c'e' «Ripristino Velocità: conferma in corso» (prove in test_b31_ridotta)
+    assert righe[i + 1]["row"].get("text") == "conferma in corso"
     i += 1
     fine = next(k for k, r in enumerate(righe) if r.get("entity") == "script.vmc_master_upgrade_sensors")
     return righe[i + 1 : fine]

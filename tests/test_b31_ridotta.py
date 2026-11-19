@@ -1,7 +1,7 @@
 """Prove della 9.0.0b31 (scheda ridotta, VMC di nuovo ON-Line): il countdown dei 60 s dopo
 l'avvio di Home Assistant compare solo nel pannello «Riattivazione delle Allerte»; nel
 riquadro della VMC «Ripristino Velocità» dice «dopo il 1° gruppo» e, finito il countdown
-del ripristino, «conferma della VMC in corso» (niente momenti senza countdown)."""
+del ripristino, «conferma in corso» (niente momenti senza countdown)."""
 
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ SEZIONE = (
     "Non serve fare nulla."
 )
 DOPO = "Ripristino Velocità | dopo il 1° gruppo"
-CONFERMA = "Ripristino Velocità | conferma della VMC in corso"
+CONFERMA = "Ripristino Velocità | conferma in corso"
 COUNTDOWN = f"Ripristino Velocità tra | countdown {RIP}"
 MEMORIZZATA = "Velocità salvata | Velocità 2"
 NOMI_VMC = ("sala", "camera", "cucina")
@@ -82,7 +82,7 @@ def test_ordine_delle_righe() -> None:
     assert righe[0]["row"]["label"] == SEZIONE
     assert righe[1]["row"]["text"] == "dopo il 1° gruppo"
     assert righe[2]["row"]["entity"] == RIP
-    assert righe[3]["row"]["text"] == "conferma della VMC in corso"
+    assert righe[3]["row"]["text"] == "conferma in corso"
     assert righe[4]["row"]["label"].startswith("VMC OFF-Line: ")
 
 
@@ -109,7 +109,7 @@ def test_riga_conferma_della_vmc() -> None:
     assert riga["row"] == {
         "type": "text",
         "name": "Ripristino Velocità",
-        "text": "conferma della VMC in corso",
+        "text": "conferma in corso",
         "icon": "mdi:progress-clock",
     }
 
@@ -174,7 +174,7 @@ def test_nota_vmc_di_nuovo_on_line() -> None:
     assert "«Ripristino Velocità tra» (32 secondi)" in nota
     assert "«Ripristino Velocità» indica «dopo il 1° gruppo», fino alla riattivazione del 1° gruppo di allerte" in nota
     assert "(vedere la Nota Avvio di Home Assistant)" in nota
-    assert "per pochi secondi compare «conferma della VMC in corso», poi la scheda completa." in nota
+    assert "per pochi secondi compare «conferma in corso», poi la scheda completa." in nota
     assert "60 secondi" not in nota
     assert not any(re.search(rf"\b{n}\b", nota, re.IGNORECASE) for n in NOMI_VMC)
 
@@ -185,7 +185,7 @@ def test_dopo_il_collegamento() -> None:
     paragrafo = scheda[i : scheda.index("<br>", i)]
     assert "«Ripristino Velocità: dopo il 1° gruppo»" in paragrafo
     assert "«Ripristino Velocità tra» (32 secondi)" in paragrafo
-    assert "per pochi secondi «conferma della VMC in corso»" in paragrafo
+    assert "per pochi secondi «conferma in corso»" in paragrafo
     assert "60 secondi" not in paragrafo
     assert not any(re.search(rf"\b{n}\b", paragrafo, re.IGNORECASE) for n in NOMI_VMC)
 

@@ -299,7 +299,7 @@ cards:
           row:
             type: text
             name: "Ripristino Velocità"
-            text: "conferma della VMC in corso"
+            text: "conferma in corso"
             icon: mdi:progress-clock
         - type: conditional
           conditions:
@@ -13378,7 +13378,7 @@ cards:
                   gruppo», fino alla riattivazione del 1° gruppo di allerte
                   (vedere la Nota Avvio di Home Assistant). Allo zero la VMC
                   riceve la velocità: per pochi secondi compare «conferma
-                  della VMC in corso», poi la scheda completa.
+                  in corso», poi la scheda completa.
 
                   <br>
 
@@ -14804,7 +14804,7 @@ cards:
                   <br><br>
                   <b>Dopo il collegamento.</b> Al riavvio di Home Assistant la scheda mostra «VMC di nuovo ON-Line...» con «Ripristino
                   Velocità: dopo il 1° gruppo» (vedere la Nota Avvio di Home Assistant), poi il countdown «Ripristino Velocità tra» (32
-                  secondi) e per pochi secondi «conferma della VMC in corso»: non serve fare nulla, al termine compare la scheda
+                  secondi) e per pochi secondi «conferma in corso»: non serve fare nulla, al termine compare la scheda
                   completa. Mentre la VMC passa dalla sua rete VMC_xxxxxxxx al Wi-Fi di casa e si riavvia, il
                   registro di Home Assistant può riportare per qualche minuto errori dell'integrazione TCP sulla porta 5001 («timed out»,
                   «Host is unreachable», «Connection refused»): è normale, la VMC non è ancora raggiungibile, e gli errori cessano da
