@@ -134,6 +134,8 @@ def test_nota_avvio_di_home_assistant() -> None:
     i = scheda.index("<strong>Nota Avvio di Home Assistant</strong>")
     nota = re.sub(r"\s+", " ", scheda[i : scheda.index("<br>", i)])
     assert "«ATTENDERE LA RIATTIVAZIONE DEL 2° GRUPPO» o «DEL 3° GRUPPO»" in nota
+    # solo i messaggi che chiedono di attendere (prova su HA reale: Msg. 3/5 senza riga di attesa)
+    assert "Intanto, nei messaggi che chiedono di attendere, le schede delle allerte" in nota
 
 
 def _commento(entita: str) -> str:

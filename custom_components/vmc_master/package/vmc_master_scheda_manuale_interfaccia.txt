@@ -13457,11 +13457,12 @@ cards:
                   l'Umidità). Il pannello «Riattivazione delle Allerte», in
                   cima alla scheda, mostra un countdown per gruppo, uno dopo
                   l'altro: il gruppo in corso conta i secondi, i successivi
-                  sono «In attesa», i precedenti «Già attive». Intanto le
-                  schede delle allerte di un gruppo non ancora riattivato
-                  dicono «ATTENDERE LA RIATTIVAZIONE DEL 2° GRUPPO» o «DEL 3°
-                  GRUPPO». Non serve fare nulla, anche se nel frattempo si
-                  preme Profilo Inizializzazione.
+                  sono «In attesa», i precedenti «Già attive». Intanto, nei
+                  messaggi che chiedono di attendere, le schede delle allerte
+                  di un gruppo non ancora riattivato dicono «ATTENDERE LA
+                  RIATTIVAZIONE DEL 2° GRUPPO» o «DEL 3° GRUPPO». Non serve
+                  fare nulla, anche se nel frattempo si preme Profilo
+                  Inizializzazione.
 
                   <br>
 
