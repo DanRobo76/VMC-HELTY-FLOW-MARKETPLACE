@@ -140,3 +140,15 @@ async def test_umidita_rientrata_con_inquinanti(hass) -> None:
             hass.states.async_set(entita, stato)
         reso = Template(pezzo, hass).async_render(parse_result=False)
         assert f"PROGRAMMATO IL {atteso} DELLA VMC" in reso, (diversi, reso)
+
+
+def test_free_msg_7_e_15() -> None:
+    """A3-5: Msg 7 della scheda Free dice che la ripresa verra' annullata se la velocita' scelta resta 20 secondi, e
+    con l'Umidita' in corso spiega la Velocita' 1 (Nota 3); i Msg 15 e 15.1 annunciano il ripristino in Free."""
+    scheda = _scheda()
+    for tipo in ("HEATING", "COOLING"):
+        assert f"LA RIPRESA AUTOMATICA\n        DELLA VMC SULLA VELOCITÀ FREE {tipo}" in scheda
+        assert scheda.count(f"VELOCITÀ 1 PER L'ALLERTA UMIDITÀ [NOTA 3]: LA RIPRESA AUTOMATICA DELLA VMC SULLA VELOCITÀ FREE {tipo}") == 1
+        assert scheda.count(f"RIPRISTINO SULLA VELOCITA' FREE {tipo}, {{{{ attendere }}}}") == 6
+    assert scheda.count("SE MANTENUTA PER 20 SECONDI, LA RIPRESA AUTOMATICA") == 2
+    assert "VIENE ANNULLATA.</strong>" not in scheda

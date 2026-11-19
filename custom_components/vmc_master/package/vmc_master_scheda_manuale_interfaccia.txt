@@ -5651,18 +5651,23 @@ cards:
         temp_interna > temp_esterna | float(0) and spia_free_heating=="on" and
         ((co2 !="Allerta") and (voc !="Allerta")) and avviso_da_mostrare=="OK")
         %}
-         <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA FREE HEATING PROGRAMMATO (VELOCITÀ SCELTA DALL'UTENTE)</strong></font></br>
+         <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA FREE HEATING PROGRAMMATO (VELOCITÀ {{ "1 PER L'ALLERTA UMIDITÀ" if is_state('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia', 'on') and velocita == "Velocità 1" else "SCELTA DALL'UTENTE" }})</strong></font></br>
         LA TEMPERATURA ESTERNA {{
         states('sensor.vmc_master_temp_esterna_status')}} [°C] È MINORE DELLA
         TEMPERATURA INTERNA {{ states('sensor.vmc_master_temp_interna_status')}}
         [°C]
 
 
-        <strong>È STATA SCELTA LA {{ velocita | upper }}: LA RIPRESA AUTOMATICA
-        DELLA VMC SULLA VELOCITÀ FREE HEATING (RISCALDAMENTO) VIENE ANNULLATA.</strong>
+        {% if is_state('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia', 'on') and velocita == "Velocità 1" %}
+        <strong>VELOCITÀ 1 PER L'ALLERTA UMIDITÀ [NOTA 3]: LA RIPRESA AUTOMATICA DELLA VMC SULLA VELOCITÀ FREE HEATING (RISCALDAMENTO)
+        AVVERRÀ QUANDO LA TEMPERATURA ESTERNA SARÀ MAGGIORE DELLA TEMPERATURA INTERNA.</strong>
+        {% else %}
+        <strong>È STATA SCELTA LA {{ velocita | upper }}: SE MANTENUTA PER 20 SECONDI, LA RIPRESA AUTOMATICA
+        DELLA VMC SULLA VELOCITÀ FREE HEATING (RISCALDAMENTO) VERRÀ ANNULLATA.</strong>
 
-          - LA VMC RESTA SULLA VELOCITÀ SCELTA, CON LO SCAMBIATORE DI CALORE ATTIVO (NESSUN RAFFRESCAMENTO)
+          - LA VMC RESTERÀ SULLA VELOCITÀ SCELTA, CON LO SCAMBIATORE DI CALORE ATTIVO (NESSUN RAFFRESCAMENTO)
           - ANCHE QUANDO LA TEMPERATURA ESTERNA SARÀ MAGGIORE DELLA TEMPERATURA INTERNA, LA VMC NON PASSERÀ DA SOLA ALLA VELOCITÀ FREE HEATING: PER RIATTIVARLA PREMERE IL TASTO FREE HEATING
+        {% endif %}
 
         Msg. 7, Free Heating Allarmato
 
@@ -6103,18 +6108,23 @@ cards:
         temp_esterna > temp_interna | float(0) and spia_free_cooling=="on" and
         ((co2 !="Allerta") and (voc !="Allerta")) and avviso_da_mostrare=="OK")
         %}
-         <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA FREE COOLING PROGRAMMATO (VELOCITÀ SCELTA DALL'UTENTE)</strong></font></br>
+         <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA FREE COOLING PROGRAMMATO (VELOCITÀ {{ "1 PER L'ALLERTA UMIDITÀ" if is_state('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia', 'on') and velocita == "Velocità 1" else "SCELTA DALL'UTENTE" }})</strong></font></br>
         LA TEMPERATURA ESTERNA, {{
         states('sensor.vmc_master_temp_esterna_status')}} [°C] ATTUALMENTE È
         MAGGIORE DELLA TEMPERATURA INTERNA, {{
         states('sensor.vmc_master_temp_interna_status')}} [°C]
 
 
-        <strong>È STATA SCELTA LA {{ velocita | upper }}: LA RIPRESA AUTOMATICA
-        DELLA VMC SULLA VELOCITÀ FREE COOLING (RAFFRESCAMENTO) VIENE ANNULLATA.</strong>
+        {% if is_state('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia', 'on') and velocita == "Velocità 1" %}
+        <strong>VELOCITÀ 1 PER L'ALLERTA UMIDITÀ [NOTA 3]: LA RIPRESA AUTOMATICA DELLA VMC SULLA VELOCITÀ FREE COOLING (RAFFRESCAMENTO)
+        AVVERRÀ QUANDO LA TEMPERATURA ESTERNA SARÀ MINORE DELLA TEMPERATURA INTERNA.</strong>
+        {% else %}
+        <strong>È STATA SCELTA LA {{ velocita | upper }}: SE MANTENUTA PER 20 SECONDI, LA RIPRESA AUTOMATICA
+        DELLA VMC SULLA VELOCITÀ FREE COOLING (RAFFRESCAMENTO) VERRÀ ANNULLATA.</strong>
 
-          - LA VMC RESTA SULLA VELOCITÀ SCELTA, CON LO SCAMBIATORE DI CALORE ATTIVO (NESSUN RISCALDAMENTO DALL'ARIA ESTERNA)
+          - LA VMC RESTERÀ SULLA VELOCITÀ SCELTA, CON LO SCAMBIATORE DI CALORE ATTIVO (NESSUN RISCALDAMENTO DALL'ARIA ESTERNA)
           - ANCHE QUANDO LA TEMPERATURA ESTERNA SARÀ MINORE DELLA TEMPERATURA INTERNA, LA VMC NON PASSERÀ DA SOLA ALLA VELOCITÀ FREE COOLING: PER RIATTIVARLA PREMERE IL TASTO FREE COOLING
+        {% endif %}
 
         Msg. 7, Free Cooling Allarmato
 
@@ -6739,6 +6749,9 @@ cards:
         [°C]
 
 
+        {% if spia_free_heating == "on" %}RIPRISTINO SULLA VELOCITA' FREE HEATING, {{ attendere }}{% endif %}
+
+
         Msg. 15 Free Heating
 
 
@@ -6759,6 +6772,9 @@ cards:
         states('sensor.vmc_master_temp_esterna_status')}} [°C] È UGUALE ALLA
         TEMPERATURA INTERNA {{ states('sensor.vmc_master_temp_interna_status')}}
         [°C]
+
+
+        {% if spia_free_heating == "on" %}RIPRISTINO SULLA VELOCITA' FREE HEATING, {{ attendere }}{% endif %}
 
 
         Msg. 15.1 Free Heating
@@ -7018,6 +7034,9 @@ cards:
         [°C]
 
 
+        {% if spia_free_cooling == "on" %}RIPRISTINO SULLA VELOCITA' FREE COOLING, {{ attendere }}{% endif %}
+
+
         Msg. 15 Free Cooling
 
 
@@ -7038,6 +7057,9 @@ cards:
         states('sensor.vmc_master_temp_esterna_status')}} [°C] È UGUALE ALLA
         TEMPERATURA INTERNA {{ states('sensor.vmc_master_temp_interna_status')}}
         [°C]
+
+
+        {% if spia_free_cooling == "on" %}RIPRISTINO SULLA VELOCITA' FREE COOLING, {{ attendere }}{% endif %}
 
 
         Msg. 15.1 Free Cooling

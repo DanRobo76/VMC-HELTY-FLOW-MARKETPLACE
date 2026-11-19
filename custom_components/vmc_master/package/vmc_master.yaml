@@ -5416,7 +5416,7 @@ input_boolean:
 
 ################### Inizio Creazione Switch Booleani impiegati nell'Automazione, per valutare UMIDITA' ############################
 
-  vmc_master_umidita_verifica_soglia_valore_spia:                               # [CONFIGURAZIONE, 26 RICHIAMI] [INTERFACCIA, 14 RICHIAMI] [AUTOMAZIONE, 40 RICHIAMI] SENSORE TRACCIAMENTO umidità
+  vmc_master_umidita_verifica_soglia_valore_spia:                               # [CONFIGURAZIONE, 26 RICHIAMI] [INTERFACCIA, 18 RICHIAMI] [AUTOMAZIONE, 40 RICHIAMI] SENSORE TRACCIAMENTO umidità
     name: "Spia VMC Umidità"
     icon: mdi:memory
 
