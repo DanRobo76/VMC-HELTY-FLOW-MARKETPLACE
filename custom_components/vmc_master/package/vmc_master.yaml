@@ -604,7 +604,7 @@ template:
         icon: mdi:ip
 
   - sensor:
-      - default_entity_id: sensor.vmc_master_status_ip_interfaccia              # [CONFIGURAZIONE, 327 RICHIAMI] [INTERFACCIA, 115 RICHIAMI] [AUTOMAZIONE, 321 RICHIAMI] SENSORE IMPIEGATO PER LA VISUALIZZAZIONE NELL'INTERFACCIA SE LA VMC E' IN RETE O MENO
+      - default_entity_id: sensor.vmc_master_status_ip_interfaccia              # [CONFIGURAZIONE, 327 RICHIAMI] [INTERFACCIA, 116 RICHIAMI] [AUTOMAZIONE, 323 RICHIAMI] SENSORE IMPIEGATO PER LA VISUALIZZAZIONE NELL'INTERFACCIA SE LA VMC E' IN RETE O MENO
         name: "Status VMC"
         unique_id: vmc_master_status_ip_interfaccia
         state: >
@@ -968,7 +968,7 @@ template:
           {{ 'mdi:power-plug-off' if is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') else 'mdi:power-plug' }}
 
   - sensor:
-      - default_entity_id: sensor.vmc_master_nome_status                        # [CONFIGURAZIONE, 35 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 7 RICHIAMI] SENSORE DI VERIFICA DI AVVENUTA LETTURA NOME MEMORIZZATA NELLA VMC
+      - default_entity_id: sensor.vmc_master_nome_status                        # [CONFIGURAZIONE, 35 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 8 RICHIAMI] SENSORE DI VERIFICA DI AVVENUTA LETTURA NOME MEMORIZZATA NELLA VMC
         name: "Nome"
         unique_id: vmc_master_nome_status
         state: >
@@ -3995,6 +3995,7 @@ recorder:
       - timer.vmc_master_countdown_script_inizializzazione
       - timer.vmc_master_countdown_script_reset_filtro
       - timer.vmc_master_countdown_avvio_home_assistant
+      - timer.vmc_master_countdown_riattivazione_allerte
       - script.vmc_master_ripristina_tempi_attesa
       - sensor.vmc_master_velocita_registrata
       - binary_sensor.vmc_master_tasto_velocita_0
@@ -4596,37 +4597,37 @@ input_select:
       - Free Cool./Heat.
     icon: mdi:fan 
 
-  vmc_master_selected_temp_external_entity:                                     # [CONFIGURAZIONE, 16 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 1 RICHIAMO] SENSORE DI MEMORIZZAZIONE DI TUTTE LE ENTITA' DI TEMPERATURA INSTALLATI IN HOME ASSISTANT
+  vmc_master_selected_temp_external_entity:                                     # [CONFIGURAZIONE, 16 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 5 RICHIAMI] SENSORE DI MEMORIZZAZIONE DI TUTTE LE ENTITA' DI TEMPERATURA INSTALLATI IN HOME ASSISTANT
     name: Seleziona Entità Temperatura Esterna
     options:
       - "Aggiorna Elenco Entità Temperatura Esterna"
     icon: mdi:form-textbox
 
-  vmc_master_selected_temp_internal_entity:                                     # [CONFIGURAZIONE, 16 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 1 RICHIAMO] SENSORE DI MEMORIZZAZIONE DI TUTTE LE ENTITA' DI TEMPERATURA INSTALLATI IN HOME ASSISTANT
+  vmc_master_selected_temp_internal_entity:                                     # [CONFIGURAZIONE, 16 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 5 RICHIAMI] SENSORE DI MEMORIZZAZIONE DI TUTTE LE ENTITA' DI TEMPERATURA INSTALLATI IN HOME ASSISTANT
     name: Seleziona Entità Temperatura Interna
     options:
       - "Aggiorna Elenco Entità Temperatura Interna"
     icon: mdi:form-textbox
 
-  vmc_master_selected_humidity_external_entity:                                 # [CONFIGURAZIONE, 16 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 1 RICHIAMO] SENSORE DI MEMORIZZAZIONE DI TUTTE LE ENTITA' DI UMIDITA' INSTALLATI IN HOME ASSISTANT
+  vmc_master_selected_humidity_external_entity:                                 # [CONFIGURAZIONE, 16 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 5 RICHIAMI] SENSORE DI MEMORIZZAZIONE DI TUTTE LE ENTITA' DI UMIDITA' INSTALLATI IN HOME ASSISTANT
     name: Seleziona Entità Umidità Esterna
     options:
       - "Aggiorna Elenco Entità Umidità Esterna"
     icon: mdi:form-textbox
 
-  vmc_master_selected_humidity_internal_entity:                                 # [CONFIGURAZIONE, 16 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 1 RICHIAMO] SENSORE DI MEMORIZZAZIONE DI TUTTE LE ENTITA' DI UMIDITA' INSTALLATI IN HOME ASSISTANT
+  vmc_master_selected_humidity_internal_entity:                                 # [CONFIGURAZIONE, 16 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 5 RICHIAMI] SENSORE DI MEMORIZZAZIONE DI TUTTE LE ENTITA' DI UMIDITA' INSTALLATI IN HOME ASSISTANT
     name: Seleziona Entità Umidità Interna
     options:
       - "Aggiorna Elenco Entità Umidità Interna"
     icon: mdi:form-textbox
 
-  vmc_master_selected_co2_internal_entity:                                      # [CONFIGURAZIONE, 16 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 1 RICHIAMO] SENSORE DI MEMORIZZAZIONE DI TUTTE LE ENTITA' DI CO₂ INSTALLATI IN HOME ASSISTANT
+  vmc_master_selected_co2_internal_entity:                                      # [CONFIGURAZIONE, 16 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 5 RICHIAMI] SENSORE DI MEMORIZZAZIONE DI TUTTE LE ENTITA' DI CO₂ INSTALLATI IN HOME ASSISTANT
     name: Seleziona Entità CO₂ Interna
     options:
       - "Aggiorna Elenco Entità CO₂ Interna"
     icon: mdi:form-textbox
 
-  vmc_master_selected_notification_device:                                      # [CONFIGURAZIONE, 33 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 1 RICHIAMO] SENSORE DI MEMORIZZAZIONE DI TUTTE LE ENTITA' DI CO₂ INSTALLATI IN HOME ASSISTANT
+  vmc_master_selected_notification_device:                                      # [CONFIGURAZIONE, 33 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 8 RICHIAMI] SENSORE DI MEMORIZZAZIONE DI TUTTI I DISPOSITIVI DELL'APP MOBILE APP INSTALLATI IN HOME ASSISTANT PER L'INVIO DELLE NOTIFICHE
     name: Seleziona Dispositivo per Invio Notifica
     options:
       - "Aggiorna Elenco Dispositivi per Invio Notifica"
@@ -4777,7 +4778,7 @@ input_number:
     icon: mdi:knob
 
 ################### Inizio Creazione Fase di Riallineamento delle Allerte al Riavvio di Home Assistant ###################
-  vmc_master_fase_riallineamento_al_riavvio:                                    # [CONFIGURAZIONE, 525 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 566 RICHIAMI] FASE DEL RIALLINEAMENTO DELLE ALLERTE FINITE A HOME ASSISTANT SPENTO (0 = FUNZIONAMENTO NORMALE)
+  vmc_master_fase_riallineamento_al_riavvio:                                    # [CONFIGURAZIONE, 525 RICHIAMI] [INTERFACCIA, 4 RICHIAMI] [AUTOMAZIONE, 566 RICHIAMI] FASE DEL RIALLINEAMENTO DELLE ALLERTE FINITE A HOME ASSISTANT SPENTO (0 = FUNZIONAMENTO NORMALE)
     name: "Fase Riallineamento Allerte al Riavvio"
     min: 0
     max: 4
@@ -5136,35 +5137,35 @@ input_boolean:
     initial: false
     icon: mdi:human-handsup
 ################### Inizio Creazione Switch Booleani impiegati nell'Automazione, per valutare la Velocità in caso di Black-Out e/o SUPERAMENTO DEL Set Lim. Δ Punto di Rugiada ##############################################################
-  vmc_master_spia_velocita_0:                                                   # [CONFIGURAZIONE, 217 RICHIAMI] [INTERFACCIA, 22 RICHIAMI] [AUTOMAZIONE, 352 RICHIAMI] SENSORE TRACCIAMENTO VELOCITA' 0, IN CASO DI BLACK-OUT
+  vmc_master_spia_velocita_0:                                                   # [CONFIGURAZIONE, 217 RICHIAMI] [INTERFACCIA, 22 RICHIAMI] [AUTOMAZIONE, 354 RICHIAMI] SENSORE TRACCIAMENTO VELOCITA' 0, IN CASO DI BLACK-OUT
     name: "Spia Velocità 0"
     icon: mdi:memory
 
-  vmc_master_spia_velocita_1:                                                   # [CONFIGURAZIONE, 207 RICHIAMI] [INTERFACCIA, 22 RICHIAMI] [AUTOMAZIONE, 346 RICHIAMI] SENSORE TRACCIAMENTO VELOCITA' 1, IN CASO DI BLACK-OUT
+  vmc_master_spia_velocita_1:                                                   # [CONFIGURAZIONE, 207 RICHIAMI] [INTERFACCIA, 22 RICHIAMI] [AUTOMAZIONE, 348 RICHIAMI] SENSORE TRACCIAMENTO VELOCITA' 1, IN CASO DI BLACK-OUT
     name: "Spia Velocità 1"
     icon: mdi:memory
 
-  vmc_master_spia_velocita_2:                                                   # [CONFIGURAZIONE, 216 RICHIAMI] [INTERFACCIA, 22 RICHIAMI] [AUTOMAZIONE, 352 RICHIAMI] SENSORE TRACCIAMENTO VELOCITA' 2, IN CASO DI BLACK-OUT
+  vmc_master_spia_velocita_2:                                                   # [CONFIGURAZIONE, 216 RICHIAMI] [INTERFACCIA, 22 RICHIAMI] [AUTOMAZIONE, 354 RICHIAMI] SENSORE TRACCIAMENTO VELOCITA' 2, IN CASO DI BLACK-OUT
     name: "Spia Velocità 2"
     icon: mdi:memory
 
-  vmc_master_spia_velocita_3:                                                   # [CONFIGURAZIONE, 216 RICHIAMI] [INTERFACCIA, 22 RICHIAMI] [AUTOMAZIONE, 352 RICHIAMI] SENSORE TRACCIAMENTO VELOCITA' 3, IN CASO DI BLACK-OUT
+  vmc_master_spia_velocita_3:                                                   # [CONFIGURAZIONE, 216 RICHIAMI] [INTERFACCIA, 22 RICHIAMI] [AUTOMAZIONE, 354 RICHIAMI] SENSORE TRACCIAMENTO VELOCITA' 3, IN CASO DI BLACK-OUT
     name: "Spia Velocità 3"
     icon: mdi:memory
     
-  vmc_master_spia_velocita_4:                                                   # [CONFIGURAZIONE, 216 RICHIAMI] [INTERFACCIA, 22 RICHIAMI] [AUTOMAZIONE, 352 RICHIAMI] SENSORE TRACCIAMENTO VELOCITA' 4, IN CASO DI BLACK-OUT
+  vmc_master_spia_velocita_4:                                                   # [CONFIGURAZIONE, 216 RICHIAMI] [INTERFACCIA, 22 RICHIAMI] [AUTOMAZIONE, 354 RICHIAMI] SENSORE TRACCIAMENTO VELOCITA' 4, IN CASO DI BLACK-OUT
     name: "Spia Velocità 4"
     icon: mdi:memory
 
-  vmc_master_spia_velocita_iperventilazione:                                    # [CONFIGURAZIONE, 216 RICHIAMI] [INTERFACCIA, 22 RICHIAMI] [AUTOMAZIONE, 352 RICHIAMI] SENSORE TRACCIAMENTO VELOCITA' IPERVENTILAZIONE, IN CASO DI BLACK-OUT
+  vmc_master_spia_velocita_iperventilazione:                                    # [CONFIGURAZIONE, 216 RICHIAMI] [INTERFACCIA, 22 RICHIAMI] [AUTOMAZIONE, 354 RICHIAMI] SENSORE TRACCIAMENTO VELOCITA' IPERVENTILAZIONE, IN CASO DI BLACK-OUT
     name: "Spia Velocità Iperventilazione"
     icon: mdi:memory
 
-  vmc_master_spia_velocita_notturna:                                            # [CONFIGURAZIONE, 216 RICHIAMI] [INTERFACCIA, 22 RICHIAMI] [AUTOMAZIONE, 352 RICHIAMI] SENSORE TRACCIAMENTO VELOCITA' NOTTURNA, IN CASO DI BLACK-OUT
+  vmc_master_spia_velocita_notturna:                                            # [CONFIGURAZIONE, 216 RICHIAMI] [INTERFACCIA, 22 RICHIAMI] [AUTOMAZIONE, 354 RICHIAMI] SENSORE TRACCIAMENTO VELOCITA' NOTTURNA, IN CASO DI BLACK-OUT
     name: "Spia Velocità Notturna"
     icon: mdi:memory
 
-  vmc_master_spia_velocita_freecooling:                                         # [CONFIGURAZIONE, 216 RICHIAMI] [INTERFACCIA, 22 RICHIAMI] [AUTOMAZIONE, 352 RICHIAMI] SENSORE TRACCIAMENTO VELOCITA' FREE-COOLING, IN CASO DI BLACK-OUT
+  vmc_master_spia_velocita_freecooling:                                         # [CONFIGURAZIONE, 216 RICHIAMI] [INTERFACCIA, 22 RICHIAMI] [AUTOMAZIONE, 354 RICHIAMI] SENSORE TRACCIAMENTO VELOCITA' FREE-COOLING, IN CASO DI BLACK-OUT
     name: "Spia Velocità Free Cool./Heat."
     icon: mdi:memory    
 
@@ -5443,7 +5444,7 @@ input_boolean:
 
 ################### Inizio Creazione Switch Booleano impiegato nell'Automazione, per invio Notifica al Dispositivio ############################
 
-  vmc_master_notifica_status_vmc:                                               # [CONFIGURAZIONE, 11 RICHIAMI] [INTERFACCIA, 5 RICHIAMI] [AUTOMAZIONE, 25 RICHIAMI] SENSORE TRACCIAMENTO NOTIFICA
+  vmc_master_notifica_status_vmc:                                               # [CONFIGURAZIONE, 11 RICHIAMI] [INTERFACCIA, 5 RICHIAMI] [AUTOMAZIONE, 27 RICHIAMI] SENSORE TRACCIAMENTO NOTIFICA
     name: "Invio Notifica"
     icon: mdi:light-switch-off
 
@@ -5807,6 +5808,10 @@ timer:
   vmc_master_countdown_avvio_home_assistant:                     # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 3 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] COUNTDOWN IN SCHEDA DEI 60 s DOPO L'AVVIO DI HOME ASSISTANT IN CUI LE FINI ALLERTA SONO SOSPESE (AVVIATO DA vmc_master_riallineamento_allerte_al_riavvio), POI PARTE IL RIPRISTINO DOPO BLACK-OUT
     name: "Avvio di Home Assistant"
     duration: "00:01:00"
+    icon: mdi:timer-sand
+  vmc_master_countdown_riattivazione_allerte:                    # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 3 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] COUNTDOWN IN SCHEDA DEI 140 s DOPO L'AVVIO DI HOME ASSISTANT FINO ALLA RIATTIVAZIONE DI TUTTE LE ALLERTE (FASE 4 DI vmc_master_riallineamento_allerte_al_riavvio), SOLO VISUALIZZAZIONE
+    name: "Riattivazione Allerte"
+    duration: "00:02:20"
     icon: mdi:timer-sand
 ################### Fine Creazione Timer per il Countdown in Scheda delle Attese dell'Automazione ###################
 
@@ -7327,6 +7332,7 @@ script:
             - timer.vmc_master_countdown_script_inizializzazione
             - timer.vmc_master_countdown_script_reset_filtro
             - timer.vmc_master_countdown_avvio_home_assistant
+            - timer.vmc_master_countdown_riattivazione_allerte
             - script.vmc_master_ripristina_tempi_attesa
             - sensor.vmc_master_velocita_registrata
             - binary_sensor.vmc_master_tasto_velocita_0
@@ -19126,7 +19132,8 @@ automation:
       VMC letti) e poi li riattiva per gradi: Black-Out, Congelamento e Diff. Temp.; dopo 40 s Inquinanti; dopo altri 40 s
       Punto di Rugiada, Free Heating/Cooling, Calendario e Umidità. Ogni allerta riparte o si chiude così come un inizio o
       una fine allerta normale, con la propria attesa; dopo altri 60 s la fase torna a 0 (nessun effetto): in tutto 200 s
-      dall'avvio. I primi 60 s sono mostrati in scheda con il countdown «Avvio di Home Assistant».
+      dall'avvio. I primi 60 s sono mostrati in scheda con il countdown «Avvio di Home Assistant»; i 140 s fino alla
+      riattivazione di tutte le allerte con il countdown «Tutte le allerte attive tra», sempre visibile con la VMC ON-Line.
     mode: restart
     triggers:
       - trigger: homeassistant
@@ -19140,6 +19147,9 @@ automation:
       - action: timer.start                                                   # SOLO VISUALIZZAZIONE IN SCHEDA: COUNTDOWN DEI 60 s DELLA FASE 1
         target:
           entity_id: timer.vmc_master_countdown_avvio_home_assistant
+      - action: timer.start                                                   # SOLO VISUALIZZAZIONE IN SCHEDA: COUNTDOWN DEI 140 s FINO ALLA FASE 4 (TUTTE LE ALLERTE RIATTIVATE)
+        target:
+          entity_id: timer.vmc_master_countdown_riattivazione_allerte
       - delay:
           seconds: 60
       - action: input_number.set_value

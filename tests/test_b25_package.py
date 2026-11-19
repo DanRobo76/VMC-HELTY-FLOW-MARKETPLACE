@@ -76,7 +76,7 @@ def test_verifica_al_riavvio_sempre_nella_stessa_forma():
 def test_copie_in_evento_ancora_valido_identiche():
     righe = (PKG / "vmc_master_automazione.txt").read_text(encoding="utf-8").split("\n")
     trigger = _trigger_template()
-    assert len(trigger) == 166
+    assert len(trigger) == 167  # b28: avviso «Non Disponibile» del Dispositivo per Invio Notifica
     for t in trigger:
         tid = str(t["id"])
         intestazione = re.compile(r"\{%-? (el)?if trigger\.id == ['\"]" + re.escape(tid) + r"['\"] -?%\}")

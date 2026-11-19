@@ -135,6 +135,8 @@ ORDINE_RICARICHE = (
     "script.reload",
     "automation.reload",
 )
+# Automazione YAML «Riallineamento Allerte al Riavvio» del package di ogni VMC (id = unique_id)
+_RIALLINEAMENTO_RE = re.compile(r"^vmc_(.+)_riallineamento_allerte_al_riavvio$")
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
@@ -850,6 +852,48 @@ async def _async_ricarica(hass: HomeAssistant, servizi: list[str]) -> None:
             _segnala_riavvio(hass)
             return
     _LOGGER.info("Package delle VMC aggiornato senza riavvio: %s", ", ".join(servizi))
+    if "automation.reload" in servizi:
+        await _async_riprendi_riallineamento(hass)
+
+
+async def _async_riprendi_riallineamento(hass: HomeAssistant) -> None:
+    """Fa ripartire il riallineamento delle allerte fermato dalla ricarica delle automazioni.
+
+    automation.reload ricrea le automazioni il cui YAML e' cambiato e ferma quelle in corso.
+    Il riallineamento partito all'avvio di Home Assistant, se cambiato, si fermerebbe con la
+    fase diversa da 0, cioe' con inizi e fini delle allerte sospesi fino al riavvio
+    successivo. Riparte da capo, come dopo un riavvio, solo se e' fermo nelle fasi 1-3."""
+    registro = er.async_get(hass)
+    for voce in list(registro.entities.values()):
+        if voce.domain != "automation" or voce.platform != "automation":
+            continue
+        trovato = _RIALLINEAMENTO_RE.match(voce.unique_id)
+        if trovato is None:
+            continue
+        automazione = hass.states.get(voce.entity_id)
+        fase = hass.states.get(
+            f"input_number.vmc_{trovato.group(1)}_fase_riallineamento_al_riavvio"
+        )
+        if automazione is None or fase is None:
+            continue
+        try:
+            # fasi 1-3: allerte ancora sospese; con la fase 4 sono gia' tutte attive
+            sospese = 1 <= float(fase.state) <= 3
+        except ValueError:
+            continue  # fase non ancora letta: nessun riallineamento in corso da riprendere
+        if not sospese or automazione.attributes.get("current", 0):
+            continue  # nessuna allerta sospesa, oppure riallineamento non cambiato e in corso
+        _LOGGER.info(
+            "Riallineamento delle allerte ripartito dopo la ricarica delle automazioni: %s",
+            voce.entity_id,
+        )
+        # blocking=False: l'automazione dura 200 s, la ricarica non la aspetta
+        await hass.services.async_call(
+            "automation",
+            "trigger",
+            {"entity_id": voce.entity_id, "skip_condition": True},
+            blocking=False,
+        )
 
 
 @callback
