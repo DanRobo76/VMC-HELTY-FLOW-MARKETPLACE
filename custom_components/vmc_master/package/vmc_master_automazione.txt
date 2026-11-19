@@ -5583,7 +5583,8 @@ triggers:
       Umidità finita con Inquinanti in corso e Umidità partita da Velocità 0
       [Foglio Logiche: Velocità 1 degli Inquinanti, a fine Inquinanti Velocità 0;
       solo se la VMC è ancora alla Velocità dell'Umidità, una Velocità scelta
-      dall'utente resta]
+      dall'utente resta; con Velocità Umidità di Avvio Free Cool./Heat. vale anche
+      la Velocità 1 data dalle allerte Free]
     trigger: template
     value_template: |-
       {{ (
@@ -5591,7 +5592,8 @@ triggers:
         states('sensor.vmc_master_alert_monitoraggio_umidita') != 'Allerta' and
         states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia') == 'on' and
         states('input_boolean.vmc_master_spia_umidita_velocita_0') == 'on' and
-        states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == states('input_select.vmc_master_speed_umidita') and
+        (states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == states('input_select.vmc_master_speed_umidita') or
+         (states('input_select.vmc_master_speed_umidita') == 'Free Cool./Heat.' and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') in ['Free Cooling', 'Velocità 1'])) and
         states('input_boolean.vmc_master_spia_co2_o_voc') == 'on' and
         (states('sensor.vmc_master_alert_monitoraggio_co2') == 'Allerta' or states('sensor.vmc_master_alert_monitoraggio_voc') == 'Allerta') and
         states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc') == 'on' and
@@ -9883,7 +9885,8 @@ actions:
         states('sensor.vmc_master_alert_monitoraggio_umidita') != 'Allerta' and
         states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia') == 'on' and
         states('input_boolean.vmc_master_spia_umidita_velocita_0') == 'on' and
-        states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == states('input_select.vmc_master_speed_umidita') and
+        (states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == states('input_select.vmc_master_speed_umidita') or
+         (states('input_select.vmc_master_speed_umidita') == 'Free Cool./Heat.' and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') in ['Free Cooling', 'Velocità 1'])) and
         states('input_boolean.vmc_master_spia_co2_o_voc') == 'on' and
         (states('sensor.vmc_master_alert_monitoraggio_co2') == 'Allerta' or states('sensor.vmc_master_alert_monitoraggio_voc') == 'Allerta') and
         states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc') == 'on' and
@@ -31682,10 +31685,10 @@ actions:
             id:
               - umidita_velocita_0
         sequence:
-          - alias: Umidità che ha avviato la VMC da Velocità 0 e VMC ancora (o di nuovo) a 0 -> rimanda la velocità di avvio dell'opzione 175, la memoria resta (correzione U3)
+          - alias: Umidità che ha avviato la VMC da Velocità 0 e VMC ancora (o di nuovo) a 0 -> rimanda la velocità di avvio dell'opzione 175, la memoria resta (correzione U3); non se la Velocità 0 l'ha scelta l'utente durante l'Umidità (Velocità 0 mantenuta)
             if:
               - condition: template
-                value_template: "{{ is_state('input_boolean.vmc_master_spia_umidita_velocita_0', 'on') and states('input_select.vmc_master_speed_umidita') != 'Velocità 0' and not (trigger.from_state is defined and trigger.from_state is not none and trigger.from_state.state in ['Non disponibile', 'sconosciuto', 'unknown', 'unavailable', '', 'OFF-Line']) }}"
+                value_template: "{{ is_state('input_boolean.vmc_master_spia_umidita_velocita_0', 'on') and is_state('input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0', 'off') and states('input_select.vmc_master_speed_umidita') != 'Velocità 0' and not (trigger.from_state is defined and trigger.from_state is not none and trigger.from_state.state in ['Non disponibile', 'sconosciuto', 'unknown', 'unavailable', '', 'OFF-Line']) }}"
                 alias: Memoria «a fine allerta torna a 0» dell'avvio da Velocità 0, programmata diversa da 0, lettura della velocità non appena tornata disponibile
             then:
               - action: input_boolean.turn_off

@@ -31,3 +31,38 @@ def test_delta_temp_non_cancella_il_ritorno_a_velocita_0_degli_inquinanti() -> N
     assert "not is_state('input_boolean.vmc_master_spia_velocita_1_co2_o_voc_pdr', 'on')" in condizione
     # le altre 13 regole (Congelamento e Δ con memorie 0, 2, 3, 4, Notturna, Iperventilazione) restano come prima
     assert testo.count("(regola 03-11-2026)") == 13
+
+
+def test_fine_umidita_con_inquinanti_anche_con_avvio_free() -> None:
+    """A3-1: con [Velocita' Umidita' di Avvio] = «Free Cool./Heat.» la lettura della VMC e' «Free Cooling» (o
+    «Velocita' 1» con le allerte Free), mai uguale all'opzione: a fine Umidita' con Inquinanti la VMC deve scendere a
+    Velocita' 1 e a fine Inquinanti a Velocita' 0 (Foglio A21, NOTE 2). Trigger, condizione e 2 copie del countdown."""
+    nuova = ("(states('input_select.vmc_master_speed_umidita') == 'Free Cool./Heat.' and "
+             "states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') in ['Free Cooling', 'Velocità 1'])")
+    assert _automazione().count(nuova) == 2
+    assert (PKG / "vmc_master.yaml").read_text(encoding="utf-8").count(nuova) == 2
+    opzioni = hay.load_yaml(str(PKG / "vmc_master.yaml"))["input_select"]["vmc_master_speed_umidita"]["options"]
+    assert "Free Cool./Heat." in opzioni
+
+
+def test_velocita_0_scelta_durante_l_umidita_resta() -> None:
+    """A3-3: con la Velocita' 0 scelta dall'utente durante l'Umidita' (spia «mantenuta» accesa), un ritorno a 0 dopo
+    gli Inquinanti o dopo un tocco breve non rimanda la velocita' di avvio dell'Umidita'."""
+    testo = _automazione()
+    i = testo.index("rimanda la velocità di avvio dell'opzione 175, la memoria resta (correzione U3)")
+    condizione = testo[i : testo.index("then:", i)]
+    assert "is_state('input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0', 'off')" in condizione
+
+
+def test_la_fascia_spegne_la_memoria_del_black_out() -> None:
+    """A4-1: Black-Out rilevato fuori fascia e corrente tornata dentro una fascia: la fascia comanda la VMC e spegne le
+    8 spie velocita' del Black-Out, che altrimenti restavano accese per tutta la fascia (bloccando le allerte e
+    nascondendo la scheda completa)."""
+    script = hay.load_yaml(str(PKG / "vmc_master.yaml"))["script"]
+    spie = {f"input_boolean.vmc_master_spia_velocita_{v}" for v in
+            ("0", "1", "2", "3", "4", "notturna", "iperventilazione", "freecooling")}
+    for nome in ("vmc_master_calendario_fascia_1_on", "vmc_master_calendario_fascia_2_on"):
+        primo = script[nome]["sequence"][0]
+        assert primo["action"] == "input_boolean.turn_off", nome
+        assert set(primo["target"]["entity_id"]) == spie, nome
+        assert "delay" in script[nome]["sequence"][1], nome
