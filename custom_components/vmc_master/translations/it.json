@@ -104,7 +104,7 @@
       "already_in_progress": "L'aggiunta di questa VMC è già in corso in un'altra finestra."
     },
     "create_entry": {
-      "riavvio": "**{titolo}** è stata aggiunta.\n\nPer attivare la VMC serve un riavvio:\n1. aprire Impostazioni;\n2. premere «VMC Master: riavviare Home Assistant»;\n3. premere Invia."
+      "riavvio": "**{titolo}** è stata aggiunta.\n\nPer finire:\n1. aprire Impostazioni;\n2. premere «VMC Master: riavviare Home Assistant»;\n3. premere Invia;\n4. aggiungere la scheda:\n   - premere **Ctrl+F5**;\n   - nella plancia (va bene anche **Panoramica**) premere **matita → Aggiungi scheda → Sfoglia tutte le schede**;\n   - nel campo **Cerca schede** digitare `vmc`;\n   - cliccare su **VMC Master**;\n   - scegliere la VMC nel campo **VMC\\***;\n   - premere **Salva**, poi **Fatto**."
     }
   },
   "options": {
@@ -318,6 +318,22 @@
     },
     "worker_start": {
       "message": "Non è stato possibile avviare la procedura."
+    }
+  },
+  "services": {
+    "verifica_ip": {
+      "name": "Verifica IP della VMC",
+      "description": "Controlla se a questo IP risponde una VMC sulla porta 5001 e ne legge il nome, con due tentativi. Non cambia nulla. Lo usa il campo «Cambia IP VMC» della scheda prima di riavviare Home Assistant. Risponde con risponde (qualcosa risponde sulla porta 5001), nome (vuoto se non è una VMC) ed esito: ok, non_risponde, altro_dispositivo, nome_diverso o ip_non_valido.",
+      "fields": {
+        "ip": {
+          "name": "IP",
+          "description": "IP da controllare."
+        },
+        "nome": {
+          "name": "Nome atteso",
+          "description": "Nome della VMC che deve rispondere. Se vuoto va bene qualsiasi VMC."
+        }
+      }
     }
   }
 }

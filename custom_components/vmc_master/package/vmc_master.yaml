@@ -575,22 +575,34 @@ template:
         icon: mdi:check-decagram-outline
 
   - sensor:
-      - default_entity_id: sensor.vmc_master_verifica_ip_inserito               # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 10 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] VERIFICA DEL VALORE INSERIO NEL SENSORE "vmc_master_ip_insert": IP / IP non Valido / IP già impostato (E' GIA' L'IP DI QUESTA VMC) / IP già in uso (E' L'IP DI UN'ALTRA VMC DEL PACKAGE)
+      - default_entity_id: sensor.vmc_master_verifica_ip_inserito               # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 25 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] VERIFICA DEL VALORE INSERITO NEL CAMPO "vmc_master_ip_insert" (STESSI CONTROLLI DELL'AUTOMAZIONE CAMBIO IP): Nessun IP (CAMPO VUOTO) / IP non Valido (FORMATO O INTERVALLO NON AMMESSO, STESSA REGOLA DELL'INTEGRAZIONE) / IP già impostato (E' GIA' L'IP DI QUESTA VMC) / IP già in uso (E' L'IP DI UN'ALTRA VMC DEL PACKAGE) / Verifica VMC in corso / VMC non risponde / Non è una VMC / Nome VMC diverso (ESITO DEL SERVIZIO verifica_ip SCRITTO DALL'AUTOMAZIONE IN "vmc_master_ip_insert_esito") / IP (VMC VERIFICATA: RIAVVIO IN CORSO)
         name: "IP"
         unique_id: vmc_master_verifica_ip_inserito
         state: >
           {%- set ip = states('input_text.vmc_master_ip_insert') | trim -%}
+          {%- set esito = states('input_text.vmc_master_ip_insert_esito') -%}
+          {%- set ottetti = (ip.split('.') + ['', '']) | map('int', 0) | list -%}
           {%- set ns = namespace(uso=false) -%}
           {%- for s in states.sensor | rejectattr('attributes.restored', 'eq', true) | selectattr('entity_id', 'search', '^sensor\.vmc_[a-z]+_ip$') | rejectattr('entity_id', 'eq', 'sensor.vmc_master_ip') -%}
             {%- if s.state | trim == ip -%}{%- set ns.uso = true -%}{%- endif -%}
           {%- endfor -%}
           {%- set ns.uso = ns.uso or ip in (states('input_text.vmc_master_clona_vmc_clonate').split(',') | map('regex_replace', '^[^:]*:', '') | list) -%}  {#- VMC CLONATE IN ATTESA DI RIAVVIO (RIGA SOLO MASTER, RIMOSSA DA VMC_SCRIPT_CLONA.SH) -#}
-          {%- if not (ip is match('^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$')) -%}
+          {%- if ip == '' -%}
+            Nessun IP
+          {%- elif not (ip is match('^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$')) or ottetti[0] in [0, 127] or ottetti[0] >= 224 or ottetti[:2] == [169, 254] -%}
             IP non Valido
           {%- elif ip == states('sensor.vmc_master_ip') | trim -%}
             IP già impostato
           {%- elif ns.uso -%}
             IP già in uso
+          {%- elif esito == 'non_risponde ' ~ ip -%}
+            VMC non risponde
+          {%- elif esito == 'altro_dispositivo ' ~ ip -%}
+            Non è una VMC
+          {%- elif esito == 'nome_diverso ' ~ ip -%}
+            Nome VMC diverso
+          {%- elif esito != 'ok ' ~ ip -%}
+            Verifica VMC in corso
           {%- else -%}
             {{ ip }}
           {%- endif -%}
@@ -604,7 +616,7 @@ template:
         icon: mdi:ip
 
   - sensor:
-      - default_entity_id: sensor.vmc_master_status_ip_interfaccia              # [CONFIGURAZIONE, 327 RICHIAMI] [INTERFACCIA, 116 RICHIAMI] [AUTOMAZIONE, 324 RICHIAMI] SENSORE IMPIEGATO PER LA VISUALIZZAZIONE NELL'INTERFACCIA SE LA VMC E' IN RETE O MENO
+      - default_entity_id: sensor.vmc_master_status_ip_interfaccia              # [CONFIGURAZIONE, 327 RICHIAMI] [INTERFACCIA, 121 RICHIAMI] [AUTOMAZIONE, 324 RICHIAMI] SENSORE IMPIEGATO PER LA VISUALIZZAZIONE NELL'INTERFACCIA SE LA VMC E' IN RETE O MENO
         name: "Status VMC"
         unique_id: vmc_master_status_ip_interfaccia
         state: >
@@ -968,7 +980,7 @@ template:
           {{ 'mdi:power-plug-off' if is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') else 'mdi:power-plug' }}
 
   - sensor:
-      - default_entity_id: sensor.vmc_master_nome_status                        # [CONFIGURAZIONE, 35 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 8 RICHIAMI] SENSORE DI VERIFICA DI AVVENUTA LETTURA NOME MEMORIZZATA NELLA VMC
+      - default_entity_id: sensor.vmc_master_nome_status                        # [CONFIGURAZIONE, 36 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 8 RICHIAMI] SENSORE DI VERIFICA DI AVVENUTA LETTURA NOME MEMORIZZATA NELLA VMC
         name: "Nome"
         unique_id: vmc_master_nome_status
         state: >
@@ -3817,10 +3829,16 @@ input_text:
     pattern: '^[A-Za-z0-9_-]{0,10}$'                                          # DA 1 A 10 CARATTERI: LETTERE SENZA ACCENTI, CIFRE, _ E - (COME IL MOTORE DELL'INTEGRAZIONE); VUOTO DOPO L'INVIO
     icon: mdi:form-textbox
         
-  vmc_master_ip_insert:                                                         # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 4 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI]
+  vmc_master_ip_insert:                                                         # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 7 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI]
     name: "Cambia IP VMC (Riavvio di H.A.)"
     initial: ""
+    max: 15                                                                     # UN IP HA AL MASSIMO 15 CARATTERI. NESSUN pattern: HOME ASSISTANT SCARTA SENZA AVVISO UN VALORE CHE NON LO RISPETTA, L'AUTOMAZIONE NON PARTE E SOTTO IL CAMPO NON COMPARE «IP non valido»
     icon: mdi:form-textbox
+
+  vmc_master_ip_insert_esito:                                                   # [CONFIGURAZIONE, 5 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 0 RICHIAMI] ESITO DELLA VERIFICA DELLA VMC AL NUOVO IP («esito IP»): LO SCRIVE L'AUTOMAZIONE CAMBIO IP, LO LEGGE IL SENSORE DI VERIFICA PER GLI AVVISI SOTTO IL CAMPO
+    name: "Esito Verifica VMC al Nuovo IP"
+    initial: ""
+    icon: mdi:ip-network-outline
 
   vmc_master_last_temp_external_entity:                                         # [CONFIGURAZIONE, 10 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 1 RICHIAMO]
     name: "Ultima Entità Temperatura esterna Selezionata"
@@ -4207,6 +4225,7 @@ recorder:
 #      - sensor.vmc_master_trend_muffa_level_numeric
       - input_text.vmc_master_nome_da_inserire
       - input_text.vmc_master_ip_insert
+      - input_text.vmc_master_ip_insert_esito
       - input_text.vmc_master_last_temp_external_entity
       - input_text.vmc_master_last_temp_internal_entity
       - input_text.vmc_master_last_humidity_external_entity
@@ -4779,7 +4798,7 @@ input_number:
     icon: mdi:knob
 
 ################### Inizio Creazione Fase di Riallineamento delle Allerte al Riavvio di Home Assistant ###################
-  vmc_master_fase_riallineamento_al_riavvio:                                    # [CONFIGURAZIONE, 525 RICHIAMI] [INTERFACCIA, 11 RICHIAMI] [AUTOMAZIONE, 566 RICHIAMI] FASE DEL RIALLINEAMENTO DELLE ALLERTE FINITE A HOME ASSISTANT SPENTO (0 = FUNZIONAMENTO NORMALE)
+  vmc_master_fase_riallineamento_al_riavvio:                                    # [CONFIGURAZIONE, 525 RICHIAMI] [INTERFACCIA, 14 RICHIAMI] [AUTOMAZIONE, 566 RICHIAMI] FASE DEL RIALLINEAMENTO DELLE ALLERTE FINITE A HOME ASSISTANT SPENTO (0 = FUNZIONAMENTO NORMALE)
     name: "Fase Riallineamento Allerte al Riavvio"
     min: 0
     max: 4
@@ -5138,35 +5157,35 @@ input_boolean:
     initial: false
     icon: mdi:human-handsup
 ################### Inizio Creazione Switch Booleani impiegati nell'Automazione, per valutare la Velocità in caso di Black-Out e/o SUPERAMENTO DEL Set Lim. Δ Punto di Rugiada ##############################################################
-  vmc_master_spia_velocita_0:                                                   # [CONFIGURAZIONE, 217 RICHIAMI] [INTERFACCIA, 22 RICHIAMI] [AUTOMAZIONE, 354 RICHIAMI] SENSORE TRACCIAMENTO VELOCITA' 0, IN CASO DI BLACK-OUT
+  vmc_master_spia_velocita_0:                                                   # [CONFIGURAZIONE, 217 RICHIAMI] [INTERFACCIA, 24 RICHIAMI] [AUTOMAZIONE, 354 RICHIAMI] SENSORE TRACCIAMENTO VELOCITA' 0, IN CASO DI BLACK-OUT
     name: "Spia Velocità 0"
     icon: mdi:memory
 
-  vmc_master_spia_velocita_1:                                                   # [CONFIGURAZIONE, 207 RICHIAMI] [INTERFACCIA, 22 RICHIAMI] [AUTOMAZIONE, 348 RICHIAMI] SENSORE TRACCIAMENTO VELOCITA' 1, IN CASO DI BLACK-OUT
+  vmc_master_spia_velocita_1:                                                   # [CONFIGURAZIONE, 207 RICHIAMI] [INTERFACCIA, 24 RICHIAMI] [AUTOMAZIONE, 348 RICHIAMI] SENSORE TRACCIAMENTO VELOCITA' 1, IN CASO DI BLACK-OUT
     name: "Spia Velocità 1"
     icon: mdi:memory
 
-  vmc_master_spia_velocita_2:                                                   # [CONFIGURAZIONE, 216 RICHIAMI] [INTERFACCIA, 22 RICHIAMI] [AUTOMAZIONE, 354 RICHIAMI] SENSORE TRACCIAMENTO VELOCITA' 2, IN CASO DI BLACK-OUT
+  vmc_master_spia_velocita_2:                                                   # [CONFIGURAZIONE, 216 RICHIAMI] [INTERFACCIA, 24 RICHIAMI] [AUTOMAZIONE, 354 RICHIAMI] SENSORE TRACCIAMENTO VELOCITA' 2, IN CASO DI BLACK-OUT
     name: "Spia Velocità 2"
     icon: mdi:memory
 
-  vmc_master_spia_velocita_3:                                                   # [CONFIGURAZIONE, 216 RICHIAMI] [INTERFACCIA, 22 RICHIAMI] [AUTOMAZIONE, 354 RICHIAMI] SENSORE TRACCIAMENTO VELOCITA' 3, IN CASO DI BLACK-OUT
+  vmc_master_spia_velocita_3:                                                   # [CONFIGURAZIONE, 216 RICHIAMI] [INTERFACCIA, 24 RICHIAMI] [AUTOMAZIONE, 354 RICHIAMI] SENSORE TRACCIAMENTO VELOCITA' 3, IN CASO DI BLACK-OUT
     name: "Spia Velocità 3"
     icon: mdi:memory
     
-  vmc_master_spia_velocita_4:                                                   # [CONFIGURAZIONE, 216 RICHIAMI] [INTERFACCIA, 22 RICHIAMI] [AUTOMAZIONE, 354 RICHIAMI] SENSORE TRACCIAMENTO VELOCITA' 4, IN CASO DI BLACK-OUT
+  vmc_master_spia_velocita_4:                                                   # [CONFIGURAZIONE, 216 RICHIAMI] [INTERFACCIA, 24 RICHIAMI] [AUTOMAZIONE, 354 RICHIAMI] SENSORE TRACCIAMENTO VELOCITA' 4, IN CASO DI BLACK-OUT
     name: "Spia Velocità 4"
     icon: mdi:memory
 
-  vmc_master_spia_velocita_iperventilazione:                                    # [CONFIGURAZIONE, 216 RICHIAMI] [INTERFACCIA, 22 RICHIAMI] [AUTOMAZIONE, 354 RICHIAMI] SENSORE TRACCIAMENTO VELOCITA' IPERVENTILAZIONE, IN CASO DI BLACK-OUT
+  vmc_master_spia_velocita_iperventilazione:                                    # [CONFIGURAZIONE, 216 RICHIAMI] [INTERFACCIA, 24 RICHIAMI] [AUTOMAZIONE, 354 RICHIAMI] SENSORE TRACCIAMENTO VELOCITA' IPERVENTILAZIONE, IN CASO DI BLACK-OUT
     name: "Spia Velocità Iperventilazione"
     icon: mdi:memory
 
-  vmc_master_spia_velocita_notturna:                                            # [CONFIGURAZIONE, 216 RICHIAMI] [INTERFACCIA, 22 RICHIAMI] [AUTOMAZIONE, 354 RICHIAMI] SENSORE TRACCIAMENTO VELOCITA' NOTTURNA, IN CASO DI BLACK-OUT
+  vmc_master_spia_velocita_notturna:                                            # [CONFIGURAZIONE, 216 RICHIAMI] [INTERFACCIA, 24 RICHIAMI] [AUTOMAZIONE, 354 RICHIAMI] SENSORE TRACCIAMENTO VELOCITA' NOTTURNA, IN CASO DI BLACK-OUT
     name: "Spia Velocità Notturna"
     icon: mdi:memory
 
-  vmc_master_spia_velocita_freecooling:                                         # [CONFIGURAZIONE, 216 RICHIAMI] [INTERFACCIA, 22 RICHIAMI] [AUTOMAZIONE, 354 RICHIAMI] SENSORE TRACCIAMENTO VELOCITA' FREE-COOLING, IN CASO DI BLACK-OUT
+  vmc_master_spia_velocita_freecooling:                                         # [CONFIGURAZIONE, 216 RICHIAMI] [INTERFACCIA, 24 RICHIAMI] [AUTOMAZIONE, 354 RICHIAMI] SENSORE TRACCIAMENTO VELOCITA' FREE-COOLING, IN CASO DI BLACK-OUT
     name: "Spia Velocità Free Cool./Heat."
     icon: mdi:memory    
 
@@ -5226,7 +5245,7 @@ input_boolean:
     name: "Spia all'interno del Calendario Domenica 2°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_black_out:                                         # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 9 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO UN BLACK-OUT INIZIA ALL'INTERNO DI UNA FASCIA DEL CALENDARIO (AL RITORNO DELLA CORRENTE LA VMC RIPARTE CON LA VELOCITA' DELLA FASCIA, ANCHE DOPO UN RIAVVIO DI HOME ASSISTANT)
+  vmc_master_spia_calendario_black_out:                                         # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 9 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO UN BLACK-OUT INIZIA ALL'INTERNO DI UNA FASCIA DEL CALENDARIO (AL RITORNO DELLA CORRENTE LA VMC RIPARTE CON LA VELOCITA' DELLA FASCIA, ANCHE DOPO UN RIAVVIO DI HOME ASSISTANT)
     name: "Spia Black-Out all'interno del Calendario"
     icon: mdi:memory
 
@@ -5760,10 +5779,10 @@ timer:
   vmc_master_countdown_delta_memoria:                            # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 4 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] COUNTDOWN DELL'ATTESA IN CORSO DI UNO DEI 8 TRIGGER «MEMORIZZAZIONE VELOCITÀ (Δ TEMP.)» DELL'AUTOMAZIONE (AVVIATO DA vmc_master_countdown_attese_automazione)
     name: "Memorizzazione Velocità (Δ Temp.)"
     icon: mdi:timer-sand
-  vmc_master_countdown_blackout_rilevazione:                     # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 4 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] COUNTDOWN DELL'ATTESA IN CORSO DI UNO DEI 12 TRIGGER «RILEVAZIONE BLACK-OUT» DELL'AUTOMAZIONE (AVVIATO DA vmc_master_countdown_attese_automazione)
+  vmc_master_countdown_blackout_rilevazione:                     # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 7 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] COUNTDOWN DELL'ATTESA IN CORSO DI UNO DEI 12 TRIGGER «RILEVAZIONE BLACK-OUT» DELL'AUTOMAZIONE (AVVIATO DA vmc_master_countdown_attese_automazione)
     name: "Rilevazione Black-Out"
     icon: mdi:timer-sand
-  vmc_master_countdown_blackout_ripristino:                      # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 6 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] COUNTDOWN DELL'ATTESA IN CORSO DI UNO DEI 10 TRIGGER «RIPRISTINO DOPO BLACK-OUT» DELL'AUTOMAZIONE (AVVIATO DA vmc_master_countdown_attese_automazione)
+  vmc_master_countdown_blackout_ripristino:                      # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 7 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] COUNTDOWN DELL'ATTESA IN CORSO DI UNO DEI 10 TRIGGER «RIPRISTINO DOPO BLACK-OUT» DELL'AUTOMAZIONE (AVVIATO DA vmc_master_countdown_attese_automazione)
     name: "Ripristino dopo Black-Out"
     icon: mdi:timer-sand
   vmc_master_countdown_calendario_inizio:                        # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 4 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] COUNTDOWN DELL'ATTESA IN CORSO DI UNO DEI 14 TRIGGER «INIZIO FASCIA» DELL'AUTOMAZIONE (AVVIATO DA vmc_master_countdown_attese_automazione)
@@ -5806,11 +5825,11 @@ timer:
     name: "Reset Filtro in corso"
     duration: "00:00:05"
     icon: mdi:timer-sand
-  vmc_master_countdown_avvio_home_assistant:                     # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 6 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] COUNTDOWN IN SCHEDA DEI 60 s DOPO L'AVVIO DI HOME ASSISTANT IN CUI LE FINI ALLERTA SONO SOSPESE (AVVIATO DA vmc_master_riallineamento_allerte_al_riavvio), POI PARTE IL RIPRISTINO DOPO BLACK-OUT; E' ANCHE IL COUNTDOWN DEL 1° GRUPPO DI ALLERTE DEL PANNELLO «RIATTIVAZIONE DELLE ALLERTE»
+  vmc_master_countdown_avvio_home_assistant:                     # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 4 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] COUNTDOWN IN SCHEDA DEI 60 s DOPO L'AVVIO DI HOME ASSISTANT IN CUI LE FINI ALLERTA SONO SOSPESE (AVVIATO DA vmc_master_riallineamento_allerte_al_riavvio), POI PARTE IL RIPRISTINO DOPO BLACK-OUT; E' MOSTRATO SOLO COME COUNTDOWN DEL 1° GRUPPO DI ALLERTE DEL PANNELLO «RIATTIVAZIONE DELLE ALLERTE»
     name: "Avvio di Home Assistant"
     duration: "00:01:00"
     icon: mdi:timer-sand
-  vmc_master_countdown_riattivazione_allerte:                    # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] TIMER DEI 140 s DOPO L'AVVIO DI HOME ASSISTANT FINO ALLA RIATTIVAZIONE DI TUTTE LE ALLERTE (FASE 4 DI vmc_master_riallineamento_allerte_al_riavvio): IL PANNELLO «RIATTIVAZIONE DELLE ALLERTE» DELLA SCHEDA E' VISIBILE FINCHE' E' ATTIVO, SOLO VISUALIZZAZIONE
+  vmc_master_countdown_riattivazione_allerte:                    # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] TIMER DEI 140 s DOPO L'AVVIO DI HOME ASSISTANT FINO ALLA RIATTIVAZIONE DI TUTTE LE ALLERTE (FASE 4 DI vmc_master_riallineamento_allerte_al_riavvio): IL PANNELLO «RIATTIVAZIONE DELLE ALLERTE» DELLA SCHEDA E' VISIBILE FINCHE' E' ATTIVO O LA FASE E' 3, SOLO VISUALIZZAZIONE
     name: "Riattivazione Allerte"
     duration: "00:02:20"
     icon: mdi:timer-sand
@@ -7546,6 +7565,7 @@ script:
             - sensor.vmc_master_trend_muffa_level_numeric
             - input_text.vmc_master_nome_da_inserire
             - input_text.vmc_master_ip_insert
+            - input_text.vmc_master_ip_insert_esito
             - input_text.vmc_master_last_temp_external_entity
             - input_text.vmc_master_last_temp_internal_entity
             - input_text.vmc_master_last_humidity_external_entity
@@ -19138,7 +19158,8 @@ automation:
       dall'avvio. Nella scheda il pannello «Riattivazione delle Allerte», visibile con la VMC ON-Line fino alla
       riattivazione di tutte le allerte, mostra un countdown per gruppo, uno dopo l'altro: 60 s per Black-Out, Congelamento
       e Diff. Temp., poi 40 s per Inquinanti, poi 40 s per gli altri; i gruppi successivi sono «In attesa», i precedenti
-      «Già attive». Dopo un Black-Out i primi 60 s compaiono anche nel riquadro della VMC con il countdown «Avvio di Home Assistant».
+      «Già attive». Dopo un Black-Out il riquadro della VMC mostra «Ripristino Velocità: dopo il 1° gruppo» finché il 1° gruppo
+      non si riattiva: solo allora parte il ripristino della velocità.
     mode: restart
     triggers:
       - trigger: homeassistant
@@ -19202,14 +19223,19 @@ automation:
   - id: "vmc_master_cambio_ip_vmc"                                              # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 0 RICHIAMI]
     alias: "VMC Master - Cambio IP VMC (Riavvio di H.A.)"
     description: >
-      Quando si scrive un IP nel campo «Cambia IP VMC (Riavvio di H.A.)»: se l'IP è valido toglie i caratteri di ritorno dagli script .sh,
-      aggiorna l'IP in tutti i file del Package, attende 2 s e riavvia Home Assistant; se non è valido svuota il
-      campo. Se l'IP è già quello di questa VMC, o è già usato da un'altra VMC del Package, non cambia nulla e non
-      riavvia: sotto il campo compare l'avviso. Il controllo è fatto qui e non solo nel sensore di verifica, che si
-      aggiorna al massimo una volta al secondo. È separata dall'Automazione VMC Master, che esegue gli eventi in
-      coda: così il riavvio parte subito anche se la VMC non risponde e l'Automazione VMC Master sta ancora
-      ripetendo un comando.
-    mode: single
+      Quando si scrive un IP nel campo «Cambia IP VMC (Riavvio di H.A.)» controlla che sia valido con la stessa regola
+      dell'integrazione: quattro numeri da 0 a 255 senza zeri iniziali, esclusi gli indirizzi che iniziano con 0 o con
+      127, quelli link-local e quelli da 224 in su. L'IP non deve essere già quello di questa VMC né quello di un'altra
+      VMC del Package. Poi chiede all'integrazione chi risponde a quell'IP sulla porta 5001 (servizio Verifica IP della
+      VMC, due tentativi). Solo se risponde una VMC con il nome di questa VMC, o con il nome non ancora letto, toglie i
+      caratteri di ritorno dagli script .sh, aggiorna l'IP in tutti i file del Package, attende 2 s e riavvia Home
+      Assistant. Negli altri casi non cambia nulla, non riavvia e lascia l'IP nel campo: sotto il campo compare
+      l'avviso. L'esito della verifica va nel campo di appoggio letto dal sensore di verifica. I controlli sono fatti
+      qui e non solo nel sensore di verifica, che si aggiorna al massimo una volta al secondo. Un IP scritto durante la
+      verifica aspetta in coda; il riavvio parte solo se nel campo c'è ancora l'IP verificato. È separata
+      dall'Automazione VMC Master, che esegue gli eventi in coda: così il riavvio parte subito anche se l'Automazione
+      VMC Master sta ancora ripetendo un comando.
+    mode: queued
     max_exceeded: silent
     triggers:
       - trigger: state
@@ -19218,7 +19244,8 @@ automation:
       - variables:
           ip: "{{ states('input_text.vmc_master_ip_insert') | trim }}"
           ip_valido: >-
-            {{ ip is match('^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$') }}
+            {%- set ottetti = (ip.split('.') + ['', '']) | map('int', 0) | list -%}
+            {{ ip is match('^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$') and ottetti[0] not in [0, 127] and ottetti[0] < 224 and ottetti[:2] != [169, 254] }}
           ip_libero: >-
             {%- set ns = namespace(uso=false) -%}
             {%- for s in states.sensor | rejectattr('attributes.restored', 'eq', true) | selectattr('entity_id', 'search', '^sensor\.vmc_[a-z]+_ip$') | rejectattr('entity_id', 'eq', 'sensor.vmc_master_ip') -%}
@@ -19232,6 +19259,25 @@ automation:
               - condition: template
                 value_template: "{{ ip_valido and ip_libero }}"
             sequence:
+              - action: input_text.set_value                                    # VERIFICA IN CORSO: IL SENSORE DI VERIFICA NON MOSTRA L'ESITO DI UNA VERIFICA PRECEDENTE
+                target:
+                  entity_id: input_text.vmc_master_ip_insert_esito
+                data:
+                  value: "verifica {{ ip }}"
+              - action: vmc_master.verifica_ip                                  # SERVIZIO DELL'INTEGRAZIONE, UNO SOLO PER TUTTE LE VMC: LEGGE IL NOME DELLA VMC A QUESTO IP (2 PROVE, COME L'INGRANAGGIO «CAMBIA L'IP DELLA VMC»)
+                data:
+                  ip: "{{ ip }}"
+                  nome: >-
+                    {%- set nome = states('sensor.vmc_master_nome_status') | trim -%}
+                    {{ '' if nome in ['Non disponibile', 'unknown', 'unavailable'] else nome }}
+                response_variable: verifica
+              - action: input_text.set_value                                    # ESITO PER GLI AVVISI SOTTO IL CAMPO: ok / non_risponde / altro_dispositivo / nome_diverso
+                target:
+                  entity_id: input_text.vmc_master_ip_insert_esito
+                data:
+                  value: "{{ verifica.esito }} {{ ip }}"
+              - condition: template                                             # SOLO SE RISPONDE LA VMC ATTESA E NEL CAMPO C'E' ANCORA L'IP VERIFICATO (UN IP SCRITTO DURANTE LA VERIFICA ASPETTA IN CODA)
+                value_template: "{{ verifica.esito == 'ok' and states('input_text.vmc_master_ip_insert') | trim == ip }}"
               - action: shell_command.vmc_master_rimuovi_caratteri_di_ritorno
               - action: shell_command.vmc_master_aggiorna_indirizzo_ip
                 data:
@@ -19239,16 +19285,6 @@ automation:
               - delay:
                   seconds: 2
               - action: homeassistant.restart
-          - alias: IP Inserito NON Valido
-            conditions:
-              - condition: template
-                value_template: "{{ not ip_valido }}"
-            sequence:
-              - action: input_text.set_value
-                target:
-                  entity_id: input_text.vmc_master_ip_insert
-                data:
-                  value: ''
 ################### Fine Creazione Automazione Cambio IP della VMC (Riavvio di H.A.) ###################
 
 ################### Inizio Creazione Automazione Countdown delle Attese dell'Automazione VMC Master (solo visualizzazione in scheda) ###################

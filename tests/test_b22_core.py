@@ -504,21 +504,26 @@ async def _aggiungi_in_rete(hass: HomeAssistant, ip: str, nome_vmc: str):
 
 
 async def test_prima_vmc_dice_come_riavviare(hass: HomeAssistant) -> None:
-    """Prima VMC (package nuovo): il messaggio finale dice i tre passi del riavvio."""
+    """Prima VMC (package nuovo): il messaggio finale dice i tre passi del riavvio e come
+    aggiungere la scheda."""
     risultato = await _aggiungi_in_rete(hass, "192.168.1.160", "VMC Giorno")
     assert risultato["type"] is FlowResultType.CREATE_ENTRY
     assert risultato["description"] == "riavvio"
     assert risultato["description_placeholders"] == {"titolo": risultato["title"]}
     assert ir.async_get(hass).async_get_issue(DOMAIN, "riavvio_necessario") is not None
-    for lingua, passi in (
-        ("it", ["1. aprire Impostazioni;", "2. premere «VMC Master: riavviare Home Assistant»;", "3. premere Invia."]),
-        ("en", ["1. open Settings;", "2. press «VMC Master: restart Home Assistant»;", "3. press Submit."]),
+    readme = (CARTELLA.parent.parent / "README.md").read_text(encoding="utf-8").splitlines()
+    for lingua, passi, titolo_readme in (
+        ("it", ["1. aprire Impostazioni;", "2. premere «VMC Master: riavviare Home Assistant»;", "3. premere Invia;", "4. aggiungere la scheda:"], "4. **Aggiungere la scheda**:"),
+        ("en", ["1. open Settings;", "2. press «VMC Master: restart Home Assistant»;", "3. press Submit;", "4. add the card:"], "4. **Add the card**:"),
     ):
         dati = json.loads((CARTELLA / "translations" / f"{lingua}.json").read_text(encoding="utf-8"))
-        testo = dati["config"]["create_entry"]["riavvio"]
-        assert testo.splitlines()[-3:] == passi
+        righe = dati["config"]["create_entry"]["riavvio"].splitlines()
+        assert righe[3:7] == passi
+        # b31: i passi della scheda sono gli stessi della guida (README, punto 4)
+        inizio = readme.index(titolo_readme) + 1
+        assert righe[7:] == readme[inizio : inizio + 6]
         # il titolo dell'avviso citato e' quello vero
-        assert dati["issues"]["riavvio_necessario"]["title"] in testo
+        assert dati["issues"]["riavvio_necessario"]["title"] in righe[4]
 
 
 async def test_senza_riavvio_messaggio_normale(hass: HomeAssistant) -> None:

@@ -150,6 +150,19 @@ async def async_nome_vmc(ip: str) -> str | None:
     return testo[5:].rstrip("* ").strip() if testo.startswith("VMNM ") else ""
 
 
+async def async_nome_vmc_due_prove(ip: str) -> str | None:
+    """Nome della VMC con una seconda prova se la prima non riceve risposta (la prima
+    risposta puo' andare persa): stesse attese di async_nome_vmc, nessuna attesa in piu'.
+
+    Lo usano tutte le finestre che leggono il nome a un IP (in_rete, ip_fisso senza MAC,
+    cambia_ip) e il servizio verifica_ip del campo «Cambia IP VMC» della scheda."""
+    nome = await async_nome_vmc(ip)
+    if nome is None:
+        # anche la seconda prova legge il nome, che va confrontato come alla prima
+        nome = await async_nome_vmc(ip)
+    return nome
+
+
 async def async_prova_vmc(ip: str) -> bool:
     """True se a quell'IP risponde una VMC sulla porta 5001 (risposta «VMNM <nome>»):
     un altro dispositivo che risponde sulla 5001 senza nome non conta come VMC."""
@@ -189,6 +202,30 @@ def titolo_voce(nome_vmc: str | None, nome: str) -> str:
 def _confrontabile(testo: str) -> str:
     """Nome senza differenze di maiuscole e separatori («VMC_Zona» = «vmc zona»)."""
     return " ".join(p for p in re.split(r"[\s_-]+", testo.lower()) if p)
+
+
+def esito_verifica_ip(nome_letto: str | None, nome_atteso: str, nome: str = "") -> str:
+    """Esito della lettura del nome a un IP nuovo, con le regole dell'ingranaggio
+    «Cambia l'IP della VMC» (le usa anche il servizio verifica_ip della scheda):
+
+    - «non_risponde»: nessuna risposta sulla porta 5001 (VMC spenta o IP sbagliato);
+    - «altro_dispositivo»: risponde senza il nome della VMC (non e' una VMC);
+    - «nome_diverso»: risponde una VMC con un nome diverso da nome_atteso (un'altra VMC,
+      oppure nome cambiato nell'App Air Guard); senza nome_atteso non si confronta;
+    - «ok»: risponde la VMC attesa.
+
+    I nomi si confrontano come titoli della voce («Soggiorno» = «VMC_Soggiorno»); nome e'
+    il nome interno della VMC, usato da titolo_voce solo per un nome senza parole."""
+    if nome_letto is None:
+        return "non_risponde"
+    if not nome_letto:
+        return "altro_dispositivo"
+    atteso = nome_atteso.rstrip("* ").strip()
+    if atteso and _confrontabile(titolo_voce(nome_letto, nome)) != _confrontabile(
+        titolo_voce(atteso, nome)
+    ):
+        return "nome_diverso"
+    return "ok"
 
 
 def _messaggio(errore: pi.Failure) -> str:
@@ -289,7 +326,7 @@ class VmcMasterConfigFlow(ConfigFlow, domain=DOMAIN):
                 errori[CONF_HOST] = "ip_in_uso"
             else:
                 # il nome letto serve anche alla prima VMC («master») per il titolo della voce
-                nome_vmc = await async_nome_vmc(ip)
+                nome_vmc = await async_nome_vmc_due_prove(ip)
                 # risponde senza nome («»): non si sa se e' una VMC, il nome si scrive a mano
                 return await self._async_scegli_nome(ip, nome_vmc or "", bool(nome_vmc))
 
@@ -683,7 +720,7 @@ class VmcMasterConfigFlow(ConfigFlow, domain=DOMAIN):
             else:
                 # MAC non rilevato: basta che a quell'IP risponda la VMC con lo stesso nome
                 atteso = self._collegata.get("name", "")
-                nome_letto = await async_nome_vmc(ip)
+                nome_letto = await async_nome_vmc_due_prove(ip)
                 if nome_letto is None:
                     errori[CONF_HOST] = "ip_non_risponde_riavvia"
                 elif not nome_letto or (atteso and nome_letto != atteso):
@@ -817,31 +854,25 @@ class VmcMasterOptionsFlow(OptionsFlow):
             elif ip in ips:
                 errori[CONF_HOST] = "ip_in_uso"
             elif ip != voce.data[CONF_HOST] and ip != self._ip_avvisato:
-                nome_letto = await async_nome_vmc(ip)
-                if nome_letto is None:
-                    # seconda prova (la prima puo' andare persa): anche questa legge il
-                    # nome, che va confrontato come alla prima
-                    nome_letto = await async_nome_vmc(ip)
-                # titolo della voce preso dal nome della VMC (assente se il nome non si e'
-                # mai letto: allora non c'e' nulla con cui confrontare)
+                # seconda prova se la prima non riceve risposta (puo' andare persa)
+                nome_letto = await async_nome_vmc_due_prove(ip)
+                # titolo della voce preso dal nome della VMC (assente, o «VMC ‹nome›», se il
+                # nome non si e' mai letto: allora non c'e' nulla con cui confrontare)
                 titolo = voce.data.get(CONF_TITOLO) or ""
-                if nome_letto == "":
+                if titolo == f"VMC {voce.data[CONF_NOME]}":
+                    titolo = ""
+                esito = esito_verifica_ip(nome_letto, titolo, voce.data[CONF_NOME])
+                if esito == "altro_dispositivo":
                     # risponde sulla porta 5001 ma non come una VMC
                     errori[CONF_HOST] = "ip_altro_dispositivo"
-                elif nome_letto is None:
+                elif esito == "non_risponde":
                     # VMC spenta o IP sbagliato
                     self._ip_avvisato = ip
                     errori[CONF_HOST] = "ip_non_risponde"
-                elif (
-                    nome_letto
-                    and titolo
-                    and titolo != f"VMC {voce.data[CONF_NOME]}"
-                    and _confrontabile(titolo_voce(nome_letto, voce.data[CONF_NOME]))
-                    != _confrontabile(titolo)
-                ):
+                elif esito == "nome_diverso":
                     # un'altra VMC, oppure nome cambiato nell'App Air Guard
                     self._ip_avvisato = ip
-                    segnaposto["nome_letto"] = nome_letto
+                    segnaposto["nome_letto"] = nome_letto or ""
                     errori[CONF_HOST] = "ip_nome_diverso"
             if not errori:
                 await self.hass.async_add_executor_job(

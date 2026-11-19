@@ -104,7 +104,7 @@
       "already_in_progress": "This unit is already being added in another window."
     },
     "create_entry": {
-      "riavvio": "**{titolo}** has been added.\n\nThe unit needs a restart to become active:\n1. open Settings;\n2. press «VMC Master: restart Home Assistant»;\n3. press Submit."
+      "riavvio": "**{titolo}** has been added.\n\nTo finish:\n1. open Settings;\n2. press «VMC Master: restart Home Assistant»;\n3. press Submit;\n4. add the card:\n   - press **Ctrl+F5**;\n   - on the dashboard (**Overview** is fine too) press **pencil → Add card → Browse all cards**;\n   - in the **Search cards** field type `vmc`;\n   - click **VMC Master**;\n   - pick the unit in the **VMC\\*** field;\n   - press **Save**, then **Done**."
     }
   },
   "options": {
@@ -318,6 +318,22 @@
     },
     "worker_start": {
       "message": "The procedure could not be started."
+    }
+  },
+  "services": {
+    "verifica_ip": {
+      "name": "Check unit IP",
+      "description": "Checks whether a unit answers at this IP on port 5001 and reads its name, with two tries. It changes nothing. The «Cambia IP VMC» field of the card uses it before restarting Home Assistant. It responds with risponde (something answers on port 5001), nome (empty if it is not a unit) and esito: ok, non_risponde, altro_dispositivo, nome_diverso or ip_non_valido.",
+      "fields": {
+        "ip": {
+          "name": "IP",
+          "description": "IP to check."
+        },
+        "nome": {
+          "name": "Expected name",
+          "description": "Name of the unit that must answer. If empty, any unit is fine."
+        }
+      }
     }
   }
 }

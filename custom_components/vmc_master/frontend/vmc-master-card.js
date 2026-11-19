@@ -12,6 +12,9 @@ const TIPO = "vmc-master-card";
 const DOMINIO = "vmc_master";
 // Dopo un errore la scheda si richiede di nuovo solo dopo questo tempo (o se cambia la VMC)
 const ATTESA_DOPO_ERRORE_MS = 30 * 1000;
+// Dopo un errore temporaneo (Home Assistant in avvio, integrazione non ancora partita, rete
+// assente) si riprova da soli dopo pochi secondi, anche senza cambi di stato
+const ATTESA_RIPROVA_MS = 3 * 1000;
 // Controllo aggiornamenti all'apertura del Pannello Informazioni: al massimo una volta
 // al minuto (GitHub accetta 60 richieste all'ora senza autenticazione e tiene in cache
 // la risposta di releases/latest per 60 s: un limite piu' lungo nasconde la release
@@ -38,6 +41,16 @@ function vmcNonTrovata(errore) {
   );
 }
 
+// Errore che passa da solo: rete assente, Home Assistant in avvio, 404 di una vista non
+// ancora registrata (integrazione non ancora partita), 502/503/504
+function erroreTemporaneo(errore) {
+  if (vmcNonTrovata(errore)) {
+    return false;
+  }
+  const stato = errore && errore.status_code;
+  return stato === undefined || stato === null || stato === 404 || stato === 502 || stato === 503 || stato === 504;
+}
+
 // Consiglio per gli errori diversi da «VMC non trovata»: l'integrazione risponde solo con
 // la scheda o con quel messaggio, quindi gli altri errori (rete assente, Home Assistant in
 // avvio, 404 di una vista non ancora registrata, 5xx) non dipendono dalla configurazione.
@@ -45,8 +58,7 @@ function consiglioErrore(errore) {
   if (vmcNonTrovata(errore)) {
     return "Scegliere di nuovo la VMC nelle opzioni della scheda.";
   }
-  const stato = errore && errore.status_code;
-  if (stato === undefined || stato === null || stato === 404 || stato === 502 || stato === 503 || stato === 504) {
+  if (erroreTemporaneo(errore)) {
     return "Home Assistant non raggiungibile o in avvio: la scheda riprova da sola.";
   }
   return "La scheda riprova da sola; se il messaggio resta, controllare i log di Home Assistant.";
@@ -117,7 +129,7 @@ class VmcMasterCard extends HTMLElement {
     this._testoConfigurazione = undefined; // configurazione della scheda costruita (JSON)
     this._caricata = undefined; // VMC (entry_id) della scheda costruita o in costruzione
     this._connessione = undefined; // collegamento a Home Assistant che stiamo ascoltando
-    this._errore = undefined; // { vmc, alle }: ultima richiesta della scheda non riuscita
+    this._errore = undefined; // { vmc, alle, temporaneo }: ultima richiesta della scheda non riuscita
     this._sensoreRepository = undefined; // sensore «Versione Repository» della scheda
     this._riprova = undefined; // nuovo tentativo dopo un ricollegamento non riuscito
     this._daAggiornare = false; // ricollegamento senza risposta: si riprova
@@ -464,12 +476,24 @@ class VmcMasterCard extends HTMLElement {
 
   _mostraErrore(vmc, errore) {
     this._caricata = undefined;
-    this._errore = { vmc, alle: Date.now() };
+    const temporaneo = erroreTemporaneo(errore);
+    this._errore = { vmc, alle: Date.now(), temporaneo };
     const dettaglio = dettaglioErrore(errore);
     this._messaggio(
       `Scheda VMC Master non disponibile${dettaglio ? `: ${dettaglio}` : ""}. ${consiglioErrore(errore)}`,
       "alert"
     );
+    // Errore temporaneo, per esempio il 404 subito dopo il riavvio di Home Assistant, quando
+    // la plancia si ricollega prima che l'integrazione sia partita: nuovo tentativo dopo
+    // pochi secondi, senza aspettare un cambio di stato
+    this._fermaRiprova();
+    if (temporaneo && this.isConnected) {
+      this._riprova = setTimeout(() => {
+        this._riprova = undefined;
+        this._errore = undefined;
+        this._carica();
+      }, ATTESA_RIPROVA_MS);
+    }
   }
 
   // Dopo un ricollegamento, con la scheda gia' costruita: la si ricostruisce solo se la
@@ -541,7 +565,7 @@ class VmcMasterCard extends HTMLElement {
     if (
       this._errore &&
       this._errore.vmc === vmc &&
-      Date.now() - this._errore.alle < ATTESA_DOPO_ERRORE_MS
+      Date.now() - this._errore.alle < (this._errore.temporaneo ? ATTESA_RIPROVA_MS : ATTESA_DOPO_ERRORE_MS)
     ) {
       return; // errore recente: non si riprova a ogni cambio di stato
     }

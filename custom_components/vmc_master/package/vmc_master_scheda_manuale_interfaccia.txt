@@ -1,6 +1,6 @@
 ###########################################################################################################################################################################################################################
 #                                                                                                                                                                                                                         #
-#                                                          SCHEDA MANUALE INTERFACCIA VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b30]                                                                                         #
+#                                                          SCHEDA MANUALE INTERFACCIA VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b31]                                                                                         #
 #                                                                                                                                                                                                                         #
 # SVILUPPATO DA ING. DANILO ROBOTTI, ALLE PRIME ARMI CON HOME ASSISTANT :)                                                                                                                                                #
 #                                                                                                                                                                                                                         #
@@ -39,6 +39,155 @@
 ###########################################################################################################################################################################################################################
 type: vertical-stack
 cards:
+  - type: conditional
+    conditions:
+      - condition: or
+        conditions:
+          - condition: state
+            entity: timer.vmc_master_countdown_riattivazione_allerte
+            state: active
+          - condition: state
+            entity: input_number.vmc_master_fase_riallineamento_al_riavvio
+            state: '3.0'
+      - condition: state
+        entity: sensor.vmc_master_status_ip_interfaccia
+        state: ON-Line
+    card:
+      type: entities
+      title: Riattivazione delle Allerte
+      show_header_toggle: false
+      state_color: true
+      entities:
+        - type: section
+          label: "Home Assistant si è appena avviato: le allerte ripartono da sole, un gruppo dopo l'altro. Non serve fare nulla."
+        - type: section
+          label: "1° gruppo: Black-Out, Congelamento, Diff. Temp."
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
+              state: '1.0'
+            - condition: state
+              entity: timer.vmc_master_countdown_avvio_home_assistant
+              state: active
+          row:
+            entity: timer.vmc_master_countdown_avvio_home_assistant
+            name: "Si riattivano tra"
+            icon: mdi:timer-sand
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
+              state: '1.0'
+            - condition: state
+              entity: timer.vmc_master_countdown_avvio_home_assistant
+              state: idle
+          row:
+            type: text
+            name: "Si riattivano tra"
+            text: "0"
+            icon: mdi:timer-sand
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
+              state:
+                - '2.0'
+                - '3.0'
+                - '4.0'
+          row:
+            type: text
+            name: "Già attive"
+            text: "✓"
+            icon: mdi:check-circle
+        - type: section
+          label: "2° gruppo: Inquinanti"
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
+              state: '1.0'
+          row:
+            type: text
+            name: "In attesa"
+            text: "dopo il 1° gruppo"
+            icon: mdi:pause-circle-outline
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
+              state: '2.0'
+            - condition: state
+              entity: timer.vmc_master_countdown_fase_allerte
+              state: active
+          row:
+            entity: timer.vmc_master_countdown_fase_allerte
+            name: "Si riattiva tra"
+            icon: mdi:timer-sand
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
+              state: '2.0'
+            - condition: state
+              entity: timer.vmc_master_countdown_fase_allerte
+              state: idle
+          row:
+            type: text
+            name: "Si riattiva tra"
+            text: "0"
+            icon: mdi:timer-sand
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
+              state:
+                - '3.0'
+                - '4.0'
+          row:
+            type: text
+            name: "Già attiva"
+            text: "✓"
+            icon: mdi:check-circle
+        - type: section
+          label: "3° gruppo: Punto di Rugiada, Free Heating/Cooling, Calendario, Umidità"
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
+              state:
+                - '1.0'
+                - '2.0'
+          row:
+            type: text
+            name: "In attesa"
+            text: "dopo il 2° gruppo"
+            icon: mdi:pause-circle-outline
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
+              state: '3.0'
+            - condition: state
+              entity: timer.vmc_master_countdown_fase_allerte
+              state: active
+          row:
+            entity: timer.vmc_master_countdown_fase_allerte
+            name: "Si riattivano tra"
+            icon: mdi:timer-sand
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
+              state: '3.0'
+            - condition: state
+              entity: timer.vmc_master_countdown_fase_allerte
+              state: idle
+          row:
+            type: text
+            name: "Si riattivano tra"
+            text: "0"
+            icon: mdi:timer-sand
   - type: conditional
     conditions:
       - condition: or
@@ -113,19 +262,20 @@ cards:
                   state: 'on'
           row:
             type: section
-            label: VMC di nuovo ON-Line, ripristino della velocità in uso prima del Black-Out in corso... Non serve fare nulla, attendi la fine del countdown.
+            label: VMC di nuovo ON-Line, ripristino della velocità in uso prima del Black-Out in corso... Non serve fare nulla.
         - type: conditional
           conditions:
             - condition: state
-              entity: timer.vmc_master_countdown_avvio_home_assistant
-              state: active
+              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
+              state: '1.0'
             - condition: state
               entity: sensor.vmc_master_status_ip_interfaccia
               state: ON-Line
           row:
-            entity: timer.vmc_master_countdown_avvio_home_assistant
-            name: "Avvio di Home Assistant"
-            icon: mdi:timer-sand
+            type: text
+            name: "Ripristino Velocità"
+            text: "dopo il 1° gruppo"
+            icon: mdi:pause-circle-outline
         - type: conditional
           conditions:
             - condition: state
@@ -135,6 +285,170 @@ cards:
             entity: timer.vmc_master_countdown_blackout_ripristino
             name: "Ripristino Velocità tra"
             icon: mdi:timer-sand
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: sensor.vmc_master_status_ip_interfaccia
+              state: ON-Line
+            - condition: state
+              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
+              state_not: '1.0'
+            - condition: state
+              entity: timer.vmc_master_countdown_blackout_ripristino
+              state: idle
+          row:
+            type: text
+            name: "Ripristino Velocità"
+            text: "conferma in corso"
+            icon: mdi:progress-clock
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: sensor.vmc_master_status_ip_interfaccia
+              state: OFF-Line
+            - condition: state
+              entity: timer.vmc_master_countdown_blackout_rilevazione
+              state: active
+          row:
+            type: section
+            label: "VMC OFF-Line: se non torna entro il countdown viene considerata in Black-Out. Non serve fare nulla."
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: sensor.vmc_master_status_ip_interfaccia
+              state: OFF-Line
+            - condition: state
+              entity: timer.vmc_master_countdown_blackout_rilevazione
+              state: active
+          row:
+            entity: timer.vmc_master_countdown_blackout_rilevazione
+            name: "Rilevazione Black-Out tra"
+            icon: mdi:timer-sand
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: sensor.vmc_master_status_ip_interfaccia
+              state: OFF-Line
+            - condition: or
+              conditions:
+                - condition: state
+                  entity: input_boolean.vmc_master_spia_velocita_0
+                  state: 'on'
+                - condition: state
+                  entity: input_boolean.vmc_master_spia_velocita_1
+                  state: 'on'
+                - condition: state
+                  entity: input_boolean.vmc_master_spia_velocita_2
+                  state: 'on'
+                - condition: state
+                  entity: input_boolean.vmc_master_spia_velocita_3
+                  state: 'on'
+                - condition: state
+                  entity: input_boolean.vmc_master_spia_velocita_4
+                  state: 'on'
+                - condition: state
+                  entity: input_boolean.vmc_master_spia_velocita_notturna
+                  state: 'on'
+                - condition: state
+                  entity: input_boolean.vmc_master_spia_velocita_iperventilazione
+                  state: 'on'
+                - condition: state
+                  entity: input_boolean.vmc_master_spia_velocita_freecooling
+                  state: 'on'
+          row:
+            type: section
+            label: "Black-Out rilevato: al ritorno della corrente la VMC torna alla velocità salvata. Non serve fare nulla."
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_boolean.vmc_master_spia_velocita_0
+              state: 'on'
+          row:
+            type: text
+            name: "Velocità salvata"
+            text: "Velocità 0"
+            icon: mdi:fan
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_boolean.vmc_master_spia_velocita_1
+              state: 'on'
+          row:
+            type: text
+            name: "Velocità salvata"
+            text: "Velocità 1"
+            icon: mdi:fan
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_boolean.vmc_master_spia_velocita_2
+              state: 'on'
+          row:
+            type: text
+            name: "Velocità salvata"
+            text: "Velocità 2"
+            icon: mdi:fan
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_boolean.vmc_master_spia_velocita_3
+              state: 'on'
+          row:
+            type: text
+            name: "Velocità salvata"
+            text: "Velocità 3"
+            icon: mdi:fan
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_boolean.vmc_master_spia_velocita_4
+              state: 'on'
+          row:
+            type: text
+            name: "Velocità salvata"
+            text: "Velocità 4"
+            icon: mdi:fan
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_boolean.vmc_master_spia_velocita_notturna
+              state: 'on'
+          row:
+            type: text
+            name: "Velocità salvata"
+            text: "Notturna"
+            icon: mdi:fan
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_boolean.vmc_master_spia_velocita_iperventilazione
+              state: 'on'
+          row:
+            type: text
+            name: "Velocità salvata"
+            text: "Iperventilazione"
+            icon: mdi:fan
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_boolean.vmc_master_spia_velocita_freecooling
+              state: 'on'
+          row:
+            type: text
+            name: "Velocità salvata"
+            text: "Free Cool./Heat."
+            icon: mdi:fan
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: sensor.vmc_master_status_ip_interfaccia
+              state: OFF-Line
+            - condition: state
+              entity: input_boolean.vmc_master_spia_calendario_black_out
+              state: 'on'
+          row:
+            type: section
+            label: "Black-Out durante la fascia del Calendario: al ritorno della corrente la VMC riparte con la velocità della fascia. Non serve fare nulla."
         - type: button
           entity: script.vmc_master_upgrade_sensors
           action_name: Esegui
@@ -172,8 +486,16 @@ cards:
                 - IP non Valido
                 - IP già in uso
                 - IP già impostato
+                - Nessun IP
+                - Verifica VMC in corso
+                - VMC non risponde
+                - Non è una VMC
+                - Nome VMC diverso
                 - unknown
                 - unavailable
+            - condition: state
+              entity: input_text.vmc_master_ip_insert
+              state_not: ''
           row:
             type: section
             label: IP salvato. Home Assistant si sta riavviando, la pagina tornerà da sola tra 1-3 minuti.
@@ -193,6 +515,46 @@ cards:
           row:
             type: section
             label: "Questo è già l'IP della VMC: non serve cambiarlo, Home Assistant non viene riavviato."
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: sensor.vmc_master_verifica_ip_inserito
+              state: IP non Valido
+          row:
+            type: section
+            label: "IP non valido: quattro numeri da 0 a 255 separati da punti, senza zeri iniziali. Non sono ammessi 0.x.x.x, 127.x.x.x, 169.254.x.x e gli indirizzi da 224.x.x.x in su."
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: sensor.vmc_master_verifica_ip_inserito
+              state: Verifica VMC in corso
+          row:
+            type: section
+            label: "Verifica in corso: controllo che a questo IP risponda la VMC (pochi secondi)."
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: sensor.vmc_master_verifica_ip_inserito
+              state: VMC non risponde
+          row:
+            type: section
+            label: "La VMC non risponde a questo IP: non è stato cambiato nulla. Controlla l'IP e che la VMC sia accesa. Per salvarlo comunque usa «Cambia l'IP della VMC» dall'ingranaggio della VMC in Impostazioni → Dispositivi e servizi."
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: sensor.vmc_master_verifica_ip_inserito
+              state: Non è una VMC
+          row:
+            type: section
+            label: "A questo IP risponde un dispositivo che non è una VMC (non manda il nome della VMC): non è stato cambiato nulla. Controlla l'IP."
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: sensor.vmc_master_verifica_ip_inserito
+              state: Nome VMC diverso
+          row:
+            type: section
+            label: "A questo IP risponde una VMC con un altro nome: non è stato cambiato nulla. Controlla l'IP. Se il nome è stato cambiato nell'App Air Guard, salvalo con «Cambia l'IP della VMC» dall'ingranaggio della VMC in Impostazioni → Dispositivi e servizi."
         - type: button
           entity: script.vmc_master_bottone_panico
           action_name: Esegui
@@ -547,150 +909,6 @@ cards:
 
             <small><b>Strumenti:</b> «Cambia Password VMC» cambia la password della rete VMC_xxxxxxxx (solo con la VMC in Access Point) · «Access Point» riporta la VMC alla sua rete · «Errori LED» spiega i lampeggi del LED e il ripristino del Wi-Fi.</small>
 # >>> FINE SEZIONE INSTALLA VMC (SOLO MASTER, RIMOSSA DA VMC_SCRIPT_CLONA.SH) <<<
-  - type: conditional
-    conditions:
-      - condition: state
-        entity: timer.vmc_master_countdown_riattivazione_allerte
-        state: active
-      - condition: state
-        entity: sensor.vmc_master_status_ip_interfaccia
-        state: ON-Line
-    card:
-      type: entities
-      title: Riattivazione delle Allerte
-      show_header_toggle: false
-      state_color: true
-      entities:
-        - type: section
-          label: "Home Assistant si è appena avviato: le allerte ripartono da sole, un gruppo dopo l'altro. Non serve fare nulla."
-        - type: section
-          label: "1° gruppo: Black-Out, Congelamento, Diff. Temp."
-        - type: conditional
-          conditions:
-            - condition: state
-              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
-              state: '1.0'
-            - condition: state
-              entity: timer.vmc_master_countdown_avvio_home_assistant
-              state: active
-          row:
-            entity: timer.vmc_master_countdown_avvio_home_assistant
-            name: "Si riattivano tra"
-            icon: mdi:timer-sand
-        - type: conditional
-          conditions:
-            - condition: state
-              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
-              state: '1.0'
-            - condition: state
-              entity: timer.vmc_master_countdown_avvio_home_assistant
-              state: idle
-          row:
-            type: text
-            name: "Si riattivano tra"
-            text: "0"
-            icon: mdi:timer-sand
-        - type: conditional
-          conditions:
-            - condition: state
-              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
-              state:
-                - '2.0'
-                - '3.0'
-                - '4.0'
-          row:
-            type: text
-            name: "Già attive"
-            text: "✓"
-            icon: mdi:check-circle
-        - type: section
-          label: "2° gruppo: Inquinanti"
-        - type: conditional
-          conditions:
-            - condition: state
-              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
-              state: '1.0'
-          row:
-            type: text
-            name: "In attesa"
-            text: "dopo il 1° gruppo"
-            icon: mdi:pause-circle-outline
-        - type: conditional
-          conditions:
-            - condition: state
-              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
-              state: '2.0'
-            - condition: state
-              entity: timer.vmc_master_countdown_fase_allerte
-              state: active
-          row:
-            entity: timer.vmc_master_countdown_fase_allerte
-            name: "Si riattiva tra"
-            icon: mdi:timer-sand
-        - type: conditional
-          conditions:
-            - condition: state
-              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
-              state: '2.0'
-            - condition: state
-              entity: timer.vmc_master_countdown_fase_allerte
-              state: idle
-          row:
-            type: text
-            name: "Si riattiva tra"
-            text: "0"
-            icon: mdi:timer-sand
-        - type: conditional
-          conditions:
-            - condition: state
-              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
-              state:
-                - '3.0'
-                - '4.0'
-          row:
-            type: text
-            name: "Già attiva"
-            text: "✓"
-            icon: mdi:check-circle
-        - type: section
-          label: "3° gruppo: Punto di Rugiada, Free Heating/Cooling, Calendario, Umidità"
-        - type: conditional
-          conditions:
-            - condition: state
-              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
-              state:
-                - '1.0'
-                - '2.0'
-          row:
-            type: text
-            name: "In attesa"
-            text: "dopo il 2° gruppo"
-            icon: mdi:pause-circle-outline
-        - type: conditional
-          conditions:
-            - condition: state
-              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
-              state: '3.0'
-            - condition: state
-              entity: timer.vmc_master_countdown_fase_allerte
-              state: active
-          row:
-            entity: timer.vmc_master_countdown_fase_allerte
-            name: "Si riattivano tra"
-            icon: mdi:timer-sand
-        - type: conditional
-          conditions:
-            - condition: state
-              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
-              state: '3.0'
-            - condition: state
-              entity: timer.vmc_master_countdown_fase_allerte
-              state: idle
-          row:
-            type: text
-            name: "Si riattivano tra"
-            text: "0"
-            icon: mdi:timer-sand
   - type: conditional
     conditions:
       - condition: state
@@ -10466,8 +10684,16 @@ cards:
                           - IP non Valido
                           - IP già in uso
                           - IP già impostato
+                          - Nessun IP
+                          - Verifica VMC in corso
+                          - VMC non risponde
+                          - Non è una VMC
+                          - Nome VMC diverso
                           - unknown
                           - unavailable
+                      - condition: state
+                        entity: input_text.vmc_master_ip_insert
+                        state_not: ''
                     row:
                       type: section
                       label: IP salvato. Home Assistant si sta riavviando, la pagina tornerà da sola tra 1-3 minuti.
@@ -10487,6 +10713,46 @@ cards:
                     row:
                       type: section
                       label: "Questo è già l'IP della VMC: non serve cambiarlo, Home Assistant non viene riavviato."
+                  - type: conditional
+                    conditions:
+                      - condition: state
+                        entity: sensor.vmc_master_verifica_ip_inserito
+                        state: IP non Valido
+                    row:
+                      type: section
+                      label: "IP non valido: quattro numeri da 0 a 255 separati da punti, senza zeri iniziali. Non sono ammessi 0.x.x.x, 127.x.x.x, 169.254.x.x e gli indirizzi da 224.x.x.x in su."
+                  - type: conditional
+                    conditions:
+                      - condition: state
+                        entity: sensor.vmc_master_verifica_ip_inserito
+                        state: Verifica VMC in corso
+                    row:
+                      type: section
+                      label: "Verifica in corso: controllo che a questo IP risponda la VMC (pochi secondi)."
+                  - type: conditional
+                    conditions:
+                      - condition: state
+                        entity: sensor.vmc_master_verifica_ip_inserito
+                        state: VMC non risponde
+                    row:
+                      type: section
+                      label: "La VMC non risponde a questo IP: non è stato cambiato nulla. Controlla l'IP e che la VMC sia accesa. Per salvarlo comunque usa «Cambia l'IP della VMC» dall'ingranaggio della VMC in Impostazioni → Dispositivi e servizi."
+                  - type: conditional
+                    conditions:
+                      - condition: state
+                        entity: sensor.vmc_master_verifica_ip_inserito
+                        state: Non è una VMC
+                    row:
+                      type: section
+                      label: "A questo IP risponde un dispositivo che non è una VMC (non manda il nome della VMC): non è stato cambiato nulla. Controlla l'IP."
+                  - type: conditional
+                    conditions:
+                      - condition: state
+                        entity: sensor.vmc_master_verifica_ip_inserito
+                        state: Nome VMC diverso
+                    row:
+                      type: section
+                      label: "A questo IP risponde una VMC con un altro nome: non è stato cambiato nulla. Controlla l'IP. Se il nome è stato cambiato nell'App Air Guard, salvalo con «Cambia l'IP della VMC» dall'ingranaggio della VMC in Impostazioni → Dispositivi e servizi."
                   - entity: input_text.vmc_master_nome_da_inserire
                     secondary_info: last-updated
                   - entity: input_number.vmc_master_volume_da_inserire
@@ -10715,6 +10981,7 @@ cards:
                           'sensor.vmc_master_trend_muffa_level_numeric',
                           'input_text.vmc_master_nome_da_inserire',
                           'input_text.vmc_master_ip_insert',
+                          'input_text.vmc_master_ip_insert_esito',
                           'input_text.vmc_master_last_temp_external_entity',
                           'input_text.vmc_master_last_temp_internal_entity',
                           'input_text.vmc_master_last_humidity_external_entity',
@@ -13090,18 +13357,34 @@ cards:
 
                   <br>
 
+                  <strong>Nota VMC OFF-Line</strong>
+
+                  Quando la VMC non risponde la scheda mostra il countdown
+                  «Rilevazione Black-Out tra» (32 secondi): non serve fare
+                  nulla. Allo zero compare «Black-Out rilevato...» con la
+                  «Velocità salvata», che la VMC riprende al ritorno
+                  della corrente. Durante una Fascia del Calendario compare
+                  invece «Black-Out durante la fascia del Calendario...» e la
+                  VMC riparte con la velocità della fascia. Nei primi 60
+                  secondi dopo l'avvio di Home Assistant la rilevazione è in
+                  pausa (vedere la Nota Avvio di Home Assistant).
+
+                  <br>
+
                   <strong>Nota VMC di nuovo ON-Line</strong>
 
                   Quando la VMC torna ON-Line dopo un Black-Out, o dopo
                   l'inserimento di una nuova VMC, la scheda mostra «VMC di
                   nuovo ON-Line, ripristino della velocità in uso prima del
-                  Black-Out in corso...» con il countdown «Ripristino Velocità
+                  Black-Out in corso...», la velocità da riprendere
+                  («Velocità salvata») e il countdown «Ripristino Velocità
                   tra» (32 secondi): non serve fare nulla. Se Home Assistant
                   si è appena avviato (per esempio dopo Cambia IP VMC), prima
-                  compare il countdown «Avvio di Home Assistant» (60 secondi)
-                  e poi quello del ripristino. Allo zero la VMC riceve la
-                  velocità e, dopo pochi secondi di conferma, compare la
-                  scheda completa.
+                  del countdown «Ripristino Velocità» indica «dopo il 1°
+                  gruppo», fino alla riattivazione del 1° gruppo di allerte
+                  (vedere la Nota Avvio di Home Assistant). Allo zero la VMC
+                  riceve la velocità: per pochi secondi compare «conferma
+                  in corso», poi la scheda completa.
 
                   <br>
 
@@ -13113,31 +13396,36 @@ cards:
                   Inquinanti; dopo 140 secondi Punto di Rugiada, Free
                   Heating/Cooling, Calendario e Umidità. Poi parte la normale
                   attesa di ogni allerta (per esempio 28 secondi per
-                  l'Umidità). Il pannello «Riattivazione delle Allerte» mostra
-                  un countdown per gruppo, uno dopo l'altro: il gruppo in
-                  corso conta i secondi, i successivi sono «In attesa», i
-                  precedenti «Già attive». Non serve fare nulla, anche se nel
-                  frattempo si preme Profilo Inizializzazione.
+                  l'Umidità). Il pannello «Riattivazione delle Allerte», in
+                  cima alla scheda, mostra un countdown per gruppo, uno dopo
+                  l'altro: il gruppo in corso conta i secondi, i successivi
+                  sono «In attesa», i precedenti «Già attive». Non serve fare
+                  nulla, anche se nel frattempo si preme Profilo
+                  Inizializzazione.
 
                   <br>
 
                   <strong>Nota Cambia IP VMC (Riavvio di H.A.)</strong>
 
-                  Scrivendo un IP valido, viene aggiornato in tutti i file del
-                  Package l'IP con cui Home Assistant comunica con la VMC sulla
-                  porta 5001 e Home Assistant si riavvia; un IP non valido viene
-                  cancellato. Il campo non chiede conferma: verificare l'IP
-                  prima di confermarlo. Con un IP valido sotto il campo compare
-                  «IP salvato. Home Assistant si sta riavviando, la pagina
-                  tornerà da sola tra 1-3 minuti.» e il riavvio parte dopo 2
-                  secondi, anche se l'Automazione VMC Master sta eseguendo
-                  altri eventi: il Cambio IP è un'automazione a parte del
-                  Package. Se l'IP è già quello della VMC, o è già usato da
-                  un'altra VMC, non viene
-                  cambiato nulla, Home Assistant non si riavvia e sotto il
-                  campo compare l'avviso. In alternativa al campo, l'IP si
-                  cambia anche da Impostazioni → Dispositivi e servizi, nella
-                  pagina dell'integrazione: icona ingranaggio sulla riga della
+                  Il campo cambia l'IP con cui Home Assistant comunica con la
+                  VMC sulla porta 5001. Sono ammessi quattro numeri da 0 a 255
+                  separati da punti, senza zeri iniziali. Non sono ammessi
+                  0.x.x.x, 127.x.x.x, 169.254.x.x e gli indirizzi da 224.x.x.x
+                  in su. L'IP non deve essere già usato da un'altra VMC. Questo
+                  controllo vede solo le VMC già attive: una VMC appena
+                  aggiunta, in attesa del riavvio di Home Assistant, non viene
+                  vista. In quel caso, dopo il riavvio l'integrazione rimette
+                  l'IP di prima e lo segnala. Poi l'integrazione controlla che a
+                  quell'IP risponda la VMC con il suo nome. Se il nome della VMC
+                  non è ancora stato letto, basta che risponda una VMC. Se un
+                  controllo non va bene, non cambia nulla e sotto il campo
+                  compare il motivo. Altrimenti l'IP viene aggiornato in tutti i
+                  file del Package e dopo 2 secondi Home Assistant si riavvia.
+                  Il riavvio parte anche se l'Automazione VMC Master sta
+                  eseguendo altri eventi. Il campo non chiede conferma:
+                  verificare l'IP prima di scriverlo. Per salvare un IP a cui la
+                  VMC non risponde: Impostazioni → Dispositivi e servizi, nella
+                  pagina dell'integrazione, icona ingranaggio sulla riga della
                   VMC → «Cambia l'IP della VMC».
 
                   <br>
@@ -14520,9 +14808,10 @@ cards:
                   <b>Avanzamento ed esito.</b> Nel riquadro in fondo compaiono l'avanzamento della procedura e poi l'esito, che arriva
                   anche come notifica. Lo stato viene letto ogni 5 secondi solo con la finestra aperta o con una procedura in corso.
                   <br><br>
-                  <b>Dopo il collegamento.</b> Al riavvio di Home Assistant la scheda mostra «VMC di nuovo ON-Line...» con i countdown
-                  «Avvio di Home Assistant» (60 secondi) e «Ripristino Velocità tra» (32 secondi): non serve fare nulla, al termine
-                  compare la scheda completa. Mentre la VMC passa dalla sua rete VMC_xxxxxxxx al Wi-Fi di casa e si riavvia, il
+                  <b>Dopo il collegamento.</b> Al riavvio di Home Assistant la scheda mostra «VMC di nuovo ON-Line...» con «Ripristino
+                  Velocità: dopo il 1° gruppo» (vedere la Nota Avvio di Home Assistant), poi il countdown «Ripristino Velocità tra» (32
+                  secondi) e per pochi secondi «conferma in corso»: non serve fare nulla, al termine compare la scheda
+                  completa. Mentre la VMC passa dalla sua rete VMC_xxxxxxxx al Wi-Fi di casa e si riavvia, il
                   registro di Home Assistant può riportare per qualche minuto errori dell'integrazione TCP sulla porta 5001 («timed out»,
                   «Host is unreachable», «Connection refused»): è normale, la VMC non è ancora raggiungibile, e gli errori cessano da
                   soli appena risponde. Vanno verificati solo se continuano con la VMC ON-Line.
@@ -14567,8 +14856,16 @@ cards:
                           - IP non Valido
                           - IP già in uso
                           - IP già impostato
+                          - Nessun IP
+                          - Verifica VMC in corso
+                          - VMC non risponde
+                          - Non è una VMC
+                          - Nome VMC diverso
                           - unknown
                           - unavailable
+                      - condition: state
+                        entity: input_text.vmc_master_ip_insert
+                        state_not: ''
                     row:
                       type: section
                       label: IP salvato. Home Assistant si sta riavviando, la pagina tornerà da sola tra 1-3 minuti.
@@ -14588,6 +14885,46 @@ cards:
                     row:
                       type: section
                       label: "Questo è già l'IP della VMC: non serve cambiarlo, Home Assistant non viene riavviato."
+                  - type: conditional
+                    conditions:
+                      - condition: state
+                        entity: sensor.vmc_master_verifica_ip_inserito
+                        state: IP non Valido
+                    row:
+                      type: section
+                      label: "IP non valido: quattro numeri da 0 a 255 separati da punti, senza zeri iniziali. Non sono ammessi 0.x.x.x, 127.x.x.x, 169.254.x.x e gli indirizzi da 224.x.x.x in su."
+                  - type: conditional
+                    conditions:
+                      - condition: state
+                        entity: sensor.vmc_master_verifica_ip_inserito
+                        state: Verifica VMC in corso
+                    row:
+                      type: section
+                      label: "Verifica in corso: controllo che a questo IP risponda la VMC (pochi secondi)."
+                  - type: conditional
+                    conditions:
+                      - condition: state
+                        entity: sensor.vmc_master_verifica_ip_inserito
+                        state: VMC non risponde
+                    row:
+                      type: section
+                      label: "La VMC non risponde a questo IP: non è stato cambiato nulla. Controlla l'IP e che la VMC sia accesa. Per salvarlo comunque usa «Cambia l'IP della VMC» dall'ingranaggio della VMC in Impostazioni → Dispositivi e servizi."
+                  - type: conditional
+                    conditions:
+                      - condition: state
+                        entity: sensor.vmc_master_verifica_ip_inserito
+                        state: Non è una VMC
+                    row:
+                      type: section
+                      label: "A questo IP risponde un dispositivo che non è una VMC (non manda il nome della VMC): non è stato cambiato nulla. Controlla l'IP."
+                  - type: conditional
+                    conditions:
+                      - condition: state
+                        entity: sensor.vmc_master_verifica_ip_inserito
+                        state: Nome VMC diverso
+                    row:
+                      type: section
+                      label: "A questo IP risponde una VMC con un altro nome: non è stato cambiato nulla. Controlla l'IP. Se il nome è stato cambiato nell'App Air Guard, salvalo con «Cambia l'IP della VMC» dall'ingranaggio della VMC in Impostazioni → Dispositivi e servizi."
                   - type: button
                     entity: script.vmc_master_upgrade_sensors
                     action_name: Esegui

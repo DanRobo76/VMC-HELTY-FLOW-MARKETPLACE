@@ -107,10 +107,10 @@ def test_spia_black_out_del_calendario_azzerata_ed_esclusa():
     definizione = re.search(r"\n  vmc_master_spia_calendario_black_out: +# (.+)\n", pacchetto).group(1)
     richiami = [r for r in pacchetto.split("\n") if SPIA_BLACK_OUT in r and not r.lstrip().startswith("#")]
     assert definizione.startswith(
-        f"[CONFIGURAZIONE, {len(richiami)} RICHIAMI] [INTERFACCIA, 1 RICHIAMO] "
+        f"[CONFIGURAZIONE, {len(richiami)} RICHIAMI] [INTERFACCIA, {scheda.count(SPIA_BLACK_OUT)} RICHIAMI] "
         f"[AUTOMAZIONE, {automazione.count(SPIA_BLACK_OUT)} RICHIAMI]"
     )
-    assert scheda.count(SPIA_BLACK_OUT) == 1
+    assert scheda.count(SPIA_BLACK_OUT) == 2  # elenco Pulisci cronologia + riga «Black-Out durante la fascia» (b31)
     escluse = pacchetto[pacchetto.index("&vmc_master_entita_escluse_recorder") :]
     assert SPIA_BLACK_OUT in escluse[: escluse.index("\n\n")]
     for script in ("\n  vmc_master_azzera_booleans:", '\n    alias: "VMC Master - Pulisci cronologia Entità"'):
