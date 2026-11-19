@@ -204,7 +204,9 @@ def test_scheda_con_il_countdown_di_riattivazione() -> None:
     carte = [c for c in scheda["cards"] if TIMER in str(c.get("conditions"))]
     assert len(carte) == 1
     carta = carte[0]
-    assert {"condition": "state", "entity": TIMER, "state": "active"} in carta["conditions"]
+    # dalla b31 il timer e' in un «or» con la fase 3 (riga «0» del 3° gruppo, tests/test_b31_pannello.py)
+    oppure = next(c for c in carta["conditions"] if c.get("condition") == "or")
+    assert {"condition": "state", "entity": TIMER, "state": "active"} in oppure["conditions"]
     assert {"condition": "state", "entity": "sensor.vmc_master_status_ip_interfaccia", "state": "ON-Line"} in carta["conditions"]
     assert carta["card"]["title"] == "Riattivazione delle Allerte"
     # resta anche per le altre VMC (fuori dalle sezioni solo Master)

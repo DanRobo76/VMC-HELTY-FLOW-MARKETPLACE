@@ -34,9 +34,11 @@ def _testo(nome: str) -> str:
 
 def _righe_ridotta() -> list:
     scheda = hay.load_yaml(str(PKG / "vmc_master_scheda_manuale_interfaccia.txt"))
-    ridotta = scheda["cards"][0]
-    assert "ferma_off_line" in str(ridotta["card"]["header"])
-    return ridotta["card"]["entities"]
+    # la scheda ridotta e' quella con l'intestazione «ferma_off_line» (dalla b31 la prima carta
+    # e' il pannello «Riattivazione delle Allerte»)
+    ridotte = [c for c in scheda["cards"] if "ferma_off_line" in str(c.get("card", {}).get("header"))]
+    assert len(ridotte) == 1
+    return ridotte[0]["card"]["entities"]
 
 
 def _dopo_ripristino() -> list:

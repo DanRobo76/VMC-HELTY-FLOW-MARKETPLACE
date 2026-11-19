@@ -43,6 +43,155 @@ cards:
     conditions:
       - condition: or
         conditions:
+          - condition: state
+            entity: timer.vmc_master_countdown_riattivazione_allerte
+            state: active
+          - condition: state
+            entity: input_number.vmc_master_fase_riallineamento_al_riavvio
+            state: '3.0'
+      - condition: state
+        entity: sensor.vmc_master_status_ip_interfaccia
+        state: ON-Line
+    card:
+      type: entities
+      title: Riattivazione delle Allerte
+      show_header_toggle: false
+      state_color: true
+      entities:
+        - type: section
+          label: "Home Assistant si è appena avviato: le allerte ripartono da sole, un gruppo dopo l'altro. Non serve fare nulla."
+        - type: section
+          label: "1° gruppo: Black-Out, Congelamento, Diff. Temp."
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
+              state: '1.0'
+            - condition: state
+              entity: timer.vmc_master_countdown_avvio_home_assistant
+              state: active
+          row:
+            entity: timer.vmc_master_countdown_avvio_home_assistant
+            name: "Si riattivano tra"
+            icon: mdi:timer-sand
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
+              state: '1.0'
+            - condition: state
+              entity: timer.vmc_master_countdown_avvio_home_assistant
+              state: idle
+          row:
+            type: text
+            name: "Si riattivano tra"
+            text: "0"
+            icon: mdi:timer-sand
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
+              state:
+                - '2.0'
+                - '3.0'
+                - '4.0'
+          row:
+            type: text
+            name: "Già attive"
+            text: "✓"
+            icon: mdi:check-circle
+        - type: section
+          label: "2° gruppo: Inquinanti"
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
+              state: '1.0'
+          row:
+            type: text
+            name: "In attesa"
+            text: "dopo il 1° gruppo"
+            icon: mdi:pause-circle-outline
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
+              state: '2.0'
+            - condition: state
+              entity: timer.vmc_master_countdown_fase_allerte
+              state: active
+          row:
+            entity: timer.vmc_master_countdown_fase_allerte
+            name: "Si riattiva tra"
+            icon: mdi:timer-sand
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
+              state: '2.0'
+            - condition: state
+              entity: timer.vmc_master_countdown_fase_allerte
+              state: idle
+          row:
+            type: text
+            name: "Si riattiva tra"
+            text: "0"
+            icon: mdi:timer-sand
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
+              state:
+                - '3.0'
+                - '4.0'
+          row:
+            type: text
+            name: "Già attiva"
+            text: "✓"
+            icon: mdi:check-circle
+        - type: section
+          label: "3° gruppo: Punto di Rugiada, Free Heating/Cooling, Calendario, Umidità"
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
+              state:
+                - '1.0'
+                - '2.0'
+          row:
+            type: text
+            name: "In attesa"
+            text: "dopo il 2° gruppo"
+            icon: mdi:pause-circle-outline
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
+              state: '3.0'
+            - condition: state
+              entity: timer.vmc_master_countdown_fase_allerte
+              state: active
+          row:
+            entity: timer.vmc_master_countdown_fase_allerte
+            name: "Si riattivano tra"
+            icon: mdi:timer-sand
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
+              state: '3.0'
+            - condition: state
+              entity: timer.vmc_master_countdown_fase_allerte
+              state: idle
+          row:
+            type: text
+            name: "Si riattivano tra"
+            text: "0"
+            icon: mdi:timer-sand
+  - type: conditional
+    conditions:
+      - condition: or
+        conditions:
           - condition: and
             conditions:
               - condition: or
@@ -695,150 +844,6 @@ cards:
 
             <small><b>Strumenti:</b> «Cambia Password VMC» cambia la password della rete VMC_xxxxxxxx (solo con la VMC in Access Point) · «Access Point» riporta la VMC alla sua rete · «Errori LED» spiega i lampeggi del LED e il ripristino del Wi-Fi.</small>
 # >>> FINE SEZIONE INSTALLA VMC (SOLO MASTER, RIMOSSA DA VMC_SCRIPT_CLONA.SH) <<<
-  - type: conditional
-    conditions:
-      - condition: state
-        entity: timer.vmc_master_countdown_riattivazione_allerte
-        state: active
-      - condition: state
-        entity: sensor.vmc_master_status_ip_interfaccia
-        state: ON-Line
-    card:
-      type: entities
-      title: Riattivazione delle Allerte
-      show_header_toggle: false
-      state_color: true
-      entities:
-        - type: section
-          label: "Home Assistant si è appena avviato: le allerte ripartono da sole, un gruppo dopo l'altro. Non serve fare nulla."
-        - type: section
-          label: "1° gruppo: Black-Out, Congelamento, Diff. Temp."
-        - type: conditional
-          conditions:
-            - condition: state
-              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
-              state: '1.0'
-            - condition: state
-              entity: timer.vmc_master_countdown_avvio_home_assistant
-              state: active
-          row:
-            entity: timer.vmc_master_countdown_avvio_home_assistant
-            name: "Si riattivano tra"
-            icon: mdi:timer-sand
-        - type: conditional
-          conditions:
-            - condition: state
-              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
-              state: '1.0'
-            - condition: state
-              entity: timer.vmc_master_countdown_avvio_home_assistant
-              state: idle
-          row:
-            type: text
-            name: "Si riattivano tra"
-            text: "0"
-            icon: mdi:timer-sand
-        - type: conditional
-          conditions:
-            - condition: state
-              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
-              state:
-                - '2.0'
-                - '3.0'
-                - '4.0'
-          row:
-            type: text
-            name: "Già attive"
-            text: "✓"
-            icon: mdi:check-circle
-        - type: section
-          label: "2° gruppo: Inquinanti"
-        - type: conditional
-          conditions:
-            - condition: state
-              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
-              state: '1.0'
-          row:
-            type: text
-            name: "In attesa"
-            text: "dopo il 1° gruppo"
-            icon: mdi:pause-circle-outline
-        - type: conditional
-          conditions:
-            - condition: state
-              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
-              state: '2.0'
-            - condition: state
-              entity: timer.vmc_master_countdown_fase_allerte
-              state: active
-          row:
-            entity: timer.vmc_master_countdown_fase_allerte
-            name: "Si riattiva tra"
-            icon: mdi:timer-sand
-        - type: conditional
-          conditions:
-            - condition: state
-              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
-              state: '2.0'
-            - condition: state
-              entity: timer.vmc_master_countdown_fase_allerte
-              state: idle
-          row:
-            type: text
-            name: "Si riattiva tra"
-            text: "0"
-            icon: mdi:timer-sand
-        - type: conditional
-          conditions:
-            - condition: state
-              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
-              state:
-                - '3.0'
-                - '4.0'
-          row:
-            type: text
-            name: "Già attiva"
-            text: "✓"
-            icon: mdi:check-circle
-        - type: section
-          label: "3° gruppo: Punto di Rugiada, Free Heating/Cooling, Calendario, Umidità"
-        - type: conditional
-          conditions:
-            - condition: state
-              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
-              state:
-                - '1.0'
-                - '2.0'
-          row:
-            type: text
-            name: "In attesa"
-            text: "dopo il 2° gruppo"
-            icon: mdi:pause-circle-outline
-        - type: conditional
-          conditions:
-            - condition: state
-              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
-              state: '3.0'
-            - condition: state
-              entity: timer.vmc_master_countdown_fase_allerte
-              state: active
-          row:
-            entity: timer.vmc_master_countdown_fase_allerte
-            name: "Si riattivano tra"
-            icon: mdi:timer-sand
-        - type: conditional
-          conditions:
-            - condition: state
-              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
-              state: '3.0'
-            - condition: state
-              entity: timer.vmc_master_countdown_fase_allerte
-              state: idle
-          row:
-            type: text
-            name: "Si riattivano tra"
-            text: "0"
-            icon: mdi:timer-sand
   - type: conditional
     conditions:
       - condition: state
@@ -13275,11 +13280,12 @@ cards:
                   Inquinanti; dopo 140 secondi Punto di Rugiada, Free
                   Heating/Cooling, Calendario e Umidità. Poi parte la normale
                   attesa di ogni allerta (per esempio 28 secondi per
-                  l'Umidità). Il pannello «Riattivazione delle Allerte» mostra
-                  un countdown per gruppo, uno dopo l'altro: il gruppo in
-                  corso conta i secondi, i successivi sono «In attesa», i
-                  precedenti «Già attive». Non serve fare nulla, anche se nel
-                  frattempo si preme Profilo Inizializzazione.
+                  l'Umidità). Il pannello «Riattivazione delle Allerte», in
+                  cima alla scheda, mostra un countdown per gruppo, uno dopo
+                  l'altro: il gruppo in corso conta i secondi, i successivi
+                  sono «In attesa», i precedenti «Già attive». Non serve fare
+                  nulla, anche se nel frattempo si preme Profilo
+                  Inizializzazione.
 
                   <br>
 
