@@ -4372,7 +4372,8 @@ triggers:
     trigger: template
   - alias: >-
       Cambio Velocità quanto Spia FreeHeating o FreeCooling è ON e se Spia
-      Inquinanti OFF e se Spia Congelamento Off e Spia Delta Temp Off
+      Inquinanti OFF e se Spia Congelamento Off e Spia Delta Temp Off (con un'allerta
+      Umidità in corso conta ogni velocità diversa dalla Velocità 1 data dall'Umidità, Nota 3)
     value_template: |
       {{ (
         (
@@ -4387,7 +4388,7 @@ triggers:
           and states('input_boolean.vmc_master_spia_co2_o_voc') == 'off'
           and states('input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0') == 'off'
           and states('input_boolean.vmc_master_spia_velocita_1_co2_o_voc_pdr') == 'off'
-          and states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia') == 'off'
+          and (states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia') == 'off' or states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 1')
           and states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia')== 'off'
           and states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia')== 'off'
           and states('sensor.vmc_master_status_ip_interfaccia')=='ON-Line'
@@ -9298,7 +9299,7 @@ actions:
           and states('input_boolean.vmc_master_spia_co2_o_voc') == 'off'
           and states('input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0') == 'off'
           and states('input_boolean.vmc_master_spia_velocita_1_co2_o_voc_pdr') == 'off'
-          and states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia') == 'off'
+          and (states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia') == 'off' or states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 1')
           and states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia')== 'off'
           and states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia')== 'off'
           and states('sensor.vmc_master_status_ip_interfaccia')=='ON-Line'

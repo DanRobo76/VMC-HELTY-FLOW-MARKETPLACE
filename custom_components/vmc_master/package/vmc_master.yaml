@@ -1019,7 +1019,7 @@ template:
         icon: mdi:code-array
 
   - sensor:
-      - default_entity_id: sensor.vmc_master_status_ventola_lettura_codice_interpretato # [CONFIGURAZIONE, 132 RICHIAMI] [INTERFACCIA, 53 RICHIAMI] [AUTOMAZIONE, 798 RICHIAMI] SENSORE DI INTERPRETAZIONE DELLA LETTURA DEI DATI "VELOCITA'" MEMORIZZATI NELLA VMC CONVERITA IN "STRINGA", PREVIA VERIFICA DI AVVENUTA LETTURA DEI DATI "VELOCITA'"" MEMORIZZATI NELLA VMC
+      - default_entity_id: sensor.vmc_master_status_ventola_lettura_codice_interpretato # [CONFIGURAZIONE, 134 RICHIAMI] [INTERFACCIA, 53 RICHIAMI] [AUTOMAZIONE, 800 RICHIAMI] SENSORE DI INTERPRETAZIONE DELLA LETTURA DEI DATI "VELOCITA'" MEMORIZZATI NELLA VMC CONVERITA IN "STRINGA", PREVIA VERIFICA DI AVVENUTA LETTURA DEI DATI "VELOCITA'"" MEMORIZZATI NELLA VMC
         name: "Status Ventilazione"
         unique_id: vmc_master_status_ventola_lettura_codice_interpretato
         state: >
@@ -23947,7 +23947,7 @@ automation:
               and states('input_boolean.vmc_master_spia_co2_o_voc') == 'off'
               and states('input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0') == 'off'
               and states('input_boolean.vmc_master_spia_velocita_1_co2_o_voc_pdr') == 'off'
-              and states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia') == 'off'
+              and (states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia') == 'off' or states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 1')
               and states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia')== 'off'
               and states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia')== 'off'
               and states('sensor.vmc_master_status_ip_interfaccia')=='ON-Line'
@@ -23980,7 +23980,7 @@ automation:
               and states('input_boolean.vmc_master_spia_co2_o_voc') == 'off'
               and states('input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0') == 'off'
               and states('input_boolean.vmc_master_spia_velocita_1_co2_o_voc_pdr') == 'off'
-              and states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia') == 'off'
+              and (states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia') == 'off' or states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 1')
               and states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia')== 'off'
               and states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia')== 'off'
               and states('sensor.vmc_master_status_ip_interfaccia')=='ON-Line'

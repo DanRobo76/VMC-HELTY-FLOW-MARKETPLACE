@@ -66,3 +66,13 @@ def test_la_fascia_spegne_la_memoria_del_black_out() -> None:
         assert primo["action"] == "input_boolean.turn_off", nome
         assert set(primo["target"]["entity_id"]) == spie, nome
         assert "delay" in script[nome]["sequence"][1], nome
+
+
+def test_scelta_durante_la_sospensione_free_con_umidita_annulla_la_ripresa() -> None:
+    """A3-2: con la Free sospesa e un'allerta Umidita' in corso (VMC a Velocita' 1, Nota 3) una velocita' scelta
+    dall'utente e mantenuta 20 secondi annulla la ripresa in Free (Foglio A29), come senza Umidita'. Trigger,
+    condizione e 2 copie del Countdown Attese."""
+    nuova = ("and (states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia') == 'off' or "
+             "states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 1')")
+    assert _automazione().count(nuova) == 2
+    assert (PKG / "vmc_master.yaml").read_text(encoding="utf-8").count(nuova) == 2
