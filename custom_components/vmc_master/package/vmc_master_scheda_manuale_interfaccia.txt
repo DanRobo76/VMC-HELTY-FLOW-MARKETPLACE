@@ -5861,6 +5861,9 @@ cards:
         [°C]
 
 
+        <strong>AVVIO VMC A VELOCITA' 1 FINO AL RIENTRO DEGLI INQUINANTI, POI ARRESTO DELLA VMC</strong>
+
+
         Msg. 14.1.1 Free Heating
 
 
@@ -6317,16 +6320,7 @@ cards:
         states('sensor.vmc_master_temp_interna_status')}} [°C]
 
 
-        <strong>AVVIO VMC A VELOCITA' 1 </strong>
-
-
-        <strong>DIVERSAMENTE SI CONFERMA L'ARRESTO DELLA VMC:</strong>
-
-          - NON APPENA L'ANIDRIDE CARBONICA, CO₂ ≤ DI 800 ppm e/o I COMPOSTI ORGANICI VOLATILI, VOC ≤ DI 300 ppb
-            o
-          - FINCHE' L'OPZIONE [VMC ON/OFF, in Funzione del Lim. CO₂ e/o VOC] RIMARRÀ IMPOSTATA SU ACCESO
-        <strong> DIVERSAMENTE VERRÀ ANNULLATA LA RIPRESA AUTOMATICA, CONFERMANDO
-        L'ARRESTO DELLA VMC. </strong>
+        <strong>AVVIO VMC A VELOCITA' 1 FINO AL RIENTRO DEGLI INQUINANTI, POI ARRESTO DELLA VMC</strong>
 
 
         Msg. 14.1.1 Free Cooling
@@ -7600,8 +7594,8 @@ cards:
         {% if is_state('input_boolean.vmc_master_spia_umidita_velocita_0', 'on') %}
         <strong>NOTA</strong>
 
-        SE VIENE MANTENUTA LA VELOCITÀ: <strong>{{
-        states('input_select.vmc_master_speed_umidita') }}</strong>, AL TERMINE
+        SE VIENE MANTENUTA LA VELOCITÀ: <strong>{% if states('input_select.vmc_master_speed_umidita') == 'Free Cool./Heat.' and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') == 'Velocità 1' %}Velocità 1 O Free Cool./Heat.{% else %}{{
+        states('input_select.vmc_master_speed_umidita') }}{% endif %}</strong>, AL TERMINE
         DELL'ALLERTA UMIDITÀ LA VMC VERRA' ARRESTATA; DIVERSAMENTE, VERRÀ
         MANTENUTA LA NUOVA VELOCITÀ IMPOSTATA
         {% endif %}
@@ -7826,11 +7820,7 @@ cards:
                       "Non Avviare in Velocità Free Heating Programmato (Allerta Raffrescamento)",
                       "Non Avviare in Velocità Free Heating Programmato (Allerta Raffrescamento, Presenza di Inquinanti)",
                       "Non Avviare in Velocità Free Cooling Programmato (Allerta Riscaldamento)",
-                      "Non Avviare in Velocità Free Cooling Programmato (Allerta Riscaldamento, Presenza di Inquinanti)",
-                      "Se Avviata in Velocità Free Cool./Heat. (Allerta Raffrescamento)",
-                      "Se Avviata in Velocità Free Cool./Heat. (Allerta Riscaldamento)",
-                      "Se Avviata in Velocità Free Cool./Heat. (Allerta Raffrescamento, Presenza di Inquinanti)",
-                      "Se Avviata in Velocità Free Cool./Heat. (Allerta Riscaldamento, Presenza di Inquinanti)"
+                      "Non Avviare in Velocità Free Cooling Programmato (Allerta Riscaldamento, Presenza di Inquinanti)"
                     ]
               %}
         SI CONSIGLIA DI AVVIARE LA VMC SU <strong>Velocità 1</strong> ANZICHE'

@@ -152,3 +152,23 @@ def test_free_msg_7_e_15() -> None:
         assert scheda.count(f"RIPRISTINO SULLA VELOCITA' FREE {tipo}, {{{{ attendere }}}}") == 6
     assert scheda.count("SE MANTENUTA PER 20 SECONDI, LA RIPRESA AUTOMATICA") == 2
     assert "VIENE ANNULLATA.</strong>" not in scheda
+
+
+def test_umidita_note_con_free_e_free_msg_14_1_1() -> None:
+    """A3-11: con Set Free Cool./Heat. e VMC a Velocita' 1 per le allerte Free la NOTA di Msg 1 nomina la Velocita' 1;
+    nel mese non programmato (stati «Se Avviata …») Msg 3 non consiglia la Velocita' 1, che resterebbe a fine Umidita'.
+    A3-12: Msg 14.1.1 (VMC a 0, Inquinanti con interruttore acceso) dice cosa succede, uguale in Free Heating e Cooling."""
+    scheda = _scheda()
+    i = scheda.index("Velocità 1 O Free Cool./Heat.{% else %}")
+    assert scheda.count("Velocità 1 O Free Cool./Heat.{% else %}") == 1
+    assert scheda[i : scheda.index("Msg.", i)].endswith("{% endif %}\n\n\n        ")
+    assert scheda[scheda.index("Msg.", i) :].startswith("Msg. 1\n")
+    i = scheda.index("SI CONSIGLIA DI AVVIARE LA VMC SU <strong>Velocità 1</strong> ANZICHE'")
+    lista = scheda[scheda.rindex("in [", 0, i) : i]
+    assert "Se Avviata" not in lista
+    assert lista.count('"') == 32
+    for tipo in ("Heating", "Cooling"):
+        fine = scheda.index(f"Msg. 14.1.1 Free {tipo}")
+        corpo = scheda[scheda.rindex("<!------------------14.1.1", 0, fine) : fine]
+        assert "AVVIO VMC A VELOCITA' 1 FINO AL RIENTRO DEGLI INQUINANTI, POI ARRESTO DELLA VMC" in corpo
+        assert "DIVERSAMENTE" not in corpo
