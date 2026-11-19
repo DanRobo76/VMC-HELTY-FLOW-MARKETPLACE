@@ -143,13 +143,12 @@ actions:
        - platform: google_translate
      ```
    - salvare con l'icona del **dischetto**.
-2. **Installare**: cercare il pulsante **Installa** in alto a destra e premerlo.
-3. **Aggiungere la VMC**: *Impostazioni → Dispositivi e servizi → + Aggiungi integrazione → VMC Master*.
-4. **Riavviare**:
+2. **Installare**: cercare il pulsante **Installa** in alto a destra, premerlo e seguire le indicazioni a schermo.
+3. **Riavviare**:
    1. aprire *Impostazioni*;
    2. cliccare **«VMC Master: riavviare Home Assistant»**;
    3. premere **Invia**.
-5. **Aggiungere la scheda**:
+4. **Aggiungere la scheda**:
    - premere **Ctrl+F5**;
    - nella plancia (va bene anche **Panoramica**) premere **matita → Aggiungi scheda → Sfoglia tutte le schede**;
    - nel campo **Cerca schede** digitare `vmc`;
@@ -157,7 +156,7 @@ actions:
    - scegliere la VMC nel campo **VMC\***;
    - premere **Salva**, poi **Fatto**.
 
-**Altre VMC**: seguire i punti **Aggiungere la VMC**, **Riavviare** e **Aggiungere la scheda**.
+**Altre VMC**: cliccare su *Impostazioni → Dispositivi e servizi → VMC Master → Aggiungi dispositivo*.
 
 </details>
 
@@ -360,13 +359,12 @@ actions:
        - platform: google_translate
      ```
    - save with the **disk** icon.
-2. **Install**: look for the **Install** button at the top right and press it.
-3. **Add the unit**: *Settings → Devices & services → + Add integration → VMC Master*.
-4. **Restart**:
+2. **Install**: look for the **Install** button at the top right, press it and follow the on-screen instructions.
+3. **Restart**:
    1. open *Settings*;
    2. click **«VMC Master: restart Home Assistant»**;
    3. press **Submit**.
-5. **Add the card**:
+4. **Add the card**:
    - press **Ctrl+F5**;
    - on the dashboard (**Overview** is fine too) press **pencil → Add card → Browse all cards**;
    - in the **Search cards** field type `vmc`;
@@ -374,7 +372,7 @@ actions:
    - pick the unit in the **VMC\*** field;
    - press **Save**, then **Done**.
 
-**More units**: follow the steps **Add the unit**, **Restart** and **Add the card**.
+**More units**: click *Settings → Devices & services → VMC Master → Add device*.
 
 </details>
 
