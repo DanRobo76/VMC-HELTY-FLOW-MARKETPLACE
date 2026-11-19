@@ -1,0 +1,257 @@
+"""Prove della 9.0.0b28: riallineamento ripreso dopo la ricarica delle automazioni,
+nessun falso «Non Disponibile» scegliendo «Aggiorna Elenco…», countdown di riattivazione
+delle allerte in scheda."""
+
+from __future__ import annotations
+
+import asyncio
+import re
+from pathlib import Path
+from unittest.mock import AsyncMock, patch
+
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry as er
+from homeassistant.util import yaml as hay
+from pytest_homeassistant_custom_component.common import async_mock_service
+
+import custom_components.vmc_master as integrazione
+from custom_components.vmc_master.trasforma import per_vmc
+
+PKG = Path(__file__).parent.parent / "custom_components" / "vmc_master" / "package"
+TIMER = "timer.vmc_master_countdown_riattivazione_allerte"
+FASE = "input_number.vmc_master_fase_riallineamento_al_riavvio"
+SELEZIONE = {
+    "temperatura_esterna": "temp_external",
+    "temperatura_interna": "temp_internal",
+    "umidita_esterna": "humidity_external",
+    "umidita_interna": "humidity_internal",
+    "co2_interna": "co2_internal",
+}
+
+
+def _norm(testo: str) -> str:
+    return re.sub(r"\s+", " ", testo).strip()
+
+
+# ------------------------------------------------ riallineamento dopo automation.reload
+def _riallineamento(hass: HomeAssistant, nome: str, fase: str | None, in_corso: int | None) -> str:
+    registro = er.async_get(hass)
+    voce = registro.async_get_or_create(
+        "automation",
+        "automation",
+        f"vmc_{nome}_riallineamento_allerte_al_riavvio",
+        suggested_object_id=f"vmc_{nome}_riallineamento_allerte_al_riavvio",
+    )
+    if in_corso is not None:
+        hass.states.async_set(voce.entity_id, "on", {"current": in_corso})
+    if fase is not None:
+        hass.states.async_set(f"input_number.vmc_{nome}_fase_riallineamento_al_riavvio", fase)
+    return voce.entity_id
+
+
+async def test_riallineamento_fermato_dalla_ricarica_riparte(hass: HomeAssistant) -> None:
+    """Solo il riallineamento fermo nelle fasi 1-3 (allerte sospese) riparte da capo."""
+    chiamate = async_mock_service(hass, "automation", "trigger")
+    fermo = _riallineamento(hass, "master", "1.0", 0)
+    _riallineamento(hass, "sala", "2.0", 1)  # non cambiato: ancora in corso
+    _riallineamento(hass, "bagno", "0.0", 0)  # gia' finito
+    _riallineamento(hass, "soggiorno", "4.0", 0)  # allerte gia' tutte attive
+    _riallineamento(hass, "cucina", "unknown", 0)  # fase non letta
+    _riallineamento(hass, "studio", None, 0)  # fase assente
+    _riallineamento(hass, "camino", "3.0", None)  # automazione senza stato
+    registro = er.async_get(hass)
+    registro.async_get_or_create("automation", "automation", "automazione_vmc_master")
+    registro.async_get_or_create("sensor", "template", "vmc_master_riallineamento_allerte_al_riavvio")
+    await integrazione._async_riprendi_riallineamento(hass)
+    await hass.async_block_till_done()
+    assert [c.data for c in chiamate] == [{"entity_id": fermo, "skip_condition": True}]
+
+
+async def test_ricarica_delle_automazioni_riprende_il_riallineamento(hass: HomeAssistant) -> None:
+    async_mock_service(hass, "automation", "reload")
+    async_mock_service(hass, "template", "reload")
+    with patch.object(integrazione, "_async_riprendi_riallineamento", AsyncMock()) as riprendi:
+        await integrazione._async_ricarica(hass, ["template.reload"])
+        riprendi.assert_not_awaited()
+        await integrazione._async_ricarica(hass, ["template.reload", "automation.reload"])
+        riprendi.assert_awaited_once_with(hass)
+
+
+async def _attendi(condizione, giri: int = 50) -> None:
+    """Lascia lavorare il loop senza aspettare le attese (delay) delle automazioni."""
+    for _ in range(giri):
+        await asyncio.sleep(0)
+        if condizione():
+            return
+    assert condizione()
+
+
+async def test_riallineamento_vero_ripreso_dopo_la_ricarica(hass: HomeAssistant) -> None:
+    """Home Assistant vero: automation.reload ferma il riallineamento cambiato e la fase
+    resta 1; dopo la ripresa l'automazione e' di nuovo in corso."""
+    from homeassistant.setup import async_setup_component
+
+    def configurazione(passo_in_piu: bool) -> dict:
+        azioni = [
+            {"action": "input_number.set_value", "target": {"entity_id": "input_number.vmc_master_fase_riallineamento_al_riavvio"}, "data": {"value": 1}},
+            {"delay": {"seconds": 60}},
+            {"action": "input_number.set_value", "target": {"entity_id": "input_number.vmc_master_fase_riallineamento_al_riavvio"}, "data": {"value": 0}},
+        ]
+        if passo_in_piu:
+            azioni.insert(1, {"delay": {"seconds": 0}})
+        return {
+            "automation": [
+                {
+                    "id": "vmc_master_riallineamento_allerte_al_riavvio",
+                    "alias": "VMC Master - Riallineamento Allerte al Riavvio",
+                    "mode": "restart",
+                    "triggers": [{"trigger": "homeassistant", "event": "start"}],
+                    "actions": azioni,
+                }
+            ]
+        }
+
+    assert await async_setup_component(
+        hass,
+        "input_number",
+        {"input_number": {"vmc_master_fase_riallineamento_al_riavvio": {"min": 0, "max": 4, "step": 1, "initial": 0}}},
+    )
+    assert await async_setup_component(hass, "automation", configurazione(False))
+    entita = "automation.vmc_master_riallineamento_allerte_al_riavvio"
+    # avvio di Home Assistant: il riallineamento parte (async_block_till_done aspetterebbe i 60 s)
+    await hass.services.async_call("automation", "trigger", {"entity_id": entita, "skip_condition": True}, blocking=False)
+    await _attendi(lambda: hass.states.get(entita).attributes["current"] == 1)
+    assert hass.states.get(FASE).state == "1.0"
+
+    with patch(
+        "homeassistant.config.load_yaml_config_file", return_value=configurazione(True)
+    ):
+        await hass.services.async_call("automation", "reload", blocking=True)
+    await _attendi(lambda: True)
+    # il riallineamento cambiato e' stato ricreato: fermo, con le allerte sospese
+    assert hass.states.get(entita).attributes["current"] == 0
+    assert hass.states.get(FASE).state == "1.0"
+
+    await integrazione._async_riprendi_riallineamento(hass)
+    await _attendi(lambda: hass.states.get(entita).attributes["current"] == 1)
+    assert hass.states.get(FASE).state == "1.0"
+    # fine prova: si ferma il riallineamento ripartito (nessuna attesa lasciata in sospeso)
+    await hass.services.async_call("automation", "turn_off", {"entity_id": entita}, blocking=True)
+
+
+# ------------------------------------------------ nessun falso «Non Disponibile»
+def test_avviso_non_disponibile_ignora_aggiorna_elenco() -> None:
+    """Scegliendo «Aggiorna Elenco…» il sensore selezionato vale -100 per 2 s: gli avvisi
+    «Non Disponibile» (scheda e cellulare) partono solo per un'entita' davvero scelta."""
+    automazione = hay.load_yaml(str(PKG / "vmc_master_automazione.txt"))
+    errori = [
+        t
+        for t in automazione["triggers"]
+        if str(t.get("id", "")).startswith("Entità ") and str(t["id"]).endswith(("Errore [Interfaccia]", "Errore [Mobile]"))
+    ]
+    assert len(errori) == 10
+    for trigger in errori:
+        testo = _norm(str(trigger["value_template"]))
+        selezioni = re.findall(r"input_select\.vmc_master_selected_([a-z0-9_]+)_entity", testo)
+        assert len(selezioni) == 1, trigger["id"]
+        assert (
+            f"not states('input_select.vmc_master_selected_{selezioni[0]}_entity').startswith('Aggiorna Elenco') and"
+            in testo
+        ), trigger["id"]
+        assert "for" not in trigger
+    testo = (PKG / "vmc_master_automazione.txt").read_text(encoding="utf-8")
+    for sensore, selezione in SELEZIONE.items():
+        assert testo.count(f"input_select.vmc_master_selected_{selezione}_entity") == 5, sensore
+
+
+def test_richiami_delle_selezioni_aggiornati() -> None:
+    pacchetto = (PKG / "vmc_master.yaml").read_text(encoding="utf-8")
+    automazione = (PKG / "vmc_master_automazione.txt").read_text(encoding="utf-8")
+    for selezione in SELEZIONE.values():
+        entita = f"input_select.vmc_master_selected_{selezione}_entity"
+        riga = re.search(rf"\n  vmc_master_selected_{selezione}_entity: +# (.+)", pacchetto).group(1)
+        assert f"[AUTOMAZIONE, {automazione.count(entita)} RICHIAMI]" in riga, selezione
+
+
+# ------------------------------------------------ countdown di riattivazione delle allerte
+def test_timer_di_riattivazione_coerente_con_le_fasi() -> None:
+    pacchetto = hay.load_yaml(str(PKG / "vmc_master.yaml"))
+    assert pacchetto["timer"]["vmc_master_countdown_riattivazione_allerte"]["duration"] == "00:02:20"
+    riallineamento = next(
+        a for a in pacchetto["automation"] if a.get("id") == "vmc_master_riallineamento_allerte_al_riavvio"
+    )
+    azioni = riallineamento["actions"]
+    avviati = [a["target"]["entity_id"] for a in azioni if a.get("action") == "timer.start"]
+    assert avviati == ["timer.vmc_master_countdown_avvio_home_assistant", TIMER]
+    # secondi dall'avvio a cui la fase diventa 2, 3, 4 e 0
+    trascorsi, fasi = 0, {}
+    for azione in azioni:
+        if "delay" in azione:
+            trascorsi += azione["delay"]["seconds"]
+        elif azione.get("action") == "input_number.set_value":
+            fasi[azione["data"]["value"]] = trascorsi
+    assert fasi == {1: 0, 2: 60, 3: 100, 4: 140, 0: 200}
+    # il countdown finisce quando tutte le allerte sono riattivate (fase 4)
+    assert fasi[4] == 140
+
+
+def test_scheda_con_il_countdown_di_riattivazione() -> None:
+    scheda = hay.load_yaml(str(PKG / "vmc_master_scheda_manuale_interfaccia.txt"))
+    carte = [c for c in scheda["cards"] if TIMER in str(c.get("conditions"))]
+    assert len(carte) == 1
+    carta = carte[0]
+    assert {"condition": "state", "entity": "sensor.vmc_master_status_ip_interfaccia", "state": "ON-Line"} in carta["conditions"]
+    righe = carta["card"]["entities"]
+    per_fase = {r["conditions"][0]["state"]: r["row"]["label"] for r in righe if r.get("type") == "conditional"}
+    assert set(per_fase) == {"1.0", "2.0", "3.0"}
+    assert "Tra 60 s" in per_fase["1.0"] and "Tra 40 s: Inquinanti" in per_fase["2.0"]
+    assert "Umidità" in per_fase["3.0"]
+    assert righe[-1]["entity"] == TIMER
+    # resta anche per le altre VMC (fuori dalle sezioni solo Master)
+    assert TIMER.replace("master", "sala") in per_vmc(
+        (PKG / "vmc_master_scheda_manuale_interfaccia.txt").read_text(encoding="utf-8"), "sala", "192.168.1.161"
+    )
+
+
+def test_timer_di_riattivazione_escluso_e_ripulito() -> None:
+    pacchetto = (PKG / "vmc_master.yaml").read_text(encoding="utf-8")
+    escluse = pacchetto[pacchetto.index("&vmc_master_entita_escluse_recorder") :]
+    assert TIMER in escluse[: escluse.index("\n\n")]
+    corpo = pacchetto[pacchetto.index('\n    alias: "VMC Master - Pulisci cronologia Entità"') :]
+    assert TIMER in corpo[: corpo.index("\n    alias:", 10)]
+    definizione = re.search(r"\n  vmc_master_countdown_riattivazione_allerte: +# (.+)", pacchetto).group(1)
+    configurazione = [r for r in pacchetto.split("\n") if TIMER in r and not r.lstrip().startswith("#")]
+    scheda = (PKG / "vmc_master_scheda_manuale_interfaccia.txt").read_text(encoding="utf-8")
+    automazione = (PKG / "vmc_master_automazione.txt").read_text(encoding="utf-8")
+    assert definizione.startswith(
+        f"[CONFIGURAZIONE, {len(configurazione)} RICHIAMI] [INTERFACCIA, {scheda.count(TIMER)} RICHIAMI] "
+        f"[AUTOMAZIONE, {automazione.count(TIMER)} RICHIAMI]"
+    )
+
+
+def test_avviso_non_disponibile_del_dispositivo_per_le_notifiche() -> None:
+    """Il sesto campo di Sensori da Selezionare: avviso solo in Home Assistant (al telefono
+    tolto non si puo' scrivere) quando il dispositivo scelto non c'e' piu' tra quelli dell'app."""
+    automazione = hay.load_yaml(str(PKG / "vmc_master_automazione.txt"))
+    trigger = [t for t in automazione["triggers"] if t.get("id") == "Dispositivo Notifica Errore [Interfaccia]"]
+    assert len(trigger) == 1 and "for" not in trigger[0]
+    testo = _norm(str(trigger[0]["value_template"]))
+    assert "not states('input_select.vmc_master_selected_notification_device').startswith('Aggiorna Elenco') and" in testo
+    # stesso elenco dello script che aggiorna le opzioni; lo stato letto fa rivalutare il
+    # trigger quando il dispositivo viene tolto (un telefono appena collegato resta «unknown»)
+    assert (
+        "integration_entities('mobile_app') | select('match', 'device_tracker') | reject('is_state', 'unavailable') "
+        "| map('device_attr', 'name') | select('string') | map('slugify') | list" in testo
+    )
+    assert "states('input_boolean.vmc_master_notifica_status_vmc') == 'on'" in testo
+    azioni = [
+        b
+        for passo in automazione["actions"]
+        for b in (passo.get("choose") or [])
+        if any("Dispositivo Notifica Errore [Interfaccia]" in str(c.get("id")) for c in b.get("conditions", []) if isinstance(c, dict))
+    ]
+    assert len(azioni) == 1
+    creata = azioni[0]["sequence"][0]
+    assert creata["action"] == "persistent_notification.create"
+    assert creata["data"]["notification_id"] == "vmc_master_entita_non_disponibile_dispositivo_notifica"
+    assert "notify." not in str(azioni[0])

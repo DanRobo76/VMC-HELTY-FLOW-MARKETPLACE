@@ -1,6 +1,6 @@
 ###########################################################################################################################################################################################################################
 #                                                                                                                                                                                                                         #
-#                                                          AUTOMAZIONE VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b25]                                                                                                        #
+#                                                          AUTOMAZIONE VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b28]                                                                                                        #
 #                                                                                                                                                                                                                         #
 # SVILUPPATO DA ING. DANILO ROBOTTI, ALLE PRIME ARMI CON HOME ASSISTANT :)                                                                                                                                                #
 #                                                                                                                                                                                                                         #
@@ -4921,7 +4921,7 @@ triggers:
     trigger: template
     value_template: |
       {{ 
-      states('sensor.vmc_master_temperatura_esterna_selezionata') == '-100' and
+      states('sensor.vmc_master_temperatura_esterna_selezionata') == '-100' and not states('input_select.vmc_master_selected_temp_external_entity').startswith('Aggiorna Elenco') and
       states('input_boolean.vmc_master_notifica_status_vmc') == 'on' and
       states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line' and
       states('input_boolean.vmc_master_spia_velocita_0') == 'off' and
@@ -4940,7 +4940,7 @@ triggers:
     trigger: template
     value_template: |
       {{ 
-      states('sensor.vmc_master_temperatura_interna_selezionata') == '-100' and
+      states('sensor.vmc_master_temperatura_interna_selezionata') == '-100' and not states('input_select.vmc_master_selected_temp_internal_entity').startswith('Aggiorna Elenco') and
       states('input_boolean.vmc_master_notifica_status_vmc') == 'on' and
       states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line' and
       states('input_boolean.vmc_master_spia_velocita_0') == 'off' and
@@ -4959,7 +4959,7 @@ triggers:
     trigger: template
     value_template: |
       {{ 
-      states('sensor.vmc_master_umidita_esterna_selezionata') == '-100' and
+      states('sensor.vmc_master_umidita_esterna_selezionata') == '-100' and not states('input_select.vmc_master_selected_humidity_external_entity').startswith('Aggiorna Elenco') and
       states('input_boolean.vmc_master_notifica_status_vmc') == 'on' and
       states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line' and
       states('input_boolean.vmc_master_spia_velocita_0') == 'off' and
@@ -4978,7 +4978,7 @@ triggers:
     trigger: template
     value_template: |
       {{ 
-      states('sensor.vmc_master_umidita_interna_selezionata') == '-100' and
+      states('sensor.vmc_master_umidita_interna_selezionata') == '-100' and not states('input_select.vmc_master_selected_humidity_internal_entity').startswith('Aggiorna Elenco') and
       states('input_boolean.vmc_master_notifica_status_vmc') == 'on' and
       states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line' and
       states('input_boolean.vmc_master_spia_velocita_0') == 'off' and
@@ -4997,7 +4997,7 @@ triggers:
     trigger: template
     value_template: |
       {{ 
-      states('sensor.vmc_master_co2_interna_selezionata') == '-100' and
+      states('sensor.vmc_master_co2_interna_selezionata') == '-100' and not states('input_select.vmc_master_selected_co2_internal_entity').startswith('Aggiorna Elenco') and
       states('input_boolean.vmc_master_notifica_status_vmc') == 'on' and
       states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line' and
       states('input_boolean.vmc_master_spia_velocita_0') == 'off' and
@@ -5010,6 +5010,27 @@ triggers:
       states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
       }}
     id: Entità CO2 Interna Errore [Interfaccia]
+  - alias: >-
+      Dispositivo per Invio Notifica installato in H.A. non più disponibile
+      (tolto dall'integrazione Mobile App o rinominato nell'app) [Interfaccia]
+    trigger: template
+    value_template: |
+      {{
+      not states('input_select.vmc_master_selected_notification_device').startswith('Aggiorna Elenco') and
+      states('input_select.vmc_master_selected_notification_device') not in ['unknown', 'unavailable', ''] and
+      states('input_select.vmc_master_selected_notification_device') not in (integration_entities('mobile_app') | select('match', 'device_tracker') | reject('is_state', 'unavailable') | map('device_attr', 'name') | select('string') | map('slugify') | list) and
+      states('input_boolean.vmc_master_notifica_status_vmc') == 'on' and
+      states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line' and
+      states('input_boolean.vmc_master_spia_velocita_0') == 'off' and
+      states('input_boolean.vmc_master_spia_velocita_1') == 'off' and
+      states('input_boolean.vmc_master_spia_velocita_2') == 'off' and
+      states('input_boolean.vmc_master_spia_velocita_3') == 'off' and
+      states('input_boolean.vmc_master_spia_velocita_4') == 'off' and
+      states('input_boolean.vmc_master_spia_velocita_notturna') == 'off' and
+      states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off' and
+      states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+      }}
+    id: Dispositivo Notifica Errore [Interfaccia]
   - alias: >-
       Verifica ogni Giorno alle 08:00 del Mattino se il Filtro  deve essere
       cambiato [Interfaccia]
@@ -5085,7 +5106,7 @@ triggers:
     value_template: >
       {{ 
 
-      states('sensor.vmc_master_temperatura_esterna_selezionata') == '-100' and
+      states('sensor.vmc_master_temperatura_esterna_selezionata') == '-100' and not states('input_select.vmc_master_selected_temp_external_entity').startswith('Aggiorna Elenco') and
 
       states('input_boolean.vmc_master_notifica_status_vmc') == 'on' and
 
@@ -5114,7 +5135,7 @@ triggers:
     value_template: >
       {{ 
 
-      states('sensor.vmc_master_temperatura_interna_selezionata') == '-100' and
+      states('sensor.vmc_master_temperatura_interna_selezionata') == '-100' and not states('input_select.vmc_master_selected_temp_internal_entity').startswith('Aggiorna Elenco') and
 
       states('input_boolean.vmc_master_notifica_status_vmc') == 'on' and
 
@@ -5144,7 +5165,7 @@ triggers:
       {{ 
 
       states('sensor.vmc_master_umidita_esterna_status') in ["sconosciuto",
-      "unknown", "", none, "unavailable", "Non disponibile","-100"] and
+      "unknown", "", none, "unavailable", "Non disponibile","-100"] and not states('input_select.vmc_master_selected_humidity_external_entity').startswith('Aggiorna Elenco') and
 
       states('input_boolean.vmc_master_notifica_status_vmc') == 'on' and
 
@@ -5173,7 +5194,7 @@ triggers:
     value_template: >
       {{ 
 
-      states('sensor.vmc_master_umidita_interna_selezionata') == '-100' and
+      states('sensor.vmc_master_umidita_interna_selezionata') == '-100' and not states('input_select.vmc_master_selected_humidity_internal_entity').startswith('Aggiorna Elenco') and
 
       states('input_boolean.vmc_master_notifica_status_vmc') == 'on' and
 
@@ -5202,7 +5223,7 @@ triggers:
     value_template: >
       {{ 
 
-      states('sensor.vmc_master_co2_interna_selezionata') == '-100' and
+      states('sensor.vmc_master_co2_interna_selezionata') == '-100' and not states('input_select.vmc_master_selected_co2_internal_entity').startswith('Aggiorna Elenco') and
 
       states('input_boolean.vmc_master_notifica_status_vmc') == 'on' and
 
@@ -9492,7 +9513,7 @@ actions:
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == 'Entità Temperatura Esterna Errore [Interfaccia]' -%}
       {{
-      states('sensor.vmc_master_temperatura_esterna_selezionata') == '-100' and
+      states('sensor.vmc_master_temperatura_esterna_selezionata') == '-100' and not states('input_select.vmc_master_selected_temp_external_entity').startswith('Aggiorna Elenco') and
       states('input_boolean.vmc_master_notifica_status_vmc') == 'on' and
       states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line' and
       states('input_boolean.vmc_master_spia_velocita_0') == 'off' and
@@ -9506,7 +9527,7 @@ actions:
       }}
       {%- elif trigger.id == 'Entità Temperatura Interna Errore [Interfaccia]' -%}
       {{
-      states('sensor.vmc_master_temperatura_interna_selezionata') == '-100' and
+      states('sensor.vmc_master_temperatura_interna_selezionata') == '-100' and not states('input_select.vmc_master_selected_temp_internal_entity').startswith('Aggiorna Elenco') and
       states('input_boolean.vmc_master_notifica_status_vmc') == 'on' and
       states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line' and
       states('input_boolean.vmc_master_spia_velocita_0') == 'off' and
@@ -9520,7 +9541,7 @@ actions:
       }}
       {%- elif trigger.id == 'Entità Umidità Esterna Errore [Interfaccia]' -%}
       {{
-      states('sensor.vmc_master_umidita_esterna_selezionata') == '-100' and
+      states('sensor.vmc_master_umidita_esterna_selezionata') == '-100' and not states('input_select.vmc_master_selected_humidity_external_entity').startswith('Aggiorna Elenco') and
       states('input_boolean.vmc_master_notifica_status_vmc') == 'on' and
       states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line' and
       states('input_boolean.vmc_master_spia_velocita_0') == 'off' and
@@ -9534,7 +9555,7 @@ actions:
       }}
       {%- elif trigger.id == 'Entità Umidità Interna Errore [Interfaccia]' -%}
       {{
-      states('sensor.vmc_master_umidita_interna_selezionata') == '-100' and
+      states('sensor.vmc_master_umidita_interna_selezionata') == '-100' and not states('input_select.vmc_master_selected_humidity_internal_entity').startswith('Aggiorna Elenco') and
       states('input_boolean.vmc_master_notifica_status_vmc') == 'on' and
       states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line' and
       states('input_boolean.vmc_master_spia_velocita_0') == 'off' and
@@ -9548,7 +9569,23 @@ actions:
       }}
       {%- elif trigger.id == 'Entità CO2 Interna Errore [Interfaccia]' -%}
       {{
-      states('sensor.vmc_master_co2_interna_selezionata') == '-100' and
+      states('sensor.vmc_master_co2_interna_selezionata') == '-100' and not states('input_select.vmc_master_selected_co2_internal_entity').startswith('Aggiorna Elenco') and
+      states('input_boolean.vmc_master_notifica_status_vmc') == 'on' and
+      states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line' and
+      states('input_boolean.vmc_master_spia_velocita_0') == 'off' and
+      states('input_boolean.vmc_master_spia_velocita_1') == 'off' and
+      states('input_boolean.vmc_master_spia_velocita_2') == 'off' and
+      states('input_boolean.vmc_master_spia_velocita_3') == 'off' and
+      states('input_boolean.vmc_master_spia_velocita_4') == 'off' and
+      states('input_boolean.vmc_master_spia_velocita_notturna') == 'off' and
+      states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off' and
+      states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+      }}
+      {%- elif trigger.id == 'Dispositivo Notifica Errore [Interfaccia]' -%}
+      {{
+      not states('input_select.vmc_master_selected_notification_device').startswith('Aggiorna Elenco') and
+      states('input_select.vmc_master_selected_notification_device') not in ['unknown', 'unavailable', ''] and
+      states('input_select.vmc_master_selected_notification_device') not in (integration_entities('mobile_app') | select('match', 'device_tracker') | reject('is_state', 'unavailable') | map('device_attr', 'name') | select('string') | map('slugify') | list) and
       states('input_boolean.vmc_master_notifica_status_vmc') == 'on' and
       states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line' and
       states('input_boolean.vmc_master_spia_velocita_0') == 'off' and
@@ -9588,7 +9625,7 @@ actions:
       }}
       {%- elif trigger.id == 'Entità Temperatura Esterno Errore [Mobile]' -%}
       {{
-      states('sensor.vmc_master_temperatura_esterna_selezionata') == '-100' and
+      states('sensor.vmc_master_temperatura_esterna_selezionata') == '-100' and not states('input_select.vmc_master_selected_temp_external_entity').startswith('Aggiorna Elenco') and
       states('input_boolean.vmc_master_notifica_status_vmc') == 'on' and
       states('input_boolean.vmc_master_spia_velocita_0') == 'off' and
       states('input_boolean.vmc_master_spia_velocita_1') == 'off' and
@@ -9601,7 +9638,7 @@ actions:
       }}
       {%- elif trigger.id == 'Entità Temperatura Interna Errore [Mobile]' -%}
       {{
-      states('sensor.vmc_master_temperatura_interna_selezionata') == '-100' and
+      states('sensor.vmc_master_temperatura_interna_selezionata') == '-100' and not states('input_select.vmc_master_selected_temp_internal_entity').startswith('Aggiorna Elenco') and
       states('input_boolean.vmc_master_notifica_status_vmc') == 'on' and
       states('input_boolean.vmc_master_spia_velocita_0') == 'off' and
       states('input_boolean.vmc_master_spia_velocita_1') == 'off' and
@@ -9614,7 +9651,7 @@ actions:
       }}
       {%- elif trigger.id == 'Entità Umidità Esterna Errore [Mobile]' -%}
       {{
-      states('sensor.vmc_master_umidita_esterna_status') in ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile","-100"] and
+      states('sensor.vmc_master_umidita_esterna_status') in ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile","-100"] and not states('input_select.vmc_master_selected_humidity_external_entity').startswith('Aggiorna Elenco') and
       states('input_boolean.vmc_master_notifica_status_vmc') == 'on' and
       states('input_boolean.vmc_master_spia_velocita_0') == 'off' and
       states('input_boolean.vmc_master_spia_velocita_1') == 'off' and
@@ -9627,7 +9664,7 @@ actions:
       }}
       {%- elif trigger.id == 'Entità Umidità Interna Errore [Mobile]' -%}
       {{
-      states('sensor.vmc_master_umidita_interna_selezionata') == '-100' and
+      states('sensor.vmc_master_umidita_interna_selezionata') == '-100' and not states('input_select.vmc_master_selected_humidity_internal_entity').startswith('Aggiorna Elenco') and
       states('input_boolean.vmc_master_notifica_status_vmc') == 'on' and
       states('input_boolean.vmc_master_spia_velocita_0') == 'off' and
       states('input_boolean.vmc_master_spia_velocita_1') == 'off' and
@@ -9640,7 +9677,7 @@ actions:
       }}
       {%- elif trigger.id == 'Entità CO2 Interna Errore [Mobile]' -%}
       {{
-      states('sensor.vmc_master_co2_interna_selezionata') == '-100' and
+      states('sensor.vmc_master_co2_interna_selezionata') == '-100' and not states('input_select.vmc_master_selected_co2_internal_entity').startswith('Aggiorna Elenco') and
       states('input_boolean.vmc_master_notifica_status_vmc') == 'on' and
       states('input_boolean.vmc_master_spia_velocita_0') == 'off' and
       states('input_boolean.vmc_master_spia_velocita_1') == 'off' and
@@ -29825,6 +29862,30 @@ actions:
         alias: >-
           Entità CO₂ Interna installata in H.A. cambia in ['unknown',
           'unavailable', '-100', 'Non disponibile'] [Interfaccia]
+      - conditions:
+          - condition: trigger
+            id:
+              - Dispositivo Notifica Errore [Interfaccia]
+        sequence:
+          - action: persistent_notification.create
+            metadata: {}
+            data:
+              notification_id: vmc_master_entita_non_disponibile_dispositivo_notifica
+              title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
+              message: >-
+                Non Disponibile: {{
+                states('input_select.vmc_master_selected_notification_device') }}
+
+                Impiegato per l'Invio delle Notifiche sul cellulare: le notifiche non
+                vengono inviate. Scegliere di nuovo il dispositivo in Opzioni - Sensori
+                da Selezionare, voce «Seleziona Dispositivo per Invio Notifica».
+
+                Data {{ now().strftime('%d-%m-%Y') }} Ora
+                {{now().strftime('%H:%M:%S') }}
+            enabled: true
+        alias: >-
+          Dispositivo per Invio Notifica installato in H.A. non più disponibile
+          (tolto dall'integrazione Mobile App o rinominato nell'app) [Interfaccia]
       - conditions:
           - condition: trigger
             id:

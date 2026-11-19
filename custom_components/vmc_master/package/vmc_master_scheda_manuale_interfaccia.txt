@@ -1,6 +1,6 @@
 ###########################################################################################################################################################################################################################
 #                                                                                                                                                                                                                         #
-#                                                          SCHEDA MANUALE INTERFACCIA VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b25]                                                                                         #
+#                                                          SCHEDA MANUALE INTERFACCIA VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b28]                                                                                         #
 #                                                                                                                                                                                                                         #
 # SVILUPPATO DA ING. DANILO ROBOTTI, ALLE PRIME ARMI CON HOME ASSISTANT :)                                                                                                                                                #
 #                                                                                                                                                                                                                         #
@@ -547,6 +547,49 @@ cards:
 
             <small><b>Strumenti:</b> «Cambia Password VMC» cambia la password della rete VMC_xxxxxxxx (solo con la VMC in Access Point) · «Access Point» riporta la VMC alla sua rete · «Errori LED» spiega i lampeggi del LED e il ripristino del Wi-Fi.</small>
 # >>> FINE SEZIONE INSTALLA VMC (SOLO MASTER, RIMOSSA DA VMC_SCRIPT_CLONA.SH) <<<
+  - type: conditional
+    conditions:
+      - condition: state
+        entity: timer.vmc_master_countdown_riattivazione_allerte
+        state: active
+      - condition: state
+        entity: sensor.vmc_master_status_ip_interfaccia
+        state: ON-Line
+    card:
+      type: entities
+      title: Riattivazione delle Allerte
+      show_header_toggle: false
+      state_color: true
+      entities:
+        - type: section
+          label: "Home Assistant avviato: le allerte si riattivano da sole in sequenza. Non serve fare nulla, attendi la fine del countdown."
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
+              state: '1.0'
+          row:
+            type: section
+            label: "Ora: tutte le allerte in pausa. Tra 60 s: Black-Out, Congelamento e Diff. Temp."
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
+              state: '2.0'
+          row:
+            type: section
+            label: "Attive: Black-Out, Congelamento e Diff. Temp. Tra 40 s: Inquinanti."
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_number.vmc_master_fase_riallineamento_al_riavvio
+              state: '3.0'
+          row:
+            type: section
+            label: "Attive: Black-Out, Congelamento, Diff. Temp. e Inquinanti. Tra 40 s: Punto di Rugiada, Free Heating/Cooling, Calendario e Umidità."
+        - entity: timer.vmc_master_countdown_riattivazione_allerte
+          name: "Tutte le allerte attive tra"
+          icon: mdi:timer-sand
   - type: conditional
     conditions:
       - condition: state
@@ -10944,6 +10987,7 @@ cards:
                           'timer.vmc_master_countdown_script_inizializzazione',
                           'timer.vmc_master_countdown_script_reset_filtro',
                           'timer.vmc_master_countdown_avvio_home_assistant',
+                          'timer.vmc_master_countdown_riattivazione_allerte',
                           'input_boolean.vmc_master_conferma_pulizia_cronologia'
                         ] -%}
                         {%- set tipi = {'automation': 'Automazioni', 'binary_sensor': 'Sensori binari', 'button': 'Pulsanti', 'input_boolean': 'Interruttori (input_boolean)', 'input_datetime': 'Orari (input_datetime)', 'input_number': 'Valori numerici (input_number)', 'input_select': 'Selettori (input_select)', 'input_text': 'Testi (input_text)', 'script': 'Script', 'sensor': 'Sensori', 'timer': 'Timer'} -%}
@@ -12885,6 +12929,19 @@ cards:
                   grafici che mostrano le statistiche a lungo termine, cioè le
                   medie orarie).
 
+                  <b>Scegliendo «Aggiorna Elenco…»</b> in Opzioni - Sensori da
+                  Selezionare, l'elenco si aggiorna e torna l'entità di prima,
+                  senza la notifica «Non Disponibile»; per circa 2 secondi i
+                  grafici mostrano la sonda della VMC. Se l'entità di prima non
+                  è più nell'elenco compare la notifica «Aggiornare
+                  Manualmente…»: va scelta di nuovo.
+
+                  <b>Dispositivo per Invio Notifica</b>: se il telefono scelto
+                  viene tolto dall'integrazione Mobile App o rinominato
+                  nell'app, compare la notifica «Non Disponibile», solo in
+                  Home Assistant: le notifiche sul cellulare non partono finché
+                  non lo si sceglie di nuovo.
+
                   <br>
 
                   <strong>Nota VMC Master - Agg. Sensori</strong>
@@ -12943,6 +13000,20 @@ cards:
                   e poi quello del ripristino. Allo zero la VMC riceve la
                   velocità e, dopo pochi secondi di conferma, compare la
                   scheda completa.
+
+                  <br>
+
+                  <strong>Nota Avvio di Home Assistant</strong>
+
+                  Dopo ogni avvio di Home Assistant le allerte restano in
+                  pausa e si riattivano da sole in sequenza: dopo 60 secondi
+                  Black-Out, Congelamento e Diff. Temp.; dopo 100 secondi
+                  Inquinanti; dopo 140 secondi Punto di Rugiada, Free
+                  Heating/Cooling, Calendario e Umidità. Poi parte la normale
+                  attesa di ogni allerta (per esempio 28 secondi per
+                  l'Umidità). La scheda lo mostra con il countdown «Tutte le
+                  allerte attive tra»: non serve fare nulla, anche se nel
+                  frattempo si preme Profilo Inizializzazione.
 
                   <br>
 
