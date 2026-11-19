@@ -42,7 +42,8 @@ def test_id_notifiche_unici():
         # Conta solo gli id delle create: un dismiss riusa apposta lo stesso id
         testo = re.sub(r"- action: persistent_notification\.dismiss\s+data:\s+notification_id: \"?\w+", "", (PKG / nome).read_text(encoding="utf-8"))
         ids += re.findall(r"notification_id: \"?(vmc_master_\w+)", testo)
-    duplicati = {i for i in ids if ids.count(i) > 1} - {"vmc_master_installa_vmc_esito"}
+    # b30: la notifica del Dispositivo di Notifica ha due testi (con e senza cellulari) sullo stesso id
+    duplicati = {i for i in ids if ids.count(i) > 1} - {"vmc_master_installa_vmc_esito", "vmc_master_aggiorna_entita_dispositivo_notifica"}
     assert not duplicati
 
 
@@ -92,6 +93,11 @@ def test_notifiche_aggiorna_elenco_condizionate_e_chiuse_da_sole():
             dismiss = _trova(passi, "persistent_notification.dismiss")
             assert len(dismiss) == 2 and all(d["data"]["notification_id"] == nid for d, _ in dismiss), nome
             continue
+        if nome == "notifica_dispositivo":
+            # b30: secondo testo (nessun cellulare) nel ramo else, stesso id
+            assert len(create) == 2 and create[1][0]["data"]["notification_id"] == nid, nome
+            assert create[1][0]["data"]["message"].startswith("Nessun cellulare"), nome
+            create = create[:1]
         assert len(create) == 1, nome
         nodo, antenati = create[0]
         assert nodo["data"]["notification_id"] == nid, nome

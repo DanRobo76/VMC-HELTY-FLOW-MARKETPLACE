@@ -168,3 +168,48 @@ def test_testi_aggiornati() -> None:
     # la riga «Avvio di Home Assistant» del riquadro della VMC resta (Black-Out, VMC nuova)
     assert 'name: "Avvio di Home Assistant"' in _testo("vmc_master_scheda_manuale_interfaccia.txt")
     assert "[VER. 9.0.0b30]" in _testo("vmc_master_scheda_manuale_interfaccia.txt")[:1000]
+
+
+# ------------------------------------------------------- notifica del cellulare (b30)
+def _passo_notifica_dispositivo() -> dict:
+    script = hay.load_yaml(str(PKG / "vmc_master.yaml"))["script"]["vmc_master_aggiorna_elenco_entita_notifica_dispositivo"]
+    trovati = []
+
+    def cerca(nodo: object) -> None:
+        if isinstance(nodo, dict):
+            if "if" in nodo and "then" in nodo and "notification_device" in str(nodo["if"]):
+                trovati.append(nodo)
+            for valore in nodo.values():
+                cerca(valore)
+        elif isinstance(nodo, list):
+            for valore in nodo:
+                cerca(valore)
+
+    cerca(script["sequence"])
+    assert len(trovati) == 1
+    return trovati[0]
+
+
+def test_notifica_anche_senza_cellulari() -> None:
+    """Home Assistant nuovo senza l'app collegata: l'elenco non ha cellulari, ma con Invio
+    Notifica acceso la notifica spiega cosa fare (stesso id: quando compare un cellulare
+    diventa «Aggiornare Manualmente…» e sparisce quando lo si sceglie)."""
+    passo = _passo_notifica_dispositivo()
+    assert "count > 0" in str(passo["if"])
+    allora, altrimenti = passo["then"][0]["data"], passo["else"][0]["data"]
+    assert passo["else"][0]["action"] == "persistent_notification.create"
+    assert allora["notification_id"] == altrimenti["notification_id"] == "vmc_master_aggiorna_entita_dispositivo_notifica"
+    assert allora["title"] == altrimenti["title"]
+    assert allora["message"] == "Aggiornare Manualmente l'Entità Dispositivo di Notifica"
+    assert altrimenti["message"].startswith("Nessun cellulare con l'app Home Assistant: installare l'app sul cellulare")
+    assert "«Seleziona Dispositivo per Invio Notifica»" in altrimenti["message"]
+
+
+def test_richiami_del_dispositivo_di_notifica() -> None:
+    entita = "input_select.vmc_master_selected_notification_device"
+    commento = re.search(r"\n  vmc_master_selected_notification_device: +# (.+)", _testo("vmc_master.yaml")).group(1)
+    assert commento.startswith(f"[CONFIGURAZIONE, {_conta_configurazione(entita)} RICHIAMI]")
+    # sensore Nome: la riga di definizione (default_entity_id) contiene gia' l'id
+    nome = "sensor.vmc_master_nome_status"
+    riga = re.search(r"default_entity_id: sensor\.vmc_master_nome_status +# (.+)", _testo("vmc_master.yaml")).group(1)
+    assert riga.startswith(f"[CONFIGURAZIONE, {_conta_configurazione(nome) - 1} RICHIAMI]")
