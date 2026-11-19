@@ -1,6 +1,6 @@
 ###########################################################################################################################################################################################################################
 #                                                                                                                                                                                                                         #
-#                                                          AUTOMAZIONE VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b29]                                                                                                        #
+#                                                          AUTOMAZIONE VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b32]                                                                                                        #
 #                                                                                                                                                                                                                         #
 # SVILUPPATO DA ING. DANILO ROBOTTI, ALLE PRIME ARMI CON HOME ASSISTANT :)                                                                                                                                                #
 #                                                                                                                                                                                                                         #
@@ -33090,10 +33090,10 @@ actions:
                       {{states('input_boolean.vmc_master_spia_velocita_1_delta_temp_verifica_soglia_valore')==
                       'on'}}
                 sequence:
-                  - alias: Inquinanti in corso e velocità scelta dall'utente durante Δ Temp. -> diventa la memoria degli Inquinanti (regola 03-11-2026)
+                  - alias: Inquinanti in corso e velocità scelta dall'utente durante Δ Temp. -> diventa la memoria degli Inquinanti (regola 03-11-2026; non se la Velocità 1 l'hanno avviata gli Inquinanti da Velocità 0, che restano con il ritorno a Velocità 0)
                     if:
                       - condition: template
-                        value_template: "{{ is_state('input_boolean.vmc_master_spia_co2_o_voc', 'on') and not is_state('input_boolean.vmc_master_spia_velocita_1_co2_o_voc', 'on') }}"
+                        value_template: "{{ is_state('input_boolean.vmc_master_spia_co2_o_voc', 'on') and not is_state('input_boolean.vmc_master_spia_velocita_1_co2_o_voc', 'on') and not is_state('input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0', 'on') and not is_state('input_boolean.vmc_master_spia_velocita_1_co2_o_voc_pdr', 'on') }}"
                     then:
                       - action: input_boolean.turn_on
                         target:
