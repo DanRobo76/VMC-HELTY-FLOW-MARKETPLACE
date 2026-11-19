@@ -319,5 +319,21 @@
     "worker_start": {
       "message": "Non è stato possibile avviare la procedura."
     }
+  },
+  "services": {
+    "verifica_ip": {
+      "name": "Verifica IP della VMC",
+      "description": "Controlla se a questo IP risponde una VMC sulla porta 5001 e ne legge il nome, con due tentativi. Non cambia nulla. Lo usa il campo «Cambia IP VMC» della scheda prima di riavviare Home Assistant. Risponde con risponde (qualcosa risponde sulla porta 5001), nome (vuoto se non è una VMC) ed esito: ok, non_risponde, altro_dispositivo, nome_diverso o ip_non_valido.",
+      "fields": {
+        "ip": {
+          "name": "IP",
+          "description": "IP da controllare."
+        },
+        "nome": {
+          "name": "Nome atteso",
+          "description": "Nome della VMC che deve rispondere. Se vuoto va bene qualsiasi VMC."
+        }
+      }
+    }
   }
 }

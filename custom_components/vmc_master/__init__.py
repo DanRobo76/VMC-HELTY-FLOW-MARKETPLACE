@@ -20,6 +20,7 @@ from http import HTTPStatus
 from pathlib import Path
 from typing import Any, Final
 
+import voluptuous as vol
 import yaml
 from aiohttp import web
 
@@ -29,7 +30,14 @@ from homeassistant.components.http import HomeAssistantView, StaticPathConfig
 from homeassistant.components.lovelace import LOVELACE_DATA
 from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
-from homeassistant.core import Event, HomeAssistant, callback
+from homeassistant.core import (
+    Event,
+    HomeAssistant,
+    ServiceCall,
+    ServiceResponse,
+    SupportsResponse,
+    callback,
+)
 from homeassistant.exceptions import ConfigEntryError
 from homeassistant.helpers import (
     config_validation as cv,
@@ -98,6 +106,12 @@ DATI_FILTRO_PING = f"{DOMAIN}_filtro_ping"
 _RE_IP_NEL_LOG = re.compile(r"(?<![0-9.])([0-9]{1,3}(?:\.[0-9]{1,3}){3})(?![0-9]|\.[0-9])")
 # Un solo controllo alla volta dell'IP scritto dalla scheda (voci avviate in parallelo)
 DATI_BLOCCO_IP = f"{DOMAIN}_ip_scheda_blocco"
+# Servizio con risposta del campo «Cambia IP VMC» della scheda: prima del riavvio controlla
+# che a quell'IP risponda la VMC (uno solo per tutte le VMC: il package passa IP e nome)
+SERVIZIO_VERIFICA_IP: Final = "verifica_ip"
+SCHEMA_VERIFICA_IP: Final = vol.Schema(
+    {vol.Required("ip"): cv.string, vol.Optional("nome", default=""): cv.string}
+)
 
 # Domini YAML in cui l'unique_id di un'entita' e' la sua chiave (piattaforma = dominio)
 DOMINI_CON_CHIAVE = (
@@ -150,6 +164,13 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     # Il numero di versione nell'indirizzo fa ricaricare la scheda dopo ogni aggiornamento
     await _registra_scheda(hass, str(integrazione.version))
     hass.http.register_view(VmcSchedaView())
+    hass.services.async_register(
+        DOMAIN,
+        SERVIZIO_VERIFICA_IP,
+        _async_verifica_ip,
+        schema=SCHEMA_VERIFICA_IP,
+        supports_response=SupportsResponse.ONLY,
+    )
     async_at_started(hass, _ripristina_wifi_server)
     async_at_started(hass, _togli_entita_vmc_eliminate)
     if DATI_FILTRO_PING not in hass.data:
@@ -169,6 +190,24 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
     hass.bus.async_listen(ir.EVENT_REPAIRS_ISSUE_REGISTRY_UPDATED, _riparazione_cambiata)
     return True
+
+
+async def _async_verifica_ip(chiamata: ServiceCall) -> ServiceResponse:
+    """Servizio verifica_ip: legge il nome della VMC a quell'IP (porta 5001, due prove come
+    l'ingranaggio «Cambia l'IP della VMC») senza cambiare nulla.
+
+    Risposta: «risponde» (qualcosa risponde sulla porta 5001), «nome» (nome della VMC,
+    vuoto se non e' una VMC) ed «esito» (config_flow.esito_verifica_ip, oppure
+    «ip_non_valido» senza nessuna prova se l'IP non e' valido per ip_valido)."""
+    ip = chiamata.data["ip"].strip()
+    if not config_flow.ip_valido(ip):
+        return {"risponde": False, "nome": "", "esito": "ip_non_valido"}
+    nome_letto = await config_flow.async_nome_vmc_due_prove(ip)
+    return {
+        "risponde": nome_letto is not None,
+        "nome": nome_letto or "",
+        "esito": config_flow.esito_verifica_ip(nome_letto, chiamata.data["nome"]),
+    }
 
 
 # Copia della scheda in <config>/www/vmc_master: Home Assistant serve /local appena parte il
