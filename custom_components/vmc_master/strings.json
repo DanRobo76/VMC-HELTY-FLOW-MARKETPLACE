@@ -104,7 +104,7 @@
       "already_in_progress": "This unit is already being added in another window."
     },
     "create_entry": {
-      "riavvio": "**{titolo}** has been added.\n\nThe unit needs a restart to become active:\n1. open Settings;\n2. press «VMC Master: restart Home Assistant»;\n3. press Submit."
+      "riavvio": "**{titolo}** has been added.\n\nTo finish:\n1. open Settings;\n2. press «VMC Master: restart Home Assistant»;\n3. press Submit;\n4. add the card:\n   - press **Ctrl+F5**;\n   - on the dashboard (**Overview** is fine too) press **pencil → Add card → Browse all cards**;\n   - in the **Search cards** field type `vmc`;\n   - click **VMC Master**;\n   - pick the unit in the **VMC\\*** field;\n   - press **Save**, then **Done**."
     }
   },
   "options": {

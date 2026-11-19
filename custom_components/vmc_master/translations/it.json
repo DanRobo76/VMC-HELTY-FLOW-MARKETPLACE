@@ -104,7 +104,7 @@
       "already_in_progress": "L'aggiunta di questa VMC è già in corso in un'altra finestra."
     },
     "create_entry": {
-      "riavvio": "**{titolo}** è stata aggiunta.\n\nPer attivare la VMC serve un riavvio:\n1. aprire Impostazioni;\n2. premere «VMC Master: riavviare Home Assistant»;\n3. premere Invia."
+      "riavvio": "**{titolo}** è stata aggiunta.\n\nPer finire:\n1. aprire Impostazioni;\n2. premere «VMC Master: riavviare Home Assistant»;\n3. premere Invia;\n4. aggiungere la scheda:\n   - premere **Ctrl+F5**;\n   - nella plancia (va bene anche **Panoramica**) premere **matita → Aggiungi scheda → Sfoglia tutte le schede**;\n   - nel campo **Cerca schede** digitare `vmc`;\n   - cliccare su **VMC Master**;\n   - scegliere la VMC nel campo **VMC\\***;\n   - premere **Salva**, poi **Fatto**."
     }
   },
   "options": {

@@ -1,6 +1,6 @@
 ###########################################################################################################################################################################################################################
 #                                                                                                                                                                                                                         #
-#                                                          SCHEDA MANUALE INTERFACCIA VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b30]                                                                                         #
+#                                                          SCHEDA MANUALE INTERFACCIA VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b31]                                                                                         #
 #                                                                                                                                                                                                                         #
 # SVILUPPATO DA ING. DANILO ROBOTTI, ALLE PRIME ARMI CON HOME ASSISTANT :)                                                                                                                                                #
 #                                                                                                                                                                                                                         #
@@ -135,6 +135,154 @@ cards:
             entity: timer.vmc_master_countdown_blackout_ripristino
             name: "Ripristino Velocità tra"
             icon: mdi:timer-sand
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: sensor.vmc_master_status_ip_interfaccia
+              state: OFF-Line
+            - condition: state
+              entity: timer.vmc_master_countdown_blackout_rilevazione
+              state: active
+          row:
+            type: section
+            label: "VMC OFF-Line: se non torna entro il countdown viene considerata in Black-Out. Non serve fare nulla."
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: sensor.vmc_master_status_ip_interfaccia
+              state: OFF-Line
+            - condition: state
+              entity: timer.vmc_master_countdown_blackout_rilevazione
+              state: active
+          row:
+            entity: timer.vmc_master_countdown_blackout_rilevazione
+            name: "Rilevazione Black-Out tra"
+            icon: mdi:timer-sand
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: sensor.vmc_master_status_ip_interfaccia
+              state: OFF-Line
+            - condition: or
+              conditions:
+                - condition: state
+                  entity: input_boolean.vmc_master_spia_velocita_0
+                  state: 'on'
+                - condition: state
+                  entity: input_boolean.vmc_master_spia_velocita_1
+                  state: 'on'
+                - condition: state
+                  entity: input_boolean.vmc_master_spia_velocita_2
+                  state: 'on'
+                - condition: state
+                  entity: input_boolean.vmc_master_spia_velocita_3
+                  state: 'on'
+                - condition: state
+                  entity: input_boolean.vmc_master_spia_velocita_4
+                  state: 'on'
+                - condition: state
+                  entity: input_boolean.vmc_master_spia_velocita_notturna
+                  state: 'on'
+                - condition: state
+                  entity: input_boolean.vmc_master_spia_velocita_iperventilazione
+                  state: 'on'
+                - condition: state
+                  entity: input_boolean.vmc_master_spia_velocita_freecooling
+                  state: 'on'
+          row:
+            type: section
+            label: "Black-Out rilevato: al ritorno della corrente la VMC torna alla velocità memorizzata. Non serve fare nulla."
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_boolean.vmc_master_spia_velocita_0
+              state: 'on'
+          row:
+            type: text
+            name: "Velocità memorizzata"
+            text: "Velocità 0"
+            icon: mdi:fan
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_boolean.vmc_master_spia_velocita_1
+              state: 'on'
+          row:
+            type: text
+            name: "Velocità memorizzata"
+            text: "Velocità 1"
+            icon: mdi:fan
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_boolean.vmc_master_spia_velocita_2
+              state: 'on'
+          row:
+            type: text
+            name: "Velocità memorizzata"
+            text: "Velocità 2"
+            icon: mdi:fan
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_boolean.vmc_master_spia_velocita_3
+              state: 'on'
+          row:
+            type: text
+            name: "Velocità memorizzata"
+            text: "Velocità 3"
+            icon: mdi:fan
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_boolean.vmc_master_spia_velocita_4
+              state: 'on'
+          row:
+            type: text
+            name: "Velocità memorizzata"
+            text: "Velocità 4"
+            icon: mdi:fan
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_boolean.vmc_master_spia_velocita_notturna
+              state: 'on'
+          row:
+            type: text
+            name: "Velocità memorizzata"
+            text: "Notturna"
+            icon: mdi:fan
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_boolean.vmc_master_spia_velocita_iperventilazione
+              state: 'on'
+          row:
+            type: text
+            name: "Velocità memorizzata"
+            text: "Iperventilazione"
+            icon: mdi:fan
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: input_boolean.vmc_master_spia_velocita_freecooling
+              state: 'on'
+          row:
+            type: text
+            name: "Velocità memorizzata"
+            text: "Free Heating/Cooling"
+            icon: mdi:fan
+        - type: conditional
+          conditions:
+            - condition: state
+              entity: sensor.vmc_master_status_ip_interfaccia
+              state: OFF-Line
+            - condition: state
+              entity: input_boolean.vmc_master_spia_calendario_black_out
+              state: 'on'
+          row:
+            type: section
+            label: "Black-Out durante la fascia del Calendario: al ritorno della corrente la VMC riparte con la velocità della fascia. Non serve fare nulla."
         - type: button
           entity: script.vmc_master_upgrade_sensors
           action_name: Esegui
@@ -13087,6 +13235,20 @@ cards:
                   scompare. Gli altri script durano al massimo pochi secondi
                   (Pulisci Cronologia Audio 2 s, Aggiorna Elenco 5 s) e non
                   hanno countdown.
+
+                  <br>
+
+                  <strong>Nota VMC OFF-Line</strong>
+
+                  Quando la VMC non risponde la scheda mostra il countdown
+                  «Rilevazione Black-Out tra» (32 secondi): non serve fare
+                  nulla. Allo zero compare «Black-Out rilevato...» con la
+                  «Velocità memorizzata», che la VMC riprende al ritorno
+                  della corrente. Durante una Fascia del Calendario compare
+                  invece «Black-Out durante la fascia del Calendario...» e la
+                  VMC riparte con la velocità della fascia. Nei primi 60
+                  secondi dopo l'avvio di Home Assistant la rilevazione è in
+                  pausa (vedere la Nota Avvio di Home Assistant).
 
                   <br>
 

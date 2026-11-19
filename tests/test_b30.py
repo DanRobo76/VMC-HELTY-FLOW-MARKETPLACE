@@ -169,7 +169,8 @@ def test_testi_aggiornati() -> None:
     assert "un countdown per gruppo, uno dopo l'altro: il gruppo in corso conta i secondi" in scheda
     # la riga «Avvio di Home Assistant» del riquadro della VMC resta (Black-Out, VMC nuova)
     assert 'name: "Avvio di Home Assistant"' in _testo("vmc_master_scheda_manuale_interfaccia.txt")
-    assert "[VER. 9.0.0b30]" in _testo("vmc_master_scheda_manuale_interfaccia.txt")[:1000]
+    versione = re.search(r"\[VER\. 9\.0\.0b(\d+)\]", _testo("vmc_master_scheda_manuale_interfaccia.txt")[:1000])
+    assert versione and int(versione.group(1)) >= 30  # la scheda cambia in b30 (poi solo versioni successive)
 
 
 # ------------------------------------------------------- notifica del cellulare (b30)
