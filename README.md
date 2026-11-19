@@ -157,7 +157,7 @@ actions:
    - scegliere la VMC nel campo **VMC\***;
    - premere **Salva**, poi **Fatto**.
 
-**Altre VMC**: *Impostazioni → Dispositivi e servizi → VMC Master → Aggiungi dispositivo*, poi come dal punto 3.
+**Altre VMC**: seguire i punti **Aggiungere la VMC**, **Riavviare** e **Aggiungere la scheda**.
 
 </details>
 
@@ -374,7 +374,7 @@ actions:
    - pick the unit in the **VMC\*** field;
    - press **Save**, then **Done**.
 
-**More units**: *Settings → Devices & services → VMC Master → Add device*, then as from step 3.
+**More units**: follow the steps **Add the unit**, **Restart** and **Add the card**.
 
 </details>
 

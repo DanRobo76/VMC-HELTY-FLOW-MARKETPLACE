@@ -843,7 +843,8 @@ def test_readme_marketplace_e_github() -> None:
                   "For each unit in the card's **Opzioni** panel:",
                   "3. **Aggiungere la VMC**: *Impostazioni",
                   "3. **Add the unit**: *Settings",
-                  "poi come dal punto 3.", "then as from step 3."):
+                  "seguire i punti **Aggiungere la VMC**, **Riavviare** e **Aggiungere la scheda**.",
+                  "follow the steps **Add the unit**, **Restart** and **Add the card**."):
         assert testo in marketplace and testo not in github, testo
     # nel Marketplace l'Installazione finisce con la scheda: niente rimando a Configurazione
     for testo in ("**: vedere **Configurazione**", "**: see **Configuration**", "6. **",
