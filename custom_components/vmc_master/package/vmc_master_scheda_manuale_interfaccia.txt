@@ -10774,6 +10774,7 @@ cards:
                           'input_boolean.vmc_master_notifica_status_vmc',
                           'input_boolean.vmc_master_umidita_verifica_soglia_valore_spia',
                           'input_boolean.vmc_master_spia_umidita_velocita_0',
+                          'input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0',
                           'input_boolean.vmc_master_spia_umidita_velocita_1',
                           'input_boolean.vmc_master_spia_umidita_velocita_2',
                           'input_boolean.vmc_master_spia_umidita_velocita_3',

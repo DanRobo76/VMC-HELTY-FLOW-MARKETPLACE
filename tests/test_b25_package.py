@@ -16,9 +16,11 @@ GUARDIA = re.compile(
 # Allerte gia' prese in carico prima del riavvio: la loro azione riparte subito
 PRESE_IN_CARICO = {
     "states('input_boolean.vmc_master_spia_co2_o_voc') == 'on'",
-    "states('input_boolean.vmc_master_spia_umidita_velocita_0') == 'on'",
+    "states('input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0') == 'on'",
 }
 SPIA_BLACK_OUT = "input_boolean.vmc_master_spia_calendario_black_out"
+SPIA_U0 = "input_boolean.vmc_master_spia_umidita_velocita_0"
+SPIA_U0_MANTENUTA = "input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0"
 
 
 def _norm(testo: str) -> str:
@@ -148,3 +150,72 @@ def test_ritorno_da_black_out_durante_il_riallineamento():
         assert pacchetto.count(
             f'id: "{verso}|blackout_ripristino|blackout_ripristino|Calendario - VMC di nuovo ON-Line durante il riallineamento al riavvio"'
         ) == 1
+
+
+def _passi(nodo, sequenze: list) -> None:
+    """Tutte le liste di passi (sequence, then, else, default) dell'automazione."""
+    if isinstance(nodo, dict):
+        for chiave, valore in nodo.items():
+            if chiave in ("sequence", "then", "else", "default") and isinstance(valore, list):
+                sequenze.append(valore)
+            _passi(valore, sequenze)
+    elif isinstance(nodo, list):
+        for valore in nodo:
+            _passi(valore, sequenze)
+
+
+def _entita(passo) -> list:
+    if not isinstance(passo, dict):
+        return []
+    entita = (passo.get("target") or {}).get("entity_id") or passo.get("entity_id") or []
+    return [entita] if isinstance(entita, str) else list(entita)
+
+
+def test_memoria_velocita_0_mantenuta_dell_umidita():
+    """Velocità 0 mantenuta dall'Umidità (ramo «else» di umidita_velocita_0): accesa solo li', spenta ovunque cambi la spia Velocità 0."""
+    automazione = hay.load_yaml(str(PKG / "vmc_master_automazione.txt"))
+    sequenze: list = []
+    _passi(automazione["actions"], sequenze)
+    accese = spente = 0
+    for passi in sequenze:
+        for k, passo in enumerate(passi):
+            if SPIA_U0 not in _entita(passo):
+                continue
+            azione = passo["action"]
+            if SPIA_U0_MANTENUTA in _entita(passo):
+                accese += azione == "input_boolean.turn_on"
+                spente += azione == "input_boolean.turn_off"
+                continue
+            assert azione == "input_boolean.turn_on", passo
+            seguente = passi[k + 1]
+            assert seguente["action"] == "input_boolean.turn_off" and SPIA_U0_MANTENUTA in _entita(seguente), passo
+            spente += 1
+    assert (accese, spente) == (1, 42)
+    testo = (PKG / "vmc_master_automazione.txt").read_text(encoding="utf-8")
+    ramo = testo[testo.index("              - umidita_velocita_0\n") :]
+    ramo = ramo[: ramo.index("\n      - conditions:")]
+    allora = ramo[ramo.index("            then:\n") : ramo.index("            else:\n")]
+    altrimenti = ramo[ramo.index("            else:\n") :]
+    assert allora.index(f"entity_id: {SPIA_U0_MANTENUTA}") < allora.index("- variables:")
+    assert f"- {SPIA_U0}\n                    - {SPIA_U0_MANTENUTA}" in altrimenti
+    assert testo.count(SPIA_U0_MANTENUTA) == 46
+
+
+def test_memoria_velocita_0_mantenuta_nel_package_e_nella_scheda():
+    pacchetto = (PKG / "vmc_master.yaml").read_text(encoding="utf-8")
+    automazione = (PKG / "vmc_master_automazione.txt").read_text(encoding="utf-8")
+    scheda = (PKG / "vmc_master_scheda_manuale_interfaccia.txt").read_text(encoding="utf-8")
+    definizione = re.search(r"\n  vmc_master_spia_umidita_mantenuta_velocita_0: +# (.+)\n", pacchetto).group(1)
+    assert definizione.startswith(
+        f"[CONFIGURAZIONE, {pacchetto.count(SPIA_U0_MANTENUTA)} RICHIAMI] [INTERFACCIA, 1 RICHIAMO] "
+        f"[AUTOMAZIONE, {automazione.count(SPIA_U0_MANTENUTA)} RICHIAMI]"
+    )
+    assert scheda.count(SPIA_U0_MANTENUTA) == 1
+    escluse = pacchetto[pacchetto.index("&vmc_master_entita_escluse_recorder") :]
+    assert SPIA_U0_MANTENUTA in escluse[: escluse.index("\n\n")]
+    for script in ("\n  vmc_master_azzera_booleans:", '\n    alias: "VMC Master - Pulisci cronologia Entità"'):
+        corpo = pacchetto[pacchetto.index(script) :]
+        assert SPIA_U0_MANTENUTA in corpo[: corpo.index("\n  vmc_master_", 10)], script
+    # le 2 copie del Countdown (ON/OFF) hanno la stessa verifica al riavvio del trigger
+    assert pacchetto.count(f"or states('{SPIA_U0_MANTENUTA}') == 'on') }}}}") == 2
+    assert f"or states('{SPIA_U0}') == 'on') }}}}" not in pacchetto + automazione

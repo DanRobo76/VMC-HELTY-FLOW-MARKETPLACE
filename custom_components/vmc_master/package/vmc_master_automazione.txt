@@ -5672,7 +5672,7 @@ triggers:
           states('input_boolean.vmc_master_spia_calendario_sabato_2') == 'off' and
           states('input_boolean.vmc_master_spia_calendario_domenica_1') == 'off' and
           states('input_boolean.vmc_master_spia_calendario_domenica_2') == 'off'
-        ) ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4 or states('input_boolean.vmc_master_spia_umidita_velocita_0') == 'on') }}
+        ) ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4 or states('input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0') == 'on') }}
     enabled: true
     id: umidita_velocita_0
     for:
@@ -9943,7 +9943,7 @@ actions:
           states('input_boolean.vmc_master_spia_calendario_sabato_2') == 'off' and
           states('input_boolean.vmc_master_spia_calendario_domenica_1') == 'off' and
           states('input_boolean.vmc_master_spia_calendario_domenica_2') == 'off'
-        ) ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4 or states('input_boolean.vmc_master_spia_umidita_velocita_0') == 'on') }}
+        ) ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4 or states('input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0') == 'on') }}
       {%- elif trigger.id == 'umidita_velocita_1' -%}
       {{ (
         states('sensor.vmc_master_status_ventola_lettura_codice_interpretato')== 'Velocità 1' and
@@ -17309,6 +17309,7 @@ actions:
                     target:
                       entity_id:
                         - input_boolean.vmc_master_spia_umidita_velocita_0
+                        - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                         - input_boolean.vmc_master_spia_umidita_velocita_1
                         - input_boolean.vmc_master_spia_umidita_velocita_2
                         - input_boolean.vmc_master_spia_umidita_velocita_3
@@ -29994,6 +29995,7 @@ actions:
                         target:
                           entity_id:
                             - input_boolean.vmc_master_spia_umidita_velocita_0
+                            - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                             - input_boolean.vmc_master_spia_umidita_velocita_1
                             - input_boolean.vmc_master_spia_umidita_velocita_2
                             - input_boolean.vmc_master_spia_umidita_velocita_3
@@ -30039,6 +30041,7 @@ actions:
                         data: {}
                         target:
                           entity_id:
+                            - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                             - input_boolean.vmc_master_spia_umidita_velocita_1
                             - input_boolean.vmc_master_spia_umidita_velocita_2
                             - input_boolean.vmc_master_spia_umidita_velocita_3
@@ -30091,6 +30094,7 @@ actions:
                         data: {}
                         target:
                           entity_id:
+                            - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                             - input_boolean.vmc_master_spia_umidita_velocita_1
                             - input_boolean.vmc_master_spia_umidita_velocita_2
                             - input_boolean.vmc_master_spia_umidita_velocita_3
@@ -30143,6 +30147,7 @@ actions:
                         data: {}
                         target:
                           entity_id:
+                            - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                             - input_boolean.vmc_master_spia_umidita_velocita_1
                             - input_boolean.vmc_master_spia_umidita_velocita_2
                             - input_boolean.vmc_master_spia_umidita_velocita_3
@@ -30195,6 +30200,7 @@ actions:
                         data: {}
                         target:
                           entity_id:
+                            - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                             - input_boolean.vmc_master_spia_umidita_velocita_1
                             - input_boolean.vmc_master_spia_umidita_velocita_2
                             - input_boolean.vmc_master_spia_umidita_velocita_3
@@ -30247,6 +30253,7 @@ actions:
                         data: {}
                         target:
                           entity_id:
+                            - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                             - input_boolean.vmc_master_spia_umidita_velocita_1
                             - input_boolean.vmc_master_spia_umidita_velocita_2
                             - input_boolean.vmc_master_spia_umidita_velocita_3
@@ -30299,6 +30306,7 @@ actions:
                         data: {}
                         target:
                           entity_id:
+                            - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                             - input_boolean.vmc_master_spia_umidita_velocita_1
                             - input_boolean.vmc_master_spia_umidita_velocita_2
                             - input_boolean.vmc_master_spia_umidita_velocita_3
@@ -30372,6 +30380,7 @@ actions:
                         data: {}
                         target:
                           entity_id:
+                            - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                             - input_boolean.vmc_master_spia_umidita_velocita_1
                             - input_boolean.vmc_master_spia_umidita_velocita_2
                             - input_boolean.vmc_master_spia_umidita_velocita_3
@@ -30445,6 +30454,7 @@ actions:
                         data: {}
                         target:
                           entity_id:
+                            - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                             - input_boolean.vmc_master_spia_umidita_velocita_1
                             - input_boolean.vmc_master_spia_umidita_velocita_2
                             - input_boolean.vmc_master_spia_umidita_velocita_3
@@ -30497,6 +30507,7 @@ actions:
                         data: {}
                         target:
                           entity_id:
+                            - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                             - input_boolean.vmc_master_spia_umidita_velocita_1
                             - input_boolean.vmc_master_spia_umidita_velocita_2
                             - input_boolean.vmc_master_spia_umidita_velocita_3
@@ -30553,6 +30564,7 @@ actions:
                         target:
                           entity_id:
                             - input_boolean.vmc_master_spia_umidita_velocita_0
+                            - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                             - input_boolean.vmc_master_spia_umidita_velocita_2
                             - input_boolean.vmc_master_spia_umidita_velocita_3
                             - input_boolean.vmc_master_spia_umidita_velocita_4
@@ -30606,6 +30618,7 @@ actions:
                         target:
                           entity_id:
                             - input_boolean.vmc_master_spia_umidita_velocita_0
+                            - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                             - input_boolean.vmc_master_spia_umidita_velocita_1
                             - input_boolean.vmc_master_spia_umidita_velocita_3
                             - input_boolean.vmc_master_spia_umidita_velocita_4
@@ -30659,6 +30672,7 @@ actions:
                         target:
                           entity_id:
                             - input_boolean.vmc_master_spia_umidita_velocita_0
+                            - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                             - input_boolean.vmc_master_spia_umidita_velocita_1
                             - input_boolean.vmc_master_spia_umidita_velocita_2
                             - input_boolean.vmc_master_spia_umidita_velocita_4
@@ -30712,6 +30726,7 @@ actions:
                         target:
                           entity_id:
                             - input_boolean.vmc_master_spia_umidita_velocita_0
+                            - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                             - input_boolean.vmc_master_spia_umidita_velocita_1
                             - input_boolean.vmc_master_spia_umidita_velocita_2
                             - input_boolean.vmc_master_spia_umidita_velocita_3
@@ -30766,6 +30781,7 @@ actions:
                         target:
                           entity_id:
                             - input_boolean.vmc_master_spia_umidita_velocita_0
+                            - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                             - input_boolean.vmc_master_spia_umidita_velocita_1
                             - input_boolean.vmc_master_spia_umidita_velocita_2
                             - input_boolean.vmc_master_spia_umidita_velocita_3
@@ -30819,6 +30835,7 @@ actions:
                         target:
                           entity_id:
                             - input_boolean.vmc_master_spia_umidita_velocita_0
+                            - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                             - input_boolean.vmc_master_spia_umidita_velocita_1
                             - input_boolean.vmc_master_spia_umidita_velocita_2
                             - input_boolean.vmc_master_spia_umidita_velocita_3
@@ -30872,6 +30889,7 @@ actions:
                         target:
                           entity_id:
                             - input_boolean.vmc_master_spia_umidita_velocita_0
+                            - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                             - input_boolean.vmc_master_spia_umidita_velocita_1
                             - input_boolean.vmc_master_spia_umidita_velocita_2
                             - input_boolean.vmc_master_spia_umidita_velocita_3
@@ -30921,6 +30939,7 @@ actions:
               entity_id:
                 - input_boolean.vmc_master_umidita_verifica_soglia_valore_spia
                 - input_boolean.vmc_master_spia_umidita_velocita_0
+                - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                 - input_boolean.vmc_master_spia_umidita_velocita_1
                 - input_boolean.vmc_master_spia_umidita_velocita_2
                 - input_boolean.vmc_master_spia_umidita_velocita_3
@@ -31022,6 +31041,7 @@ actions:
                     target:
                       entity_id:
                         - input_boolean.vmc_master_spia_umidita_velocita_0
+                        - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                         - input_boolean.vmc_master_spia_umidita_velocita_1
                         - input_boolean.vmc_master_spia_umidita_velocita_2
                         - input_boolean.vmc_master_spia_umidita_velocita_3
@@ -31097,6 +31117,7 @@ actions:
                     target:
                       entity_id:
                         - input_boolean.vmc_master_spia_umidita_velocita_0
+                        - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                         - input_boolean.vmc_master_spia_umidita_velocita_1
                         - input_boolean.vmc_master_spia_umidita_velocita_2
                         - input_boolean.vmc_master_spia_umidita_velocita_3
@@ -31166,6 +31187,7 @@ actions:
                     target:
                       entity_id:
                         - input_boolean.vmc_master_spia_umidita_velocita_0
+                        - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                         - input_boolean.vmc_master_spia_umidita_velocita_1
                         - input_boolean.vmc_master_spia_umidita_velocita_2
                         - input_boolean.vmc_master_spia_umidita_velocita_3
@@ -31235,6 +31257,7 @@ actions:
                     target:
                       entity_id:
                         - input_boolean.vmc_master_spia_umidita_velocita_0
+                        - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                         - input_boolean.vmc_master_spia_umidita_velocita_1
                         - input_boolean.vmc_master_spia_umidita_velocita_2
                         - input_boolean.vmc_master_spia_umidita_velocita_3
@@ -31304,6 +31327,7 @@ actions:
                     target:
                       entity_id:
                         - input_boolean.vmc_master_spia_umidita_velocita_0
+                        - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                         - input_boolean.vmc_master_spia_umidita_velocita_1
                         - input_boolean.vmc_master_spia_umidita_velocita_2
                         - input_boolean.vmc_master_spia_umidita_velocita_3
@@ -31373,6 +31397,7 @@ actions:
                     target:
                       entity_id:
                         - input_boolean.vmc_master_spia_umidita_velocita_0
+                        - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                         - input_boolean.vmc_master_spia_umidita_velocita_1
                         - input_boolean.vmc_master_spia_umidita_velocita_2
                         - input_boolean.vmc_master_spia_umidita_velocita_3
@@ -31442,6 +31467,7 @@ actions:
                     target:
                       entity_id:
                         - input_boolean.vmc_master_spia_umidita_velocita_0
+                        - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                         - input_boolean.vmc_master_spia_umidita_velocita_1
                         - input_boolean.vmc_master_spia_umidita_velocita_2
                         - input_boolean.vmc_master_spia_umidita_velocita_3
@@ -31510,6 +31536,7 @@ actions:
                     target:
                       entity_id:
                         - input_boolean.vmc_master_spia_umidita_velocita_0
+                        - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                         - input_boolean.vmc_master_spia_umidita_velocita_1
                         - input_boolean.vmc_master_spia_umidita_velocita_2
                         - input_boolean.vmc_master_spia_umidita_velocita_3
@@ -31578,6 +31605,10 @@ actions:
                 value_template: "{{ is_state('input_boolean.vmc_master_spia_umidita_velocita_0', 'on') and states('input_select.vmc_master_speed_umidita') != 'Velocità 0' and not (trigger.from_state is defined and trigger.from_state is not none and trigger.from_state.state in ['Non disponibile', 'sconosciuto', 'unknown', 'unavailable', '', 'OFF-Line']) }}"
                 alias: Memoria «a fine allerta torna a 0» dell'avvio da Velocità 0, programmata diversa da 0, lettura della velocità non appena tornata disponibile
             then:
+              - action: input_boolean.turn_off
+                target:
+                  entity_id: input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
+                alias: "La Velocità 0 non è più mantenuta (la VMC riparte con la velocità dell'Umidità)"
               - variables:
                   vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
                   free_con_allerte: "{{ states('input_select.vmc_master_speed_umidita') == 'Free Cool./Heat.' and\n   (\n    states('sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi') in [\n      \"Allerta Free Heating Programmato (Raffrescamento Arrestato)\",\n      \"Allerta Free Heating Programmato (Raffrescamento in atto)\",\n      \"Allerta Free Heating Programmato (Raffrescamento in atto, Presenza di Inquinanti)\",\n      \"Allerta Free Heating Programmato (Raffrescamento Arrestato, Presenza di Inquinanti)\",\n      \"Allerta Free Cooling Programmato (Riscaldamento in atto)\",\n      \"Allerta Free Cooling Programmato (Riscaldamento Arrestato)\",\n      \"Allerta Free Cooling Programmato (Riscaldamento Arrestato, Presenza di Inquinanti)\",\n      \"Allerta Free Cooling Programmato (Riscaldamento in atto, Presenza di Inquinanti)\",\n      \"Allerta Raffrescamento in atto\",\n      \"Allerta Riscaldamento in atto\",\n      \"Allerta Riscaldamento in atto, Presenza di Inquinanti\",\n      \"Allerta Raffrescamento in atto, Presenza di Inquinanti\",\n      \"Non Avviare in Velocità Free Heating Programmato (Allerta Raffrescamento)\",\n      \"Non Avviare in Velocità Free Heating Programmato (Allerta Raffrescamento, Presenza di Inquinanti)\",\n      \"Non Avviare in Velocità Free Cooling Programmato (Allerta Riscaldamento)\",\n      \"Non Avviare in Velocità Free Cooling Programmato (Allerta Riscaldamento, Presenza di Inquinanti)\"\n    ]\n  )\n}}"
@@ -31604,7 +31635,9 @@ actions:
                 metadata: {}
                 data: {}
                 target:
-                  entity_id: input_boolean.vmc_master_spia_umidita_velocita_0
+                  entity_id:
+                    - input_boolean.vmc_master_spia_umidita_velocita_0
+                    - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
               - action: input_boolean.turn_off
                 metadata: {}
                 data: {}
@@ -31694,6 +31727,7 @@ actions:
                     data: {}
                     target:
                       entity_id:
+                        - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                         - input_boolean.vmc_master_spia_umidita_velocita_1
                         - input_boolean.vmc_master_spia_umidita_velocita_2
                         - input_boolean.vmc_master_spia_umidita_velocita_3
@@ -31751,6 +31785,7 @@ actions:
                     target:
                       entity_id:
                         - input_boolean.vmc_master_spia_umidita_velocita_0
+                        - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                         - input_boolean.vmc_master_spia_umidita_velocita_2
                         - input_boolean.vmc_master_spia_umidita_velocita_3
                         - input_boolean.vmc_master_spia_umidita_velocita_4
@@ -31806,6 +31841,7 @@ actions:
                     data: {}
                     target:
                       entity_id:
+                        - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                         - input_boolean.vmc_master_spia_umidita_velocita_1
                         - input_boolean.vmc_master_spia_umidita_velocita_2
                         - input_boolean.vmc_master_spia_umidita_velocita_3
@@ -31842,6 +31878,7 @@ actions:
                 target:
                   entity_id:
                     - input_boolean.vmc_master_spia_umidita_velocita_0
+                    - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                     - input_boolean.vmc_master_spia_umidita_velocita_1
                     - input_boolean.vmc_master_spia_umidita_velocita_3
                     - input_boolean.vmc_master_spia_umidita_velocita_4
@@ -31885,6 +31922,7 @@ actions:
                 data: {}
                 target:
                   entity_id:
+                    - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                     - input_boolean.vmc_master_spia_umidita_velocita_1
                     - input_boolean.vmc_master_spia_umidita_velocita_2
                     - input_boolean.vmc_master_spia_umidita_velocita_3
@@ -31916,6 +31954,7 @@ actions:
                 target:
                   entity_id:
                     - input_boolean.vmc_master_spia_umidita_velocita_0
+                    - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                     - input_boolean.vmc_master_spia_umidita_velocita_1
                     - input_boolean.vmc_master_spia_umidita_velocita_2
                     - input_boolean.vmc_master_spia_umidita_velocita_4
@@ -31959,6 +31998,7 @@ actions:
                 data: {}
                 target:
                   entity_id:
+                    - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                     - input_boolean.vmc_master_spia_umidita_velocita_1
                     - input_boolean.vmc_master_spia_umidita_velocita_2
                     - input_boolean.vmc_master_spia_umidita_velocita_3
@@ -31990,6 +32030,7 @@ actions:
                 target:
                   entity_id:
                     - input_boolean.vmc_master_spia_umidita_velocita_0
+                    - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                     - input_boolean.vmc_master_spia_umidita_velocita_1
                     - input_boolean.vmc_master_spia_umidita_velocita_2
                     - input_boolean.vmc_master_spia_umidita_velocita_3
@@ -32033,6 +32074,7 @@ actions:
                 data: {}
                 target:
                   entity_id:
+                    - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                     - input_boolean.vmc_master_spia_umidita_velocita_1
                     - input_boolean.vmc_master_spia_umidita_velocita_2
                     - input_boolean.vmc_master_spia_umidita_velocita_3
@@ -32064,6 +32106,7 @@ actions:
                 target:
                   entity_id:
                     - input_boolean.vmc_master_spia_umidita_velocita_0
+                    - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                     - input_boolean.vmc_master_spia_umidita_velocita_1
                     - input_boolean.vmc_master_spia_umidita_velocita_2
                     - input_boolean.vmc_master_spia_umidita_velocita_3
@@ -32107,6 +32150,7 @@ actions:
                 data: {}
                 target:
                   entity_id:
+                    - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                     - input_boolean.vmc_master_spia_umidita_velocita_1
                     - input_boolean.vmc_master_spia_umidita_velocita_2
                     - input_boolean.vmc_master_spia_umidita_velocita_3
@@ -32139,6 +32183,7 @@ actions:
                 target:
                   entity_id:
                     - input_boolean.vmc_master_spia_umidita_velocita_0
+                    - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                     - input_boolean.vmc_master_spia_umidita_velocita_1
                     - input_boolean.vmc_master_spia_umidita_velocita_2
                     - input_boolean.vmc_master_spia_umidita_velocita_3
@@ -32181,6 +32226,7 @@ actions:
                 data: {}
                 target:
                   entity_id:
+                    - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                     - input_boolean.vmc_master_spia_umidita_velocita_1
                     - input_boolean.vmc_master_spia_umidita_velocita_2
                     - input_boolean.vmc_master_spia_umidita_velocita_3
@@ -32216,6 +32262,7 @@ actions:
                 data: {}
                 target:
                   entity_id:
+                    - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                     - input_boolean.vmc_master_spia_umidita_velocita_1
                     - input_boolean.vmc_master_spia_umidita_velocita_2
                     - input_boolean.vmc_master_spia_umidita_velocita_3
@@ -32236,6 +32283,7 @@ actions:
                 target:
                   entity_id:
                     - input_boolean.vmc_master_spia_umidita_velocita_0
+                    - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
                     - input_boolean.vmc_master_spia_umidita_velocita_1
                     - input_boolean.vmc_master_spia_umidita_velocita_2
                     - input_boolean.vmc_master_spia_umidita_velocita_3
