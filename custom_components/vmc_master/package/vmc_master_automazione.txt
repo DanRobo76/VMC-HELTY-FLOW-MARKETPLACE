@@ -31112,8 +31112,12 @@ actions:
             id:
               - pannello_avvisi_problema
         sequence:
-          - data: {}
-            action: script.vmc_master_upgrade_sensors
+          - action: script.turn_on
+            metadata: {}
+            data: {}
+            target:
+              entity_id: script.vmc_master_upgrade_sensors
+            alias: Avvia Agg. Sensori senza attenderne la fine (79 s), così le allerte e il Black-Out non restano in coda
       - conditions:
           - condition: trigger
             id:
