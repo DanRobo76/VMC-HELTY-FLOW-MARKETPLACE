@@ -78,6 +78,39 @@ function dettaglioErrore(errore) {
   );
 }
 
+// Versione dell'integrazione: «x.y.z» oppure «x.y.zbN» (beta)
+const RE_VERSIONE = /^[0-9]+(\.[0-9]+)*(b[0-9]+)?$/;
+
+// Confronta due versioni valide (RE_VERSIONE): 1 se a e' piu' nuova di b, -1 se e' piu' vecchia,
+// 0 se sono uguali. I numeri mancanti valgono 0 (9.0 = 9.0.0); una beta e' piu' vecchia della
+// stessa versione senza «b» (9.0.0b34 < 9.0.0) e tra due beta conta il numero (9.0.0b9 < 9.0.0b10).
+function confrontaVersioni(a, b) {
+  const parti = (versione) => {
+    const [numeri, beta] = versione.split("b");
+    return { numeri: numeri.split(".").map(Number), beta: beta === undefined ? Infinity : Number(beta) };
+  };
+  const x = parti(a);
+  const y = parti(b);
+  for (let i = 0; i < Math.max(x.numeri.length, y.numeri.length); i++) {
+    const differenza = (x.numeri[i] || 0) - (y.numeri[i] || 0);
+    if (differenza !== 0) {
+      return differenza > 0 ? 1 : -1;
+    }
+  }
+  return x.beta === y.beta ? 0 : x.beta > y.beta ? 1 : -1;
+}
+
+// Versione piu' alta tra i sensori «Package Ver.» di tutte le VMC («v.9.0.0b34» -> «9.0.0b34»),
+// "" se nessuna e' valida. Il package di una VMC disabilitata non si aggiorna piu' e resta
+// indietro: con la piu' alta non conta.
+function versionePiuAlta(stati) {
+  return Object.keys(stati)
+    .filter((id) => /^sensor\.vmc_[a-z]+_versione_corrente$/.test(id))
+    .map((id) => String(stati[id] && stati[id].state).replace(/^[^0-9]*/, "").trim())
+    .filter((versione) => RE_VERSIONE.test(versione))
+    .reduce((piuAlta, versione) => (piuAlta === "" || confrontaVersioni(versione, piuAlta) > 0 ? versione : piuAlta), "");
+}
+
 function titoloInformazioni(elemento) {
   return (
     elemento &&
@@ -164,13 +197,13 @@ class VmcMasterCard extends HTMLElement {
   // Dopo un aggiornamento dell'integrazione il browser si ricollega senza ricaricare la
   // pagina e questo file resta quello vecchio (per esempio una versione senza il controllo
   // all'apertura del Pannello Informazioni): lo si dice una volta, nella console e con un
-  // avviso di Home Assistant, finche' la pagina non viene ricaricata.
+  // avviso di Home Assistant, finche' la pagina non viene ricaricata. Si guarda la versione
+  // piu' alta tra tutte le VMC e si avvisa solo se e' piu' nuova di questo file: se e' piu'
+  // vecchia (package non ancora riscritti, secondo riavvio richiesto) ricaricare non serve.
   _avvisaVersioneVecchia() {
     const stati = (this._hass && this._hass.states) || {};
-    const id = Object.keys(stati).find((x) => /^sensor\.vmc_[a-z]+_versione_corrente$/.test(x));
-    const stato = id && stati[id];
-    const installata = stato ? String(stato.state).replace(/^[^0-9]*/, "").trim() : "";
-    if (!VERSIONE_JS || !/^[0-9]/.test(installata) || installata === VERSIONE_JS) {
+    const installata = versionePiuAlta(stati);
+    if (!RE_VERSIONE.test(VERSIONE_JS) || !installata || confrontaVersioni(installata, VERSIONE_JS) <= 0) {
       return;
     }
     if (window.__vmcMasterAvvisoVersione === installata) {
