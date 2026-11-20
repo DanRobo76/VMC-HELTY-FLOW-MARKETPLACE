@@ -16874,6 +16874,11 @@ script:
       non alle letture: si accende la Spia Comando non eseguito del Calendario e, appena la VMC torna a
       rispondere, la Fascia riparte, salvo se nel frattempo la velocità è cambiata, per esempio con il
       telecomando).
+      Anche la Velocità 0 che l'Automazione manda alla fine della Fascia smette di essere ripetuta se la
+      velocità non si legge: si accende la stessa Spia e, appena la VMC torna a rispondere, la Velocità 0
+      viene ripetuta, salvo se nel frattempo la velocità è cambiata o è in corso un'allerta Congelamento o
+      Δ Temp.; se invece la VMC va OFF-Line prima di confermarla, la Velocità 0 viene memorizzata e
+      rimandata al ritorno della corrente.
       Se Home Assistant si riavvia durante lo script (attesa di 5 s o ripetizione del comando), lo script
       non riprende: la spia della Fascia resta accesa e la VMC resta alla velocità in cui si trova (salvo
       le allerte) finché non si sceglie un'altra Velocità o non finisce la Fascia; al riavvio la Fascia non
@@ -25145,6 +25150,11 @@ script:
       non alle letture: si accende la Spia Comando non eseguito del Calendario e, appena la VMC torna a
       rispondere, la Fascia riparte, salvo se nel frattempo la velocità è cambiata, per esempio con il
       telecomando).
+      Anche la Velocità 0 che l'Automazione manda alla fine della Fascia smette di essere ripetuta se la
+      velocità non si legge: si accende la stessa Spia e, appena la VMC torna a rispondere, la Velocità 0
+      viene ripetuta, salvo se nel frattempo la velocità è cambiata o è in corso un'allerta Congelamento o
+      Δ Temp.; se invece la VMC va OFF-Line prima di confermarla, la Velocità 0 viene memorizzata e
+      rimandata al ritorno della corrente.
       Se Home Assistant si riavvia durante lo script (attesa di 5 s o ripetizione del comando), lo script
       non riprende: la spia della Fascia resta accesa e la VMC resta alla velocità in cui si trova (salvo
       le allerte) finché non si sceglie un'altra Velocità o non finisce la Fascia; al riavvio la Fascia non

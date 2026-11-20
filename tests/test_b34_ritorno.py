@@ -163,6 +163,7 @@ def test_ramo_spegne_la_spia_e_rilancia_lo_script_della_fascia_accesa() -> None:
     assert passi[1]["action"] == "input_boolean.turn_off" and passi[1]["target"] == {"entity_id": SPIA}
     assert passi[2]["condition"] == "template"
     (scelta,) = passi[3:]
+    assert len(scelta["choose"]) == 3  # b35 (C1-1): la terza opzione ripete la Velocita' 0 di fine Fascia
     for n, opzione in zip((1, 2), scelta["choose"]):
         modello = " ".join(opzione["conditions"][0]["value_template"].split())
         assert modello == "{{ " + " or ".join(
@@ -171,7 +172,7 @@ def test_ramo_spegne_la_spia_e_rilancia_lo_script_della_fascia_accesa() -> None:
         assert chiamata["action"] == f"script.vmc_master_calendario_fascia_{n}_on"
         assert chiamata["data"] == {"comando_non_eseguito_dalle": "{{ comando_non_eseguito_dalle }}"}
     assert "default" not in scelta
-    assert "shell_command." not in str(_ramo())
+    assert "shell_command." not in str(scelta["choose"][:2]) and "shell_command." not in str(passi[:3])
 
 
 @pytest.mark.parametrize(
@@ -230,8 +231,12 @@ def test_descrizioni_e_scheda() -> None:
         assert "(anche la Spia Comando non eseguito si spegne)" in testo
         for vietata in ("vmc_master", "master", "input_", "sensor.", "999.999"):
             assert vietata not in testo
-    frase = ("se invece la VMC risponde al ping ma non esegue i comandi, dopo 32 Secondi la Fascia smette di ripetere il "
-             "comando e lo invia di nuovo appena la VMC torna a rispondere, salvo se nel frattempo la Velocità è cambiata "
-             "(per esempio con il Telecomando);")
+    # b35 (C5-1): la causa vera (la velocita' non si legge) e il caso della fine della Fascia (C1-1)
+    frase = ("se invece la VMC risponde al ping ma la sua velocità non si legge (porta 5001), dopo 32 Secondi la Fascia "
+             "smette di ripetere il comando e, appena la velocità torna leggibile, la Fascia riparte, salvo se nel "
+             "frattempo la Velocità è cambiata (per esempio con il Telecomando); lo stesso vale per la Velocità 0 di fine "
+             "Fascia: appena la velocità torna leggibile la Velocità 0 viene ripetuta, salvo se nel frattempo la Velocità "
+             "è cambiata o è in corso un'allerta Congelamento o Δ Temp.; se invece la corrente manca proprio mentre la "
+             "Fascia finisce, al ritorno della corrente la VMC si arresta dopo 32 Secondi;")
     assert frase in " ".join(_automazione()["description"].split())
     assert frase + "<br>" in " ".join(_testo("vmc_master_scheda_manuale_interfaccia.txt").split())
