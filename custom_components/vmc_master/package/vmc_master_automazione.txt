@@ -3720,7 +3720,7 @@ triggers:
     value_template: |
       {%- set _i = states('sensor.vmc_master_versione_corrente') | trim | regex_replace('^[^0-9]*', '') -%}
       {%- set _r = states('sensor.vmc_master_versione_repository') | trim | regex_replace('^[^0-9]*', '') -%}
-      {%- set _nuova = _i is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and _r is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and (((_r.split('b'))[0].split('.') | map('int') | list) + ([0, (_r.split('b'))[1] | int] if 'b' in _r else [1, 0])) > (((_i.split('b'))[0].split('.') | map('int') | list) + ([0, (_i.split('b'))[1] | int] if 'b' in _i else [1, 0])) -%}
+      {%- set _nuova = _i is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and _r is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and (((_r.split('b'))[0].split('.') | map('int') | list) + [0, 0][(_r.split('b'))[0].count('.'):] + ([0, (_r.split('b'))[1] | int] if 'b' in _r else [1, 0])) > (((_i.split('b'))[0].split('.') | map('int') | list) + [0, 0][(_i.split('b'))[0].count('.'):] + ([0, (_i.split('b'))[1] | int] if 'b' in _i else [1, 0])) -%}
       {%- set _valida = _i is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and _r is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') -%}
       {{
       (
@@ -3747,7 +3747,7 @@ triggers:
     value_template: |
       {%- set _i = states('sensor.vmc_master_versione_corrente') | trim | regex_replace('^[^0-9]*', '') -%}
       {%- set _r = states('sensor.vmc_master_versione_repository') | trim | regex_replace('^[^0-9]*', '') -%}
-      {%- set _nuova = _i is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and _r is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and (((_r.split('b'))[0].split('.') | map('int') | list) + ([0, (_r.split('b'))[1] | int] if 'b' in _r else [1, 0])) > (((_i.split('b'))[0].split('.') | map('int') | list) + ([0, (_i.split('b'))[1] | int] if 'b' in _i else [1, 0])) -%}
+      {%- set _nuova = _i is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and _r is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and (((_r.split('b'))[0].split('.') | map('int') | list) + [0, 0][(_r.split('b'))[0].count('.'):] + ([0, (_r.split('b'))[1] | int] if 'b' in _r else [1, 0])) > (((_i.split('b'))[0].split('.') | map('int') | list) + [0, 0][(_i.split('b'))[0].count('.'):] + ([0, (_i.split('b'))[1] | int] if 'b' in _i else [1, 0])) -%}
       {%- set _valida = _i is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and _r is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') -%}
       {{
       (
@@ -5204,8 +5204,7 @@ triggers:
     value_template: >
       {{ 
 
-      states('sensor.vmc_master_umidita_esterna_status') in ["sconosciuto",
-      "unknown", "", none, "unavailable", "Non disponibile","-100"] and not states('input_select.vmc_master_selected_humidity_external_entity').startswith('Aggiorna Elenco') and
+      states('sensor.vmc_master_umidita_esterna_selezionata') == '-100' and not states('input_select.vmc_master_selected_humidity_external_entity').startswith('Aggiorna Elenco') and
 
       states('input_boolean.vmc_master_notifica_status_vmc') == 'on' and
 
@@ -8793,7 +8792,7 @@ actions:
       {%- elif trigger.id == 'Repository Update ON' -%}
       {%- set _i = states('sensor.vmc_master_versione_corrente') | trim | regex_replace('^[^0-9]*', '') -%}
       {%- set _r = states('sensor.vmc_master_versione_repository') | trim | regex_replace('^[^0-9]*', '') -%}
-      {%- set _nuova = _i is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and _r is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and (((_r.split('b'))[0].split('.') | map('int') | list) + ([0, (_r.split('b'))[1] | int] if 'b' in _r else [1, 0])) > (((_i.split('b'))[0].split('.') | map('int') | list) + ([0, (_i.split('b'))[1] | int] if 'b' in _i else [1, 0])) -%}
+      {%- set _nuova = _i is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and _r is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and (((_r.split('b'))[0].split('.') | map('int') | list) + [0, 0][(_r.split('b'))[0].count('.'):] + ([0, (_r.split('b'))[1] | int] if 'b' in _r else [1, 0])) > (((_i.split('b'))[0].split('.') | map('int') | list) + [0, 0][(_i.split('b'))[0].count('.'):] + ([0, (_i.split('b'))[1] | int] if 'b' in _i else [1, 0])) -%}
       {%- set _valida = _i is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and _r is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') -%}
       {{
       (
@@ -8815,7 +8814,7 @@ actions:
       {%- elif trigger.id == 'Repository Update OFF' -%}
       {%- set _i = states('sensor.vmc_master_versione_corrente') | trim | regex_replace('^[^0-9]*', '') -%}
       {%- set _r = states('sensor.vmc_master_versione_repository') | trim | regex_replace('^[^0-9]*', '') -%}
-      {%- set _nuova = _i is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and _r is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and (((_r.split('b'))[0].split('.') | map('int') | list) + ([0, (_r.split('b'))[1] | int] if 'b' in _r else [1, 0])) > (((_i.split('b'))[0].split('.') | map('int') | list) + ([0, (_i.split('b'))[1] | int] if 'b' in _i else [1, 0])) -%}
+      {%- set _nuova = _i is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and _r is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and (((_r.split('b'))[0].split('.') | map('int') | list) + [0, 0][(_r.split('b'))[0].count('.'):] + ([0, (_r.split('b'))[1] | int] if 'b' in _r else [1, 0])) > (((_i.split('b'))[0].split('.') | map('int') | list) + [0, 0][(_i.split('b'))[0].count('.'):] + ([0, (_i.split('b'))[1] | int] if 'b' in _i else [1, 0])) -%}
       {%- set _valida = _i is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and _r is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') -%}
       {{
       (
@@ -9697,7 +9696,7 @@ actions:
       }}
       {%- elif trigger.id == 'Entità Umidità Esterna Errore [Mobile]' -%}
       {{
-      states('sensor.vmc_master_umidita_esterna_status') in ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile","-100"] and not states('input_select.vmc_master_selected_humidity_external_entity').startswith('Aggiorna Elenco') and
+      states('sensor.vmc_master_umidita_esterna_selezionata') == '-100' and not states('input_select.vmc_master_selected_humidity_external_entity').startswith('Aggiorna Elenco') and
       states('input_boolean.vmc_master_notifica_status_vmc') == 'on' and
       states('input_boolean.vmc_master_spia_velocita_0') == 'off' and
       states('input_boolean.vmc_master_spia_velocita_1') == 'off' and
@@ -11038,7 +11037,7 @@ actions:
                 input_boolean.vmc_master_opzioni_interruttore_monitoraggio_sensori_extra
             action: input_boolean.turn_off
         alias: >-
-          Trigger Attivazione Sotto Finestra Sensori Extra - Finestra
+          Trigger Disattivazione Sotto Finestra Sensori Extra - Finestra
           Monitoraggio
       - conditions:
           - condition: trigger
@@ -11191,7 +11190,6 @@ actions:
                 - input_boolean.vmc_master_opzioni_calendario_main
                 - input_boolean.vmc_master_opzioni_free_heating_o_free_cooling
                 - input_boolean.vmc_master_opzioni_calendario
-                - input_boolean.vmc_master_opzioni_free_heating_o_free_cooling
                 - input_boolean.vmc_master_opzioni_scelta_sensori
                 - input_boolean.vmc_master_opzioni_elementi_chimici
                 - input_boolean.vmc_master_opzione_finestra_audio
@@ -16928,6 +16926,15 @@ actions:
                       entity_id: >-
                         input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_freeheating
                     action: input_boolean.turn_on
+                  - alias: Mese corrente non più programmato per il Free Heating -> spegne anche l'attesa Free, come il ramo c0 (correzione O2)
+                    if:
+                      - condition: template
+                        value_template: "{{ states('sensor.vmc_master_status_freeheating') != 'OK' }}"
+                    then:
+                      - data: {}
+                        target:
+                          entity_id: input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating
+                        action: input_boolean.turn_off
                 alias: se Spia Congelamento ON o Spia Delta Temp ON
         alias: >-
           Disattivazione VMC ON/OFF, in Funzione della Vel. Free Heating
@@ -17329,6 +17336,15 @@ actions:
                       entity_id: >-
                         input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_freecooling
                     action: input_boolean.turn_on
+                  - alias: Mese corrente non più programmato per il Free Cooling -> spegne anche l'attesa Free, come il ramo c0 (correzione O2)
+                    if:
+                      - condition: template
+                        value_template: "{{ states('sensor.vmc_master_status_freecooling') != 'OK' }}"
+                    then:
+                      - data: {}
+                        target:
+                          entity_id: input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling
+                        action: input_boolean.turn_off
                 alias: se Spia Congelamento ON o Spia Delta Temp ON
         alias: >-
           Disattivazione VMC ON/OFF, in Funzione della Vel. Free Cooling
@@ -31126,7 +31142,6 @@ actions:
                 - input_boolean.vmc_master_opzioni_calendario_main
                 - input_boolean.vmc_master_opzioni_free_heating_o_free_cooling
                 - input_boolean.vmc_master_opzioni_calendario
-                - input_boolean.vmc_master_opzioni_free_heating_o_free_cooling
                 - input_boolean.vmc_master_opzioni_punto_di_rugiada
                 - input_boolean.vmc_master_opzioni_elementi_chimici
                 - input_boolean.vmc_master_opzione_finestra_audio
@@ -31163,7 +31178,6 @@ actions:
                 - input_boolean.vmc_master_opzioni_calendario_main
                 - input_boolean.vmc_master_opzioni_free_heating_o_free_cooling
                 - input_boolean.vmc_master_opzioni_calendario
-                - input_boolean.vmc_master_opzioni_free_heating_o_free_cooling
                 - input_boolean.vmc_master_opzioni_punto_di_rugiada
                 - input_boolean.vmc_master_opzioni_scelta_sensori
                 - input_boolean.vmc_master_opzione_finestra_audio
@@ -31198,7 +31212,6 @@ actions:
                 - input_boolean.vmc_master_opzioni_calendario_main
                 - input_boolean.vmc_master_opzioni_free_heating_o_free_cooling
                 - input_boolean.vmc_master_opzioni_calendario
-                - input_boolean.vmc_master_opzioni_free_heating_o_free_cooling
                 - input_boolean.vmc_master_opzioni_punto_di_rugiada
                 - input_boolean.vmc_master_opzioni_scelta_sensori
                 - input_boolean.vmc_master_opzioni_elementi_chimici
@@ -31548,8 +31561,12 @@ actions:
             id:
               - pannello_avvisi_problema
         sequence:
-          - data: {}
-            action: script.vmc_master_upgrade_sensors
+          - action: script.turn_on
+            metadata: {}
+            data: {}
+            target:
+              entity_id: script.vmc_master_upgrade_sensors
+            alias: Avvia Agg. Sensori senza attenderne la fine (79 s), così le allerte e il Black-Out non restano in coda
       - conditions:
           - condition: trigger
             id:
@@ -33193,11 +33210,11 @@ actions:
             id:
               - umidita_velocita_0
         sequence:
-          - alias: Umidità che ha avviato la VMC da Velocità 0 e VMC ancora (o di nuovo) a 0 -> rimanda la velocità di avvio dell'opzione 175, la memoria resta (correzione U3); non se la Velocità 0 l'ha scelta l'utente durante l'Umidità (Velocità 0 mantenuta)
+          - alias: Umidità che ha avviato la VMC da Velocità 0 e VMC ancora (o di nuovo) a 0 -> rimanda la velocità di avvio dell'opzione 175, la memoria resta (correzione U3); non se la Velocità 0 l'ha scelta l'utente durante l'Umidità (Velocità 0 mantenuta); anche con la lettura appena tornata disponibile dopo un OFF-Line breve (B4-4)
             if:
               - condition: template
-                value_template: "{{ is_state('input_boolean.vmc_master_spia_umidita_velocita_0', 'on') and is_state('input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0', 'off') and states('input_select.vmc_master_speed_umidita') != 'Velocità 0' and not (trigger.from_state is defined and trigger.from_state is not none and trigger.from_state.state in ['Non disponibile', 'sconosciuto', 'unknown', 'unavailable', '', 'OFF-Line']) }}"
-                alias: Memoria «a fine allerta torna a 0» dell'avvio da Velocità 0, programmata diversa da 0, lettura della velocità non appena tornata disponibile
+                value_template: "{{ is_state('input_boolean.vmc_master_spia_umidita_velocita_0', 'on') and is_state('input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0', 'off') and states('input_select.vmc_master_speed_umidita') != 'Velocità 0' }}"
+                alias: Memoria «a fine allerta torna a 0» dell'avvio da Velocità 0 (non mantenuta) e velocità di avvio programmata diversa da 0
             then:
               - action: input_boolean.turn_off
                 target:
@@ -33225,6 +33242,9 @@ actions:
                     - condition: template
                       value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', ''] or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
             else:
+              - alias: Solo con uno stato precedente valido, cioè Velocità 0 scelta dall'utente - con la lettura appena tornata disponibile (stato precedente OFF-Line o Non disponibile) nessuna memoria cambiata (B4-4)
+                condition: template
+                value_template: "{{ not (trigger.from_state is defined and trigger.from_state is not none and trigger.from_state.state in ['Non disponibile', 'sconosciuto', 'unknown', 'unavailable', '', 'OFF-Line']) }}"
               - action: input_boolean.turn_on
                 metadata: {}
                 data: {}
