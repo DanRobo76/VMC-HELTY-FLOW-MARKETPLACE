@@ -3,6 +3,8 @@
   Free Cool./Heat.», 6 comandi) e della Velocita' 1 del Free con Inquinanti (2 comandi) erano singoli: ora usano il
   ciclo standard (Foglio A23 e A27: «ogni comando viene ripetuto finche' la VMC non lo esegue");
 - B3-1: 3 cicli (comando + 4 s) senza la rilettura immediata: ora 1 s + rilettura + 3 s (sempre 4 s in totale);
+  anche gli ultimi 2 cicli senza rilettura: fine Inquinanti in Free (4 s -> 1 s + rilettura + 3 s) e fine Umidita'
+  in Free (5 s -> 1 s + rilettura + 4 s, come gli altri cicli dell'Umidita');
 - B4-3: Inquinanti ON, opzione Iperventilazione: il ciclo delle spie sta prima del ciclo di comando, come nelle 4
   opzioni gemelle.
 Nessun tempo cambia: il ciclo standard dura 4 s a giro, l'attesa di 12 s dopo il ripristino resta dov'era."""
@@ -27,6 +29,7 @@ ETICHETTA = {
 MEMORIA = {"vel_prima_del_comando": f"{{{{ states('{LETTURA}') }}}}"}
 UNO = {"delay": {"hours": 0, "minutes": 0, "seconds": 1, "milliseconds": 0}}
 TRE = {"delay": {"hours": 0, "minutes": 0, "seconds": 3, "milliseconds": 0}}
+QUATTRO = {"delay": {"hours": 0, "minutes": 0, "seconds": 4, "milliseconds": 0}}
 RILETTURA = {
     "action": "homeassistant.update_entity",
     "target": {"entity_id": "sensor.vmc_master_status_ventola"},
@@ -159,8 +162,9 @@ def test_free_con_inquinanti_velocita_1_nel_ciclo_standard() -> None:
 
 
 def test_ogni_ciclo_dell_automazione_ha_la_rilettura_immediata() -> None:
-    """B3-1: i cicli dei rami 49, 61 e 63 ora hanno 1 s, la rilettura e 3 s. Restano senza rilettura solo i 2
-    cicli fuori da questi rilievi (fine Inquinanti in Free, 4 s; fine Umidita' in Free, 5 s)."""
+    """B3-1: i cicli dei rami 49, 61 e 63 ora hanno 1 s, la rilettura e 3 s; anche fine Inquinanti in Free (1 s +
+    rilettura + 3 s, prima 4 s) e fine Umidita' in Free (1 s + rilettura + 4 s, prima 5 s). Nessun ciclo con un
+    comando di velocita' resta senza la rilettura immediata e ogni giro dura come prima (4 s, o 5 s nell'Umidita')."""
     dati = _automazione()
     rami = _rami(dati)
     for ident in ("Rip. Free Cool./Heat. No PdR", "TeVsTi Free-Heating -> Imposta Velocità 0",
@@ -173,7 +177,12 @@ def test_ogni_ciclo_dell_automazione_ha_la_rilettura_immediata() -> None:
         assert all(dentro for _, dentro in _comandi(rami[ident])), ident
     senza = [c for _, c in _coppie(dati["actions"])
              if not any(p.get("action") == "homeassistant.update_entity" for p in c["repeat"]["sequence"])]
-    assert [c["repeat"]["sequence"][-1]["delay"]["seconds"] for c in senza] == [4, 5]
+    assert senza == []
+    finali = [c["repeat"]["sequence"][-3:] for _, c in _coppie(dati["actions"])
+              if "else 'Free Cooling')" in c["repeat"]["until"][0]["value_template"]]
+    assert finali.count([UNO, RILETTURA, TRE]) == 2  # Rip. Free Cool./Heat. No PdR, fine Inquinanti in Free
+    assert finali.count([UNO, RILETTURA, QUATTRO]) == 1  # fine Umidita' in Free
+    assert len(finali) == 3
 
 
 def test_inquinanti_on_iperventilazione_ciclo_delle_spie_prima() -> None:
