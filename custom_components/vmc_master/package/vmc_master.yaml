@@ -1797,8 +1797,8 @@ template:
                   {% if Delta is none %}
                     [Non Calcolabile]
                   {% else %}
-                    {#- Confronto sul valore non arrotondato, come nel sensore Verifica Lim. Δ PdR che comanda la logica -#}
-                    {% set diff_esatta = PdRe_val - PdRi_val %}
+                    {#- Confronto sulla differenza arrotondata a 2 decimali (come i due punti di rugiada), come nel sensore Verifica Lim. Δ PdR che comanda la logica: con Δ uguale al SET l'errore di arrotondamento dei float non la rende minore -#}
+                    {% set diff_esatta = (PdRe_val - PdRi_val) | round(2) %}
                     {% set diff = diff_esatta | round(2) %}
                     {% if diff_esatta < Delta %}
                       Δ PUNTO DI RUGIADA RILEVATO {{ diff }} °C, MINORE DEL VALORE IMPOSTATO ({{ Delta }} °C).
@@ -2104,7 +2104,8 @@ template:
               {% if PdRi_val is none or PdRe_val is none or Delta is none %}
                 [Non Disponibile]
               {% else %}
-                {% if (PdRe_val - PdRi_val) < Delta %}
+                {#- Differenza arrotondata a 2 decimali (come i due punti di rugiada): con Δ PdR uguale al SET l'errore di arrotondamento dei float (8.03 - 6.03 = 1.99999…) non la rende minore; Foglio F6: superato con Δ PdR ≥ SET -#}
+                {% if ((PdRe_val - PdRi_val) | round(2)) < Delta %}
                   Si può impiegare
                 {% else %}
                   Se ne sconsiglia l'impiego
@@ -6199,10 +6200,14 @@ script:
               | map(attribute='entity_id')
               | list %}
   
+            {# L'entità meteo memorizzata resta nell'elenco anche se non è disponibile (senza l'attributo temperature), purché esista ancora in HA: la scelta resta e il valore torna da solo appena il meteo torna disponibile #}
+            {% set last_temperatura_esterna_entity = states('input_text.vmc_master_last_temp_external_entity') %}
+            {% set temperatura_esterna_weather_memorizzata = [last_temperatura_esterna_entity] if (last_temperatura_esterna_entity in (states.weather | map(attribute='entity_id') | list) and last_temperatura_esterna_entity not in temperatura_esterna_weather_entities) else [] %}
+  
             {# Aggiungi manualmente il sensore specificato #}
             {% set temperatura_esterna_custom_entities = ['sensor.vmc_master_temp_esterna_status_senza_offset'] %}
   
-            {% set temperatura_esterna_entities = temperatura_esterna_sensor_entities + temperatura_esterna_weather_entities + temperatura_esterna_custom_entities %}
+            {% set temperatura_esterna_entities = (temperatura_esterna_sensor_entities + temperatura_esterna_weather_entities + temperatura_esterna_weather_memorizzata + temperatura_esterna_custom_entities) | unique | list %}
   
             {% if "Aggiorna Elenco Entità Temperatura Esterna" not in temperatura_esterna_entities %}
               {{ ["Aggiorna Elenco Entità Temperatura Esterna"] + temperatura_esterna_entities }}
@@ -6262,7 +6267,7 @@ script:
                               title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
                               message: "Aggiornare Manualmente l'Entità Temperatura Esterna"
               # Aggiorna l'ultima entità temperatura selezionata
-              # Solo un'entità vera: se l'entità scelta manca per un momento dall'elenco (per esempio meteo non ancora pronto all'avvio) l'ultima scelta resta memorizzata e il prossimo aggiornamento dell'elenco la ripristina
+              # Solo un'entità vera: se l'entità scelta manca per un momento dall'elenco (per esempio non ancora presente in HA all'avvio) l'ultima scelta resta memorizzata e il prossimo aggiornamento dell'elenco la ripristina; un sensore soltanto non disponibile (tiene la device_class) e l'entità meteo memorizzata che esiste ancora in HA, anche se non disponibile, restano invece nell'elenco e la scelta non si perde
               - if:
                   - condition: template
                     value_template: >
@@ -6326,7 +6331,7 @@ script:
             {# Aggiungi manualmente il sensore specificato #}
             {% set temperatura_interna_custom_entities = ['sensor.vmc_master_temp_interna_status_senza_offset'] %}
   
-            {% set temperatura_interna_entities = temperatura_interna_sensor_entities + temperatura_interna_custom_entities %}
+            {% set temperatura_interna_entities = (temperatura_interna_sensor_entities + temperatura_interna_custom_entities) | unique | list %}
   
             {% if "Aggiorna Elenco Entità Temperatura Interna" not in temperatura_interna_entities %}
               {{ ["Aggiorna Elenco Entità Temperatura Interna"] + temperatura_interna_entities }}
@@ -6386,7 +6391,7 @@ script:
                               title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
                               message: "Aggiornare Manualmente l'Entità Temperatura Interna"
               # Aggiorna l'ultima entità temperatura selezionata
-              # Solo un'entità vera: se l'entità scelta manca per un momento dall'elenco (per esempio meteo non ancora pronto all'avvio) l'ultima scelta resta memorizzata e il prossimo aggiornamento dell'elenco la ripristina
+              # Solo un'entità vera: se l'entità scelta manca per un momento dall'elenco (per esempio non ancora presente in HA all'avvio) l'ultima scelta resta memorizzata e il prossimo aggiornamento dell'elenco la ripristina; un sensore soltanto non disponibile resta invece nell'elenco (tiene la device_class) e la scelta non si perde
               - if:
                   - condition: template
                     value_template: >
@@ -6452,7 +6457,11 @@ script:
               | map(attribute='entity_id')
               | list %}
   
-            {% set umidita_esterna_entities = umidita_esterna_sensor_entities + umidita_esterna_weather_entities %}
+            {# L'entità meteo memorizzata resta nell'elenco anche se non è disponibile (senza l'attributo humidity), purché esista ancora in HA: la scelta resta e il valore torna da solo appena il meteo torna disponibile #}
+            {% set last_umidita_esterna_entity = states('input_text.vmc_master_last_humidity_external_entity') %}
+            {% set umidita_esterna_weather_memorizzata = [last_umidita_esterna_entity] if (last_umidita_esterna_entity in (states.weather | map(attribute='entity_id') | list) and last_umidita_esterna_entity not in umidita_esterna_weather_entities) else [] %}
+  
+            {% set umidita_esterna_entities = (umidita_esterna_sensor_entities + umidita_esterna_weather_entities + umidita_esterna_weather_memorizzata) | unique | list %}
   
             {% if "Aggiorna Elenco Entità Umidità Esterna" not in umidita_esterna_entities %}
               {{ ["Aggiorna Elenco Entità Umidità Esterna"] + umidita_esterna_entities }}
@@ -6512,7 +6521,7 @@ script:
                               title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
                               message: "Aggiornare Manualmente l'Entità Umidità Esterna"
               # Aggiorna l'ultima entità umidità selezionata
-              # Solo un'entità vera: se l'entità scelta manca per un momento dall'elenco (per esempio meteo non ancora pronto all'avvio) l'ultima scelta resta memorizzata e il prossimo aggiornamento dell'elenco la ripristina
+              # Solo un'entità vera: se l'entità scelta manca per un momento dall'elenco (per esempio non ancora presente in HA all'avvio) l'ultima scelta resta memorizzata e il prossimo aggiornamento dell'elenco la ripristina; un sensore soltanto non disponibile (tiene la device_class) e l'entità meteo memorizzata che esiste ancora in HA, anche se non disponibile, restano invece nell'elenco e la scelta non si perde
               - if:
                   - condition: template
                     value_template: >
@@ -6576,7 +6585,7 @@ script:
             {# Aggiungi manualmente il sensore specificato #}
             {% set umidita_interna_custom_entities = ['sensor.vmc_master_umidita_interna_status_senza_offset'] %}
   
-            {% set umidita_interna_entities = umidita_interna_sensor_entities + umidita_interna_custom_entities %}
+            {% set umidita_interna_entities = (umidita_interna_sensor_entities + umidita_interna_custom_entities) | unique | list %}
   
             {% if "Aggiorna Elenco Entità Umidità Interna" not in umidita_interna_entities %}
               {{ ["Aggiorna Elenco Entità Umidità Interna"] + umidita_interna_entities }}
@@ -6636,7 +6645,7 @@ script:
                               title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
                               message: "Aggiornare Manualmente l'Entità Umidità Interna"
               # Aggiorna l'ultima entità umidità selezionata
-              # Solo un'entità vera: se l'entità scelta manca per un momento dall'elenco (per esempio meteo non ancora pronto all'avvio) l'ultima scelta resta memorizzata e il prossimo aggiornamento dell'elenco la ripristina
+              # Solo un'entità vera: se l'entità scelta manca per un momento dall'elenco (per esempio non ancora presente in HA all'avvio) l'ultima scelta resta memorizzata e il prossimo aggiornamento dell'elenco la ripristina; un sensore soltanto non disponibile resta invece nell'elenco (tiene la device_class) e la scelta non si perde
               - if:
                   - condition: template
                     value_template: >
@@ -6697,7 +6706,7 @@ script:
     
             {% set co2_interna_custom_entities = ['sensor.vmc_master_co2_status_senza_offset'] %}
     
-            {% set co2_interna_entities = co2_interna_sensor_entities + co2_interna_custom_entities %}
+            {% set co2_interna_entities = (co2_interna_sensor_entities + co2_interna_custom_entities) | unique | list %}
     
             {% if "Aggiorna Elenco Entità CO₂ Interna" not in co2_interna_entities %}
               {{ ["Aggiorna Elenco Entità CO₂ Interna"] + co2_interna_entities }}
@@ -6752,7 +6761,7 @@ script:
                               notification_id: vmc_master_aggiorna_entita_co2_interna
                               title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
                               message: "Aggiornare Manualmente l'Entità CO2 Interna"
-              # Solo un'entità vera: se l'entità scelta manca per un momento dall'elenco (per esempio meteo non ancora pronto all'avvio) l'ultima scelta resta memorizzata e il prossimo aggiornamento dell'elenco la ripristina
+              # Solo un'entità vera: se l'entità scelta manca per un momento dall'elenco (per esempio non ancora presente in HA all'avvio) l'ultima scelta resta memorizzata e il prossimo aggiornamento dell'elenco la ripristina; un sensore soltanto non disponibile resta invece nell'elenco (tiene la device_class) e la scelta non si perde
               - if:
                   - condition: template
                     value_template: >
@@ -6810,6 +6819,7 @@ script:
               | select('string')
               | map('slugify')
               | map('regex_replace', '^','')
+              | unique
               | list %}
   
             {% if "Aggiorna Elenco Dispositivi per Invio Notifica" not in mobile_app_notify_entities %}
@@ -6871,7 +6881,7 @@ script:
                               notification_id: vmc_master_aggiorna_entita_dispositivo_notifica
                               title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
                               message: "Nessun cellulare con l'app Home Assistant: installare l'app sul cellulare, accedere a Home Assistant e poi scegliere il cellulare in Opzioni, «Seleziona Dispositivo per Invio Notifica»"
-              # Solo un'entità vera: se l'entità scelta manca per un momento dall'elenco (per esempio meteo non ancora pronto all'avvio) l'ultima scelta resta memorizzata e il prossimo aggiornamento dell'elenco la ripristina
+              # Solo un'entità vera: se l'entità scelta manca per un momento dall'elenco (per esempio non ancora presente in HA all'avvio) l'ultima scelta resta memorizzata e il prossimo aggiornamento dell'elenco la ripristina; un dispositivo soltanto non raggiungibile resta invece nell'elenco e la scelta non si perde
               - if:
                   - condition: template
                     value_template: >
@@ -6924,7 +6934,7 @@ script:
           entity_id: input_select.vmc_master_selected_media_player_entity
         data:
           options: >
-            {% set media_players = states.media_player | map(attribute='entity_id') | list | default([]) %}
+            {% set media_players = states.media_player | map(attribute='entity_id') | unique | list | default([]) %}
             {% if "Aggiorna Elenco Media Player" not in media_players %}
               {{ ["Aggiorna Elenco Media Player"] + media_players }}
             {% else %}
@@ -6972,7 +6982,7 @@ script:
                         data:
                           option: "Aggiorna Elenco Media Player"
                       # NESSUNA NOTIFICA PERSISTENTE PER IL MEDIA PLAYER: I persistent_notification.dismiss DI QUESTO SCRIPT TOLGONO SOLO QUELLA RIMASTA DALLE VERSIONI PRECEDENTI
-              # Solo un'entità vera: se l'entità scelta manca per un momento dall'elenco (per esempio meteo non ancora pronto all'avvio) l'ultima scelta resta memorizzata e il prossimo aggiornamento dell'elenco la ripristina
+              # Solo un'entità vera: se l'entità scelta manca per un momento dall'elenco (per esempio non ancora presente in HA all'avvio) l'ultima scelta resta memorizzata e il prossimo aggiornamento dell'elenco la ripristina; un media player soltanto non disponibile resta invece nell'elenco e la scelta non si perde
               - if:
                   - condition: template
                     value_template: >
@@ -26895,7 +26905,9 @@ automation:
       corso al riavvio, resterebbe ferma. Questa automazione sospende inizi, azioni e fini delle allerte per 60 s (sensori e
       VMC letti) e poi li riattiva per gradi: Black-Out, Congelamento e Δ Temp.; dopo 40 s Inquinanti (un'allerta
       Inquinanti già in corso prima del riavvio può riprendere prima); dopo altri 40 s Lim. Δ Punto di Rugiada, Free
-      Cool./Heat., Calendario e Umidità. Ogni allerta riparte o si chiude così come un inizio o
+      Cool./Heat., Calendario e Umidità (anche l'avvio a Velocità 1 per Inquinanti durante un'allerta Lim. Δ Punto di
+      Rugiada già in corso prima del riavvio e la Velocità 0 già mantenuta dall'Umidità possono riprendere prima). Ogni
+      allerta riparte o si chiude così come un inizio o
       una fine allerta normale, con la propria attesa; dopo altri 60 s la fase torna a 0 (nessun effetto): in tutto 200 s
       dall'avvio. Nella scheda il pannello «Riattivazione delle Allerte», visibile con la VMC ON-Line fino alla
       riattivazione di tutte le allerte, mostra un countdown per gruppo, uno dopo l'altro: 60 s per Black-Out, Congelamento

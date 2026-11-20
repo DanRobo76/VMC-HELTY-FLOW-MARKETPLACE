@@ -13520,8 +13520,11 @@ cards:
                   Black-Out, Congelamento e Δ Temp.; dopo 100 secondi
                   Inquinanti (un'allerta Inquinanti già in corso prima del
                   riavvio può riprendere prima); dopo 140 secondi Lim. Δ
-                  Punto di Rugiada, Free Cool./Heat., Calendario e Umidità.
-                  Poi parte la normale
+                  Punto di Rugiada, Free Cool./Heat., Calendario e Umidità
+                  (anche l'avvio a Velocità 1 per Inquinanti durante
+                  un'allerta Lim. Δ Punto di Rugiada già in corso prima del
+                  riavvio e la Velocità 0 già mantenuta dall'Umidità possono
+                  riprendere prima). Poi parte la normale
                   attesa di ogni allerta (per esempio 28 secondi per
                   l'Umidità). Il pannello «Riattivazione delle Allerte», in
                   cima alla scheda, mostra un countdown per gruppo, uno dopo

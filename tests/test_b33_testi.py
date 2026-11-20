@@ -17,6 +17,9 @@ PDR_ECC = ("SE IL PUNTO DI RUGIADA INTERNO O ESTERNO DIVENTA [NON CALCOLABILE] O
 FREE_ECC = ("salvo la sospensione Free Cool./Heat.: l'Umidità parte comunque a Velocità 1 [Nota 3] e il suo "
             "interruttore non si spegne fino alla ripresa o all'annullamento della Free")
 INQ_ECC = "(un'allerta Inquinanti già in corso prima del riavvio può riprendere prima)"
+# b35 (C2-3): anche le eccezioni del 3° gruppo (trigger 155/157 e umidita_velocita_0) sono scritte
+G3_ECC = ("(anche l'avvio a Velocità 1 per Inquinanti durante un'allerta Lim. Δ Punto di Rugiada già in corso prima "
+          "del riavvio e la Velocità 0 già mantenuta dall'Umidità possono riprendere prima)")
 
 
 def _testo(nome: str) -> str:
@@ -119,12 +122,13 @@ def test_gruppi_del_riavvio_come_il_foglio() -> None:
     i = scheda.index("<strong>Nota Avvio di Home Assistant</strong>")
     nota = _piatto(scheda[i : scheda.index("<br>", i)])
     assert ("dopo 60 secondi Black-Out, Congelamento e Δ Temp.; dopo 100 secondi Inquinanti " + INQ_ECC
-            + "; dopo 140 secondi Lim. Δ Punto di Rugiada, Free Cool./Heat., Calendario e Umidità.") in nota
+            + "; dopo 140 secondi Lim. Δ Punto di Rugiada, Free Cool./Heat., Calendario e Umidità " + G3_ECC + ".") in nota
     automazioni = hay.load_yaml(str(PKG / "vmc_master.yaml"))["automation"]
     riallineamento = next(a for a in automazioni if a["id"] == "vmc_master_riallineamento_allerte_al_riavvio")
     descrizione = _piatto(riallineamento["description"])
     assert ("Black-Out, Congelamento e Δ Temp.; dopo 40 s Inquinanti " + INQ_ECC
-            + "; dopo altri 40 s Lim. Δ Punto di Rugiada, Free Cool./Heat., Calendario e Umidità.") in descrizione
+            + "; dopo altri 40 s Lim. Δ Punto di Rugiada, Free Cool./Heat., Calendario e Umidità " + G3_ECC
+            + ".") in descrizione
     assert "60 s per Black-Out, Congelamento e Δ Temp., poi 40 s per Inquinanti" in descrizione
     for testo in (nota, descrizione, scheda[:10000]):
         assert "Diff. Temp." not in testo
