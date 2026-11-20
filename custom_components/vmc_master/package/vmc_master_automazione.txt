@@ -5204,8 +5204,7 @@ triggers:
     value_template: >
       {{ 
 
-      states('sensor.vmc_master_umidita_esterna_status') in ["sconosciuto",
-      "unknown", "", none, "unavailable", "Non disponibile","-100"] and not states('input_select.vmc_master_selected_humidity_external_entity').startswith('Aggiorna Elenco') and
+      states('sensor.vmc_master_umidita_esterna_selezionata') == '-100' and not states('input_select.vmc_master_selected_humidity_external_entity').startswith('Aggiorna Elenco') and
 
       states('input_boolean.vmc_master_notifica_status_vmc') == 'on' and
 
@@ -9697,7 +9696,7 @@ actions:
       }}
       {%- elif trigger.id == 'Entità Umidità Esterna Errore [Mobile]' -%}
       {{
-      states('sensor.vmc_master_umidita_esterna_status') in ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile","-100"] and not states('input_select.vmc_master_selected_humidity_external_entity').startswith('Aggiorna Elenco') and
+      states('sensor.vmc_master_umidita_esterna_selezionata') == '-100' and not states('input_select.vmc_master_selected_humidity_external_entity').startswith('Aggiorna Elenco') and
       states('input_boolean.vmc_master_notifica_status_vmc') == 'on' and
       states('input_boolean.vmc_master_spia_velocita_0') == 'off' and
       states('input_boolean.vmc_master_spia_velocita_1') == 'off' and
