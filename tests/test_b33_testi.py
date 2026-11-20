@@ -136,12 +136,16 @@ def test_fonte_delle_allerte_congelamento_e_delta() -> None:
     """A1-8.1: le schede Congelamento e Δ Temp. nominano la sonda della VMC e l'entita' selezionata."""
     scheda = _scheda()
     assert "NEI SENSORI" not in scheda
-    assert scheda.count("NELLA SONDA DELLA VMC E NELL'ENTITÀ SELEZIONATA") == 8
-    assert scheda.count("NELLA SONDA DELLA VMC") == 8 + 11
-    assert scheda.count("NELL'ENTITÀ SELEZIONATA") == 8 + 10
+    # b34 (B5-2, B5-3): gli 8 titoli «… E NELL'ENTITÀ SELEZIONATA» prendono la coda da {{ e_entita }} (sonda di riserva:
+    # «(ENTITÀ SCELTA NON DISPONIBILE)»); il ramo 0 del Δ non nomina piu' la sonda e dice la fonte del Congelamento
+    # con {{ dove_congelamento }} (2 volte la sonda e 2 l'entita' nelle variabili, 3 «… E NELL'ENTITÀ» in e_entita)
+    assert scheda.count("NELLA SONDA DELLA VMC E NELL'ENTITÀ SELEZIONATA") == 0
+    assert scheda.count("NELLA SONDA DELLA VMC{{ e_entita }}") == 8
+    assert scheda.count("NELLA SONDA DELLA VMC") == 8 + 10 + 2
+    assert scheda.count("NELL'ENTITÀ SELEZIONATA") == 10 + 3 + 2
     assert "ALLERTA CONGELAMENTO NELL'ENTITÀ SELEZIONATA</strong>" in scheda
     assert "ALLERTA DIFF. TEMP. (INT-EST) > 23 [°C] NELLA SONDA DELLA VMC</strong>" in scheda
-    assert "NESSUNA ALLERTA CONGELAMENTO NELLA SONDA DELLA VMC E NELL'ENTITÀ SELEZIONATA" in scheda
+    assert "NESSUNA ALLERTA CONGELAMENTO NELLA SONDA DELLA VMC{{ e_entita }} </strong>" in scheda
 
 
 # ------------------------------------------------------------------------------------------- A5-3, A5-4

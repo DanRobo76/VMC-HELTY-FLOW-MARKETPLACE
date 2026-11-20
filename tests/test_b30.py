@@ -181,7 +181,9 @@ def _passo_notifica_dispositivo() -> dict:
 
     def cerca(nodo: object) -> None:
         if isinstance(nodo, dict):
-            if "if" in nodo and "then" in nodo and "notification_device" in str(nodo["if"]):
+            # b34 (B2-1): anche la scrittura di last_* sta in un if che legge l'elenco: si cerca quello delle notifiche
+            if ("if" in nodo and "then" in nodo and "notification_device" in str(nodo["if"])
+                    and "persistent_notification.create" in str(nodo["then"])):
                 trovati.append(nodo)
             for valore in nodo.values():
                 cerca(valore)
