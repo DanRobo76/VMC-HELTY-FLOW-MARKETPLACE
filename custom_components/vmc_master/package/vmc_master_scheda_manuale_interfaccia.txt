@@ -6766,7 +6766,7 @@ cards:
         [°C]
 
 
-        {% if spia_free_heating == "on" %}RIPRISTINO SULLA VELOCITA' FREE HEATING, {{ attendere }}{% endif %}
+        {% if spia_free_heating == "on" and is_state('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia', 'on') and velocita == "Velocità 1" %}RIPRISTINO SULLA VELOCITA' FREE HEATING, {{ attendere }}{% elif spia_free_heating == "on" %}È STATA SCELTA LA {{ velocita | upper }}: SE MANTENUTA PER 20 SECONDI, LA RIPRESA IN FREE HEATING VERRÀ ANNULLATA{% endif %}
 
 
         Msg. 15 Free Heating
@@ -6791,7 +6791,7 @@ cards:
         [°C]
 
 
-        {% if spia_free_heating == "on" %}RIPRISTINO SULLA VELOCITA' FREE HEATING, {{ attendere }}{% endif %}
+        {% if spia_free_heating == "on" and is_state('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia', 'on') and velocita == "Velocità 1" %}RIPRISTINO SULLA VELOCITA' FREE HEATING, {{ attendere }}{% elif spia_free_heating == "on" %}È STATA SCELTA LA {{ velocita | upper }}: SE MANTENUTA PER 20 SECONDI, LA RIPRESA IN FREE HEATING VERRÀ ANNULLATA{% endif %}
 
 
         Msg. 15.1 Free Heating
@@ -7051,7 +7051,7 @@ cards:
         [°C]
 
 
-        {% if spia_free_cooling == "on" %}RIPRISTINO SULLA VELOCITA' FREE COOLING, {{ attendere }}{% endif %}
+        {% if spia_free_cooling == "on" and is_state('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia', 'on') and velocita == "Velocità 1" %}RIPRISTINO SULLA VELOCITA' FREE COOLING, {{ attendere }}{% elif spia_free_cooling == "on" %}È STATA SCELTA LA {{ velocita | upper }}: SE MANTENUTA PER 20 SECONDI, LA RIPRESA IN FREE COOLING VERRÀ ANNULLATA{% endif %}
 
 
         Msg. 15 Free Cooling
@@ -7076,7 +7076,7 @@ cards:
         [°C]
 
 
-        {% if spia_free_cooling == "on" %}RIPRISTINO SULLA VELOCITA' FREE COOLING, {{ attendere }}{% endif %}
+        {% if spia_free_cooling == "on" and is_state('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia', 'on') and velocita == "Velocità 1" %}RIPRISTINO SULLA VELOCITA' FREE COOLING, {{ attendere }}{% elif spia_free_cooling == "on" %}È STATA SCELTA LA {{ velocita | upper }}: SE MANTENUTA PER 20 SECONDI, LA RIPRESA IN FREE COOLING VERRÀ ANNULLATA{% endif %}
 
 
         Msg. 15.1 Free Cooling
@@ -13210,7 +13210,14 @@ cards:
                   un'altra velocità (ad esempio Velocità 1) e la si mantiene per 20 secondi, la ripresa automatica in Free Cool./Heat. viene
                   annullata: la VMC resta sulla velocità scelta, con lo scambiatore attivo, e non torna da sola
                   in Free quando la condizione ritorna favorevole. Per riattivarla premere il tasto Free Heating
-                  / Free Cooling.
+                  / Free Cooling. Vale anche se la condizione è già tornata favorevole e la ripresa è in attesa:
+                  la velocità scelta ha la precedenza.
+                  <br><br>
+                  <b>Cambio del mese programmato.</b> Se durante l'avviso il mese corrente esce dalla Fascia, la
+                  ripresa in Free Cool./Heat. viene annullata e la VMC resta a Velocità 0 (Velocità 1 con
+                  Inquinanti, fino al loro rientro). Con un'allerta Umidità in corso la VMC va invece alla
+                  velocità di avvio dell'Umidità ([Set Velocità Umidità di Avvio]) e a fine Umidità torna a
+                  Velocità 0. Spegnendo l'interruttore Free Heating / Free Cooling la VMC si ferma (voce 17).
                   <br><br>
                   <b>Mesi non programmati.</b> Se il mese corrente non rientra in nessuna Fascia (stato
                   «Disabilitata») viene mostrato solo l'avviso di Raffrescamento o di Riscaldamento: la VMC
@@ -14316,7 +14323,7 @@ cards:
                     - Sup. Lim. Δ PdR con Inquinanti: 12 Secondi;<br>
                     - Sup. Lim. Δ PdR: 16 Secondi. Se l'allerta inizia con la VMC a Velocità 0, l'Umidità non la avvia fino al termine dell'allerta; se durante l'allerta si cambia Velocità, la VMC viene riportata a Velocità 0 e la nuova Velocità viene memorizzata e ripristinata al termine dell'allerta, anche al posto della ripresa in Free Cool./Heat.;<br>
                     - Free Cool./Heat. con Inquinanti: 20 Secondi;<br>
-                    - Free Cool./Heat.: 24 Secondi. Se durante l'avviso si sceglie un'altra Velocità e la si mantiene per 20 Secondi, la ripresa automatica in Free Cool./Heat. viene annullata e la VMC resta sulla Velocità scelta;<br>
+                    - Free Cool./Heat.: 24 Secondi. Se durante l'avviso si sceglie un'altra Velocità e la si mantiene per 20 Secondi, la ripresa automatica in Free Cool./Heat. viene annullata e la VMC resta sulla Velocità scelta, anche se le condizioni sono già tornate favorevoli; se durante l'avviso il mese corrente esce dalla Fascia, la ripresa viene annullata e la VMC resta a Velocità 0 (Velocità 1 con Inquinanti), ma con un'allerta Umidità in corso va alla [Set Velocità Umidità di Avvio] e a fine Umidità torna a Velocità 0;<br>
                     - Umidità: 28 Secondi (la logica Umidità memorizza subito la Velocità in uso); se durante l'allerta si cambia Velocità, la nuova Velocità viene memorizzata dopo 4 Secondi e mantenuta a fine Umidità; se però l'Umidità ha avviato la VMC da Velocità 0 e la VMC risulta ancora, o di nuovo, a Velocità 0, dopo 4 Secondi viene riportata alla [Set Velocità Umidità di Avvio] e a fine Umidità torna a Velocità 0 (per fermarla si spegne l'interruttore dell'Umidità); se l'Umidità ha avviato la VMC da Velocità 0, la VMC è ancora alla [Set Velocità Umidità di Avvio] e a fine Umidità sono ancora presenti gli Inquinanti, la VMC scende a Velocità 1 e torna a Velocità 0 al rientro degli Inquinanti;<br>
                     - Black-Out: 32 Secondi per il Rilevamento e per il Ripristino; durante una Fascia del Calendario la rilevazione del Black-Out non è attiva: al ritorno della corrente (VMC OFF-Line almeno 32 Secondi) la VMC riparte con la Velocità della Fascia in corso dopo 32 Secondi (+5 Secondi dello script della Fascia); il Black-Out resta memorizzato nella Spia Black-Out del Calendario, così la VMC riparte anche dopo un riavvio di Home Assistant o se la corrente torna a Home Assistant spento: in questo caso riparte dall'ultima fase del riallineamento (140 Secondi dall'avvio) più i 32 Secondi; se la corrente torna durante il riallineamento al riavvio (fasi 1-3) dopo almeno 32 Secondi OFF-Line, la VMC riparte 32 Secondi dopo il ritorno anche se il Black-Out non è stato ancora memorizzato;<br>
                     - Avvisi (riquadro degli Avvisi e avviso di aggiornamento del Package): 5 Secondi.<br>
@@ -14334,7 +14341,7 @@ cards:
                     <tr><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Δ Temp. &gt; 23 °C</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Viene riportata a Velocità 1; la Velocità scelta viene memorizzata dopo 4 Secondi e impostata a fine allerta</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Viene riportata a Velocità 1; a fine allerta resta a Velocità 0</td></tr>
                     <tr><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Inquinanti (CO₂ e VOC)</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Viene mantenuta, anche dopo il rientro degli Inquinanti (anche la Velocità 1 scelta con la VMC in Free Cool./Heat. e PdR superato)</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Dopo circa 8 Secondi riparte a Velocità 1; al rientro degli Inquinanti torna a Velocità 0</td></tr>
                     <tr><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Lim. Δ Punto di Rugiada</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Viene riportata a Velocità 0; la Velocità scelta viene memorizzata e ripristinata a fine allerta</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">La VMC è già ferma: nessun effetto; a fine allerta torna alla Velocità di prima</td></tr>
-                    <tr><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Free Cool./Heat. sfavorevole (VMC ferma in attesa)</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">La VMC va alla Velocità scelta e la ripresa automatica in Free Cool./Heat. viene annullata dopo 20 Secondi</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">La VMC è già ferma: nessun effetto; quando le condizioni tornano favorevoli riprende in Free Cool./Heat.</td></tr>
+                    <tr><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Free Cool./Heat. sfavorevole (VMC ferma in attesa)</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">La VMC va alla Velocità scelta e la ripresa automatica in Free Cool./Heat. viene annullata dopo 20 Secondi, anche con le condizioni già tornate favorevoli (ripresa in attesa)</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">La VMC è già ferma: nessun effetto; quando le condizioni tornano favorevoli riprende in Free Cool./Heat.</td></tr>
                     <tr><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Umidità, con la VMC già in moto all'inizio</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Memorizzata dopo 4 Secondi e mantenuta a fine Umidità</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">La VMC si ferma e resta a Velocità 0, anche a fine Umidità</td></tr>
                     <tr><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Umidità, con la VMC avviata da Velocità 0</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Una Velocità diversa da quella di avvio viene memorizzata dopo 4 Secondi e mantenuta a fine Umidità; la stessa Velocità di avvio non cambia nulla</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Dopo 4 Secondi riparte alla [Set Velocità Umidità di Avvio]; a fine Umidità torna a Velocità 0. Per fermarla si spegne l'interruttore dell'Umidità</td></tr>
                     </table>
