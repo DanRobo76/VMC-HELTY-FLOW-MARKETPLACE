@@ -1,6 +1,6 @@
 ###########################################################################################################################################################################################################################
 #                                                                                                                                                                                                                         #
-#                                                          SCRIPT CAMBIO NOME VMC HELTY FLOW PLUS RELEASE [VER. 1.0]                                                                                                      #
+#                                                          SCRIPT CAMBIO NOME VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b32]                                                                                                 #
 #                                                                                                                                                                                                                         #
 # SVILUPPATO DA ING. DANILO ROBOTTI, ALLE PRIME ARMI CON HOME ASSISTANT :)                                                                                                                                                #
 #                                                                                                                                                                                                                         #
@@ -38,7 +38,7 @@
 #                                                                                                                                                                                                                         #
 ###########################################################################################################################################################################################################################
 #!/bin/bash
-# IL NOME VALIDO HA DA 1 A 10 CARATTERI TRA LETTERE SENZA ACCENTI, CIFRE, "_" E "-" (STESSA REGOLA DEL MOTORE DELL'INTEGRAZIONE): ALTRIMENTI NON INVIA NULLA
+# IL NOME VALIDO HA DA 1 A 10 CARATTERI TRA LETTERE SENZA ACCENTI, CIFRE, "_" E "-" (IL MOTORE DELL'INTEGRAZIONE NE AMMETTE FINO A 12, LA SCHEDA 10): ALTRIMENTI NON INVIA NULLA
 # timeout 5 E -w 3 (COME GLI ALTRI COMANDI) EVITANO CHE IL COMANDO RESTI APPESO SE LA VMC NON RISPONDE O NON CHIUDE LA CONNESSIONE
 export LC_ALL=C
 NOME="$*"

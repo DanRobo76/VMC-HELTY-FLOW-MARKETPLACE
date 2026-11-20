@@ -108,17 +108,20 @@ def rimuovi_sezioni_solo_master(testo: str) -> str:
 # - la cartella dei backup (installatore.CARTELLA_BACKUP), che e' una sola per tutte
 #   le VMC: il Pannello Informazioni deve indicare sempre «vmc_master_backup»;
 # - il servizio dell'integrazione chiamato dall'Automazione Cambio IP (dominio
-#   «vmc_master», uno solo per tutte le VMC): «vmc_‹nome›.verifica_ip» non esiste.
+#   «vmc_master», uno solo per tutte le VMC): «vmc_‹nome›.verifica_ip» non esiste;
+# - il nome dell'integrazione nell'intestazione della licenza dei file (righe
+#   «… CON L'INTEGRAZIONE VMC MASTER»): l'integrazione e' una sola per tutte le VMC.
 _VIDEO_PROMO = "VMC_MASTER_promo_"
 _CARTELLA_BACKUP = "vmc_master_backup"
 _SERVIZIO_VERIFICA_IP = "vmc_master.verifica_ip"
-_PROTETTE = (_VIDEO_PROMO, _CARTELLA_BACKUP, _SERVIZIO_VERIFICA_IP)
+_INTEGRAZIONE = "INTEGRAZIONE VMC MASTER"
+_PROTETTE = (_VIDEO_PROMO, _CARTELLA_BACKUP, _SERVIZIO_VERIFICA_IP, _INTEGRAZIONE)
 
 
 def rinomina(testo: str, nome: str) -> str:
     """s/master/nome/g, poi s/Master/nome/g, poi s/MASTER/nome/g (come vmc_script_clona.sh),
     lasciando intatte le parole di _PROTETTE (video promozionale, cartella dei backup,
-    servizio verifica_ip dell'integrazione)."""
+    servizio verifica_ip e nome dell'integrazione nella licenza)."""
     for indice, parola in enumerate(_PROTETTE):
         testo = testo.replace(parola, f"\x00PROTETTA{indice}\x00")
     testo = testo.replace("master", nome).replace("Master", nome).replace("MASTER", nome)

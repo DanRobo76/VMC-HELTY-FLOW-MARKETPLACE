@@ -145,7 +145,7 @@
       }
     },
     "progress": {
-      "access_point": "Invio del comando Access Point alla VMC ({ip}) e attesa che lasci il Wi-Fi di casa: al massimo un minuto."
+      "access_point": "Invio del comando Access Point alla VMC ({ip}) e attesa che lasci il Wi-Fi di casa: di solito meno di un minuto, al massimo circa 2 minuti."
     },
     "error": {
       "ip_non_valido": "IP non valido: quattro numeri da 0 a 255 separati da punti, senza zeri iniziali.\nNon sono ammessi 0.x.x.x, 127.x.x.x, 169.254.x.x e gli indirizzi da 224.0.0.0 in su.",

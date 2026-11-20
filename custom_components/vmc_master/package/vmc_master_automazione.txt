@@ -1,6 +1,6 @@
 ###########################################################################################################################################################################################################################
 #                                                                                                                                                                                                                         #
-#                                                          AUTOMAZIONE VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b29]                                                                                                        #
+#                                                          AUTOMAZIONE VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b32]                                                                                                        #
 #                                                                                                                                                                                                                         #
 # SVILUPPATO DA ING. DANILO ROBOTTI, ALLE PRIME ARMI CON HOME ASSISTANT :)                                                                                                                                                #
 #                                                                                                                                                                                                                         #
@@ -95,7 +95,7 @@ description: >-
   ambientali sono favorevoli;
 
   - Permette l'accensione e lo spegnimento Automatico, in funzione dell'Umidità
-  Interna Settata (sopra il valore impostato, oppure con aria secca ≤ 35% per
+  Interna Settata (uguale o sopra il valore impostato, oppure con aria secca ≤ 35% per
   far entrare aria dall'esterno) [ad Esclusione nel Range del Calendario];
 
   - Permette l'accensione e lo spegnimento Automatico, in funzione delle 2 fasce
@@ -156,8 +156,8 @@ description: >-
   Secondi la VMC riparte a Velocità 1 e al rientro degli Inquinanti torna a
   Velocità 0, anche se prima dell'allerta era a un'altra Velocità; se un'allerta
   Lim. Δ PdR è iniziata con la VMC a Velocità 0, all'arrivo degli Inquinanti la
-  sua memoria di Velocità 0 si azzera dopo 4 Secondi e la VMC parte a Velocità 1
-  dopo 8 Secondi;
+  sua memoria di Velocità 0 si azzera e la VMC parte a Velocità 1 dopo 4
+  Secondi;
 
   - Sup. Lim. Δ PdR con Inquinanti: 12 Secondi;
 
@@ -221,7 +221,8 @@ description: >-
   Velocità 0;
 
   - Inquinanti (CO₂ e VOC): si sceglie un'altra Velocità → viene mantenuta, anche
-  dopo il rientro degli Inquinanti; si sceglie Velocità 0 → dopo circa 8 Secondi
+  dopo il rientro degli Inquinanti (anche la Velocità 1 scelta con la VMC in Free
+  Cool./Heat. e PdR superato); si sceglie Velocità 0 → dopo circa 8 Secondi
   riparte a Velocità 1; al rientro degli Inquinanti torna a Velocità 0;
 
   - Lim. Δ Punto di Rugiada: si sceglie un'altra Velocità → viene riportata a
@@ -4372,7 +4373,8 @@ triggers:
     trigger: template
   - alias: >-
       Cambio Velocità quanto Spia FreeHeating o FreeCooling è ON e se Spia
-      Inquinanti OFF e se Spia Congelamento Off e Spia Delta Temp Off
+      Inquinanti OFF e se Spia Congelamento Off e Spia Delta Temp Off (con un'allerta
+      Umidità in corso conta ogni velocità diversa dalla Velocità 1 data dall'Umidità, Nota 3)
     value_template: |
       {{ (
         (
@@ -4387,7 +4389,7 @@ triggers:
           and states('input_boolean.vmc_master_spia_co2_o_voc') == 'off'
           and states('input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0') == 'off'
           and states('input_boolean.vmc_master_spia_velocita_1_co2_o_voc_pdr') == 'off'
-          and states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia') == 'off'
+          and (states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia') == 'off' or states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 1')
           and states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia')== 'off'
           and states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia')== 'off'
           and states('sensor.vmc_master_status_ip_interfaccia')=='ON-Line'
@@ -5583,7 +5585,8 @@ triggers:
       Umidità finita con Inquinanti in corso e Umidità partita da Velocità 0
       [Foglio Logiche: Velocità 1 degli Inquinanti, a fine Inquinanti Velocità 0;
       solo se la VMC è ancora alla Velocità dell'Umidità, una Velocità scelta
-      dall'utente resta]
+      dall'utente resta; con Velocità Umidità di Avvio Free Cool./Heat. vale anche
+      la Velocità 1 data dalle allerte Free]
     trigger: template
     value_template: |-
       {{ (
@@ -5591,7 +5594,8 @@ triggers:
         states('sensor.vmc_master_alert_monitoraggio_umidita') != 'Allerta' and
         states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia') == 'on' and
         states('input_boolean.vmc_master_spia_umidita_velocita_0') == 'on' and
-        states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == states('input_select.vmc_master_speed_umidita') and
+        (states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == states('input_select.vmc_master_speed_umidita') or
+         (states('input_select.vmc_master_speed_umidita') == 'Free Cool./Heat.' and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') in ['Free Cooling', 'Velocità 1'])) and
         states('input_boolean.vmc_master_spia_co2_o_voc') == 'on' and
         (states('sensor.vmc_master_alert_monitoraggio_co2') == 'Allerta' or states('sensor.vmc_master_alert_monitoraggio_voc') == 'Allerta') and
         states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc') == 'on' and
@@ -9296,7 +9300,7 @@ actions:
           and states('input_boolean.vmc_master_spia_co2_o_voc') == 'off'
           and states('input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0') == 'off'
           and states('input_boolean.vmc_master_spia_velocita_1_co2_o_voc_pdr') == 'off'
-          and states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia') == 'off'
+          and (states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia') == 'off' or states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 1')
           and states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia')== 'off'
           and states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia')== 'off'
           and states('sensor.vmc_master_status_ip_interfaccia')=='ON-Line'
@@ -9883,7 +9887,8 @@ actions:
         states('sensor.vmc_master_alert_monitoraggio_umidita') != 'Allerta' and
         states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia') == 'on' and
         states('input_boolean.vmc_master_spia_umidita_velocita_0') == 'on' and
-        states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == states('input_select.vmc_master_speed_umidita') and
+        (states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == states('input_select.vmc_master_speed_umidita') or
+         (states('input_select.vmc_master_speed_umidita') == 'Free Cool./Heat.' and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') in ['Free Cooling', 'Velocità 1'])) and
         states('input_boolean.vmc_master_spia_co2_o_voc') == 'on' and
         (states('sensor.vmc_master_alert_monitoraggio_co2') == 'Allerta' or states('sensor.vmc_master_alert_monitoraggio_voc') == 'Allerta') and
         states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc') == 'on' and
@@ -13063,6 +13068,28 @@ actions:
           - variables:
               vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
             alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: >-
+              VMC avviata dall'utente durante l'allerta PdR e non ancora memorizzata (allerta finita prima del tempo
+              di memorizzazione) -> resta la velocità scelta, che diventa quella di fine allerta [Foglio Logiche F6]
+            if:
+              - condition: template
+                value_template: "{{ vel_prima_del_comando not in ['Velocità 0', 'Non disponibile', 'unknown', 'unavailable', ''] }}"
+            then:
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_0_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_1_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_2_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_3_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_4_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_notturna_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling
+                    - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating
+                action: input_boolean.turn_off
+              - stop: Velocità scelta dall'utente durante l'allerta PdR mantenuta
           - repeat:
               sequence:
                 - data: {}
@@ -13280,6 +13307,28 @@ actions:
           - variables:
               vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
             alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: >-
+              Velocità cambiata dall'utente durante l'allerta PdR e non ancora memorizzata (allerta finita prima del tempo
+              di memorizzazione) -> resta la velocità scelta, che diventa quella di fine allerta [Foglio Logiche F6]
+            if:
+              - condition: template
+                value_template: "{{ vel_prima_del_comando not in ['Velocità 0', 'Velocità 1', 'Non disponibile', 'unknown', 'unavailable', ''] }}"
+            then:
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_0_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_1_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_2_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_3_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_4_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_notturna_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling
+                    - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating
+                action: input_boolean.turn_off
+              - stop: Velocità scelta dall'utente durante l'allerta PdR mantenuta
           - repeat:
               sequence:
                 - data: {}
@@ -13428,6 +13477,28 @@ actions:
           - variables:
               vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
             alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: >-
+              Velocità cambiata dall'utente durante l'allerta PdR e non ancora memorizzata (allerta finita prima del tempo
+              di memorizzazione) -> resta la velocità scelta, che diventa quella di fine allerta [Foglio Logiche F6]
+            if:
+              - condition: template
+                value_template: "{{ vel_prima_del_comando not in ['Velocità 0', 'Velocità 2', 'Non disponibile', 'unknown', 'unavailable', ''] }}"
+            then:
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_0_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_1_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_2_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_3_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_4_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_notturna_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling
+                    - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating
+                action: input_boolean.turn_off
+              - stop: Velocità scelta dall'utente durante l'allerta PdR mantenuta
           - repeat:
               sequence:
                 - data: {}
@@ -13561,6 +13632,28 @@ actions:
           - variables:
               vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
             alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: >-
+              Velocità cambiata dall'utente durante l'allerta PdR e non ancora memorizzata (allerta finita prima del tempo
+              di memorizzazione) -> resta la velocità scelta, che diventa quella di fine allerta [Foglio Logiche F6]
+            if:
+              - condition: template
+                value_template: "{{ vel_prima_del_comando not in ['Velocità 0', 'Velocità 3', 'Non disponibile', 'unknown', 'unavailable', ''] }}"
+            then:
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_0_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_1_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_2_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_3_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_4_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_notturna_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling
+                    - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating
+                action: input_boolean.turn_off
+              - stop: Velocità scelta dall'utente durante l'allerta PdR mantenuta
           - repeat:
               sequence:
                 - data: {}
@@ -13694,6 +13787,28 @@ actions:
           - variables:
               vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
             alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: >-
+              Velocità cambiata dall'utente durante l'allerta PdR e non ancora memorizzata (allerta finita prima del tempo
+              di memorizzazione) -> resta la velocità scelta, che diventa quella di fine allerta [Foglio Logiche F6]
+            if:
+              - condition: template
+                value_template: "{{ vel_prima_del_comando not in ['Velocità 0', 'Velocità 4', 'Non disponibile', 'unknown', 'unavailable', ''] }}"
+            then:
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_0_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_1_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_2_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_3_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_4_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_notturna_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling
+                    - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating
+                action: input_boolean.turn_off
+              - stop: Velocità scelta dall'utente durante l'allerta PdR mantenuta
           - repeat:
               sequence:
                 - data: {}
@@ -13827,6 +13942,28 @@ actions:
           - variables:
               vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
             alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: >-
+              Velocità cambiata dall'utente durante l'allerta PdR e non ancora memorizzata (allerta finita prima del tempo
+              di memorizzazione) -> resta la velocità scelta, che diventa quella di fine allerta [Foglio Logiche F6]
+            if:
+              - condition: template
+                value_template: "{{ vel_prima_del_comando not in ['Velocità 0', 'Notturna', 'Non disponibile', 'unknown', 'unavailable', ''] }}"
+            then:
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_0_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_1_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_2_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_3_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_4_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_notturna_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling
+                    - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating
+                action: input_boolean.turn_off
+              - stop: Velocità scelta dall'utente durante l'allerta PdR mantenuta
           - repeat:
               sequence:
                 - data: {}
@@ -13930,6 +14067,28 @@ actions:
           - variables:
               vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
             alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: >-
+              Velocità cambiata dall'utente durante l'allerta PdR e non ancora memorizzata (allerta finita prima del tempo
+              di memorizzazione) -> resta la velocità scelta, che diventa quella di fine allerta [Foglio Logiche F6]
+            if:
+              - condition: template
+                value_template: "{{ vel_prima_del_comando not in ['Velocità 0', 'Free Cooling', 'Non disponibile', 'unknown', 'unavailable', ''] }}"
+            then:
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_0_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_1_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_2_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_3_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_4_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_notturna_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling
+                    - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating
+                action: input_boolean.turn_off
+              - stop: Velocità scelta dall'utente durante l'allerta PdR mantenuta
           - repeat:
               sequence:
                 - if:
@@ -14062,6 +14221,28 @@ actions:
           - variables:
               vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
             alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: >-
+              Velocità cambiata dall'utente durante l'allerta PdR e non ancora memorizzata (allerta finita prima del tempo
+              di memorizzazione) -> resta la velocità scelta, che diventa quella di fine allerta [Foglio Logiche F6]
+            if:
+              - condition: template
+                value_template: "{{ vel_prima_del_comando not in ['Velocità 0', 'Iperventilazione', 'Non disponibile', 'unknown', 'unavailable', ''] }}"
+            then:
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_0_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_1_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_2_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_3_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_4_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_notturna_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling
+                    - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating
+                action: input_boolean.turn_off
+              - stop: Velocità scelta dall'utente durante l'allerta PdR mantenuta
           - repeat:
               sequence:
                 - data: {}
@@ -14221,6 +14402,28 @@ actions:
           - variables:
               vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
             alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: >-
+              Velocità cambiata dall'utente durante l'allerta PdR (diversa dalla Velocità 1 degli Inquinanti) e non ancora memorizzata (allerta finita prima del tempo
+              di memorizzazione) -> resta la velocità scelta, che diventa quella di fine allerta [Foglio Logiche F6]
+            if:
+              - condition: template
+                value_template: "{{ vel_prima_del_comando not in ['Velocità 0', 'Velocità 1', 'Velocità 2', 'Non disponibile', 'unknown', 'unavailable', ''] }}"
+            then:
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_0_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_1_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_2_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_3_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_4_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_notturna_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling
+                    - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating
+                action: input_boolean.turn_off
+              - stop: Velocità scelta dall'utente durante l'allerta PdR mantenuta
           - repeat:
               sequence:
                 - data: {}
@@ -14334,6 +14537,28 @@ actions:
           - variables:
               vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
             alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: >-
+              Velocità cambiata dall'utente durante l'allerta PdR (diversa dalla Velocità 1 degli Inquinanti) e non ancora memorizzata (allerta finita prima del tempo
+              di memorizzazione) -> resta la velocità scelta, che diventa quella di fine allerta [Foglio Logiche F6]
+            if:
+              - condition: template
+                value_template: "{{ vel_prima_del_comando not in ['Velocità 0', 'Velocità 1', 'Velocità 3', 'Non disponibile', 'unknown', 'unavailable', ''] }}"
+            then:
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_0_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_1_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_2_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_3_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_4_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_notturna_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling
+                    - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating
+                action: input_boolean.turn_off
+              - stop: Velocità scelta dall'utente durante l'allerta PdR mantenuta
           - repeat:
               sequence:
                 - data: {}
@@ -14447,6 +14672,28 @@ actions:
           - variables:
               vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
             alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: >-
+              Velocità cambiata dall'utente durante l'allerta PdR (diversa dalla Velocità 1 degli Inquinanti) e non ancora memorizzata (allerta finita prima del tempo
+              di memorizzazione) -> resta la velocità scelta, che diventa quella di fine allerta [Foglio Logiche F6]
+            if:
+              - condition: template
+                value_template: "{{ vel_prima_del_comando not in ['Velocità 0', 'Velocità 1', 'Velocità 4', 'Non disponibile', 'unknown', 'unavailable', ''] }}"
+            then:
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_0_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_1_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_2_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_3_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_4_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_notturna_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling
+                    - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating
+                action: input_boolean.turn_off
+              - stop: Velocità scelta dall'utente durante l'allerta PdR mantenuta
           - repeat:
               sequence:
                 - data: {}
@@ -14560,6 +14807,28 @@ actions:
           - variables:
               vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
             alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: >-
+              Velocità cambiata dall'utente durante l'allerta PdR (diversa dalla Velocità 1 degli Inquinanti) e non ancora memorizzata (allerta finita prima del tempo
+              di memorizzazione) -> resta la velocità scelta, che diventa quella di fine allerta [Foglio Logiche F6]
+            if:
+              - condition: template
+                value_template: "{{ vel_prima_del_comando not in ['Velocità 0', 'Velocità 1', 'Notturna', 'Non disponibile', 'unknown', 'unavailable', ''] }}"
+            then:
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_0_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_1_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_2_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_3_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_4_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_notturna_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling
+                    - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating
+                action: input_boolean.turn_off
+              - stop: Velocità scelta dall'utente durante l'allerta PdR mantenuta
           - repeat:
               sequence:
                 - data: {}
@@ -15164,6 +15433,28 @@ actions:
           - variables:
               vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
             alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: >-
+              Velocità cambiata dall'utente durante l'allerta PdR (diversa dalla Velocità 1 degli Inquinanti) e non ancora memorizzata (allerta finita prima del tempo
+              di memorizzazione) -> resta la velocità scelta, che diventa quella di fine allerta [Foglio Logiche F6]
+            if:
+              - condition: template
+                value_template: "{{ vel_prima_del_comando not in ['Velocità 0', 'Velocità 1', 'Iperventilazione', 'Non disponibile', 'unknown', 'unavailable', ''] }}"
+            then:
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_0_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_1_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_2_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_3_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_4_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_notturna_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio
+                    - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling
+                    - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating
+                action: input_boolean.turn_off
+              - stop: Velocità scelta dall'utente durante l'allerta PdR mantenuta
           - repeat:
               sequence:
                 - data: {}
@@ -18221,6 +18512,24 @@ actions:
                       )}}
                 sequence:
                   - action: shell_command.vmc_master_velocita_1
+                    metadata: {}
+                    data: {}
+            default:
+              - alias: >-
+                  Combinazioni non coperte dai 4 casi (per esempio Inquinanti appena rilevati e memoria della Velocità 1
+                  degli Inquinanti non ancora accesa) [Foglio Logiche A23]
+                choose:
+                  - conditions:
+                      - condition: state
+                        entity_id: input_boolean.vmc_master_spia_co2_o_voc
+                        state: "on"
+                    sequence:
+                      - action: shell_command.vmc_master_velocita_1
+                        metadata: {}
+                        data: {}
+                    alias: Inquinanti in corso, Velocità 1 come chiedono gli Inquinanti
+                default:
+                  - action: shell_command.vmc_master_freecooling
                     metadata: {}
                     data: {}
           - alias: >-
@@ -31682,10 +31991,10 @@ actions:
             id:
               - umidita_velocita_0
         sequence:
-          - alias: Umidità che ha avviato la VMC da Velocità 0 e VMC ancora (o di nuovo) a 0 -> rimanda la velocità di avvio dell'opzione 175, la memoria resta (correzione U3)
+          - alias: Umidità che ha avviato la VMC da Velocità 0 e VMC ancora (o di nuovo) a 0 -> rimanda la velocità di avvio dell'opzione 175, la memoria resta (correzione U3); non se la Velocità 0 l'ha scelta l'utente durante l'Umidità (Velocità 0 mantenuta)
             if:
               - condition: template
-                value_template: "{{ is_state('input_boolean.vmc_master_spia_umidita_velocita_0', 'on') and states('input_select.vmc_master_speed_umidita') != 'Velocità 0' and not (trigger.from_state is defined and trigger.from_state is not none and trigger.from_state.state in ['Non disponibile', 'sconosciuto', 'unknown', 'unavailable', '', 'OFF-Line']) }}"
+                value_template: "{{ is_state('input_boolean.vmc_master_spia_umidita_velocita_0', 'on') and is_state('input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0', 'off') and states('input_select.vmc_master_speed_umidita') != 'Velocità 0' and not (trigger.from_state is defined and trigger.from_state is not none and trigger.from_state.state in ['Non disponibile', 'sconosciuto', 'unknown', 'unavailable', '', 'OFF-Line']) }}"
                 alias: Memoria «a fine allerta torna a 0» dell'avvio da Velocità 0, programmata diversa da 0, lettura della velocità non appena tornata disponibile
             then:
               - action: input_boolean.turn_off
@@ -33090,10 +33399,10 @@ actions:
                       {{states('input_boolean.vmc_master_spia_velocita_1_delta_temp_verifica_soglia_valore')==
                       'on'}}
                 sequence:
-                  - alias: Inquinanti in corso e velocità scelta dall'utente durante Δ Temp. -> diventa la memoria degli Inquinanti (regola 03-11-2026)
+                  - alias: Inquinanti in corso e velocità scelta dall'utente durante Δ Temp. -> diventa la memoria degli Inquinanti (regola 03-11-2026; non se la Velocità 1 l'hanno avviata gli Inquinanti da Velocità 0, che restano con il ritorno a Velocità 0)
                     if:
                       - condition: template
-                        value_template: "{{ is_state('input_boolean.vmc_master_spia_co2_o_voc', 'on') and not is_state('input_boolean.vmc_master_spia_velocita_1_co2_o_voc', 'on') }}"
+                        value_template: "{{ is_state('input_boolean.vmc_master_spia_co2_o_voc', 'on') and not is_state('input_boolean.vmc_master_spia_velocita_1_co2_o_voc', 'on') and not is_state('input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0', 'on') and not is_state('input_boolean.vmc_master_spia_velocita_1_co2_o_voc_pdr', 'on') }}"
                     then:
                       - action: input_boolean.turn_on
                         target:

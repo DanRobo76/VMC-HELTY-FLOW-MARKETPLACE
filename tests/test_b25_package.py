@@ -198,7 +198,7 @@ def test_memoria_velocita_0_mantenuta_dell_umidita():
     altrimenti = ramo[ramo.index("            else:\n") :]
     assert allora.index(f"entity_id: {SPIA_U0_MANTENUTA}") < allora.index("- variables:")
     assert f"- {SPIA_U0}\n                    - {SPIA_U0_MANTENUTA}" in altrimenti
-    assert testo.count(SPIA_U0_MANTENUTA) == 46
+    assert testo.count(SPIA_U0_MANTENUTA) == 47  # b32: +1 nella condizione di umidita_velocita_0 (A3-3)
 
 
 def test_memoria_velocita_0_mantenuta_nel_package_e_nella_scheda():

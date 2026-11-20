@@ -130,7 +130,9 @@ def test_richiami_interfaccia(entita: str) -> None:
 
 
 def test_versione_della_scheda() -> None:
-    assert "RELEASE [VER. 9.0.0b31]" in _testo("vmc_master_scheda_manuale_interfaccia.txt")[:2000]
+    """La scheda e' cambiata nella b31: la sua VER. e' almeno 9.0.0b31."""
+    versione = re.search(r"RELEASE \[VER\. 9\.0\.0b(\d+)\]", _testo("vmc_master_scheda_manuale_interfaccia.txt")[:2000])
+    assert versione and int(versione.group(1)) >= 31
 
 
 def test_ip_salvato_nascosto_con_il_campo_vuoto() -> None:

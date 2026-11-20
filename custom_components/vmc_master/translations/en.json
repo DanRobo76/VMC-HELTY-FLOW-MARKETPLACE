@@ -145,7 +145,7 @@
       }
     },
     "progress": {
-      "access_point": "Sending the Access Point command to the unit ({ip}) and waiting for it to leave the home Wi-Fi: one minute at most."
+      "access_point": "Sending the Access Point command to the unit ({ip}) and waiting for it to leave the home Wi-Fi: usually less than a minute, about 2 minutes at most."
     },
     "error": {
       "ip_non_valido": "Invalid IP: four numbers from 0 to 255 separated by dots, without leading zeros.\n0.x.x.x, 127.x.x.x, 169.254.x.x and the addresses from 224.0.0.0 up are not allowed.",
