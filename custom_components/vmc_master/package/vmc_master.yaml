@@ -1302,7 +1302,7 @@ template:
           {% set stati = ['unknown', 'unavailable', '-100', 'Non disponibile'] %}
           {% set temp_ext = states('sensor.vmc_master_temperatura_esterna_selezionata') %}
           {% if temp_ext in stati %}
-            {#- Sensore scelto non disponibile: si usa la sonda della VMC, senza Offset (vedere Pannello Informazioni, Nota Sensori Scelti non Disponibili) -#}
+            {#- Sensore scelto non disponibile: si usa la sonda della VMC, senza Offset (vedere Pannello Informazioni, Nota Entità Scelte non Disponibili) -#}
             {% set vmc = states('sensor.vmc_master_temp_esterna_status_senza_offset') | float(default=none) %}
             {{ vmc | round(1) if vmc is not none else 'Non disponibile' }}
           {% else %}
@@ -1353,7 +1353,7 @@ template:
           {% set stati = ['unknown', 'unavailable', '-100', 'Non disponibile'] %}
           {% set temp_int = states('sensor.vmc_master_temperatura_interna_selezionata') %}
           {% if temp_int in stati %}
-            {#- Sensore scelto non disponibile: si usa la sonda della VMC, senza Offset (vedere Pannello Informazioni, Nota Sensori Scelti non Disponibili) -#}
+            {#- Sensore scelto non disponibile: si usa la sonda della VMC, senza Offset (vedere Pannello Informazioni, Nota Entità Scelte non Disponibili) -#}
             {% set vmc = states('sensor.vmc_master_temp_interna_status_senza_offset') | float(default=none) %}
             {{ vmc | round(1) if vmc is not none else 'Non disponibile' }}
           {% else %}
@@ -1430,7 +1430,7 @@ template:
           {% set umidita_int = states('sensor.vmc_master_umidita_interna_selezionata') %}
           {% set offset = float(states('input_number.vmc_master_offset_umidita_interna'), 0) %}
           {% if states('sensor.vmc_master_umidita_interna_selezionata') in stati %}
-            {#- Sensore scelto non disponibile: si usa la sonda della VMC, senza Offset (vedere Pannello Informazioni, Nota Sensori Scelti non Disponibili) -#}
+            {#- Sensore scelto non disponibile: si usa la sonda della VMC, senza Offset (vedere Pannello Informazioni, Nota Entità Scelte non Disponibili) -#}
             {% set vmc = states('sensor.vmc_master_umidita_interna_status_senza_offset') | float(default=none) %}
             {{ vmc | round(1) if vmc is not none else 'Non disponibile' }}
           {% else %}
@@ -1484,7 +1484,7 @@ template:
           {% set stati = ['unknown', 'unavailable', '-100', 'Non disponibile'] %}
           {% set co2_int = states('sensor.vmc_master_co2_interna_selezionata') %}
           {% if co2_int in stati %}
-            {#- Sensore scelto non disponibile: si usa la sonda della VMC, senza Offset (vedere Pannello Informazioni, Nota Sensori Scelti non Disponibili) -#}
+            {#- Sensore scelto non disponibile: si usa la sonda della VMC, senza Offset (vedere Pannello Informazioni, Nota Entità Scelte non Disponibili) -#}
             {% set vmc = states('sensor.vmc_master_co2_status_senza_offset') | float(default=none) %}
             {% if vmc is not none and vmc > 0 %}
               {{ vmc | round(0) }}
