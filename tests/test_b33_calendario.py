@@ -27,6 +27,11 @@ BLACK_OUT = "is_state('binary_sensor.vmc_master_black_out_rilevato', 'on')"
 OFF_LINE = ("(is_state('sensor.vmc_master_status_ip_interfaccia', 'OFF-Line') and "
             "(now() - states.sensor.vmc_master_status_ip_interfaccia.last_changed).total_seconds() >= "
             "states('input_number.vmc_master_attesa_blackout_rilevazione') | int(32))")
+# b34 (B1-1): anche la lettura della velocita' persa (porta 5001 muta con il ping OK) per il tempo di rilevazione del
+# Black-Out ferma il ciclo, sia in Fascia sia nei 14 rami «Off»
+LETTURA_PERSA = ("(is_state('sensor.vmc_master_status_ventola', 'unavailable') and "
+                 "(now() - states.sensor.vmc_master_status_ventola.last_changed).total_seconds() >= "
+                 "states('input_number.vmc_master_attesa_blackout_rilevazione') | int(32))")
 FASCE = ("vmc_master_calendario_fascia_1_on", "vmc_master_calendario_fascia_2_on")
 
 
@@ -64,7 +69,8 @@ def _cicli(nodo: Any) -> Iterator[dict[str, Any]]:
 
 def _controlla_ciclo(ciclo: dict[str, Any], fascia: bool) -> str:
     """Il ciclo standard: comando, 1 s, rilettura della velocita', 3 s; until velocita' raggiunta, scelta
-    dell'utente o Black-Out rilevato (in Fascia anche VMC OFF-Line per il tempo di rilevazione del Black-Out)."""
+    dell'utente o Black-Out rilevato (in Fascia anche VMC OFF-Line per il tempo di rilevazione del Black-Out); b34: in
+    Fascia e nei rami «Off» anche lettura della velocita' persa per il tempo di rilevazione del Black-Out."""
     comando, uno, rilettura, tre = ciclo["sequence"]
     assert comando["action"].startswith("shell_command.vmc_master_")
     nome = comando["action"].removeprefix("shell_command.vmc_master_")
@@ -74,7 +80,7 @@ def _controlla_ciclo(ciclo: dict[str, Any], fascia: bool) -> str:
     assert tre == {"delay": {"hours": 0, "minutes": 0, "seconds": 3, "milliseconds": 0}}
     (fine,) = ciclo["until"]
     attesa = f"{{{{ states('{LETTURA}') == '{ETICHETTA[nome]}' or {UTENTE} or {BLACK_OUT}"
-    attesa += f" or {OFF_LINE} }}}}" if fascia else " }}"
+    attesa += f" or {OFF_LINE} or {LETTURA_PERSA} }}}}" if fascia else f" or {LETTURA_PERSA} }}}}"
     assert fine["value_template"] == attesa
     return nome
 
@@ -145,7 +151,9 @@ def test_ritorno_dal_black_out_in_fascia_usa_lo_script_con_il_ciclo() -> None:
 
 def test_tutti_i_cicli_dell_automazione_restano_uguali() -> None:
     """Le altre allerte non cambiano: tutti i cicli dell'automazione hanno ancora lo stesso until (velocita' raggiunta,
-    scelta dell'utente, Black-Out rilevato); nessuno ha la condizione OFF-Line, che vale solo in Fascia."""
+    scelta dell'utente, Black-Out rilevato); nessuno ha la condizione OFF-Line, che vale solo in Fascia. b34 (B1-1):
+    la lettura della velocita' persa c'e' solo nei 14 rami «Off» del Calendario."""
     testo = (PKG / "vmc_master_automazione.txt").read_text(encoding="utf-8")
-    assert "vmc_master_attesa_blackout_rilevazione') | int(32)) }}" not in testo
+    assert OFF_LINE not in testo
+    assert testo.count(LETTURA_PERSA) == 14
     assert testo.count(UTENTE) == 176 + 14  # 176 nella b32, piu' i 14 rami «Off»
