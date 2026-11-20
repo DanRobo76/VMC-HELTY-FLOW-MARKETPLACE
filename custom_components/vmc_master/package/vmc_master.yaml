@@ -223,7 +223,7 @@ command_line:
 ################### Inizio Creazione Sensori Principali della VMC  ########################################################################################################################################################
 sensor:
   - platform: tcp
-    name: vmc_master_status_ventola                                             # [CONFIGURAZIONE, 367 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 186 RICHIAMI] CREAZIONE DEL SENSORE LETTURA STATI DI VENTILAZIONE; N.b non tutti i valori sono identificabili
+    name: vmc_master_status_ventola                                             # [CONFIGURAZIONE, 1087 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 236 RICHIAMI] CREAZIONE DEL SENSORE LETTURA STATI DI VENTILAZIONE; N.b non tutti i valori sono identificabili
     host: 999.999.999.999                        # INDIRIZZO IP DELLA VMC MASTER
     port: 5001                                 # PORTA 5001 DELLA VMC IMPOSTAZIONE DI DEFAULT
     timeout: 3
@@ -472,7 +472,7 @@ template:
 
 ################### Inizio Creazione Sensori di Lettura TEMPERATURA ESTERNA, INTERNA E UMIDITA' ESTERNA, INTERNA INSTALLATE IN HOME ASSISTANT  ###########################################################################
   - sensor:
-      - default_entity_id: sensor.vmc_master_temperatura_esterna_selezionata    # [CONFIGURAZIONE, 4 RICHIAMI] [INTERFACCIA, 3 RICHIAMI] [AUTOMAZIONE, 4 RICHIAMI]
+      - default_entity_id: sensor.vmc_master_temperatura_esterna_selezionata    # [CONFIGURAZIONE, 4 RICHIAMI] [INTERFACCIA, 5 RICHIAMI] [AUTOMAZIONE, 4 RICHIAMI]
         name: "VMC Master Temp. Ext. Selezionata"
         unique_id: vmc_master_temperatura_esterna_selezionata
         state: >
@@ -497,7 +497,7 @@ template:
         device_class: temperature
 
   - sensor:
-      - default_entity_id: sensor.vmc_master_temperatura_interna_selezionata    # [CONFIGURAZIONE, 4 RICHIAMI] [INTERFACCIA, 3 RICHIAMI] [AUTOMAZIONE, 4 RICHIAMI]
+      - default_entity_id: sensor.vmc_master_temperatura_interna_selezionata    # [CONFIGURAZIONE, 4 RICHIAMI] [INTERFACCIA, 4 RICHIAMI] [AUTOMAZIONE, 4 RICHIAMI]
         name: "VMC Master Temp. Int. Selezionata"
         unique_id: vmc_master_temperatura_interna_selezionata
         state: >
@@ -511,7 +511,7 @@ template:
         device_class: temperature
 
   - sensor:
-      - default_entity_id: sensor.vmc_master_umidita_esterna_selezionata        # [CONFIGURAZIONE, 5 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 2 RICHIAMI]
+      - default_entity_id: sensor.vmc_master_umidita_esterna_selezionata        # [CONFIGURAZIONE, 5 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 4 RICHIAMI]
         name: "VMC Master Umidità Ext. Selezionata"
         unique_id: vmc_master_umidita_esterna_selezionata
         state: >
@@ -630,7 +630,7 @@ template:
           {% endif %}
 
   - binary_sensor:
-      - default_entity_id: binary_sensor.vmc_master_black_out_rilevato          # [CONFIGURAZIONE, 363 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 269 RICHIAMI] BLACK-OUT RILEVATO: ON QUANDO UNA DELLE CONDIZIONI DEI TRIGGER «BLACK-OUT» DELL'AUTOMAZIONE (STESSO TESTO, 1:1) E' VERA DA ALMENO «ATTESA BLACK-OUT RILEVAZIONE» SECONDI; CON L'AUTOMAZIONE IN MODALITA' QUEUED FA USCIRE I CICLI DI CONFERMA DELLA VELOCITA', COME FACEVA IL RIAVVIO DELLA MODALITA' RESTART
+      - default_entity_id: binary_sensor.vmc_master_black_out_rilevato          # [CONFIGURAZIONE, 363 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 286 RICHIAMI] BLACK-OUT RILEVATO: ON QUANDO UNA DELLE CONDIZIONI DEI TRIGGER «BLACK-OUT» DELL'AUTOMAZIONE (STESSO TESTO, 1:1) E' VERA DA ALMENO «ATTESA BLACK-OUT RILEVAZIONE» SECONDI; CON L'AUTOMAZIONE IN MODALITA' QUEUED FA USCIRE I CICLI DI CONFERMA DELLA VELOCITA', COME FACEVA IL RIAVVIO DELLA MODALITA' RESTART
         name: "Black-Out Rilevato"
         unique_id: vmc_master_black_out_rilevato
         state: >
@@ -1019,7 +1019,7 @@ template:
         icon: mdi:code-array
 
   - sensor:
-      - default_entity_id: sensor.vmc_master_status_ventola_lettura_codice_interpretato # [CONFIGURAZIONE, 868 RICHIAMI] [INTERFACCIA, 55 RICHIAMI] [AUTOMAZIONE, 868 RICHIAMI] SENSORE DI INTERPRETAZIONE DELLA LETTURA DEI DATI "VELOCITA'" MEMORIZZATI NELLA VMC CONVERITA IN "STRINGA", PREVIA VERIFICA DI AVVENUTA LETTURA DEI DATI "VELOCITA'"" MEMORIZZATI NELLA VMC
+      - default_entity_id: sensor.vmc_master_status_ventola_lettura_codice_interpretato # [CONFIGURAZIONE, 868 RICHIAMI] [INTERFACCIA, 55 RICHIAMI] [AUTOMAZIONE, 919 RICHIAMI] SENSORE DI INTERPRETAZIONE DELLA LETTURA DEI DATI "VELOCITA'" MEMORIZZATI NELLA VMC CONVERITA IN "STRINGA", PREVIA VERIFICA DI AVVENUTA LETTURA DEI DATI "VELOCITA'"" MEMORIZZATI NELLA VMC
         name: "Status Ventilazione"
         unique_id: vmc_master_status_ventola_lettura_codice_interpretato
         state: >
@@ -1397,7 +1397,7 @@ template:
         icon: mdi:home-thermometer
 
   - sensor:
-      - default_entity_id: sensor.vmc_master_umidita_esterna_status             # [CONFIGURAZIONE, 10 RICHIAMI] [INTERFACCIA, 6 RICHIAMI] [AUTOMAZIONE, 5 RICHIAMI] SENSORE DI LETTURA UMIDITA' ESTERNA MEMORIZZATA NEL SENSORE vmc_master_umidita_esterna_selezionata + OFFSET MANUALE, PREVIA VERIFICA DI AVVENUTA LETTURA DEI DATI "SENSORI" MEMORIZZATI NELLA VMC
+      - default_entity_id: sensor.vmc_master_umidita_esterna_status             # [CONFIGURAZIONE, 10 RICHIAMI] [INTERFACCIA, 6 RICHIAMI] [AUTOMAZIONE, 3 RICHIAMI] SENSORE DI LETTURA UMIDITA' ESTERNA MEMORIZZATA NEL SENSORE vmc_master_umidita_esterna_selezionata + OFFSET MANUALE, PREVIA VERIFICA DI AVVENUTA LETTURA DEI DATI "SENSORI" MEMORIZZATI NELLA VMC
         name: "Umidità Ext. [%]"
         unique_id: vmc_master_umidita_esterna_status
         state: >
@@ -3560,7 +3560,7 @@ template:
         icon: mdi:checkbox-marked
 
   - sensor:
-      - default_entity_id: sensor.vmc_master_status_freeheating                 # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 1 RICHIAMO]
+      - default_entity_id: sensor.vmc_master_status_freeheating                 # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 2 RICHIAMI]
         name: "Check Free Heating"
         unique_id: vmc_master_status_freeheating
         state: >
@@ -3626,7 +3626,7 @@ template:
         icon: mdi:checkbox-marked
 
   - sensor:
-      - default_entity_id: sensor.vmc_master_status_freecooling                 # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 1 RICHIAMO]
+      - default_entity_id: sensor.vmc_master_status_freecooling                 # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 2 RICHIAMI]
         name: "Check Free Cooling"
         unique_id: vmc_master_status_freecooling
         state: >
@@ -4617,43 +4617,43 @@ input_select:
       - Free Cool./Heat.
     icon: mdi:fan 
 
-  vmc_master_selected_temp_external_entity:                                     # [CONFIGURAZIONE, 17 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 5 RICHIAMI] SENSORE DI MEMORIZZAZIONE DI TUTTE LE ENTITA' DI TEMPERATURA INSTALLATI IN HOME ASSISTANT
+  vmc_master_selected_temp_external_entity:                                     # [CONFIGURAZIONE, 19 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 5 RICHIAMI] SENSORE DI MEMORIZZAZIONE DI TUTTE LE ENTITA' DI TEMPERATURA INSTALLATI IN HOME ASSISTANT
     name: Seleziona Entità Temperatura Esterna
     options:
       - "Aggiorna Elenco Entità Temperatura Esterna"
     icon: mdi:form-textbox
 
-  vmc_master_selected_temp_internal_entity:                                     # [CONFIGURAZIONE, 17 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 5 RICHIAMI] SENSORE DI MEMORIZZAZIONE DI TUTTE LE ENTITA' DI TEMPERATURA INSTALLATI IN HOME ASSISTANT
+  vmc_master_selected_temp_internal_entity:                                     # [CONFIGURAZIONE, 19 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 5 RICHIAMI] SENSORE DI MEMORIZZAZIONE DI TUTTE LE ENTITA' DI TEMPERATURA INSTALLATI IN HOME ASSISTANT
     name: Seleziona Entità Temperatura Interna
     options:
       - "Aggiorna Elenco Entità Temperatura Interna"
     icon: mdi:form-textbox
 
-  vmc_master_selected_humidity_external_entity:                                 # [CONFIGURAZIONE, 17 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 5 RICHIAMI] SENSORE DI MEMORIZZAZIONE DI TUTTE LE ENTITA' DI UMIDITA' INSTALLATI IN HOME ASSISTANT
+  vmc_master_selected_humidity_external_entity:                                 # [CONFIGURAZIONE, 19 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 5 RICHIAMI] SENSORE DI MEMORIZZAZIONE DI TUTTE LE ENTITA' DI UMIDITA' INSTALLATI IN HOME ASSISTANT
     name: Seleziona Entità Umidità Esterna
     options:
       - "Aggiorna Elenco Entità Umidità Esterna"
     icon: mdi:form-textbox
 
-  vmc_master_selected_humidity_internal_entity:                                 # [CONFIGURAZIONE, 17 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 5 RICHIAMI] SENSORE DI MEMORIZZAZIONE DI TUTTE LE ENTITA' DI UMIDITA' INSTALLATI IN HOME ASSISTANT
+  vmc_master_selected_humidity_internal_entity:                                 # [CONFIGURAZIONE, 19 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 5 RICHIAMI] SENSORE DI MEMORIZZAZIONE DI TUTTE LE ENTITA' DI UMIDITA' INSTALLATI IN HOME ASSISTANT
     name: Seleziona Entità Umidità Interna
     options:
       - "Aggiorna Elenco Entità Umidità Interna"
     icon: mdi:form-textbox
 
-  vmc_master_selected_co2_internal_entity:                                      # [CONFIGURAZIONE, 17 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 5 RICHIAMI] SENSORE DI MEMORIZZAZIONE DI TUTTE LE ENTITA' DI CO₂ INSTALLATI IN HOME ASSISTANT
+  vmc_master_selected_co2_internal_entity:                                      # [CONFIGURAZIONE, 19 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 5 RICHIAMI] SENSORE DI MEMORIZZAZIONE DI TUTTE LE ENTITA' DI CO₂ INSTALLATI IN HOME ASSISTANT
     name: Seleziona Entità CO₂ Interna
     options:
       - "Aggiorna Elenco Entità CO₂ Interna"
     icon: mdi:form-textbox
 
-  vmc_master_selected_notification_device:                                      # [CONFIGURAZIONE, 34 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 8 RICHIAMI] SENSORE DI MEMORIZZAZIONE DI TUTTI I DISPOSITIVI DELL'APP MOBILE APP INSTALLATI IN HOME ASSISTANT PER L'INVIO DELLE NOTIFICHE
+  vmc_master_selected_notification_device:                                      # [CONFIGURAZIONE, 36 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 8 RICHIAMI] SENSORE DI MEMORIZZAZIONE DI TUTTI I DISPOSITIVI DELL'APP MOBILE APP INSTALLATI IN HOME ASSISTANT PER L'INVIO DELLE NOTIFICHE
     name: Seleziona Dispositivo per Invio Notifica
     options:
       - "Aggiorna Elenco Dispositivi per Invio Notifica"
     icon: mdi:form-textbox
 
-  vmc_master_selected_media_player_entity:                                      # [CONFIGURAZIONE, 67 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 1 RICHIAMO]
+  vmc_master_selected_media_player_entity:                                      # [CONFIGURAZIONE, 69 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 1 RICHIAMO]
     name: Seleziona Media Player
     options:
       - "Aggiorna Elenco Media Player"
@@ -4872,7 +4872,7 @@ input_number:
     mode: box
     unit_of_measurement: s
     icon: mdi:timer-cog-outline
-  vmc_master_attesa_blackout_rilevazione:                                      # [CONFIGURAZIONE, 365 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 13 RICHIAMI] TEMPO DI ATTESA [s] DI 12 TRIGGER DELL'AUTOMAZIONE VMC MASTER (VALORE ORIGINALE 32 s), LETTO ANCHE DAL COUNTDOWN
+  vmc_master_attesa_blackout_rilevazione:                                      # [CONFIGURAZIONE, 725 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 27 RICHIAMI] TEMPO DI ATTESA [s] DI 12 TRIGGER DELL'AUTOMAZIONE VMC MASTER (VALORE ORIGINALE 32 s), LETTO ANCHE DAL COUNTDOWN
     name: "Attesa Rilevazione Black-Out"
     min: 1
     max: 300
@@ -5095,7 +5095,7 @@ input_boolean:
     initial: false
     icon: mdi:thermometer-water
 
-  vmc_master_opzioni_free_heating_o_free_cooling:                               # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 5 RICHIAMI] [AUTOMAZIONE, 23 RICHIAMI]
+  vmc_master_opzioni_free_heating_o_free_cooling:                               # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 5 RICHIAMI] [AUTOMAZIONE, 19 RICHIAMI]
     name: "Calendario Free Heating / Free Cooling"
     initial: false
     icon: mdi:sun-snowflake-variant
@@ -5120,7 +5120,7 @@ input_boolean:
     initial: false
     icon: mdi:test-tube
 
-  vmc_master_opzioni_accendi_spegni_vmc_vs_pdr:                                 # [CONFIGURAZIONE, 167 RICHIAMI] [INTERFACCIA, 35 RICHIAMI] [AUTOMAZIONE, 91 RICHIAMI] VERIFICA IL VALORE DEL SENZORE vmc_master_punto_di_rugiada_verifica_confronto OVVERO SE IL VALORE DIVENTE "SE NE SCONSIGLIA L'IMPIEGO"; SOLAMENTE SE VIENE ACCESO (ON), LA VMC VERRA' SPENTA IN AUTOMATICO SE IL VALORE DIVENTA "SE NE SCONSIGLIA L'IMPIEGO"
+  vmc_master_opzioni_accendi_spegni_vmc_vs_pdr:                                 # [CONFIGURAZIONE, 175 RICHIAMI] [INTERFACCIA, 35 RICHIAMI] [AUTOMAZIONE, 91 RICHIAMI] VERIFICA IL VALORE DEL SENZORE vmc_master_punto_di_rugiada_verifica_confronto OVVERO SE IL VALORE DIVENTE "SE NE SCONSIGLIA L'IMPIEGO"; SOLAMENTE SE VIENE ACCESO (ON), LA VMC VERRA' SPENTA IN AUTOMATICO SE IL VALORE DIVENTA "SE NE SCONSIGLIA L'IMPIEGO"
     name: "VMC ON/OFF, in Funzione del Lim. Δ P. di Rugiada"
     icon: mdi:light-switch-off
 
@@ -5281,11 +5281,11 @@ input_boolean:
     name: "Spia Velocità freecooling 1° Avvio"
     icon: mdi:memory
 
-  vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling: # [CONFIGURAZIONE, 72 RICHIAMI] [INTERFACCIA, 20 RICHIAMI] [AUTOMAZIONE, 210 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' FREE-COOLING, IN CASO DI ALLERTA PROGRAMMATA DEL FREE COOLING
+  vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling: # [CONFIGURAZIONE, 72 RICHIAMI] [INTERFACCIA, 20 RICHIAMI] [AUTOMAZIONE, 211 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' FREE-COOLING, IN CASO DI ALLERTA PROGRAMMATA DEL FREE COOLING
     name: "Spia su Programmazione Velocità Free Cooling 1° Avvio"
     icon: mdi:memory
 
-  vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating: # [CONFIGURAZIONE, 96 RICHIAMI] [INTERFACCIA, 20 RICHIAMI] [AUTOMAZIONE, 209 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' FREE-COOLING, IN CASO DI ALLERTA PROGRAMMATA DEL FREE HEATING
+  vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating: # [CONFIGURAZIONE, 96 RICHIAMI] [INTERFACCIA, 20 RICHIAMI] [AUTOMAZIONE, 210 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' FREE-COOLING, IN CASO DI ALLERTA PROGRAMMATA DEL FREE HEATING
     name: "Spia su Programmazione Velocità Free Heating 1° Avvio"
     icon: mdi:memory
 
