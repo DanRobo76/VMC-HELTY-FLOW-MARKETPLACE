@@ -19272,9 +19272,9 @@ actions:
                     seconds: 3
                     milliseconds: 0
               until:
-                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                - alias: Velocità raggiunta, scelta dall'utente, Black-Out rilevato oppure lettura della velocità persa per il tempo di rilevazione del Black-Out
                   condition: template
-                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') or (is_state('sensor.vmc_master_status_ventola', 'unavailable') and (now() - states.sensor.vmc_master_status_ventola.last_changed).total_seconds() >= states('input_number.vmc_master_attesa_blackout_rilevazione') | int(32)) }}"
           - data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
           - alias: Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7)
@@ -19358,9 +19358,9 @@ actions:
                     seconds: 3
                     milliseconds: 0
               until:
-                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                - alias: Velocità raggiunta, scelta dall'utente, Black-Out rilevato oppure lettura della velocità persa per il tempo di rilevazione del Black-Out
                   condition: template
-                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') or (is_state('sensor.vmc_master_status_ventola', 'unavailable') and (now() - states.sensor.vmc_master_status_ventola.last_changed).total_seconds() >= states('input_number.vmc_master_attesa_blackout_rilevazione') | int(32)) }}"
           - data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
           - alias: Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7)
@@ -19455,9 +19455,9 @@ actions:
                     seconds: 3
                     milliseconds: 0
               until:
-                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                - alias: Velocità raggiunta, scelta dall'utente, Black-Out rilevato oppure lettura della velocità persa per il tempo di rilevazione del Black-Out
                   condition: template
-                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') or (is_state('sensor.vmc_master_status_ventola', 'unavailable') and (now() - states.sensor.vmc_master_status_ventola.last_changed).total_seconds() >= states('input_number.vmc_master_attesa_blackout_rilevazione') | int(32)) }}"
           - data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
           - alias: Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7)
@@ -19541,9 +19541,9 @@ actions:
                     seconds: 3
                     milliseconds: 0
               until:
-                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                - alias: Velocità raggiunta, scelta dall'utente, Black-Out rilevato oppure lettura della velocità persa per il tempo di rilevazione del Black-Out
                   condition: template
-                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') or (is_state('sensor.vmc_master_status_ventola', 'unavailable') and (now() - states.sensor.vmc_master_status_ventola.last_changed).total_seconds() >= states('input_number.vmc_master_attesa_blackout_rilevazione') | int(32)) }}"
           - data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
           - alias: Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7)
@@ -19637,9 +19637,9 @@ actions:
                     seconds: 3
                     milliseconds: 0
               until:
-                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                - alias: Velocità raggiunta, scelta dall'utente, Black-Out rilevato oppure lettura della velocità persa per il tempo di rilevazione del Black-Out
                   condition: template
-                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') or (is_state('sensor.vmc_master_status_ventola', 'unavailable') and (now() - states.sensor.vmc_master_status_ventola.last_changed).total_seconds() >= states('input_number.vmc_master_attesa_blackout_rilevazione') | int(32)) }}"
           - data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
           - alias: Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7)
@@ -19723,9 +19723,9 @@ actions:
                     seconds: 3
                     milliseconds: 0
               until:
-                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                - alias: Velocità raggiunta, scelta dall'utente, Black-Out rilevato oppure lettura della velocità persa per il tempo di rilevazione del Black-Out
                   condition: template
-                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') or (is_state('sensor.vmc_master_status_ventola', 'unavailable') and (now() - states.sensor.vmc_master_status_ventola.last_changed).total_seconds() >= states('input_number.vmc_master_attesa_blackout_rilevazione') | int(32)) }}"
           - data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
           - alias: Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7)
@@ -19820,9 +19820,9 @@ actions:
                     seconds: 3
                     milliseconds: 0
               until:
-                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                - alias: Velocità raggiunta, scelta dall'utente, Black-Out rilevato oppure lettura della velocità persa per il tempo di rilevazione del Black-Out
                   condition: template
-                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') or (is_state('sensor.vmc_master_status_ventola', 'unavailable') and (now() - states.sensor.vmc_master_status_ventola.last_changed).total_seconds() >= states('input_number.vmc_master_attesa_blackout_rilevazione') | int(32)) }}"
           - data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
             enabled: true
@@ -19907,9 +19907,9 @@ actions:
                     seconds: 3
                     milliseconds: 0
               until:
-                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                - alias: Velocità raggiunta, scelta dall'utente, Black-Out rilevato oppure lettura della velocità persa per il tempo di rilevazione del Black-Out
                   condition: template
-                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') or (is_state('sensor.vmc_master_status_ventola', 'unavailable') and (now() - states.sensor.vmc_master_status_ventola.last_changed).total_seconds() >= states('input_number.vmc_master_attesa_blackout_rilevazione') | int(32)) }}"
           - data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
           - alias: Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7)
@@ -20003,9 +20003,9 @@ actions:
                     seconds: 3
                     milliseconds: 0
               until:
-                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                - alias: Velocità raggiunta, scelta dall'utente, Black-Out rilevato oppure lettura della velocità persa per il tempo di rilevazione del Black-Out
                   condition: template
-                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') or (is_state('sensor.vmc_master_status_ventola', 'unavailable') and (now() - states.sensor.vmc_master_status_ventola.last_changed).total_seconds() >= states('input_number.vmc_master_attesa_blackout_rilevazione') | int(32)) }}"
           - data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
           - alias: Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7)
@@ -20089,9 +20089,9 @@ actions:
                     seconds: 3
                     milliseconds: 0
               until:
-                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                - alias: Velocità raggiunta, scelta dall'utente, Black-Out rilevato oppure lettura della velocità persa per il tempo di rilevazione del Black-Out
                   condition: template
-                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') or (is_state('sensor.vmc_master_status_ventola', 'unavailable') and (now() - states.sensor.vmc_master_status_ventola.last_changed).total_seconds() >= states('input_number.vmc_master_attesa_blackout_rilevazione') | int(32)) }}"
           - data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
           - alias: Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7)
@@ -20185,9 +20185,9 @@ actions:
                     seconds: 3
                     milliseconds: 0
               until:
-                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                - alias: Velocità raggiunta, scelta dall'utente, Black-Out rilevato oppure lettura della velocità persa per il tempo di rilevazione del Black-Out
                   condition: template
-                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') or (is_state('sensor.vmc_master_status_ventola', 'unavailable') and (now() - states.sensor.vmc_master_status_ventola.last_changed).total_seconds() >= states('input_number.vmc_master_attesa_blackout_rilevazione') | int(32)) }}"
           - data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
           - alias: Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7)
@@ -20271,9 +20271,9 @@ actions:
                     seconds: 3
                     milliseconds: 0
               until:
-                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                - alias: Velocità raggiunta, scelta dall'utente, Black-Out rilevato oppure lettura della velocità persa per il tempo di rilevazione del Black-Out
                   condition: template
-                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') or (is_state('sensor.vmc_master_status_ventola', 'unavailable') and (now() - states.sensor.vmc_master_status_ventola.last_changed).total_seconds() >= states('input_number.vmc_master_attesa_blackout_rilevazione') | int(32)) }}"
           - data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
           - alias: Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7)
@@ -20367,9 +20367,9 @@ actions:
                     seconds: 3
                     milliseconds: 0
               until:
-                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                - alias: Velocità raggiunta, scelta dall'utente, Black-Out rilevato oppure lettura della velocità persa per il tempo di rilevazione del Black-Out
                   condition: template
-                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') or (is_state('sensor.vmc_master_status_ventola', 'unavailable') and (now() - states.sensor.vmc_master_status_ventola.last_changed).total_seconds() >= states('input_number.vmc_master_attesa_blackout_rilevazione') | int(32)) }}"
           - metadata: {}
             data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
@@ -20454,9 +20454,9 @@ actions:
                     seconds: 3
                     milliseconds: 0
               until:
-                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                - alias: Velocità raggiunta, scelta dall'utente, Black-Out rilevato oppure lettura della velocità persa per il tempo di rilevazione del Black-Out
                   condition: template
-                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') or (is_state('sensor.vmc_master_status_ventola', 'unavailable') and (now() - states.sensor.vmc_master_status_ventola.last_changed).total_seconds() >= states('input_number.vmc_master_attesa_blackout_rilevazione') | int(32)) }}"
           - data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
           - alias: Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7)
