@@ -21355,6 +21355,7 @@ automation:
             ]
             and states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating') == 'on'
             and states('input_boolean.vmc_master_spia_co2_o_voc') == 'off'
+            and (states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') in ['Velocità 0', 'Free Cooling'] or (states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia') == 'on' and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 1'))
             and states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia') == 'off'
             and states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia') == 'off'
             and states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line'
@@ -21380,6 +21381,7 @@ automation:
             ]
             and states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating') == 'on'
             and states('input_boolean.vmc_master_spia_co2_o_voc') == 'off'
+            and (states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') in ['Velocità 0', 'Free Cooling'] or (states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia') == 'on' and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 1'))
             and states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia') == 'off'
             and states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia') == 'off'
             and states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line'
@@ -21407,6 +21409,7 @@ automation:
             ]
             and states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling') == 'on'
             and states('input_boolean.vmc_master_spia_co2_o_voc') == 'off'
+            and (states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') in ['Velocità 0', 'Free Cooling'] or (states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia') == 'on' and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 1'))
             and states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia') == 'off'
             and states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia') == 'off'
             and states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line'
@@ -21432,6 +21435,7 @@ automation:
             ]
             and states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling') == 'on'
             and states('input_boolean.vmc_master_spia_co2_o_voc') == 'off'
+            and (states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') in ['Velocità 0', 'Free Cooling'] or (states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia') == 'on' and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 1'))
             and states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia') == 'off'
             and states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia') == 'off'
             and states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line'
@@ -21459,6 +21463,7 @@ automation:
             ]
             and states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating') == 'on'
             and states('input_boolean.vmc_master_spia_co2_o_voc') == 'on'
+            and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') in ['Velocità 0', 'Velocità 1', 'Free Cooling']
             and states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia') == 'off'
             and states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia') == 'off'
             and states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line'
@@ -21484,6 +21489,7 @@ automation:
             ]
             and states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating') == 'on'
             and states('input_boolean.vmc_master_spia_co2_o_voc') == 'on'
+            and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') in ['Velocità 0', 'Velocità 1', 'Free Cooling']
             and states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia') == 'off'
             and states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia') == 'off'
             and states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line'
@@ -21511,6 +21517,7 @@ automation:
             ]
             and states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling') == 'on'
             and states('input_boolean.vmc_master_spia_co2_o_voc') == 'on'
+            and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') in ['Velocità 0', 'Velocità 1', 'Free Cooling']
             and states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia') == 'off'
             and states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia') == 'off'
             and states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line'
@@ -21536,6 +21543,7 @@ automation:
             ]
             and states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling') == 'on'
             and states('input_boolean.vmc_master_spia_co2_o_voc') == 'on'
+            and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') in ['Velocità 0', 'Velocità 1', 'Free Cooling']
             and states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia') == 'off'
             and states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia') == 'off'
             and states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line'
