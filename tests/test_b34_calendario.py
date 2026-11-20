@@ -76,7 +76,9 @@ def test_b1_1_tutti_i_cicli_del_calendario_escono_con_la_lettura_persa() -> None
     pacchetto = (PKG / "vmc_master.yaml").read_text(encoding="utf-8")
     automazione = (PKG / "vmc_master_automazione.txt").read_text(encoding="utf-8")
     assert pacchetto.count(LETTURA_PERSA) == 360 + 2
-    assert automazione.count(LETTURA_PERSA) == 14
+    # b35 (C1-1): nell'automazione la stessa condizione c'e' anche nella memoria Velocita' 0 e nella Spia Comando non
+    # eseguito dei 14 rami «Off» e nel ciclo, nella memoria e nella spia della fine della Fascia del ramo del ritorno
+    assert automazione.count(LETTURA_PERSA) == 14 + 14 + 14 + 3
 
 
 def test_b1_1_il_sensore_letto_e_quello_tcp() -> None:
