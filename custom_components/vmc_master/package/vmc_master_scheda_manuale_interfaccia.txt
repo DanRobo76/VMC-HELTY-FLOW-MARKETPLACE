@@ -1272,6 +1272,9 @@ cards:
 
         {% set congelamento_vmc = congelamento_vmc if congelamento_vmc is not none else 99 %}
 
+        {#- Entità scelta non disponibile o non scelta: il package usa la sonda della VMC (stessa prova del sensore Temperatura Ext.), quindi i titoli non la nominano come fonte -#}
+        {% set e_entita = " (ENTITÀ SCELTA NON DISPONIBILE)" if states('sensor.vmc_master_temperatura_esterna_selezionata') in ['unknown', 'unavailable', '-100', 'Non disponibile'] else " E NELL'ENTITÀ SELEZIONATA" %}
+
 
         {% set spia_velocita_0 =
         states('input_boolean.vmc_master_spia_velocita_0_congelamento') %}
@@ -1402,7 +1405,7 @@ cards:
         and is_state('sensor.vmc_master_status_ip_interfaccia', 'ON-Line') and
         states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')=='Velocità
         0' and (congelamento_vmc <= -18 and congelamento <= -18) %}
-          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA CONGELAMENTO NELLA SONDA DELLA VMC E NELL'ENTITÀ SELEZIONATA</strong></font>
+          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA CONGELAMENTO NELLA SONDA DELLA VMC{{ e_entita }}</strong></font>
 
           - Temperatura Esterna VMC: {{congelamento_vmc}} °C
           
@@ -1742,7 +1745,7 @@ cards:
         and is_state('sensor.vmc_master_status_ip_interfaccia', 'ON-Line') and
         states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')!='Velocità
         0' and (congelamento_vmc <= -18 and congelamento <= -18) %}
-          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA CONGELAMENTO NELLA SONDA DELLA VMC E NELL'ENTITÀ SELEZIONATA</strong></font>
+          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA CONGELAMENTO NELLA SONDA DELLA VMC{{ e_entita }}</strong></font>
 
           - Temperatura Esterna VMC: {{congelamento_vmc}} °C
           
@@ -1854,7 +1857,7 @@ cards:
         is_state('sensor.vmc_master_status_ip_interfaccia','ON-Line') and
         (congelamento > -18 and congelamento <= -15) and (congelamento_vmc > -18
         and congelamento_vmc <= -15) %}
-          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA PROSSIMA AL CONGELAMENTO NELLA SONDA DELLA VMC E NELL'ENTITÀ SELEZIONATA</strong></font>
+          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA PROSSIMA AL CONGELAMENTO NELLA SONDA DELLA VMC{{ e_entita }}</strong></font>
 
             - Temperatura Esterna VMC: {{congelamento_vmc}} °C
             
@@ -1886,7 +1889,7 @@ cards:
         {% elif is_state('sensor.vmc_master_congelamento_verifica_soglia', 'No')
         and is_state('sensor.vmc_master_status_ip_interfaccia','ON-Line') and
         (congelamento_vmc > -15 and congelamento > -15) %}
-         <font color="rgb(128, 0, 128)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-off-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> NESSUNA ALLERTA CONGELAMENTO NELLA SONDA DELLA VMC E NELL'ENTITÀ SELEZIONATA </strong></font>
+         <font color="rgb(128, 0, 128)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-off-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> NESSUNA ALLERTA CONGELAMENTO NELLA SONDA DELLA VMC{{ e_entita }} </strong></font>
 
         {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC RESTERÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA){% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI){% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
         <strong>VELOCITA' 0</strong>{% elif spia_velocita_1=="on" %}RIPRESA
@@ -2052,6 +2055,16 @@ cards:
         {% set delta_vmc = (temperatura_interna_vmc - temperatura_esterna_vmc) |
         round(1) %}
 
+        {#- Entità scelta non disponibile o non scelta: il package usa la sonda della VMC (stessa prova dei sensori Temperatura Ext. e Int.), quindi i titoli non la nominano come fonte -#}
+        {% set ext_sost = states('sensor.vmc_master_temperatura_esterna_selezionata') in ['unknown', 'unavailable', '-100', 'Non disponibile'] %}
+
+        {% set int_sost = states('sensor.vmc_master_temperatura_interna_selezionata') in ['unknown', 'unavailable', '-100', 'Non disponibile'] %}
+
+        {% set e_entita = " (ENTITÀ SCELTE NON DISPONIBILI)" if ext_sost and int_sost else ((" E NELL'ENTITÀ SELEZIONATA (ENTITÀ " ~ ("ESTERNA" if ext_sost else "INTERNA") ~ " NON DISPONIBILE)") if ext_sost or int_sost else " E NELL'ENTITÀ SELEZIONATA") %}
+
+        {#- Priorità Congelamento: dove è stata raggiunta la soglia, con la stessa regola della scheda Congelamento -#}
+        {% set dove_congelamento = ("NELLA SONDA DELLA VMC" ~ (" (ENTITÀ SCELTA NON DISPONIBILE)" if ext_sost else " E NELL'ENTITÀ SELEZIONATA")) if (congelamento_vmc <= -18 and congelamento <= -18) else ("NELLA SONDA DELLA VMC" if congelamento_vmc <= -18 else "NELL'ENTITÀ SELEZIONATA") %}
+
 
         {% set spia_velocita_0 =
         states('input_boolean.vmc_master_spia_velocita_0_delta_temp_verifica_soglia_valore')
@@ -2088,9 +2101,9 @@ cards:
 
 
         {% if (congelamento <= -18 or congelamento_vmc <= -18) %}
-          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA DIFF. TEMP. (INT-EST) > 23 [°C] NELLA SONDA DELLA VMC</strong></font>
+          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA DIFF. TEMP. (INT-EST) > 23 [°C]</strong></font>
 
-        PRIORITA' ALLERTA CONGELAMENTO
+        PRIORITA' ALLERTA CONGELAMENTO {{ dove_congelamento }}
 
 
         {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC RESTERÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA){% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI){% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
@@ -2176,7 +2189,7 @@ cards:
         and is_state('sensor.vmc_master_status_ip_interfaccia', 'ON-Line') and
         states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')=='Velocità
         0' and (delta_vmc > 23 and delta > 23) %}
-          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA DIFF. TEMP. (INT-EST) > 23 [°C] NELLA SONDA DELLA VMC E NELL'ENTITÀ SELEZIONATA</strong></font>
+          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA DIFF. TEMP. (INT-EST) > 23 [°C] NELLA SONDA DELLA VMC{{ e_entita }}</strong></font>
 
           - Temperatura Interna VMC: {{temperatura_interna_vmc}} °C
           - Temperatura Esterna VMC: {{temperatura_esterna_vmc}} °C
@@ -2447,7 +2460,7 @@ cards:
         and is_state('sensor.vmc_master_status_ip_interfaccia', 'ON-Line') and
         states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')!='Velocità
         0' and (delta_vmc > 23 and delta > 23) %}
-          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA DIFF. TEMP. (INT-EST) > 23 [°C] NELLA SONDA DELLA VMC E NELL'ENTITÀ SELEZIONATA</strong></font>
+          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA DIFF. TEMP. (INT-EST) > 23 [°C] NELLA SONDA DELLA VMC{{ e_entita }}</strong></font>
 
           - Temperatura Interna VMC: {{temperatura_interna_vmc}} °C
           - Temperatura Esterna VMC: {{temperatura_esterna_vmc}} °C
@@ -2549,7 +2562,7 @@ cards:
         Prossimo]') and
         is_state('sensor.vmc_master_status_ip_interfaccia','ON-Line') and (delta
         >= 20 and delta <= 23) and (delta_vmc >= 20 and delta_vmc <= 23) %}
-          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA 20 °C ≤ DIFF. TEMP. (INT-EST)  ≤  23 °C PROSSIMA NELLA SONDA DELLA VMC E NELL'ENTITÀ SELEZIONATA</strong></font>
+          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA 20 °C ≤ DIFF. TEMP. (INT-EST)  ≤  23 °C PROSSIMA NELLA SONDA DELLA VMC{{ e_entita }}</strong></font>
 
             - Temperatura Interna VMC: {{temperatura_interna_vmc}} °C
             - Temperatura Esterna VMC: {{temperatura_esterna_vmc}} °C
@@ -2585,7 +2598,7 @@ cards:
         {% elif is_state('sensor.vmc_master_delta_temp_verifica_soglia', 'No')
         and is_state('sensor.vmc_master_status_ip_interfaccia','ON-Line') and
         (delta_vmc < 20 and delta < 20) %}
-         <font color="rgb(128, 0, 128)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-off-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> NESSUNA ALLERTA DIFF. TEMP. (INT-EST) > 23 [°C] NELLA SONDA DELLA VMC E NELL'ENTITÀ SELEZIONATA </strong></font>
+         <font color="rgb(128, 0, 128)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-off-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> NESSUNA ALLERTA DIFF. TEMP. (INT-EST) > 23 [°C] NELLA SONDA DELLA VMC{{ e_entita }} </strong></font>
 
         {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC SARÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA){% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI){% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
         <strong>VELOCITA' 0</strong>{% elif spia_velocita_1=="on" %}RIPRESA
