@@ -53,7 +53,7 @@ def _dopo_ripristino() -> list:
 
 def test_righe_nuove_sotto_il_ripristino() -> None:
     righe = _dopo_ripristino()
-    assert len(righe) == 3 + len(VELOCITA) + 1
+    assert len(righe) == 3 + len(VELOCITA) + 1 + 1
     assert all(r["type"] == "conditional" for r in righe)
     attivo = {"condition": "state", "entity": RIL, "state": "active"}
 
@@ -75,15 +75,22 @@ def test_righe_nuove_sotto_il_ripristino() -> None:
     assert righe[2]["row"]["label"].startswith("Black-Out rilevato: ")
 
     # 3) velocità memorizzata: una riga per spia, anche con la VMC di nuovo ON-Line (ripristino)
-    for riga, (chiave, testo) in zip(righe[3:-1], VELOCITA.items()):
+    for riga, (chiave, testo) in zip(righe[3:-2], VELOCITA.items()):
         assert riga["conditions"] == [
             {"condition": "state", "entity": f"input_boolean.vmc_master_spia_velocita_{chiave}", "state": "on"}
         ]
         assert riga["row"] == {"type": "text", "name": "Velocità salvata", "text": testo, "icon": "mdi:fan"}
 
     # 4) Black-Out durante una fascia del Calendario
-    assert righe[-1]["conditions"] == [OFF, {"condition": "state", "entity": CAL, "state": "on"}]
-    assert righe[-1]["row"]["label"].startswith("Black-Out durante la fascia del Calendario: ")
+    assert righe[-2]["conditions"] == [OFF, {"condition": "state", "entity": CAL, "state": "on"}]
+    assert righe[-2]["row"]["label"].startswith("Black-Out durante la fascia del Calendario: ")
+
+    # 5) b34: comando della fascia non eseguito (VMC ON-Line ma senza risposta ai comandi)
+    assert righe[-1]["conditions"] == [
+        {"condition": "state", "entity": "sensor.vmc_master_status_ip_interfaccia", "state": "ON-Line"},
+        {"condition": "state", "entity": "input_boolean.vmc_master_spia_calendario_comando_non_eseguito", "state": "on"},
+    ]
+    assert righe[-1]["row"]["label"].endswith("riparte con la velocità della fascia. Non serve fare nulla.")
 
 
 def test_testi_brevi_e_senza_entita() -> None:

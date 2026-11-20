@@ -27,6 +27,11 @@ BLACK_OUT = "is_state('binary_sensor.vmc_master_black_out_rilevato', 'on')"
 OFF_LINE = ("(is_state('sensor.vmc_master_status_ip_interfaccia', 'OFF-Line') and "
             "(now() - states.sensor.vmc_master_status_ip_interfaccia.last_changed).total_seconds() >= "
             "states('input_number.vmc_master_attesa_blackout_rilevazione') | int(32))")
+# b34 (B1-1): anche la lettura della velocita' persa (porta 5001 muta con il ping OK) per il tempo di rilevazione del
+# Black-Out ferma il ciclo, sia in Fascia sia nei 14 rami «Off»
+LETTURA_PERSA = ("(is_state('sensor.vmc_master_status_ventola', 'unavailable') and "
+                 "(now() - states.sensor.vmc_master_status_ventola.last_changed).total_seconds() >= "
+                 "states('input_number.vmc_master_attesa_blackout_rilevazione') | int(32))")
 FASCE = ("vmc_master_calendario_fascia_1_on", "vmc_master_calendario_fascia_2_on")
 
 
@@ -64,7 +69,8 @@ def _cicli(nodo: Any) -> Iterator[dict[str, Any]]:
 
 def _controlla_ciclo(ciclo: dict[str, Any], fascia: bool) -> str:
     """Il ciclo standard: comando, 1 s, rilettura della velocita', 3 s; until velocita' raggiunta, scelta
-    dell'utente o Black-Out rilevato (in Fascia anche VMC OFF-Line per il tempo di rilevazione del Black-Out)."""
+    dell'utente o Black-Out rilevato (in Fascia anche VMC OFF-Line per il tempo di rilevazione del Black-Out); b34: in
+    Fascia e nei rami «Off» anche lettura della velocita' persa per il tempo di rilevazione del Black-Out."""
     comando, uno, rilettura, tre = ciclo["sequence"]
     assert comando["action"].startswith("shell_command.vmc_master_")
     nome = comando["action"].removeprefix("shell_command.vmc_master_")
@@ -74,7 +80,7 @@ def _controlla_ciclo(ciclo: dict[str, Any], fascia: bool) -> str:
     assert tre == {"delay": {"hours": 0, "minutes": 0, "seconds": 3, "milliseconds": 0}}
     (fine,) = ciclo["until"]
     attesa = f"{{{{ states('{LETTURA}') == '{ETICHETTA[nome]}' or {UTENTE} or {BLACK_OUT}"
-    attesa += f" or {OFF_LINE} }}}}" if fascia else " }}"
+    attesa += f" or {OFF_LINE} or {LETTURA_PERSA} }}}}" if fascia else f" or {LETTURA_PERSA} }}}}"
     assert fine["value_template"] == attesa
     return nome
 
@@ -87,9 +93,14 @@ def test_entrata_in_fascia_ogni_comando_nel_ciclo_di_conferma() -> None:
     for nome in FASCE:
         sequenza = script[nome]["sequence"]
         assert sequenza[0]["action"] == "input_boolean.turn_off", nome  # spie del Black-Out (A4-1), restano prime
-        assert sequenza[1] == {"delay": {"hours": 0, "minutes": 0, "seconds": 5, "milliseconds": 0}}, nome
-        assert sequenza[2]["variables"] == {"vel_prima_del_comando": f"{{{{ states('{LETTURA}') }}}}"}, nome
-        assert "choose" in sequenza[3] and len(sequenza) == 4, nome
+        # b34: subito dopo si spegne la Spia Comando non eseguito, che l'ultimo passo riaccende se serve
+        assert sequenza[1]["action"] == "input_boolean.turn_off", nome
+        assert sequenza[1]["target"] == {"entity_id": "input_boolean.vmc_master_spia_calendario_comando_non_eseguito"}
+        assert sequenza[2] == {"delay": {"hours": 0, "minutes": 0, "seconds": 5, "milliseconds": 0}}, nome
+        assert sequenza[3]["variables"] == {"vel_prima_del_comando": f"{{{{ states('{LETTURA}') }}}}"}, nome
+        # b34: dopo la velocita' prima del comando, il controllo del ritorno dopo un comando non eseguito
+        assert sequenza[4]["condition"] == "template" and "comando_non_eseguito_dalle" in sequenza[4]["value_template"]
+        assert "choose" in sequenza[5] and "if" in sequenza[6] and len(sequenza) == 7, nome
         comandi = [(p, dentro) for p, dentro in _passi(sequenza) if p["action"].startswith("shell_command.")]
         assert comandi and all(dentro for _, dentro in comandi), nome
         cicli = list(_cicli(sequenza))
@@ -139,13 +150,15 @@ def test_ritorno_dal_black_out_in_fascia_usa_lo_script_con_il_ciclo() -> None:
             "script.vmc_master_calendario_fascia_1_on", "script.vmc_master_calendario_fascia_2_on"], id_
     # anche l'entrata nella Fascia richiama lo script direttamente (attende la fine), non con script.turn_on
     testo = (PKG / "vmc_master_automazione.txt").read_text(encoding="utf-8")
-    assert testo.count("action: script.vmc_master_calendario_fascia_1_on\n") == 9
-    assert testo.count("action: script.vmc_master_calendario_fascia_2_on\n") == 9
+    assert testo.count("action: script.vmc_master_calendario_fascia_1_on\n") == 10  # b34: +1 ritorno dopo un comando non eseguito
+    assert testo.count("action: script.vmc_master_calendario_fascia_2_on\n") == 10
 
 
 def test_tutti_i_cicli_dell_automazione_restano_uguali() -> None:
     """Le altre allerte non cambiano: tutti i cicli dell'automazione hanno ancora lo stesso until (velocita' raggiunta,
-    scelta dell'utente, Black-Out rilevato); nessuno ha la condizione OFF-Line, che vale solo in Fascia."""
+    scelta dell'utente, Black-Out rilevato); nessuno ha la condizione OFF-Line, che vale solo in Fascia. b34 (B1-1):
+    la lettura della velocita' persa c'e' solo nei 14 rami «Off» del Calendario."""
     testo = (PKG / "vmc_master_automazione.txt").read_text(encoding="utf-8")
-    assert "vmc_master_attesa_blackout_rilevazione') | int(32)) }}" not in testo
-    assert testo.count(UTENTE) == 176 + 14  # 176 nella b32, piu' i 14 rami «Off»
+    assert OFF_LINE not in testo
+    assert testo.count(LETTURA_PERSA) == 14
+    assert testo.count(UTENTE) == 176 + 14 + 17  # 176 nella b32, piu' i 14 rami «Off», piu' i 17 cicli della b34 (B1-2)
