@@ -6256,11 +6256,19 @@ script:
                               title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
                               message: "Aggiornare Manualmente l'Entità Temperatura Esterna"
               # Aggiorna l'ultima entità temperatura selezionata
-              - action: input_text.set_value
-                target:
-                  entity_id: input_text.vmc_master_last_temp_external_entity
-                data:
-                  value: "{{ states('input_select.vmc_master_selected_temp_external_entity') }}"
+              # Solo un'entità vera: se l'entità scelta manca per un momento dall'elenco (per esempio meteo non ancora pronto all'avvio) l'ultima scelta resta memorizzata e il prossimo aggiornamento dell'elenco la ripristina
+              - if:
+                  - condition: template
+                    value_template: >
+                      {% set selected_temperatura_esterna_entity = states('input_select.vmc_master_selected_temp_external_entity') %}
+                      {% set valid_options = state_attr('input_select.vmc_master_selected_temp_external_entity', 'options') %}
+                      {{ selected_temperatura_esterna_entity in valid_options and selected_temperatura_esterna_entity not in ["Aggiorna Elenco Entità Temperatura Esterna", "", "sconosciuto", "unknown", none, "unavailable", "Non disponibile"] }}
+                then:
+                  - action: input_text.set_value
+                    target:
+                      entity_id: input_text.vmc_master_last_temp_external_entity
+                    data:
+                      value: "{{ states('input_select.vmc_master_selected_temp_external_entity') }}"
             alias: Seleziona o ripristina l'entità temperatura valida
           # Se l'entità temperatura selezionata è valida
           - conditions:
@@ -6372,11 +6380,19 @@ script:
                               title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
                               message: "Aggiornare Manualmente l'Entità Temperatura Interna"
               # Aggiorna l'ultima entità temperatura selezionata
-              - action: input_text.set_value
-                target:
-                  entity_id: input_text.vmc_master_last_temp_internal_entity
-                data:
-                  value: "{{ states('input_select.vmc_master_selected_temp_internal_entity') }}"
+              # Solo un'entità vera: se l'entità scelta manca per un momento dall'elenco (per esempio meteo non ancora pronto all'avvio) l'ultima scelta resta memorizzata e il prossimo aggiornamento dell'elenco la ripristina
+              - if:
+                  - condition: template
+                    value_template: >
+                      {% set selected_temperatura_interna_entity = states('input_select.vmc_master_selected_temp_internal_entity') %}
+                      {% set valid_options = state_attr('input_select.vmc_master_selected_temp_internal_entity', 'options') %}
+                      {{ selected_temperatura_interna_entity in valid_options and selected_temperatura_interna_entity not in ["Aggiorna Elenco Entità Temperatura Interna", "", "sconosciuto", "unknown", none, "unavailable", "Non disponibile"] }}
+                then:
+                  - action: input_text.set_value
+                    target:
+                      entity_id: input_text.vmc_master_last_temp_internal_entity
+                    data:
+                      value: "{{ states('input_select.vmc_master_selected_temp_internal_entity') }}"
             alias: Seleziona o ripristina l'entità temperatura valida
           # Se l'entità temperatura selezionata è valida
           - conditions:
@@ -6490,11 +6506,19 @@ script:
                               title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
                               message: "Aggiornare Manualmente l'Entità Umidità Esterna"
               # Aggiorna l'ultima entità umidità selezionata
-              - action: input_text.set_value
-                target:
-                  entity_id: input_text.vmc_master_last_humidity_external_entity
-                data:
-                  value: "{{ states('input_select.vmc_master_selected_humidity_external_entity') }}"
+              # Solo un'entità vera: se l'entità scelta manca per un momento dall'elenco (per esempio meteo non ancora pronto all'avvio) l'ultima scelta resta memorizzata e il prossimo aggiornamento dell'elenco la ripristina
+              - if:
+                  - condition: template
+                    value_template: >
+                      {% set selected_umidita_esterna_entity = states('input_select.vmc_master_selected_humidity_external_entity') %}
+                      {% set valid_options = state_attr('input_select.vmc_master_selected_humidity_external_entity', 'options') %}
+                      {{ selected_umidita_esterna_entity in valid_options and selected_umidita_esterna_entity not in ["Aggiorna Elenco Entità Umidità Esterna", "", "sconosciuto", "unknown", none, "unavailable", "Non disponibile"] }}
+                then:
+                  - action: input_text.set_value
+                    target:
+                      entity_id: input_text.vmc_master_last_humidity_external_entity
+                    data:
+                      value: "{{ states('input_select.vmc_master_selected_humidity_external_entity') }}"
             alias: Seleziona o ripristina l'entità umidità valida
           # Se l'entità umidità selezionata è valida
           - conditions:
@@ -6606,11 +6630,19 @@ script:
                               title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
                               message: "Aggiornare Manualmente l'Entità Umidità Interna"
               # Aggiorna l'ultima entità umidità selezionata
-              - action: input_text.set_value
-                target:
-                  entity_id: input_text.vmc_master_last_humidity_internal_entity
-                data:
-                  value: "{{ states('input_select.vmc_master_selected_humidity_internal_entity') }}"
+              # Solo un'entità vera: se l'entità scelta manca per un momento dall'elenco (per esempio meteo non ancora pronto all'avvio) l'ultima scelta resta memorizzata e il prossimo aggiornamento dell'elenco la ripristina
+              - if:
+                  - condition: template
+                    value_template: >
+                      {% set selected_umidita_interna_entity = states('input_select.vmc_master_selected_humidity_internal_entity') %}
+                      {% set valid_options = state_attr('input_select.vmc_master_selected_humidity_internal_entity', 'options') %}
+                      {{ selected_umidita_interna_entity in valid_options and selected_umidita_interna_entity not in ["Aggiorna Elenco Entità Umidità Interna", "", "sconosciuto", "unknown", none, "unavailable", "Non disponibile"] }}
+                then:
+                  - action: input_text.set_value
+                    target:
+                      entity_id: input_text.vmc_master_last_humidity_internal_entity
+                    data:
+                      value: "{{ states('input_select.vmc_master_selected_humidity_internal_entity') }}"
             alias: Seleziona o ripristina l'entità umidità valida
           # Se l'entità umidità selezionata è valida
           - conditions:
@@ -6714,11 +6746,19 @@ script:
                               notification_id: vmc_master_aggiorna_entita_co2_interna
                               title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
                               message: "Aggiornare Manualmente l'Entità CO2 Interna"
-              - action: input_text.set_value
-                target:
-                  entity_id: input_text.vmc_master_last_co2_internal_entity
-                data:
-                  value: "{{ states('input_select.vmc_master_selected_co2_internal_entity') }}"
+              # Solo un'entità vera: se l'entità scelta manca per un momento dall'elenco (per esempio meteo non ancora pronto all'avvio) l'ultima scelta resta memorizzata e il prossimo aggiornamento dell'elenco la ripristina
+              - if:
+                  - condition: template
+                    value_template: >
+                      {% set selected_co2_interna_entity = states('input_select.vmc_master_selected_co2_internal_entity') %}
+                      {% set valid_options = state_attr('input_select.vmc_master_selected_co2_internal_entity', 'options') %}
+                      {{ selected_co2_interna_entity in valid_options and selected_co2_interna_entity not in ["Aggiorna Elenco Entità CO₂ Interna", "", "sconosciuto", "unknown", none, "unavailable", "Non disponibile"] }}
+                then:
+                  - action: input_text.set_value
+                    target:
+                      entity_id: input_text.vmc_master_last_co2_internal_entity
+                    data:
+                      value: "{{ states('input_select.vmc_master_selected_co2_internal_entity') }}"
             alias: Seleziona o ripristina l'entità anidride carbonica valida
           - conditions:
               - condition: template
@@ -6825,11 +6865,19 @@ script:
                               notification_id: vmc_master_aggiorna_entita_dispositivo_notifica
                               title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
                               message: "Nessun cellulare con l'app Home Assistant: installare l'app sul cellulare, accedere a Home Assistant e poi scegliere il cellulare in Opzioni, «Seleziona Dispositivo per Invio Notifica»"
-              - action: input_text.set_value
-                target:
-                  entity_id: input_text.vmc_master_last_notification_device
-                data:
-                  value: "{{ states('input_select.vmc_master_selected_notification_device') }}"
+              # Solo un'entità vera: se l'entità scelta manca per un momento dall'elenco (per esempio meteo non ancora pronto all'avvio) l'ultima scelta resta memorizzata e il prossimo aggiornamento dell'elenco la ripristina
+              - if:
+                  - condition: template
+                    value_template: >
+                      {% set selected_notification_device = states('input_select.vmc_master_selected_notification_device') %}
+                      {% set valid_options = state_attr('input_select.vmc_master_selected_notification_device', 'options') %}
+                      {{ selected_notification_device in valid_options and selected_notification_device not in ["Aggiorna Elenco Dispositivi per Invio Notifica", "", "sconosciuto", "unknown", none, "unavailable", "Non disponibile"] }}
+                then:
+                  - action: input_text.set_value
+                    target:
+                      entity_id: input_text.vmc_master_last_notification_device
+                    data:
+                      value: "{{ states('input_select.vmc_master_selected_notification_device') }}"
             alias: Seleziona o ripristina l'entità dispositivo di notifica valida
           - conditions:
               - condition: template
@@ -6918,11 +6966,19 @@ script:
                         data:
                           option: "Aggiorna Elenco Media Player"
                       # NESSUNA NOTIFICA PERSISTENTE PER IL MEDIA PLAYER: I persistent_notification.dismiss DI QUESTO SCRIPT TOLGONO SOLO QUELLA RIMASTA DALLE VERSIONI PRECEDENTI
-              - action: input_text.set_value
-                target:
-                  entity_id: input_text.vmc_master_last_media_player_entity
-                data:
-                  value: "{{ states('input_select.vmc_master_selected_media_player_entity') }}"
+              # Solo un'entità vera: se l'entità scelta manca per un momento dall'elenco (per esempio meteo non ancora pronto all'avvio) l'ultima scelta resta memorizzata e il prossimo aggiornamento dell'elenco la ripristina
+              - if:
+                  - condition: template
+                    value_template: >
+                      {% set selected_mp = states('input_select.vmc_master_selected_media_player_entity') %}
+                      {% set valid_options = state_attr('input_select.vmc_master_selected_media_player_entity', 'options') %}
+                      {{ selected_mp in valid_options and selected_mp not in ["Aggiorna Elenco Media Player", "", "sconosciuto", "unknown", none, "unavailable", "Non disponibile"] }}
+                then:
+                  - action: input_text.set_value
+                    target:
+                      entity_id: input_text.vmc_master_last_media_player_entity
+                    data:
+                      value: "{{ states('input_select.vmc_master_selected_media_player_entity') }}"
             alias: Seleziona o ripristina l'entità media player valida
   
           - conditions:
