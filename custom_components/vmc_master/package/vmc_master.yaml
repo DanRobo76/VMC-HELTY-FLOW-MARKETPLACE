@@ -8689,10 +8689,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
                                 repeat:
@@ -8773,10 +8773,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
                                 repeat:
@@ -8861,10 +8861,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
                                 repeat:
@@ -8933,10 +8933,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
                                 repeat:
@@ -9033,10 +9033,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
                                 repeat:
@@ -9117,10 +9117,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
                                 repeat:
@@ -9205,10 +9205,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
                                 repeat:
@@ -9277,10 +9277,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
                                 repeat:
@@ -9419,10 +9419,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - action: input_boolean.turn_on
                                 metadata: {}
@@ -9503,10 +9503,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 1 Finchè la Velocità diventa Velocità 1
                                 repeat:
@@ -9597,10 +9597,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - action: input_boolean.turn_on
                                 metadata: {}
@@ -9674,10 +9674,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 1 Finchè la Velocità diventa Velocità 1
                                 repeat:
@@ -9769,10 +9769,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 1 Finchè la Velocità diventa Velocità 1
                                 repeat:
@@ -9847,10 +9847,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 1 Finchè la Velocità diventa Velocità 1
                                 repeat:
@@ -9934,10 +9934,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 1 Finchè la Velocità diventa Velocità 1
                                 repeat:
@@ -10005,10 +10005,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 1 Finchè la Velocità diventa Velocità 1
                                 repeat:
@@ -10147,10 +10147,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - action: input_boolean.turn_on
                                 metadata: {}
@@ -10230,10 +10230,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 2 Finchè la Velocità diventa Velocità 2
                                 repeat:
@@ -10323,10 +10323,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - action: input_boolean.turn_on
                                 metadata: {}
@@ -10399,10 +10399,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 2 Finchè la Velocità diventa Velocità 2
                                 repeat:
@@ -10492,10 +10492,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 2 Finchè la Velocità diventa Velocità 2
                                 repeat:
@@ -10569,10 +10569,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 2 Finchè la Velocità diventa Velocità 2
                                 repeat:
@@ -10655,10 +10655,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 2 Finchè la Velocità diventa Velocità 2
                                 repeat:
@@ -10725,10 +10725,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 2 Finchè la Velocità diventa Velocità 2
                                 repeat:
@@ -10867,10 +10867,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - action: input_boolean.turn_on
                                 metadata: {}
@@ -10951,10 +10951,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 3 Finchè la Velocità diventa Velocità 3
                                 repeat:
@@ -11045,10 +11045,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - action: input_boolean.turn_on
                                 metadata: {}
@@ -11122,10 +11122,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 3 Finchè la Velocità diventa Velocità 3
                                 repeat:
@@ -11217,10 +11217,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 3 Finchè la Velocità diventa Velocità 3
                                 repeat:
@@ -11295,10 +11295,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 3 Finchè la Velocità diventa Velocità 3
                                 repeat:
@@ -11382,10 +11382,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 3 Finchè la Velocità diventa Velocità 3
                                 repeat:
@@ -11453,10 +11453,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 3 Finchè la Velocità diventa Velocità 3
                                 repeat:
@@ -11596,10 +11596,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - action: input_boolean.turn_on
                                 metadata: {}
@@ -11680,10 +11680,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 4 Finchè la Velocità diventa Velocità 4
                                 repeat:
@@ -11774,10 +11774,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - action: input_boolean.turn_on
                                 metadata: {}
@@ -11851,10 +11851,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 4 Finchè la Velocità diventa Velocità 4
                                 repeat:
@@ -11946,10 +11946,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 4 Finchè la Velocità diventa Velocità 4
                                 repeat:
@@ -12024,10 +12024,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 4 Finchè la Velocità diventa Velocità 4
                                 repeat:
@@ -12111,10 +12111,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 4 Finchè la Velocità diventa Velocità 4
                                 repeat:
@@ -12182,10 +12182,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 4 Finchè la Velocità diventa Velocità 4
                                 repeat:
@@ -12324,10 +12324,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - action: input_boolean.turn_on
                                 metadata: {}
@@ -12407,10 +12407,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Notturna Finchè la Velocità diventa Notturna
                                 repeat:
@@ -12500,10 +12500,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - action: input_boolean.turn_on
                                 metadata: {}
@@ -12576,10 +12576,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Notturna Finchè la Velocità diventa Notturna
                                 repeat:
@@ -12669,10 +12669,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Notturna Finchè la Velocità diventa Notturna
                                 repeat:
@@ -12746,10 +12746,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Notturna Finchè la Velocità diventa Notturna
                                 repeat:
@@ -12832,10 +12832,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Notturna Finchè la Velocità diventa Notturna
                                 repeat:
@@ -12902,10 +12902,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Notturna Finchè la Velocità diventa Notturna
                                 repeat:
@@ -13045,10 +13045,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - action: input_boolean.turn_on
                                 metadata: {}
@@ -13128,10 +13128,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Iperventilazione Finchè la Velocità diventa Iperventilazione
                                 repeat:
@@ -13221,10 +13221,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - action: input_boolean.turn_on
                                 metadata: {}
@@ -13297,10 +13297,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Iperventilazione Finchè la Velocità diventa Iperventilazione
                                 repeat:
@@ -13390,10 +13390,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Iperventilazione Finchè la Velocità diventa Iperventilazione
                                 repeat:
@@ -13467,10 +13467,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Iperventilazione Finchè la Velocità diventa Iperventilazione
                                 repeat:
@@ -13553,10 +13553,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Iperventilazione Finchè la Velocità diventa Iperventilazione
                                 repeat:
@@ -13623,10 +13623,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Iperventilazione Finchè la Velocità diventa Iperventilazione
                                 repeat:
@@ -13791,10 +13791,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - action: input_boolean.turn_on
                                                 metadata: {}
@@ -13880,10 +13880,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - action: input_boolean.turn_on
                                                 metadata: {}
@@ -13983,10 +13983,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - action: input_boolean.turn_on
                                                 metadata: {}
@@ -14069,10 +14069,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - action: input_boolean.turn_on
                                                 metadata: {}
@@ -14174,10 +14174,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - action: input_boolean.turn_on
                                                 metadata: {}
@@ -14261,10 +14261,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - action: input_boolean.turn_on
                                                 metadata: {}
@@ -14362,10 +14362,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - action: input_boolean.turn_on
                                                 metadata: {}
@@ -14446,10 +14446,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - action: input_boolean.turn_on
                                                 metadata: {}
@@ -14563,10 +14563,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - action: input_boolean.turn_on
                                                 metadata: {}
@@ -14646,10 +14646,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - alias: Lancia il Comando Free Cooling Finchè la Velocità diventa Free Cooling
                                                 repeat:
@@ -14741,10 +14741,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - action: input_boolean.turn_on
                                                 metadata: {}
@@ -14817,10 +14817,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - alias: Lancia il Comando Free Cooling Finchè la Velocità diventa Free Cooling
                                                 repeat:
@@ -14912,10 +14912,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - alias: Lancia il Comando Free Cooling Finchè la Velocità diventa Free Cooling
                                                 repeat:
@@ -14989,10 +14989,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - alias: Lancia il Comando Free Cooling Finchè la Velocità diventa Free Cooling
                                                 repeat:
@@ -15077,10 +15077,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - alias: Lancia il Comando Free Cooling Finchè la Velocità diventa Free Cooling
                                                 repeat:
@@ -15147,10 +15147,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - alias: Lancia il Comando Free Cooling Finchè la Velocità diventa Free Cooling
                                                 repeat:
@@ -15256,10 +15256,10 @@ script:
                                           {{
                                           (states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                           ne sconsiglia l\'impiego" and states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr')=='on') and
-                                          ((states('sensor.vmc_master_alert_monitoraggio_co2')
-                                          == 'Nessuna Allerta' and
+                                          (not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                          == 'Allerta' or
                                           states('sensor.vmc_master_alert_monitoraggio_voc')
-                                          == 'Nessuna Allerta') or states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc')=='off')}}
+                                          == 'Allerta') or states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc')=='off')}}
                                     sequence:
                                       - action: input_boolean.turn_on
                                         metadata: {}
@@ -15345,10 +15345,10 @@ script:
                                           {{
                                           (states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                           ne sconsiglia l\'impiego" or states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr')=='off') and
-                                          ((states('sensor.vmc_master_alert_monitoraggio_co2')
-                                          == 'Nessuna Allerta' and
+                                          (not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                          == 'Allerta' or
                                           states('sensor.vmc_master_alert_monitoraggio_voc')
-                                          == 'Nessuna Allerta') or states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc')=='off')}}
+                                          == 'Allerta') or states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc')=='off')}}
                                     sequence:
                                       - action: input_boolean.turn_on
                                         metadata: {}
@@ -15458,10 +15458,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - action: input_boolean.turn_on
                                                 metadata: {}
@@ -15541,10 +15541,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - alias: Lancia il Comando Free Cooling Finchè la Velocità diventa Free Cooling
                                                 repeat:
@@ -15636,10 +15636,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - action: input_boolean.turn_on
                                                 metadata: {}
@@ -15712,10 +15712,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - alias: Lancia il Comando Free Cooling Finchè la Velocità diventa Free Cooling
                                                 repeat:
@@ -15807,10 +15807,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - alias: Lancia il Comando Free Cooling Finchè la Velocità diventa Free Cooling
                                                 repeat:
@@ -15884,10 +15884,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - alias: Lancia il Comando Free Cooling Finchè la Velocità diventa Free Cooling
                                                 repeat:
@@ -15972,10 +15972,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - alias: Lancia il Comando Free Cooling Finchè la Velocità diventa Free Cooling
                                                 repeat:
@@ -16042,10 +16042,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - alias: Lancia il Comando Free Cooling Finchè la Velocità diventa Free Cooling
                                                 repeat:
@@ -16077,12 +16077,12 @@ script:
                             alias: Spia Free Cooling OFF
                     alias: Programmato Mese Free Cooling
                   - conditions:
-                      - alias: Verifica Programmato Mese Disabilitato
+                      - alias: Verifica Programmato Mese Disabilitato o non disponibile (come nei mesi non programmati)
                         condition: template
                         value_template: >-
                           {{
                           states('sensor.vmc_master_status_mese_corrente_freeheating_o_freecooling')
-                          == "Disabilitata" }}
+                          not in ["Free Heating", "Free Cooling"] }}
                     sequence:
                       - choose:
                           - conditions:
@@ -16150,10 +16150,10 @@ script:
                                           {{
                                           states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                           ne sconsiglia l\'impiego" and
-                                          (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                          == 'Nessuna Allerta' and
+                                          not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                          == 'Allerta' or
                                           states('sensor.vmc_master_alert_monitoraggio_voc')
-                                          == 'Nessuna Allerta')}}
+                                          == 'Allerta')}}
                                     sequence:
                                       - action: input_boolean.turn_on
                                         metadata: {}
@@ -16233,10 +16233,10 @@ script:
                                           {{
                                           states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                           ne sconsiglia l\'impiego" and
-                                          (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                          == 'Nessuna Allerta' and
+                                          not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                          == 'Allerta' or
                                           states('sensor.vmc_master_alert_monitoraggio_voc')
-                                          == 'Nessuna Allerta')}}
+                                          == 'Allerta')}}
                                     sequence:
                                       - alias: Lancia il Comando Free Cooling Finchè la Velocità diventa Free Cooling
                                         repeat:
@@ -16326,10 +16326,10 @@ script:
                                           {{
                                           states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                           ne sconsiglia l\'impiego" and
-                                          (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                          == 'Nessuna Allerta' and
+                                          not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                          == 'Allerta' or
                                           states('sensor.vmc_master_alert_monitoraggio_voc')
-                                          == 'Nessuna Allerta')}}
+                                          == 'Allerta')}}
                                     sequence:
                                       - action: input_boolean.turn_on
                                         metadata: {}
@@ -16402,10 +16402,10 @@ script:
                                           {{
                                           states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                           ne sconsiglia l\'impiego" and
-                                          (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                          == 'Nessuna Allerta' and
+                                          not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                          == 'Allerta' or
                                           states('sensor.vmc_master_alert_monitoraggio_voc')
-                                          == 'Nessuna Allerta')}}
+                                          == 'Allerta')}}
                                     sequence:
                                       - alias: Lancia il Comando Free Cooling Finchè la Velocità diventa Free Cooling
                                         repeat:
@@ -16495,10 +16495,10 @@ script:
                                           {{
                                           states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                           ne sconsiglia l\'impiego" and
-                                          (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                          == 'Nessuna Allerta' and
+                                          not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                          == 'Allerta' or
                                           states('sensor.vmc_master_alert_monitoraggio_voc')
-                                          == 'Nessuna Allerta')}}
+                                          == 'Allerta')}}
                                     sequence:
                                       - alias: Lancia il Comando Free Cooling Finchè la Velocità diventa Free Cooling
                                         repeat:
@@ -16572,10 +16572,10 @@ script:
                                           {{
                                           states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                           ne sconsiglia l\'impiego" and
-                                          (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                          == 'Nessuna Allerta' and
+                                          not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                          == 'Allerta' or
                                           states('sensor.vmc_master_alert_monitoraggio_voc')
-                                          == 'Nessuna Allerta')}}
+                                          == 'Allerta')}}
                                     sequence:
                                       - alias: Lancia il Comando Free Cooling Finchè la Velocità diventa Free Cooling
                                         repeat:
@@ -16658,10 +16658,10 @@ script:
                                           {{
                                           states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                           ne sconsiglia l\'impiego" and
-                                          (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                          == 'Nessuna Allerta' and
+                                          not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                          == 'Allerta' or
                                           states('sensor.vmc_master_alert_monitoraggio_voc')
-                                          == 'Nessuna Allerta')}}
+                                          == 'Allerta')}}
                                     sequence:
                                       - alias: Lancia il Comando Free Cooling Finchè la Velocità diventa Free Cooling
                                         repeat:
@@ -16728,10 +16728,10 @@ script:
                                           {{
                                           states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                           ne sconsiglia l\'impiego" and
-                                          (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                          == 'Nessuna Allerta' and
+                                          not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                          == 'Allerta' or
                                           states('sensor.vmc_master_alert_monitoraggio_voc')
-                                          == 'Nessuna Allerta')}}
+                                          == 'Allerta')}}
                                     sequence:
                                       - alias: Lancia il Comando Free Cooling Finchè la Velocità diventa Free Cooling
                                         repeat:
@@ -16921,10 +16921,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
                                 repeat:
@@ -17005,10 +17005,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
                                 repeat:
@@ -17093,10 +17093,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
                                 repeat:
@@ -17165,10 +17165,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
                                 repeat:
@@ -17265,10 +17265,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
                                 repeat:
@@ -17349,10 +17349,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
                                 repeat:
@@ -17437,10 +17437,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
                                 repeat:
@@ -17509,10 +17509,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
                                 repeat:
@@ -17651,10 +17651,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - action: input_boolean.turn_on
                                 metadata: {}
@@ -17735,10 +17735,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 1 Finchè la Velocità diventa Velocità 1
                                 repeat:
@@ -17829,10 +17829,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - action: input_boolean.turn_on
                                 metadata: {}
@@ -17906,10 +17906,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 1 Finchè la Velocità diventa Velocità 1
                                 repeat:
@@ -18001,10 +18001,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 1 Finchè la Velocità diventa Velocità 1
                                 repeat:
@@ -18079,10 +18079,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 1 Finchè la Velocità diventa Velocità 1
                                 repeat:
@@ -18166,10 +18166,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 1 Finchè la Velocità diventa Velocità 1
                                 repeat:
@@ -18237,10 +18237,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 1 Finchè la Velocità diventa Velocità 1
                                 repeat:
@@ -18379,10 +18379,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - action: input_boolean.turn_on
                                 metadata: {}
@@ -18462,10 +18462,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 2 Finchè la Velocità diventa Velocità 2
                                 repeat:
@@ -18555,10 +18555,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - action: input_boolean.turn_on
                                 metadata: {}
@@ -18631,10 +18631,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 2 Finchè la Velocità diventa Velocità 2
                                 repeat:
@@ -18724,10 +18724,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 2 Finchè la Velocità diventa Velocità 2
                                 repeat:
@@ -18801,10 +18801,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 2 Finchè la Velocità diventa Velocità 2
                                 repeat:
@@ -18887,10 +18887,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 2 Finchè la Velocità diventa Velocità 2
                                 repeat:
@@ -18957,10 +18957,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 2 Finchè la Velocità diventa Velocità 2
                                 repeat:
@@ -19099,10 +19099,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - action: input_boolean.turn_on
                                 metadata: {}
@@ -19183,10 +19183,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 3 Finchè la Velocità diventa Velocità 3
                                 repeat:
@@ -19277,10 +19277,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - action: input_boolean.turn_on
                                 metadata: {}
@@ -19354,10 +19354,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 3 Finchè la Velocità diventa Velocità 3
                                 repeat:
@@ -19449,10 +19449,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 3 Finchè la Velocità diventa Velocità 3
                                 repeat:
@@ -19527,10 +19527,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 3 Finchè la Velocità diventa Velocità 3
                                 repeat:
@@ -19614,10 +19614,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 3 Finchè la Velocità diventa Velocità 3
                                 repeat:
@@ -19685,10 +19685,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 3 Finchè la Velocità diventa Velocità 3
                                 repeat:
@@ -19828,10 +19828,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - action: input_boolean.turn_on
                                 metadata: {}
@@ -19912,10 +19912,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 4 Finchè la Velocità diventa Velocità 4
                                 repeat:
@@ -20006,10 +20006,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - action: input_boolean.turn_on
                                 metadata: {}
@@ -20083,10 +20083,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 4 Finchè la Velocità diventa Velocità 4
                                 repeat:
@@ -20178,10 +20178,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 4 Finchè la Velocità diventa Velocità 4
                                 repeat:
@@ -20256,10 +20256,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 4 Finchè la Velocità diventa Velocità 4
                                 repeat:
@@ -20343,10 +20343,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 4 Finchè la Velocità diventa Velocità 4
                                 repeat:
@@ -20414,10 +20414,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Velocità 4 Finchè la Velocità diventa Velocità 4
                                 repeat:
@@ -20556,10 +20556,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - action: input_boolean.turn_on
                                 metadata: {}
@@ -20639,10 +20639,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Notturna Finchè la Velocità diventa Notturna
                                 repeat:
@@ -20732,10 +20732,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - action: input_boolean.turn_on
                                 metadata: {}
@@ -20808,10 +20808,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Notturna Finchè la Velocità diventa Notturna
                                 repeat:
@@ -20901,10 +20901,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Notturna Finchè la Velocità diventa Notturna
                                 repeat:
@@ -20978,10 +20978,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Notturna Finchè la Velocità diventa Notturna
                                 repeat:
@@ -21064,10 +21064,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Notturna Finchè la Velocità diventa Notturna
                                 repeat:
@@ -21134,10 +21134,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Notturna Finchè la Velocità diventa Notturna
                                 repeat:
@@ -21277,10 +21277,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - action: input_boolean.turn_on
                                 metadata: {}
@@ -21360,10 +21360,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Iperventilazione Finchè la Velocità diventa Iperventilazione
                                 repeat:
@@ -21453,10 +21453,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - action: input_boolean.turn_on
                                 metadata: {}
@@ -21529,10 +21529,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Iperventilazione Finchè la Velocità diventa Iperventilazione
                                 repeat:
@@ -21622,10 +21622,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Iperventilazione Finchè la Velocità diventa Iperventilazione
                                 repeat:
@@ -21699,10 +21699,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Iperventilazione Finchè la Velocità diventa Iperventilazione
                                 repeat:
@@ -21785,10 +21785,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Iperventilazione Finchè la Velocità diventa Iperventilazione
                                 repeat:
@@ -21855,10 +21855,10 @@ script:
                                   {{
                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                   ne sconsiglia l\'impiego" and
-                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                  == 'Nessuna Allerta' and
+                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                  == 'Allerta' or
                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                  == 'Nessuna Allerta')}}
+                                  == 'Allerta')}}
                             sequence:
                               - alias: Lancia il Comando Iperventilazione Finchè la Velocità diventa Iperventilazione
                                 repeat:
@@ -22023,10 +22023,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - action: input_boolean.turn_on
                                                 metadata: {}
@@ -22112,10 +22112,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - action: input_boolean.turn_on
                                                 metadata: {}
@@ -22215,10 +22215,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - action: input_boolean.turn_on
                                                 metadata: {}
@@ -22301,10 +22301,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - action: input_boolean.turn_on
                                                 metadata: {}
@@ -22406,10 +22406,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - action: input_boolean.turn_on
                                                 metadata: {}
@@ -22493,10 +22493,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - action: input_boolean.turn_on
                                                 metadata: {}
@@ -22594,10 +22594,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - action: input_boolean.turn_on
                                                 metadata: {}
@@ -22678,10 +22678,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - action: input_boolean.turn_on
                                                 metadata: {}
@@ -22795,10 +22795,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - action: input_boolean.turn_on
                                                 metadata: {}
@@ -22878,10 +22878,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - alias: Lancia il Comando Free Cooling Finchè la Velocità diventa Free Cooling
                                                 repeat:
@@ -22973,10 +22973,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - action: input_boolean.turn_on
                                                 metadata: {}
@@ -23049,10 +23049,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - alias: Lancia il Comando Free Cooling Finchè la Velocità diventa Free Cooling
                                                 repeat:
@@ -23144,10 +23144,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - alias: Lancia il Comando Free Cooling Finchè la Velocità diventa Free Cooling
                                                 repeat:
@@ -23221,10 +23221,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - alias: Lancia il Comando Free Cooling Finchè la Velocità diventa Free Cooling
                                                 repeat:
@@ -23309,10 +23309,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - alias: Lancia il Comando Free Cooling Finchè la Velocità diventa Free Cooling
                                                 repeat:
@@ -23379,10 +23379,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - alias: Lancia il Comando Free Cooling Finchè la Velocità diventa Free Cooling
                                                 repeat:
@@ -23488,10 +23488,10 @@ script:
                                           {{
                                           (states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                           ne sconsiglia l\'impiego" and states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr')=='on') and
-                                          ((states('sensor.vmc_master_alert_monitoraggio_co2')
-                                          == 'Nessuna Allerta' and
+                                          (not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                          == 'Allerta' or
                                           states('sensor.vmc_master_alert_monitoraggio_voc')
-                                          == 'Nessuna Allerta') or states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc')=='off')}}
+                                          == 'Allerta') or states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc')=='off')}}
                                     sequence:
                                       - action: input_boolean.turn_on
                                         metadata: {}
@@ -23577,10 +23577,10 @@ script:
                                           {{
                                           (states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                           ne sconsiglia l\'impiego" or states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr')=='off') and
-                                          ((states('sensor.vmc_master_alert_monitoraggio_co2')
-                                          == 'Nessuna Allerta' and
+                                          (not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                          == 'Allerta' or
                                           states('sensor.vmc_master_alert_monitoraggio_voc')
-                                          == 'Nessuna Allerta') or states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc')=='off')}}
+                                          == 'Allerta') or states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc')=='off')}}
                                     sequence:
                                       - action: input_boolean.turn_on
                                         metadata: {}
@@ -23690,10 +23690,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - action: input_boolean.turn_on
                                                 metadata: {}
@@ -23773,10 +23773,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - alias: Lancia il Comando Free Cooling Finchè la Velocità diventa Free Cooling
                                                 repeat:
@@ -23868,10 +23868,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - action: input_boolean.turn_on
                                                 metadata: {}
@@ -23944,10 +23944,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - alias: Lancia il Comando Free Cooling Finchè la Velocità diventa Free Cooling
                                                 repeat:
@@ -24039,10 +24039,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - alias: Lancia il Comando Free Cooling Finchè la Velocità diventa Free Cooling
                                                 repeat:
@@ -24116,10 +24116,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - alias: Lancia il Comando Free Cooling Finchè la Velocità diventa Free Cooling
                                                 repeat:
@@ -24204,10 +24204,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - alias: Lancia il Comando Free Cooling Finchè la Velocità diventa Free Cooling
                                                 repeat:
@@ -24274,10 +24274,10 @@ script:
                                                   {{
                                                   states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                                   ne sconsiglia l\'impiego" and
-                                                  (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                                  == 'Nessuna Allerta' and
+                                                  not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                                  == 'Allerta' or
                                                   states('sensor.vmc_master_alert_monitoraggio_voc')
-                                                  == 'Nessuna Allerta')}}
+                                                  == 'Allerta')}}
                                             sequence:
                                               - alias: Lancia il Comando Free Cooling Finchè la Velocità diventa Free Cooling
                                                 repeat:
@@ -24309,12 +24309,12 @@ script:
                             alias: Spia Free Cooling OFF
                     alias: Programmato Mese Free Cooling
                   - conditions:
-                      - alias: Verifica Programmato Mese Disabilitato
+                      - alias: Verifica Programmato Mese Disabilitato o non disponibile (come nei mesi non programmati)
                         condition: template
                         value_template: >-
                           {{
                           states('sensor.vmc_master_status_mese_corrente_freeheating_o_freecooling')
-                          == "Disabilitata" }}
+                          not in ["Free Heating", "Free Cooling"] }}
                     sequence:
                       - choose:
                           - conditions:
@@ -24382,10 +24382,10 @@ script:
                                           {{
                                           states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                           ne sconsiglia l\'impiego" and
-                                          (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                          == 'Nessuna Allerta' and
+                                          not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                          == 'Allerta' or
                                           states('sensor.vmc_master_alert_monitoraggio_voc')
-                                          == 'Nessuna Allerta')}}
+                                          == 'Allerta')}}
                                     sequence:
                                       - action: input_boolean.turn_on
                                         metadata: {}
@@ -24465,10 +24465,10 @@ script:
                                           {{
                                           states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                           ne sconsiglia l\'impiego" and
-                                          (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                          == 'Nessuna Allerta' and
+                                          not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                          == 'Allerta' or
                                           states('sensor.vmc_master_alert_monitoraggio_voc')
-                                          == 'Nessuna Allerta')}}
+                                          == 'Allerta')}}
                                     sequence:
                                       - alias: Lancia il Comando Free Cooling Finchè la Velocità diventa Free Cooling
                                         repeat:
@@ -24558,10 +24558,10 @@ script:
                                           {{
                                           states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                           ne sconsiglia l\'impiego" and
-                                          (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                          == 'Nessuna Allerta' and
+                                          not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                          == 'Allerta' or
                                           states('sensor.vmc_master_alert_monitoraggio_voc')
-                                          == 'Nessuna Allerta')}}
+                                          == 'Allerta')}}
                                     sequence:
                                       - action: input_boolean.turn_on
                                         metadata: {}
@@ -24634,10 +24634,10 @@ script:
                                           {{
                                           states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                           ne sconsiglia l\'impiego" and
-                                          (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                          == 'Nessuna Allerta' and
+                                          not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                          == 'Allerta' or
                                           states('sensor.vmc_master_alert_monitoraggio_voc')
-                                          == 'Nessuna Allerta')}}
+                                          == 'Allerta')}}
                                     sequence:
                                       - alias: Lancia il Comando Free Cooling Finchè la Velocità diventa Free Cooling
                                         repeat:
@@ -24727,10 +24727,10 @@ script:
                                           {{
                                           states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                           ne sconsiglia l\'impiego" and
-                                          (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                          == 'Nessuna Allerta' and
+                                          not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                          == 'Allerta' or
                                           states('sensor.vmc_master_alert_monitoraggio_voc')
-                                          == 'Nessuna Allerta')}}
+                                          == 'Allerta')}}
                                     sequence:
                                       - alias: Lancia il Comando Free Cooling Finchè la Velocità diventa Free Cooling
                                         repeat:
@@ -24804,10 +24804,10 @@ script:
                                           {{
                                           states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                           ne sconsiglia l\'impiego" and
-                                          (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                          == 'Nessuna Allerta' and
+                                          not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                          == 'Allerta' or
                                           states('sensor.vmc_master_alert_monitoraggio_voc')
-                                          == 'Nessuna Allerta')}}
+                                          == 'Allerta')}}
                                     sequence:
                                       - alias: Lancia il Comando Free Cooling Finchè la Velocità diventa Free Cooling
                                         repeat:
@@ -24890,10 +24890,10 @@ script:
                                           {{
                                           states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
                                           ne sconsiglia l\'impiego" and
-                                          (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                          == 'Nessuna Allerta' and
+                                          not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                          == 'Allerta' or
                                           states('sensor.vmc_master_alert_monitoraggio_voc')
-                                          == 'Nessuna Allerta')}}
+                                          == 'Allerta')}}
                                     sequence:
                                       - alias: Lancia il Comando Free Cooling Finchè la Velocità diventa Free Cooling
                                         repeat:
@@ -24960,10 +24960,10 @@ script:
                                           {{
                                           states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
                                           ne sconsiglia l\'impiego" and
-                                          (states('sensor.vmc_master_alert_monitoraggio_co2')
-                                          == 'Nessuna Allerta' and
+                                          not (states('sensor.vmc_master_alert_monitoraggio_co2')
+                                          == 'Allerta' or
                                           states('sensor.vmc_master_alert_monitoraggio_voc')
-                                          == 'Nessuna Allerta')}}
+                                          == 'Allerta')}}
                                     sequence:
                                       - alias: Lancia il Comando Free Cooling Finchè la Velocità diventa Free Cooling
                                         repeat:

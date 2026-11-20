@@ -196,3 +196,82 @@ async def test_b1_3_allerte_free_cooling_on_legge_l_interruttore_pdr(hass) -> No
                                 assert memoria_pdr not in cooling["accese"]
                             prove += 1
     assert prove == 2 * 2 * 2 * 3 * 2 * 2
+
+
+# ------------------------------------------------------------------------------------------------------------ B1-6
+VELOCITA_FASCIA = ("Velocità 0", "Velocità 1", "Velocità 2", "Velocità 3", "Velocità 4", "Notturna",
+                   "Iperventilazione", "Free Cool./Heat.")
+NON_ALLERTA = "not (states('sensor.vmc_master_alert_monitoraggio_co2') == 'Allerta' or " \
+              "states('sensor.vmc_master_alert_monitoraggio_voc') == 'Allerta')"
+
+
+def _casi(nodo: Any) -> Iterator[dict[str, Any]]:
+    if isinstance(nodo, dict):
+        if "choose" in nodo and any("alert_monitoraggio_co2" in str(o["conditions"]) for o in nodo["choose"]):
+            yield nodo
+        for valore in nodo.values():
+            yield from _casi(valore)
+    elif isinstance(nodo, list):
+        for valore in nodo:
+            yield from _casi(valore)
+
+
+def test_b1_6_casi_senza_lacune() -> None:
+    """In ogni scelta dei 4 casi i casi «nessuna allerta Inquinanti» valgono ogni volta che non c'e' un'allerta CO₂ o
+    VOC (anche con i sensori «Non disponibile»): i 4 casi coprono tutti gli stati e non si sovrappongono (nessun
+    caso gia' coperto cambia ramo). Il mese non disponibile vale come mese non programmato."""
+    import re
+
+    script = _pacchetto()["script"]
+    for nome in FASCE:
+        scelte = list(_casi(script[nome]["sequence"]))
+        assert len(scelte) == 45, nome
+        for scelta in scelte:
+            testi = [re.sub(r"\s+", " ", o["conditions"][0]["value_template"]) for o in scelta["choose"]]
+            assert len(testi) == 4 and not any("Nessuna Allerta" in t for t in testi)
+            allerta = [t for t in testi if NON_ALLERTA not in t]
+            assert len(allerta) == 2 and all(
+                "(states('sensor.vmc_master_alert_monitoraggio_co2') == 'Allerta' or "
+                "states('sensor.vmc_master_alert_monitoraggio_voc') == 'Allerta')" in t for t in allerta)
+        mese = _opzione_free(script, nome)[1]["choose"][2]["conditions"][0]
+        assert re.sub(r"\s+", " ", mese["value_template"]) == (
+            f"{{{{ states('{MESE}') not in [\"Free Heating\", \"Free Cooling\"] }}}}")
+        assert "default" not in script[nome]["sequence"][3]  # con Congelamento o Δ Temp. nessun comando
+
+
+async def test_b1_6_sensori_non_disponibili_comando_come_senza_allerte(hass) -> None:
+    """Per ogni Fascia, velocita', interruttore e stato dei sensori parte sempre un comando (in assenza di
+    Congelamento e Δ Temp.); con CO₂/VOC «Non disponibile» lo stesso comando e le stesse memorie di «Nessuna
+    Allerta», con il mese «Non disponibile» gli stessi di un mese non programmato (Foglio A25: senza allerte la
+    VMC va alla velocita' della Fascia). Con il Congelamento in corso nessun comando."""
+    import itertools
+
+    script = _pacchetto()["script"]
+    gelo = "input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia"
+    _imposta(hass, **{gelo: "off", "input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia": "off"})
+    inquinanti = ("Allerta", "Nessuna Allerta", "Non disponibile")
+    prove = 0
+    for nome in FASCE:
+        selettore = f"sensor.vmc_master_speed_{nome[-4]}_fascia_calendario"
+        for velocita in VELOCITA_FASCIA:
+            free = velocita == "Free Cool./Heat."
+            mesi = ("Free Heating", "Free Cooling", "Disabilitata", "Non disponibile") if free else ("Disabilitata",)
+            spie = ("Allerta Free", "Nessuna Allerta Free Heating Programmato",
+                    "Nessuna Allerta Free Cooling Programmato") if free else ("-",)
+            for ip, ii, pdr, co2, voc, mese, spia in itertools.product(
+                    ("on", "off"), ("on", "off"), PDR_STATI, inquinanti, inquinanti, mesi, spie):
+                stati = {selettore: velocita, INT_PDR: ip, INT_INQ: ii, CO2: co2, VOC: voc, MESE: mese, SPIA_FREE: spia,
+                         "sensor.vmc_master_punto_di_rugiada_verifica_confronto": pdr}
+                _imposta(hass, **stati)
+                esito = _esegui(hass, script[nome]["sequence"], {"comando": None, "accese": set()})
+                assert esito["comando"] is not None, stati
+                if "Non disponibile" in (co2, voc, mese):
+                    _imposta(hass, **{CO2: co2.replace("Non disponibile", "Nessuna Allerta"),
+                                      VOC: voc.replace("Non disponibile", "Nessuna Allerta"),
+                                      MESE: mese.replace("Non disponibile", "Disabilitata")})
+                    assert _esegui(hass, script[nome]["sequence"], {"comando": None, "accese": set()}) == esito, stati
+                prove += 1
+            _imposta(hass, **{gelo: "on"})
+            assert _esegui(hass, script[nome]["sequence"], {"comando": None, "accese": set()})["comando"] is None
+            _imposta(hass, **{gelo: "off"})
+    assert prove == 2 * (7 * 2 * 2 * 3 * 3 * 3 + 2 * 2 * 3 * 3 * 3 * 4 * 3)
