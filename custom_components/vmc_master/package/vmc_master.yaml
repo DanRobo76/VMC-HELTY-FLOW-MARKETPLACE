@@ -999,7 +999,7 @@ template:
         icon: mdi:label-variant
 
   - sensor:
-      - default_entity_id: sensor.vmc_master_status_ventola_lettura_codice      # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 0 RICHIAMI] SENSORE DI LETTURA DEI DATI "VELOCITA'" MEMORIZZATI NELLA VMC, PREVIA VERIFICA DI AVVENUTA LETTURA DEI DATI "VELOCITA'" MEMORIZZATI NELLA VMC
+      - default_entity_id: sensor.vmc_master_status_ventola_lettura_codice      # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 0 RICHIAMI] NON RICHIAMATO: NESSUN TEMPLATE, AUTOMAZIONE O SCHEDA NE LEGGE LO STATO (LA VELOCITÀ SI LEGGE DAL SENSORE «STATUS VENTILAZIONE»); SENSORE DI LETTURA DEI DATI "VELOCITA'" MEMORIZZATI NELLA VMC, PREVIA VERIFICA DI AVVENUTA LETTURA DEI DATI "VELOCITA'" MEMORIZZATI NELLA VMC
         name: "Codice Status Ventilazione"
         unique_id: vmc_master_status_ventola_lettura_codice
         state: >
@@ -7264,7 +7264,7 @@ script:
     icon: mdi:fingerprint-off
     mode: restart
 
-  vmc_master_notifica_errore_media_player:                                      # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 0 RICHIAMI]
+  vmc_master_notifica_errore_media_player:                                      # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 0 RICHIAMI] NON RICHIAMATO: NESSUNA NOTIFICA PER IL MEDIA PLAYER NON DISPONIBILE (LO SCRIPT «AGGIORNA ELENCO ENTITÀ MEDIA PLAYER» RIMETTE SOLO L'ELENCO SU «AGGIORNA ELENCO MEDIA PLAYER»)
     alias: VMC Master - Invia notifica Errore Media Player
     sequence:
       - choose:
@@ -19176,12 +19176,13 @@ automation:
       Se Home Assistant si riavvia (aggiornamento, black-out, riavvio manuale) i trigger dell'Automazione VMC Master già veri
       all'avvio non scattano e le attese in corso si perdono: un'allerta iniziata o finita a HA spento, o la cui attesa era in
       corso al riavvio, resterebbe ferma. Questa automazione sospende inizi, azioni e fini delle allerte per 60 s (sensori e
-      VMC letti) e poi li riattiva per gradi: Black-Out, Congelamento e Diff. Temp.; dopo 40 s Inquinanti; dopo altri 40 s
-      Punto di Rugiada, Free Heating/Cooling, Calendario e Umidità. Ogni allerta riparte o si chiude così come un inizio o
+      VMC letti) e poi li riattiva per gradi: Black-Out, Congelamento e Δ Temp.; dopo 40 s Inquinanti (un'allerta
+      Inquinanti già in corso prima del riavvio può riprendere prima); dopo altri 40 s Lim. Δ Punto di Rugiada, Free
+      Cool./Heat., Calendario e Umidità. Ogni allerta riparte o si chiude così come un inizio o
       una fine allerta normale, con la propria attesa; dopo altri 60 s la fase torna a 0 (nessun effetto): in tutto 200 s
       dall'avvio. Nella scheda il pannello «Riattivazione delle Allerte», visibile con la VMC ON-Line fino alla
       riattivazione di tutte le allerte, mostra un countdown per gruppo, uno dopo l'altro: 60 s per Black-Out, Congelamento
-      e Diff. Temp., poi 40 s per Inquinanti, poi 40 s per gli altri; i gruppi successivi sono «In attesa», i precedenti
+      e Δ Temp., poi 40 s per Inquinanti, poi 40 s per gli altri; i gruppi successivi sono «In attesa», i precedenti
       «Già attive». Dopo un Black-Out il riquadro della VMC mostra «Ripristino Velocità: dopo il 1° gruppo» finché il 1° gruppo
       non si riattiva: solo allora parte il ripristino della velocità.
     mode: restart

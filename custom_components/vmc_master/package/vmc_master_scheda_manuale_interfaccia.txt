@@ -61,7 +61,7 @@ cards:
         - type: section
           label: "Home Assistant si è appena avviato: le allerte ripartono da sole, un gruppo dopo l'altro. Non serve fare nulla."
         - type: section
-          label: "1° gruppo: Black-Out, Congelamento, Diff. Temp."
+          label: "1° gruppo: Black-Out, Congelamento, Δ Temp."
         - type: conditional
           conditions:
             - condition: state
@@ -150,7 +150,7 @@ cards:
             text: "✓"
             icon: mdi:check-circle
         - type: section
-          label: "3° gruppo: Punto di Rugiada, Free Heating/Cooling, Calendario, Umidità"
+          label: "3° gruppo: Lim. Δ Punto di Rugiada, Free Cool./Heat., Calendario, Umidità"
         - type: conditional
           conditions:
             - condition: state
@@ -1307,7 +1307,7 @@ cards:
         and is_state('sensor.vmc_master_status_ip_interfaccia', 'ON-Line') and
         states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')=='Velocità
         0' and (congelamento_vmc <= -18 and congelamento > -15) %}
-          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA CONGELAMENTO NEI SENSORI INTERNI DELLA VMC</strong></font>
+          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA CONGELAMENTO NELLA SONDA DELLA VMC</strong></font>
 
           - Temperatura Esterna VMC: {{congelamento_vmc}} °C
 
@@ -1352,7 +1352,7 @@ cards:
         states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')=='Velocità
         0' and congelamento_vmc <= -18  and (congelamento > -18 and congelamento
         <= -15)  %}
-          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA CONGELAMENTO NEI SENSORI INTERNI DELLA VMC</strong></font>
+          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA CONGELAMENTO NELLA SONDA DELLA VMC</strong></font>
 
           - Temperatura Esterna VMC: {{congelamento_vmc}} °C
 
@@ -1402,7 +1402,7 @@ cards:
         and is_state('sensor.vmc_master_status_ip_interfaccia', 'ON-Line') and
         states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')=='Velocità
         0' and (congelamento_vmc <= -18 and congelamento <= -18) %}
-          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA CONGELAMENTO NEI SENSORI INTERNI ED ESTERNI DELLA VMC</strong></font>
+          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA CONGELAMENTO NELLA SONDA DELLA VMC E NELL'ENTITÀ SELEZIONATA</strong></font>
 
           - Temperatura Esterna VMC: {{congelamento_vmc}} °C
           
@@ -1450,7 +1450,7 @@ cards:
         and is_state('sensor.vmc_master_status_ip_interfaccia', 'ON-Line') and
         states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')=='Velocità
         0' and (congelamento <= -18 and congelamento_vmc > -15) %}
-          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA CONGELAMENTO NEI SENSORI ESTERNI DELLA VMC</strong></font>
+          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA CONGELAMENTO NELL'ENTITÀ SELEZIONATA</strong></font>
 
           - Temperatura Esterna: {{congelamento}} °C
 
@@ -1495,7 +1495,7 @@ cards:
         states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')=='Velocità
         0' and congelamento <= -18 and (congelamento_vmc > -18 and
         congelamento_vmc <= -15) %}
-          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA CONGELAMENTO NEI SENSORI ESTERNI DELLA VMC</strong></font>
+          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA CONGELAMENTO NELL'ENTITÀ SELEZIONATA</strong></font>
 
           - Temperatura Esterna: {{congelamento}} °C
 
@@ -1553,7 +1553,7 @@ cards:
         and is_state('sensor.vmc_master_status_ip_interfaccia', 'ON-Line') and
         states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')!='Velocità
         0' and (congelamento_vmc <= -18 and congelamento > -15) %}
-          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA CONGELAMENTO NEI SENSORI INTERNI DELLA VMC</strong></font>
+          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA CONGELAMENTO NELLA SONDA DELLA VMC</strong></font>
 
           - Temperatura Esterna VMC: {{congelamento_vmc}} °C
 
@@ -1598,7 +1598,7 @@ cards:
         states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')!='Velocità
         0' and congelamento_vmc <= -18 and (congelamento > -18 and congelamento
         <= -15) %}
-          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA CONGELAMENTO NEI SENSORI INTERNI DELLA VMC</strong></font>
+          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA CONGELAMENTO NELLA SONDA DELLA VMC</strong></font>
 
           - Temperatura Esterna VMC: {{congelamento_vmc}} °C
 
@@ -1648,7 +1648,7 @@ cards:
         and is_state('sensor.vmc_master_status_ip_interfaccia', 'ON-Line') and
         states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')!='Velocità
         0' and (congelamento <= -18 and congelamento_vmc > -15) %}
-          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA CONGELAMENTO NEI SENSORI ESTERNI DELLA VMC</strong></font>
+          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA CONGELAMENTO NELL'ENTITÀ SELEZIONATA</strong></font>
 
           - Temperatura Esterna: {{congelamento}} °C
 
@@ -1693,7 +1693,7 @@ cards:
         states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')!='Velocità
         0' and congelamento <= -18 and (congelamento_vmc > -18 and
         congelamento_vmc <= -15)  %}
-          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA CONGELAMENTO NEI SENSORI ESTERNI DELLA VMC</strong></font>
+          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA CONGELAMENTO NELL'ENTITÀ SELEZIONATA</strong></font>
 
           - Temperatura Esterna: {{congelamento}} °C
 
@@ -1742,7 +1742,7 @@ cards:
         and is_state('sensor.vmc_master_status_ip_interfaccia', 'ON-Line') and
         states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')!='Velocità
         0' and (congelamento_vmc <= -18 and congelamento <= -18) %}
-          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA CONGELAMENTO NEI SENSORI INTERNI ED ESTERNI DELLA VMC</strong></font>
+          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA CONGELAMENTO NELLA SONDA DELLA VMC E NELL'ENTITÀ SELEZIONATA</strong></font>
 
           - Temperatura Esterna VMC: {{congelamento_vmc}} °C
           
@@ -1801,7 +1801,7 @@ cards:
         is_state('sensor.vmc_master_status_ip_interfaccia','ON-Line') and
         (congelamento_vmc > -18 and congelamento_vmc <= -15) and (congelamento >
         -15) %}
-         <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA PROSSIMA AL CONGELAMENTO NEI SENSORI INTERNI DELLA VMC</strong></font>
+         <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA PROSSIMA AL CONGELAMENTO NELLA SONDA DELLA VMC</strong></font>
 
           - Temperatura Esterna VMC: {{congelamento_vmc}} °C
 
@@ -1828,7 +1828,7 @@ cards:
         is_state('sensor.vmc_master_status_ip_interfaccia','ON-Line') and
         (congelamento > -18 and congelamento <= -15) and (congelamento_vmc >
         -15) %}
-         <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA PROSSIMA AL CONGELAMENTO NEI SENSORI ESTERNI DELLA VMC</strong></font>
+         <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA PROSSIMA AL CONGELAMENTO NELL'ENTITÀ SELEZIONATA</strong></font>
 
           - Temperatura Esterna: {{congelamento}} °C
 
@@ -1854,7 +1854,7 @@ cards:
         is_state('sensor.vmc_master_status_ip_interfaccia','ON-Line') and
         (congelamento > -18 and congelamento <= -15) and (congelamento_vmc > -18
         and congelamento_vmc <= -15) %}
-          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA PROSSIMA AL CONGELAMENTO NEI SENSORI INTERNI ED ESTERNI DELLA VMC</strong></font>
+          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA PROSSIMA AL CONGELAMENTO NELLA SONDA DELLA VMC E NELL'ENTITÀ SELEZIONATA</strong></font>
 
             - Temperatura Esterna VMC: {{congelamento_vmc}} °C
             
@@ -1886,7 +1886,7 @@ cards:
         {% elif is_state('sensor.vmc_master_congelamento_verifica_soglia', 'No')
         and is_state('sensor.vmc_master_status_ip_interfaccia','ON-Line') and
         (congelamento_vmc > -15 and congelamento > -15) %}
-         <font color="rgb(128, 0, 128)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-off-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> NESSUNA ALLERTA CONGELAMENTO NEI SENSORI INTERNI ED ESTERNI DELLA VMC </strong></font>
+         <font color="rgb(128, 0, 128)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-off-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> NESSUNA ALLERTA CONGELAMENTO NELLA SONDA DELLA VMC E NELL'ENTITÀ SELEZIONATA </strong></font>
 
         {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC RESTERÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA){% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI){% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
         <strong>VELOCITA' 0</strong>{% elif spia_velocita_1=="on" %}RIPRESA
@@ -2088,7 +2088,7 @@ cards:
 
 
         {% if (congelamento <= -18 or congelamento_vmc <= -18) %}
-          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA DIFF. TEMP. (INT-EST) > 23 [°C] NEI SENSORI INTERNI DELLA VMC</strong></font>
+          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA DIFF. TEMP. (INT-EST) > 23 [°C] NELLA SONDA DELLA VMC</strong></font>
 
         PRIORITA' ALLERTA CONGELAMENTO
 
@@ -2126,7 +2126,7 @@ cards:
         and is_state('sensor.vmc_master_status_ip_interfaccia', 'ON-Line') and
         states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')=='Velocità
         0' and (delta_vmc > 23 and delta < 20) %}
-          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA DIFF. TEMP. (INT-EST) > 23 [°C] NEI SENSORI INTERNI DELLA VMC</strong></font>
+          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA DIFF. TEMP. (INT-EST) > 23 [°C] NELLA SONDA DELLA VMC</strong></font>
 
           - Temperatura Interna VMC: {{temperatura_interna_vmc}} °C
           - Temperatura Esterna VMC: {{temperatura_esterna_vmc}} °C
@@ -2147,7 +2147,7 @@ cards:
         and is_state('sensor.vmc_master_status_ip_interfaccia', 'ON-Line') and
         states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')=='Velocità
         0' and delta_vmc > 23 and (delta >= 20 and delta <= 23)  %}
-          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA DIFF. TEMP. (INT-EST) > 23 [°C] NEI SENSORI INTERNI DELLA VMC</strong></font>
+          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA DIFF. TEMP. (INT-EST) > 23 [°C] NELLA SONDA DELLA VMC</strong></font>
 
           - Temperatura Interna VMC: {{temperatura_interna_vmc}} °C
           - Temperatura Esterna VMC: {{temperatura_esterna_vmc}} °C
@@ -2176,7 +2176,7 @@ cards:
         and is_state('sensor.vmc_master_status_ip_interfaccia', 'ON-Line') and
         states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')=='Velocità
         0' and (delta_vmc > 23 and delta > 23) %}
-          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA DIFF. TEMP. (INT-EST) > 23 [°C] NEI SENSORI INTERNI ED ESTERNI DELLA VMC</strong></font>
+          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA DIFF. TEMP. (INT-EST) > 23 [°C] NELLA SONDA DELLA VMC E NELL'ENTITÀ SELEZIONATA</strong></font>
 
           - Temperatura Interna VMC: {{temperatura_interna_vmc}} °C
           - Temperatura Esterna VMC: {{temperatura_esterna_vmc}} °C
@@ -2202,7 +2202,7 @@ cards:
         and is_state('sensor.vmc_master_status_ip_interfaccia', 'ON-Line') and
         states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')=='Velocità
         0' and (delta > 23 and delta_vmc < 20) %}
-          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA DIFF. TEMP. (INT-EST) > 23 [°C] NEI SENSORI ESTERNI DELLA VMC</strong></font>
+          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA DIFF. TEMP. (INT-EST) > 23 [°C] NELL'ENTITÀ SELEZIONATA</strong></font>
 
           - Temperatura Interna:     {{temperatura_interna}} °C
           - Temperatura Esterna:     {{temperatura_esterna}} °C
@@ -2223,7 +2223,7 @@ cards:
         and is_state('sensor.vmc_master_status_ip_interfaccia', 'ON-Line') and
         states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')=='Velocità
         0' and delta > 23 and (delta_vmc >= 20 and delta_vmc <= 23)  %}
-          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA DIFF. TEMP. (INT-EST) > 23 [°C] NEI SENSORI ESTERNI DELLA VMC</strong></font>
+          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA DIFF. TEMP. (INT-EST) > 23 [°C] NELL'ENTITÀ SELEZIONATA</strong></font>
 
           - Temperatura Interna:     {{temperatura_interna}} °C
           - Temperatura Esterna:     {{temperatura_esterna}} °C
@@ -2252,7 +2252,7 @@ cards:
         and is_state('sensor.vmc_master_status_ip_interfaccia', 'ON-Line') and
         states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')!='Velocità
         0' and (delta_vmc > 23 and delta < 20) %}
-          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA DIFF. TEMP. (INT-EST) > 23 [°C] NEI SENSORI INTERNI DELLA VMC</strong></font>
+          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA DIFF. TEMP. (INT-EST) > 23 [°C] NELLA SONDA DELLA VMC</strong></font>
 
           - Temperatura Interna VMC: {{temperatura_interna_vmc}} °C
           - Temperatura Esterna VMC: {{temperatura_esterna_vmc}} °C
@@ -2296,7 +2296,7 @@ cards:
         and is_state('sensor.vmc_master_status_ip_interfaccia', 'ON-Line') and
         states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')!='Velocità
         0' and delta_vmc > 23 and (delta >= 20 and delta <= 23) %}
-          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA DIFF. TEMP. (INT-EST) > 23 [°C] NEI SENSORI INTERNI DELLA VMC</strong></font>
+          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA DIFF. TEMP. (INT-EST) > 23 [°C] NELLA SONDA DELLA VMC</strong></font>
 
           - Temperatura Interna VMC: {{temperatura_interna_vmc}} °C
           - Temperatura Esterna VMC: {{temperatura_esterna_vmc}} °C
@@ -2350,7 +2350,7 @@ cards:
         and is_state('sensor.vmc_master_status_ip_interfaccia', 'ON-Line') and
         states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')!='Velocità
         0' and (delta > 23 and delta_vmc < 20) %}
-          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA DIFF. TEMP. (INT-EST) > 23 [°C] NEI SENSORI ESTERNI DELLA VMC</strong></font>
+          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA DIFF. TEMP. (INT-EST) > 23 [°C] NELL'ENTITÀ SELEZIONATA</strong></font>
 
           - Temperatura Interna:     {{temperatura_interna}} °C
           - Temperatura Esterna:     {{temperatura_esterna}} °C
@@ -2394,7 +2394,7 @@ cards:
         and is_state('sensor.vmc_master_status_ip_interfaccia', 'ON-Line') and
         states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')!='Velocità
         0' and delta > 23 and (delta_vmc >= 20 and delta_vmc <= 23)  %}
-          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA DIFF. TEMP. (INT-EST) > 23 [°C] NEI SENSORI ESTERNI DELLA VMC</strong></font>
+          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA DIFF. TEMP. (INT-EST) > 23 [°C] NELL'ENTITÀ SELEZIONATA</strong></font>
 
           - Temperatura Interna:     {{temperatura_interna}} °C
           - Temperatura Esterna:     {{temperatura_esterna}} °C
@@ -2447,7 +2447,7 @@ cards:
         and is_state('sensor.vmc_master_status_ip_interfaccia', 'ON-Line') and
         states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')!='Velocità
         0' and (delta_vmc > 23 and delta > 23) %}
-          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA DIFF. TEMP. (INT-EST) > 23 [°C] NEI SENSORI INTERNI ED ESTERNI DELLA VMC</strong></font>
+          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA DIFF. TEMP. (INT-EST) > 23 [°C] NELLA SONDA DELLA VMC E NELL'ENTITÀ SELEZIONATA</strong></font>
 
           - Temperatura Interna VMC: {{temperatura_interna_vmc}} °C
           - Temperatura Esterna VMC: {{temperatura_esterna_vmc}} °C
@@ -2499,7 +2499,7 @@ cards:
         Prossimo]') and
         is_state('sensor.vmc_master_status_ip_interfaccia','ON-Line') and
         (delta_vmc >= 20 and delta_vmc <= 23) and (delta < 20) %}
-         <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA 20 °C ≤ DIFF. TEMP. (INT-EST)  ≤  23 °C PROSSIMA NEI SENSORI INTERNI DELLA VMC</strong></font>
+         <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA 20 °C ≤ DIFF. TEMP. (INT-EST)  ≤  23 °C PROSSIMA NELLA SONDA DELLA VMC</strong></font>
 
           - Temperatura Interna VMC: {{temperatura_interna_vmc}} °C
           - Temperatura Esterna VMC: {{temperatura_esterna_vmc}} °C
@@ -2524,7 +2524,7 @@ cards:
         Prossimo]') and
         is_state('sensor.vmc_master_status_ip_interfaccia','ON-Line') and (delta
         >= 20 and delta <= 23) and (delta_vmc < 20)%}
-         <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA 20 °C ≤ DIFF. TEMP. (INT-EST)  ≤  23 °C PROSSIMA NEI SENSORI ESTERNI DELLA VMC</strong></font>
+         <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA 20 °C ≤ DIFF. TEMP. (INT-EST)  ≤  23 °C PROSSIMA NELL'ENTITÀ SELEZIONATA</strong></font>
 
           - Temperatura Interna:     {{temperatura_interna}} °C
           - Temperatura Esterna:     {{temperatura_esterna}} °C
@@ -2549,7 +2549,7 @@ cards:
         Prossimo]') and
         is_state('sensor.vmc_master_status_ip_interfaccia','ON-Line') and (delta
         >= 20 and delta <= 23) and (delta_vmc >= 20 and delta_vmc <= 23) %}
-          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA 20 °C ≤ DIFF. TEMP. (INT-EST)  ≤  23 °C PROSSIMA NEI SENSORI INTERNI ED ESTERNI DELLA VMC</strong></font>
+          <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA 20 °C ≤ DIFF. TEMP. (INT-EST)  ≤  23 °C PROSSIMA NELLA SONDA DELLA VMC E NELL'ENTITÀ SELEZIONATA</strong></font>
 
             - Temperatura Interna VMC: {{temperatura_interna_vmc}} °C
             - Temperatura Esterna VMC: {{temperatura_esterna_vmc}} °C
@@ -2585,7 +2585,7 @@ cards:
         {% elif is_state('sensor.vmc_master_delta_temp_verifica_soglia', 'No')
         and is_state('sensor.vmc_master_status_ip_interfaccia','ON-Line') and
         (delta_vmc < 20 and delta < 20) %}
-         <font color="rgb(128, 0, 128)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-off-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> NESSUNA ALLERTA DIFF. TEMP. (INT-EST) > 23 [°C] NEI SENSORI INTERNI ED ESTERNI DELLA VMC </strong></font>
+         <font color="rgb(128, 0, 128)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-off-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> NESSUNA ALLERTA DIFF. TEMP. (INT-EST) > 23 [°C] NELLA SONDA DELLA VMC E NELL'ENTITÀ SELEZIONATA </strong></font>
 
         {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC SARÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA){% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI){% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
         <strong>VELOCITA' 0</strong>{% elif spia_velocita_1=="on" %}RIPRESA
@@ -3810,10 +3810,9 @@ cards:
             e
           - L'OPZIONE [VMC ON/OFF, IN FUNZIONE DEL LIM. Δ P. DI RUGIADA] RIMARRÀ IMPOSTATA SU ACCESO
         <strong>DIVERSAMENTE LA VMC VERRA' ARRESTATA</strong>
-            e 
-          - IL PUNTO DI RUGIADA INTERNO SARÀ DIVERSO DA [NON CALCOLABILE]
-            e
-          - IL PUNTO DI RUGIADA ESTERNO SARÀ DIVERSO DA [NON CALCOLABILE]
+
+
+        SE IL PUNTO DI RUGIADA INTERNO O ESTERNO DIVENTA [NON CALCOLABILE] O [NON DISPONIBILE], L'ALLERTA TERMINA E LA VMC RIPRENDE COMUNQUE DOPO 16 SECONDI (12 CON INQUINANTI)
          
         {% else %}{% endif %}
 
@@ -3876,10 +3875,9 @@ cards:
             e
           - L'OPZIONE [VMC ON/OFF, IN FUNZIONE DEL LIM. Δ P. DI RUGIADA] RIMARRÀ IMPOSTATA SU ACCESO
         <strong>DIVERSAMENTE LA VMC VERRA' ARRESTATA</strong>
-            e 
-          - IL PUNTO DI RUGIADA INTERNO SARÀ DIVERSO DA [NON CALCOLABILE]
-            e
-          - IL PUNTO DI RUGIADA ESTERNO SARÀ DIVERSO DA [NON CALCOLABILE]
+
+
+        SE IL PUNTO DI RUGIADA INTERNO O ESTERNO DIVENTA [NON CALCOLABILE] O [NON DISPONIBILE], L'ALLERTA TERMINA E LA VMC RIPRENDE COMUNQUE DOPO 16 SECONDI (12 CON INQUINANTI)
 
         {% else %}{% endif %}
 
@@ -3938,10 +3936,9 @@ cards:
             e
           - L'OPZIONE [VMC ON/OFF, IN FUNZIONE DEL LIM. Δ P. DI RUGIADA] RIMARRÀ IMPOSTATA SU ACCESO
         <strong>DIVERSAMENTE LA VMC VERRA' ARRESTATA</strong>
-            e 
-          - IL PUNTO DI RUGIADA INTERNO SARÀ DIVERSO DA [NON CALCOLABILE]
-            e
-          - IL PUNTO DI RUGIADA ESTERNO SARÀ DIVERSO DA [NON CALCOLABILE]
+
+
+        SE IL PUNTO DI RUGIADA INTERNO O ESTERNO DIVENTA [NON CALCOLABILE] O [NON DISPONIBILE], L'ALLERTA TERMINA E LA VMC RIPRENDE COMUNQUE DOPO 16 SECONDI (12 CON INQUINANTI)
 
         {% else %}{% endif %}
 
@@ -4001,10 +3998,9 @@ cards:
             e
           - L'OPZIONE [VMC ON/OFF, IN FUNZIONE DEL LIM. Δ P. DI RUGIADA] RIMARRÀ IMPOSTATA SU ACCESO
         <strong>DIVERSAMENTE LA VMC VERRA' ARRESTATA</strong>
-            e 
-          - IL PUNTO DI RUGIADA INTERNO SARÀ DIVERSO DA [NON CALCOLABILE]
-            e
-          - IL PUNTO DI RUGIADA ESTERNO SARÀ DIVERSO DA [NON CALCOLABILE]
+
+
+        SE IL PUNTO DI RUGIADA INTERNO O ESTERNO DIVENTA [NON CALCOLABILE] O [NON DISPONIBILE], L'ALLERTA TERMINA E LA VMC RIPRENDE COMUNQUE DOPO 16 SECONDI (12 CON INQUINANTI)
 
         {% else %}{% endif %}
 
@@ -4081,10 +4077,9 @@ cards:
             e
           - L'OPZIONE [VMC ON/OFF, IN FUNZIONE DEL LIM. Δ P. DI RUGIADA] RIMARRÀ IMPOSTATA SU ACCESO
         <strong>DIVERSAMENTE LA VMC VERRA' ARRESTATA</strong>
-            e 
-          - IL PUNTO DI RUGIADA INTERNO SARÀ DIVERSO DA [NON CALCOLABILE]
-            e
-          - IL PUNTO DI RUGIADA ESTERNO SARÀ DIVERSO DA [NON CALCOLABILE]
+
+
+        SE IL PUNTO DI RUGIADA INTERNO O ESTERNO DIVENTA [NON CALCOLABILE] O [NON DISPONIBILE], L'ALLERTA TERMINA E LA VMC RIPRENDE COMUNQUE DOPO 16 SECONDI (12 CON INQUINANTI)
 
         {% else %}{% endif %}
 
@@ -4559,10 +4554,9 @@ cards:
             e
           - L'OPZIONE [VMC ON/OFF, IN FUNZIONE DEL LIM. Δ P. DI RUGIADA] RIMARRÀ IMPOSTATA SU ACCESO
         <strong>DIVERSAMENTE LA VMC VERRA' ARRESTATA</strong>
-            e 
-          - IL PUNTO DI RUGIADA INTERNO SARÀ DIVERSO DA [NON CALCOLABILE]
-            e
-          - IL PUNTO DI RUGIADA ESTERNO SARÀ DIVERSO DA [NON CALCOLABILE]
+
+
+        SE IL PUNTO DI RUGIADA INTERNO O ESTERNO DIVENTA [NON CALCOLABILE] O [NON DISPONIBILE], L'ALLERTA TERMINA E LA VMC RIPRENDE COMUNQUE DOPO 16 SECONDI (12 CON INQUINANTI)
           
 
         <strong>SI CONSIGLIA DI IMPOSTARE SU ACCESO L'OPZIONE [VMC ON/OFF, in
@@ -4641,10 +4635,9 @@ cards:
             e
           - L'OPZIONE [VMC ON/OFF, IN FUNZIONE DEL LIM. Δ P. DI RUGIADA] RIMARRÀ IMPOSTATA SU ACCESO
         <strong>DIVERSAMENTE LA VMC VERRA' ARRESTATA</strong>
-            e 
-          - IL PUNTO DI RUGIADA INTERNO SARÀ DIVERSO DA [NON CALCOLABILE]
-            e
-          - IL PUNTO DI RUGIADA ESTERNO SARÀ DIVERSO DA [NON CALCOLABILE]
+
+
+        SE IL PUNTO DI RUGIADA INTERNO O ESTERNO DIVENTA [NON CALCOLABILE] O [NON DISPONIBILE], L'ALLERTA TERMINA E LA VMC RIPRENDE COMUNQUE DOPO 16 SECONDI (12 CON INQUINANTI)
 
         {% else %}{% endif %}
 
@@ -4719,10 +4712,9 @@ cards:
             e
           - L'OPZIONE [VMC ON/OFF, IN FUNZIONE DEL LIM. Δ P. DI RUGIADA] RIMARRÀ IMPOSTATA SU ACCESO
         <strong>DIVERSAMENTE LA VMC VERRA' ARRESTATA</strong>
-            e 
-          - IL PUNTO DI RUGIADA INTERNO SARÀ DIVERSO DA [NON CALCOLABILE]
-            e
-          - IL PUNTO DI RUGIADA ESTERNO SARÀ DIVERSO DA [NON CALCOLABILE]
+
+
+        SE IL PUNTO DI RUGIADA INTERNO O ESTERNO DIVENTA [NON CALCOLABILE] O [NON DISPONIBILE], L'ALLERTA TERMINA E LA VMC RIPRENDE COMUNQUE DOPO 16 SECONDI (12 CON INQUINANTI)
 
 
         <strong>SI CONSIGLIA DI IMPOSTARE SU ACCESO L'OPZIONE [VMC ON/OFF, in
@@ -5311,6 +5303,23 @@ cards:
         'ON-Line')%}
           <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> LIM. Δ PUNTO DI RUGIADA NON CALCOLABILE</strong></font>
 
+
+        {% set vel_ripresa = "VELOCITA' 0" if spia_velocita_0=="on" else "VELOCITA' 1" if
+        spia_velocita_1=="on" else "VELOCITA' 2" if spia_velocita_2=="on" else "VELOCITA' 3" if
+        spia_velocita_3=="on" else "VELOCITA' 4" if spia_velocita_4=="on" else
+        "VELOCITA' NOTTURNA" if spia_notturna=="on" else ("VELOCITA' FREE HEATING" if
+        freeheating_cooling=="Free Heating" else "VELOCITA' FREE COOLING" if
+        freeheating_cooling=="Free Cooling" else "VELOCITA' FREE COOL./HEAT.") if
+        spia_freecooling=="on" else "VELOCITA' IPERVENTILAZIONE" if
+        spia_iperventilazione=="on" else "VELOCITA' 0" if (spia_velocita_1_co2_o_voc_pdr=="on"
+        and is_state('input_boolean.vmc_master_spia_co2_o_voc', 'off')) else "" %}
+
+        {% if vel_ripresa and
+        is_state('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr', 'on') %}L'ALLERTA PER IL
+        LIM. Δ PUNTO DI RUGIADA TERMINA COMUNQUE: RIPRESA AUTOMATICA DELLA VMC SULLA <strong>{{
+        vel_ripresa }}</strong> DOPO 16 SECONDI (12 CON INQUINANTI), {{ attendere }}{% endif %}
+
+
         Msg. 24
 
 
@@ -5465,10 +5474,10 @@ cards:
           - LA TEMPERATURA ESTERNA SARÀ MAGGIORE DELLA TEMPERATURA INTERNA
             e
           - L'OPZIONE [VMC ON/OFF, IN FUNZIONE DELLA VEL. FREE HEATING] RIMARRÀ IMPOSTATA SU ACCESO
-        <strong>DIVERSAMENTE VERRÀ ANNULLATA LA RIPRESA AUTOMATICA, CONFERMANDO
-        L'ARRESTO DELLA VMC. </strong>
             e 
           - IL MESE CORRENTE PROGRAMMATO RIMARRA IMPOSTATO SU FREE HEATING
+        <strong>DIVERSAMENTE VERRÀ ANNULLATA LA RIPRESA AUTOMATICA, CONFERMANDO
+        L'ARRESTO DELLA VMC. </strong>
 
         Msg. 1, Free Heating Allarmato
 
@@ -5499,10 +5508,10 @@ cards:
           - LA TEMPERATURA ESTERNA SARÀ MAGGIORE DELLA TEMPERATURA INTERNA
             e
           - L'OPZIONE [VMC ON/OFF, IN FUNZIONE DELLA VEL. FREE HEATING] RIMARRÀ IMPOSTATA SU ACCESO
-        <strong> ALTRIMENTI, LA RIPRESA AUTOMATICA VERRÀ ANNULLATA IMPOSTANDO LA
-        VELOCITÀ DELLA VMC A 1.</strong>
             e 
           - IL MESE CORRENTE PROGRAMMATO RIMARRA IMPOSTATO SU FREE HEATING
+        <strong> ALTRIMENTI, LA RIPRESA AUTOMATICA VERRÀ ANNULLATA IMPOSTANDO LA
+        VELOCITÀ DELLA VMC A 1.</strong>
 
         Msg. 2.1, Free Heating Allarmato
 
@@ -5528,10 +5537,10 @@ cards:
           - LA TEMPERATURA ESTERNA SARÀ MAGGIORE DELLA TEMPERATURA INTERNA
             e
           - L'OPZIONE [VMC ON/OFF, IN FUNZIONE DELLA VEL. FREE HEATING] RIMARRÀ IMPOSTATA SU ACCESO
-        <strong> DIVERSAMENTE VERRÀ ANNULLATA LA RIPRESA AUTOMATICA, CONFERMANDO
-        L'ARRESTO DELLA VMC. </strong>
             e 
           - IL MESE CORRENTE PROGRAMMATO RIMARRA IMPOSTATO SU FREE HEATING
+        <strong> DIVERSAMENTE VERRÀ ANNULLATA LA RIPRESA AUTOMATICA, CONFERMANDO
+        L'ARRESTO DELLA VMC. </strong>
 
         Msg. 2.2, Free Heating Allarmato
 
@@ -5550,7 +5559,9 @@ cards:
         [°C]
 
 
-        <strong>VMC ARRESTATA </strong>
+        {% if interruttore_inquinanti=="on" %}<strong>AVVIO VMC A VELOCITA' 1 PER LA PRESENZA DI
+        INQUINANTI (DOPO CIRCA 8 SECONDI)</strong>{% else %}<strong>VMC ARRESTATA </strong>{% endif
+        %}
 
 
         <strong>RIPRESA AUTOMATICA DELLA VMC SULLA VELOCITÀ FREE HEATING
@@ -5559,10 +5570,11 @@ cards:
           - LA TEMPERATURA ESTERNA SARÀ MAGGIORE DELLA TEMPERATURA INTERNA
             e
           - L'OPZIONE [VMC ON/OFF, IN FUNZIONE DELLA VEL. FREE HEATING] RIMARRÀ IMPOSTATA SU ACCESO
-        <strong> DIVERSAMENTE VERRÀ ANNULLATA LA RIPRESA AUTOMATICA, CONFERMANDO
-        L'ARRESTO DELLA VMC. </strong>
             e 
           - IL MESE CORRENTE PROGRAMMATO RIMARRA IMPOSTATO SU FREE HEATING
+        <strong> DIVERSAMENTE VERRÀ ANNULLATA LA RIPRESA AUTOMATICA, {% if
+        interruttore_inquinanti=="on" %}IMPOSTANDO LA VELOCITÀ DELLA VMC A 1.{% else
+        %}CONFERMANDO L'ARRESTO DELLA VMC.{% endif %} </strong>
 
         Msg. 3, Free Heating Allarmato
 
@@ -5605,16 +5617,20 @@ cards:
 
         <strong>SI CONSIGLIA DI CAMBIARE VELOCITA'</strong>
             
+        {% if interruttore_inquinanti=="on" %}<strong>IN ALTERNATIVA, PER LA PRESENZA DI INQUINANTI,
+        DOPO CIRCA 20 SECONDI LA VMC PASSERÀ A VELOCITÀ 1</strong>{% endif %}
+            
         <strong>RIPRESA AUTOMATICA DELLA VMC SULLA VELOCITÀ FREE HEATING
         (RISCALDAMENTO), NON APPENA:</strong>
 
           - LA TEMPERATURA ESTERNA SARÀ MAGGIORE DELLA TEMPERATURA INTERNA
             e
           - L'OPZIONE [VMC ON/OFF, IN FUNZIONE DELLA VEL. FREE HEATING] RIMARRÀ IMPOSTATA SU ACCESO
-        <strong> DIVERSAMENTE VERRÀ ANNULLATA LA RIPRESA AUTOMATICA, CONFERMANDO
-        L'ARRESTO DELLA VMC. </strong>
             e 
           - IL MESE CORRENTE PROGRAMMATO RIMARRA IMPOSTATO SU FREE HEATING
+        <strong> DIVERSAMENTE VERRÀ ANNULLATA LA RIPRESA AUTOMATICA, {% if
+        interruttore_inquinanti=="on" %}IMPOSTANDO LA VELOCITÀ DELLA VMC A 1.{% else
+        %}CONFERMANDO L'ARRESTO DELLA VMC.{% endif %} </strong>
 
         Msg. 5 Free Heating
 
@@ -5696,10 +5712,10 @@ cards:
           - LA TEMPERATURA ESTERNA SARÀ MAGGIORE DELLA TEMPERATURA INTERNA
             e
           - L'OPZIONE [VMC ON/OFF, IN FUNZIONE DELLA VEL. FREE HEATING] RIMARRÀ IMPOSTATA SU ACCESO
-        <strong> ALTRIMENTI, LA RIPRESA AUTOMATICA VERRÀ ANNULLATA IMPOSTANDO LA
-        VELOCITÀ DELLA VMC A 1.</strong>
             e 
           - IL MESE CORRENTE PROGRAMMATO RIMARRA IMPOSTATO SU FREE HEATING
+        <strong> ALTRIMENTI, LA RIPRESA AUTOMATICA VERRÀ ANNULLATA IMPOSTANDO LA
+        VELOCITÀ DELLA VMC A 1.</strong>
 
         Msg. 8.1, Free Heating Allarmato
 
@@ -5725,10 +5741,10 @@ cards:
           - LA TEMPERATURA ESTERNA SARÀ MAGGIORE DELLA TEMPERATURA INTERNA
             e
           - L'OPZIONE [VMC ON/OFF, IN FUNZIONE DELLA VEL. FREE HEATING] RIMARRÀ IMPOSTATA SU ACCESO
-        <strong> DIVERSAMENTE VERRÀ ANNULLATA LA RIPRESA AUTOMATICA, CONFERMANDO
-        L'ARRESTO DELLA VMC. </strong>
             e 
           - IL MESE CORRENTE PROGRAMMATO RIMARRA IMPOSTATO SU FREE HEATING
+        <strong> DIVERSAMENTE VERRÀ ANNULLATA LA RIPRESA AUTOMATICA, CONFERMANDO
+        L'ARRESTO DELLA VMC. </strong>
 
         Msg. 8.2, Free Heating Allarmato
 
@@ -5925,10 +5941,10 @@ cards:
           - LA TEMPERATURA ESTERNA SARÀ MINORE DELLA TEMPERATURA INTERNA
             e
           - L'OPZIONE [VMC ON/OFF, IN FUNZIONE DELLA VEL. FREE COOLING] RIMARRÀ IMPOSTATA SU ACCESO
-        <strong> DIVERSAMENTE VERRÀ ANNULLATA LA RIPRESA AUTOMATICA, CONFERMANDO
-        L'ARRESTO DELLA VMC. </strong>
             e 
           - IL MESE CORRENTE PROGRAMMATO RIMARRÀ IMPOSTATO SU FREE COOLING
+        <strong> DIVERSAMENTE VERRÀ ANNULLATA LA RIPRESA AUTOMATICA, CONFERMANDO
+        L'ARRESTO DELLA VMC. </strong>
 
         Msg. 1, Free Cooling Allarmato
 
@@ -5959,10 +5975,10 @@ cards:
           - LA TEMPERATURA ESTERNA SARÀ MINORE DELLA TEMPERATURA INTERNA
             e
           - L'OPZIONE [VMC ON/OFF, IN FUNZIONE DELLA VEL. FREE COOLING] RIMARRÀ IMPOSTATA SU ACCESO
-        <strong> ALTRIMENTI LA RIPRESA AUTOMATICA VERRÀ ANNULLATA IMPOSTANDO LA
-        VELOCITÀ DELLA VMC A 1.</strong>
             e 
           - IL MESE CORRENTE PROGRAMMATO RIMARRÀ IMPOSTATO SU FREE COOLING
+        <strong> ALTRIMENTI LA RIPRESA AUTOMATICA VERRÀ ANNULLATA IMPOSTANDO LA
+        VELOCITÀ DELLA VMC A 1.</strong>
 
         Msg. 2.1, Free Cooling Allarmato
 
@@ -5988,10 +6004,10 @@ cards:
           - LA TEMPERATURA ESTERNA SARÀ MINORE DELLA TEMPERATURA INTERNA
             e
           - L'OPZIONE [VMC ON/OFF, IN FUNZIONE DELLA VEL. FREE COOLING] RIMARRÀ IMPOSTATA SU ACCESO
-        <strong> DIVERSAMENTE VERRÀ ANNULLATA LA RIPRESA AUTOMATICA, CONFERMANDO
-        L'ARRESTO DELLA VMC. </strong>
             e 
           - IL MESE CORRENTE PROGRAMMATO RIMARRÀ IMPOSTATO SU FREE COOLING
+        <strong> DIVERSAMENTE VERRÀ ANNULLATA LA RIPRESA AUTOMATICA, CONFERMANDO
+        L'ARRESTO DELLA VMC. </strong>
 
         Msg. 2.2, Free Cooling Allarmato
 
@@ -6010,7 +6026,9 @@ cards:
         states('sensor.vmc_master_temp_interna_status')}} [°C]
 
 
-        <strong>VMC ARRESTATA </strong>
+        {% if interruttore_inquinanti=="on" %}<strong>AVVIO VMC A VELOCITA' 1 PER LA PRESENZA DI
+        INQUINANTI (DOPO CIRCA 8 SECONDI)</strong>{% else %}<strong>VMC ARRESTATA </strong>{% endif
+        %}
 
 
         <strong>RIPRESA AUTOMATICA DELLA VMC SULLA VELOCITÀ FREE COOLING
@@ -6019,10 +6037,11 @@ cards:
           - LA TEMPERATURA ESTERNA SARÀ MINORE DELLA TEMPERATURA INTERNA
             e
           - L'OPZIONE [VMC ON/OFF, IN FUNZIONE DELLA VEL. FREE COOLING] RIMARRÀ IMPOSTATA SU ACCESO
-        <strong> DIVERSAMENTE VERRÀ ANNULLATA LA RIPRESA AUTOMATICA, CONFERMANDO
-        L'ARRESTO DELLA VMC. </strong>
             e 
           - IL MESE CORRENTE PROGRAMMATO RIMARRÀ IMPOSTATO SU FREE COOLING
+        <strong> DIVERSAMENTE VERRÀ ANNULLATA LA RIPRESA AUTOMATICA, {% if
+        interruttore_inquinanti=="on" %}IMPOSTANDO LA VELOCITÀ DELLA VMC A 1.{% else
+        %}CONFERMANDO L'ARRESTO DELLA VMC.{% endif %} </strong>
 
         Msg. 3, Free Cooling Allarmato
 
@@ -6065,16 +6084,20 @@ cards:
 
         <strong>SI CONSIGLIA DI CAMBIARE VELOCITA'</strong>
             
+        {% if interruttore_inquinanti=="on" %}<strong>IN ALTERNATIVA, PER LA PRESENZA DI INQUINANTI,
+        DOPO CIRCA 20 SECONDI LA VMC PASSERÀ A VELOCITÀ 1</strong>{% endif %}
+            
         <strong>RIPRESA AUTOMATICA DELLA VMC SULLA VELOCITÀ FREE COOLING
         (RAFFRESCAMENTO), NON APPENA:</strong>
 
           - LA TEMPERATURA ESTERNA SARÀ MINORE DELLA TEMPERATURA INTERNA
             e
           - L'OPZIONE [VMC ON/OFF, IN FUNZIONE DELLA VEL. FREE COOLING] RIMARRÀ IMPOSTATA SU ACCESO
-        <strong> DIVERSAMENTE VERRÀ ANNULLATA LA RIPRESA AUTOMATICA, CONFERMANDO
-        L'ARRESTO DELLA VMC. </strong>
             e 
           - IL MESE CORRENTE PROGRAMMATO RIMARRÀ IMPOSTATO SU FREE COOLING
+        <strong> DIVERSAMENTE VERRÀ ANNULLATA LA RIPRESA AUTOMATICA, {% if
+        interruttore_inquinanti=="on" %}IMPOSTANDO LA VELOCITÀ DELLA VMC A 1.{% else
+        %}CONFERMANDO L'ARRESTO DELLA VMC.{% endif %} </strong>
 
         Msg. 5 Free Cooling
 
@@ -6156,10 +6179,10 @@ cards:
           - LA TEMPERATURA ESTERNA SARÀ MINORE DELLA TEMPERATURA INTERNA
             e
           - L'OPZIONE [VMC ON/OFF, IN FUNZIONE DELLA VEL. FREE COOLING] RIMARRÀ IMPOSTATA SU ACCESO
-        <strong> ALTRIMENTI LA RIPRESA AUTOMATICA VERRÀ ANNULLATA IMPOSTANDO LA
-        VELOCITÀ DELLA VMC A 1.</strong>
             e 
           - IL MESE CORRENTE PROGRAMMATO RIMARRÀ IMPOSTATO SU FREE COOLING
+        <strong> ALTRIMENTI LA RIPRESA AUTOMATICA VERRÀ ANNULLATA IMPOSTANDO LA
+        VELOCITÀ DELLA VMC A 1.</strong>
 
         Msg. 8.1, Free Cooling Allarmato
 
@@ -6185,10 +6208,10 @@ cards:
           - LA TEMPERATURA ESTERNA SARÀ MINORE DELLA TEMPERATURA INTERNA
             e
           - L'OPZIONE [VMC ON/OFF, IN FUNZIONE DELLA VEL. FREE COOLING] RIMARRÀ IMPOSTATA SU ACCESO
-        <strong> DIVERSAMENTE VERRÀ ANNULLATA LA RIPRESA AUTOMATICA, CONFERMANDO
-        L'ARRESTO DELLA VMC. </strong>
             e 
           - IL MESE CORRENTE PROGRAMMATO RIMARRÀ IMPOSTATO SU FREE COOLING
+        <strong> DIVERSAMENTE VERRÀ ANNULLATA LA RIPRESA AUTOMATICA, CONFERMANDO
+        L'ARRESTO DELLA VMC. </strong>
 
         Msg. 8.2, Free Cooling Allarmato
 
@@ -11656,7 +11679,7 @@ cards:
                         - entity: input_select.vmc_master_mese_2_fascia_freeheating
                           secondary_info: last-updated
                         - entity: input_select.vmc_master_mese_1_fascia_freecooling
-                          secondary_info: last-changed
+                          secondary_info: last-updated
                         - entity: input_select.vmc_master_mese_2_fascia_freecooling
                           secondary_info: last-updated
                         - entity: >-
@@ -12688,7 +12711,9 @@ cards:
                   <table><tr><td align="justify">
                   <b>Che cos'è.</b> L'umidità relativa interna U viene classificata in fasce. Le fasce generano gli
                   avvisi Pop-Up e, con l'interruttore [VMC ON/OFF, in Funzione dell'Umidità Interna] su ON e senza
-                  altre allerte in corso, comandano l'avvio e l'arresto automatico della VMC.
+                  altre allerte in corso (salvo la sospensione Free Cool./Heat.: l'Umidità parte comunque a
+                  Velocità 1 [Nota 3] e il suo interruttore non si spegne fino alla ripresa o all'annullamento
+                  della Free), comandano l'avvio e l'arresto automatico della VMC.
                   </td></tr></table>
                   <table width="100%">
                   <tr><th style="padding: 4px 8px; border: 1px solid #c3c2b7;">Umidità interna U</th><th style="padding: 4px 8px; border: 1px solid #c3c2b7;">Fascia</th><th style="padding: 4px 8px; border: 1px solid #c3c2b7;">Avviso</th><th style="padding: 4px 8px; border: 1px solid #c3c2b7;">VMC (interruttore ON)</th></tr>
@@ -12736,7 +12761,9 @@ cards:
                   l'umidità è rientrata, la VMC resta a Velocità 0.
                   <br><br>
                   • Se si entra prima nel Calendario, oppure è già in corso un'altra allerta, e poi sale
-                  l'umidità, l'allerta Umidità non scatta e l'interruttore si spegne normalmente.
+                  l'umidità, l'allerta Umidità non scatta e l'interruttore si spegne normalmente (salvo la
+                  sospensione Free Cool./Heat.: l'Umidità parte comunque a Velocità 1 [Nota 3] e il suo
+                  interruttore non si spegne fino alla ripresa o all'annullamento della Free).
                   </td></tr></table>
                   <table><tr><td align="justify">
                   <b>Valori impostabili.</b>
@@ -13450,9 +13477,11 @@ cards:
 
                   Dopo ogni avvio di Home Assistant le allerte restano in
                   pausa e si riattivano da sole in sequenza: dopo 60 secondi
-                  Black-Out, Congelamento e Diff. Temp.; dopo 100 secondi
-                  Inquinanti; dopo 140 secondi Punto di Rugiada, Free
-                  Heating/Cooling, Calendario e Umidità. Poi parte la normale
+                  Black-Out, Congelamento e Δ Temp.; dopo 100 secondi
+                  Inquinanti (un'allerta Inquinanti già in corso prima del
+                  riavvio può riprendere prima); dopo 140 secondi Lim. Δ
+                  Punto di Rugiada, Free Cool./Heat., Calendario e Umidità.
+                  Poi parte la normale
                   attesa di ogni allerta (per esempio 28 secondi per
                   l'Umidità). Il pannello «Riattivazione delle Allerte», in
                   cima alla scheda, mostra un countdown per gruppo, uno dopo
@@ -14320,8 +14349,8 @@ cards:
                     <b>COSA SUCCEDE SE SI SPEGNE UN INTERRUTTORE (CO₂/VOC, Punto di Rugiada, Free Cooling, Free Heating, Umidità, Calendario):</b><br>
                     - se in quel momento la sua funzione sta comandando la VMC, la VMC si ferma subito (Velocità 0, in 0 Secondi), anche durante una fascia del Calendario. Esempio: durante una fascia del Calendario sale la CO₂; spegnendo l'interruttore degli Inquinanti la VMC si ferma;<br>
                     - se però c'è anche un'allerta Congelamento o Δ Temp., l'interruttore non si può spegnere finché quell'allerta non è finita. Esempio: il Punto di Rugiada ha fermato la VMC e poi arriva l'allerta Δ Temp.; finché dura il Δ Temp., l'interruttore del Punto di Rugiada non si può spegnere;<br>
-                    - l'interruttore dell'Umidità, mentre è in corso un'allerta Umidità, non si può spegnere se c'è anche un'altra allerta qualsiasi (Congelamento, Δ Temp., Inquinanti, Punto di Rugiada, Free Cooling/Heating), finché quell'allerta non è finita. Esempio: l'Umidità ha avviato la VMC e poi sale la CO₂; finché dura l'allerta CO₂, l'interruttore dell'Umidità non si può spegnere;<br>
-                    - se, con l'allerta Umidità in corso, inizia una fascia del Calendario, l'interruttore dell'Umidità non si può spegnere fino alla fine della fascia, anche se nel frattempo l'umidità è rientrata: durante la fascia la VMC funziona alla velocità della fascia; alla fine della fascia si arresta, le spie si azzerano e, se l'umidità è ancora fuori soglia, dopo 28 secondi l'allerta Umidità riparte con la [Set Velocità Umidità di Avvio], altrimenti la VMC resta a Velocità 0. Se invece si entra prima nel Calendario, oppure è già in corso un'altra allerta, e poi sale l'umidità, l'allerta Umidità non scatta e l'interruttore si spegne normalmente;<br>
+                    - l'interruttore dell'Umidità, mentre è in corso un'allerta Umidità, non si può spegnere se c'è anche un'altra allerta qualsiasi (Congelamento, Δ Temp., Inquinanti, Punto di Rugiada, Free Cooling/Heating), finché quell'allerta non è finita (salvo la sospensione Free Cool./Heat.: l'Umidità parte comunque a Velocità 1 [Nota 3] e il suo interruttore non si spegne fino alla ripresa o all'annullamento della Free). Esempio: l'Umidità ha avviato la VMC e poi sale la CO₂; finché dura l'allerta CO₂, l'interruttore dell'Umidità non si può spegnere;<br>
+                    - se, con l'allerta Umidità in corso, inizia una fascia del Calendario, l'interruttore dell'Umidità non si può spegnere fino alla fine della fascia, anche se nel frattempo l'umidità è rientrata: durante la fascia la VMC funziona alla velocità della fascia; alla fine della fascia si arresta, le spie si azzerano e, se l'umidità è ancora fuori soglia, dopo 28 secondi l'allerta Umidità riparte con la [Set Velocità Umidità di Avvio], altrimenti la VMC resta a Velocità 0. Se invece si entra prima nel Calendario, oppure è già in corso un'altra allerta, e poi sale l'umidità, l'allerta Umidità non scatta e l'interruttore si spegne normalmente (salvo la sospensione Free Cool./Heat.: l'Umidità parte comunque a Velocità 1 [Nota 3] e il suo interruttore non si spegne fino alla ripresa o all'annullamento della Free);<br>
                     - gli interruttori del Calendario (spento durante una fascia), del Punto di Rugiada, del Free Cooling e del Free Heating fermano la VMC; se però sono presenti Inquinanti e l'interruttore degli Inquinanti è acceso, la VMC non si ferma: passa a Velocità 1 e si ferma quando gli Inquinanti rientrano;<br>
                     - se invece la sua funzione non sta comandando la VMC, spegnendo l'interruttore la VMC non cambia Velocità: la funzione semplicemente non interverrà più finché l'interruttore resta spento. Esempio: la VMC gira a Velocità 2 scelta dall'utente e il Punto di Rugiada non è intervenuto; spegnendo il suo interruttore la VMC resta a Velocità 2.<br>
                     </td></tr></table>

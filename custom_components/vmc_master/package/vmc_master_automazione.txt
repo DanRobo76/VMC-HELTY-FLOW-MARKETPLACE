@@ -285,8 +285,11 @@ description: >-
   - l'interruttore dell'Umidità, mentre è in corso un'allerta Umidità, non si può
   spegnere se c'è anche un'altra allerta qualsiasi (Congelamento, Δ Temp.,
   Inquinanti, Punto di Rugiada, Free Cooling/Heating), finché quell'allerta non è
-  finita. Esempio: l'Umidità ha avviato la VMC e poi sale la CO₂; finché dura
-  l'allerta CO₂, l'interruttore dell'Umidità non si può spegnere;
+  finita (salvo la sospensione Free Cool./Heat.: l'Umidità parte comunque a
+  Velocità 1 [Nota 3] e il suo interruttore non si spegne fino alla ripresa o
+  all'annullamento della Free). Esempio: l'Umidità ha avviato la VMC e poi sale
+  la CO₂; finché dura l'allerta CO₂, l'interruttore dell'Umidità non si può
+  spegnere;
 
   - se, con l'allerta Umidità in corso, inizia una fascia del Calendario,
   l'interruttore dell'Umidità non si può spegnere fino alla fine della fascia,
@@ -296,7 +299,9 @@ description: >-
   Umidità riparte con la [Set Velocità Umidità di Avvio], altrimenti la VMC resta
   a Velocità 0. Se invece si entra prima nel Calendario, oppure è già in corso
   un'altra allerta, e poi sale l'umidità, l'allerta Umidità non scatta e
-  l'interruttore si spegne normalmente;
+  l'interruttore si spegne normalmente (salvo la sospensione Free Cool./Heat.:
+  l'Umidità parte comunque a Velocità 1 [Nota 3] e il suo interruttore non si
+  spegne fino alla ripresa o all'annullamento della Free);
 
   - gli interruttori del Calendario (spento durante una fascia), del Punto di
   Rugiada, del Free Cooling e del Free Heating fermano la VMC; se però sono
