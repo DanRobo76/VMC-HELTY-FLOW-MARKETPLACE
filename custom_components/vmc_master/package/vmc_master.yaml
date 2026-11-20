@@ -26381,7 +26381,8 @@ automation:
                   - conditions:
                       - condition: template
                         value_template: >
-                          {{ tempo_mancante in ['0 secondi', '1 secondi'] and
+                          {#- solo '0 secondi': con '1 secondo' (testo del sensore) ogni ricambio si chiuderebbe un secondo prima, senza sommare l'ultimo incremento al totale -#}
+                          {{ tempo_mancante in ['0 secondi'] and
                           ricomincio_val > 0 }}
                     sequence:
                       - data:
