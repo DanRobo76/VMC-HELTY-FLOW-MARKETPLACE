@@ -5671,7 +5671,7 @@ triggers:
       {{ ( 
         states('sensor.vmc_master_status_ventola_lettura_codice_interpretato')== 'Velocità 0' and
         states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_umidita') == 'on' and
-        states('sensor.vmc_master_alert_monitoraggio_umidita') == 'Allerta' and
+        (states('sensor.vmc_master_alert_monitoraggio_umidita') == 'Allerta' or states('input_boolean.vmc_master_spia_umidita_velocita_0') == 'off') and
         states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia') == 'on' and
         states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line' and
         states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile' and
@@ -9968,7 +9968,7 @@ actions:
       {{ (
         states('sensor.vmc_master_status_ventola_lettura_codice_interpretato')== 'Velocità 0' and
         states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_umidita') == 'on' and
-        states('sensor.vmc_master_alert_monitoraggio_umidita') == 'Allerta' and
+        (states('sensor.vmc_master_alert_monitoraggio_umidita') == 'Allerta' or states('input_boolean.vmc_master_spia_umidita_velocita_0') == 'off') and
         states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia') == 'on' and
         states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line' and
         states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile' and
@@ -33323,7 +33323,7 @@ actions:
                     - condition: template
                       value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', ''] or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
             else:
-              - alias: Solo con uno stato precedente valido, cioè Velocità 0 scelta dall'utente - con la lettura appena tornata disponibile (stato precedente OFF-Line o Non disponibile) nessuna memoria cambiata (B4-4)
+              - alias: Solo con uno stato precedente valido, cioè Velocità 0 scelta dall'utente - con la lettura appena tornata disponibile (stato precedente OFF-Line o Non disponibile) nessuna memoria cambiata (B4-4); vale anche a Umidità finita con la Spia Umidità ancora accesa, per esempio la Velocità 0 scelta dall'utente durante gli Inquinanti o il Δ Temp. e ripristinata alla loro fine (la Velocità 0 resta)
                 condition: template
                 value_template: "{{ not (trigger.from_state is defined and trigger.from_state is not none and trigger.from_state.state in ['Non disponibile', 'sconosciuto', 'unknown', 'unavailable', '', 'OFF-Line']) }}"
               - action: input_boolean.turn_on

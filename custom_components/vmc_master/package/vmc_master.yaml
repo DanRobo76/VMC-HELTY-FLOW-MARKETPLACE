@@ -5295,7 +5295,7 @@ input_boolean:
     name: "Spia su Programmazione Velocità Free Heating 1° Avvio"
     icon: mdi:memory
 
-  vmc_master_spia_umidita_velocita_0:                                           # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 13 RICHIAMI] [AUTOMAZIONE, 67 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' 0, IN CASO DI ALLERTA UMIDITA'
+  vmc_master_spia_umidita_velocita_0:                                           # [CONFIGURAZIONE, 9 RICHIAMI] [INTERFACCIA, 13 RICHIAMI] [AUTOMAZIONE, 69 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' 0, IN CASO DI ALLERTA UMIDITA'
     name: "Spia Umidità Velocità 0"
     icon: mdi:memory
 
@@ -32661,7 +32661,7 @@ automation:
           {{ (
             states('sensor.vmc_master_status_ventola_lettura_codice_interpretato')== 'Velocità 0' and
             states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_umidita') == 'on' and
-            states('sensor.vmc_master_alert_monitoraggio_umidita') == 'Allerta' and
+            (states('sensor.vmc_master_alert_monitoraggio_umidita') == 'Allerta' or states('input_boolean.vmc_master_spia_umidita_velocita_0') == 'off') and
             states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia') == 'on' and
             states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line' and
             states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile' and
@@ -32745,7 +32745,7 @@ automation:
           {{ (
             states('sensor.vmc_master_status_ventola_lettura_codice_interpretato')== 'Velocità 0' and
             states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_umidita') == 'on' and
-            states('sensor.vmc_master_alert_monitoraggio_umidita') == 'Allerta' and
+            (states('sensor.vmc_master_alert_monitoraggio_umidita') == 'Allerta' or states('input_boolean.vmc_master_spia_umidita_velocita_0') == 'off') and
             states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia') == 'on' and
             states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line' and
             states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile' and
