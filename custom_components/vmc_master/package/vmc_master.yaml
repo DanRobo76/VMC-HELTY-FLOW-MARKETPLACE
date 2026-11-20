@@ -16763,22 +16763,36 @@ script:
     icon: mdi:fingerprint-off
     description: >
       Richiamato dall'Automazione VMC Master all'inizio della 1° Fascia del Calendario e, durante la
-      Fascia, al ritorno della corrente dopo un Black-Out (VMC OFF-Line almeno 32 s). Dopo 5 s, solo
-      in assenza di allerta Congelamento e Δ Temp. (altrimenti non fa nulla), spegne le memorie di
-      Inquinanti e Punto di Rugiada e comanda la velocità scelta per la Fascia (Velocità 0-4, Notturna,
-      Iperventilazione o Free Cool./Heat.) secondo gli interruttori PdR e Inquinanti (CO₂/VOC):
-      - se il PdR è attivo e se ne sconsiglia l'impiego, la VMC va a Velocità 0 e memorizza la velocità da
-      avviare quando il Punto di Rugiada torna favorevole;
+      Fascia, al ritorno della corrente dopo un Black-Out (VMC OFF-Line almeno 32 s). All'avvio spegne
+      sempre le spie di velocità del Black-Out (la Fascia prevale sul ripristino di un Black-Out rilevato
+      prima della Fascia). Dopo 5 s, con un'allerta Congelamento o Δ Temp. in corso non manda nessun
+      comando; altrimenti spegne le memorie di Inquinanti e Punto di Rugiada e comanda la velocità scelta
+      per la Fascia (Velocità 0-4, Notturna, Iperventilazione o Free Cool./Heat.) secondo gli interruttori
+      PdR e Inquinanti (CO₂/VOC):
+      - se il PdR è attivo e se ne sconsiglia l'impiego, la VMC va a Velocità 0 e (salvo con la Fascia a
+      Velocità 0) memorizza la velocità da avviare quando il Punto di Rugiada torna favorevole;
       - se gli Inquinanti sono attivi e c'è un'allerta CO₂ o VOC, prevale la ventilazione: si comanda la
-      velocità della Fascia (Velocità 1 se la Fascia è a Velocità 0) con la memoria Inquinanti;
+      velocità della Fascia (Velocità 1 se la Fascia è a Velocità 0) con la memoria Inquinanti (con il PdR
+      attivo e sfavorevole anche con la memoria del PdR, salvo con la Fascia a Velocità 0);
       - altrimenti si comanda la velocità della Fascia.
+      Con i sensori CO₂/VOC non disponibili si considera che non ci sia un'allerta Inquinanti.
       Con Free Cool./Heat. si guarda anche il mese corrente: nei mesi programmati Free Heating o Free
-      Cooling, con un'allerta Free H./C. la VMC va a Velocità 0 (Velocità 1 con allerta Inquinanti),
-      senza allerta va in Free Cooling; nei mesi non programmati va in Free Cooling.
+      Cooling, con un'allerta Free H./C. la VMC va a Velocità 0 (Velocità 1 con gli Inquinanti attivi e
+      un'allerta CO₂ o VOC) e memorizza la ripresa in Free Cool./Heat.; senza allerta Free H./C., nei mesi
+      non programmati o con il mese non disponibile va in Free Cooling. Le regole del PdR e degli Inquinanti
+      qui sopra valgono anche con Free Cool./Heat.
       Come nelle altre allerte, il comando viene ripetuto (circa ogni 4 s) finché la VMC non lo esegue; la
-      ripetizione si ferma se nel frattempo si sceglie un'altra Velocità o se la VMC resta OFF-Line per il
-      tempo di rilevazione del Black-Out (al ritorno della corrente la Fascia riparte con la Spia Black-Out
-      del Calendario).
+      ripetizione si ferma se nel frattempo si sceglie un'altra Velocità oppure se, per il tempo di
+      rilevazione del Black-Out, la VMC resta OFF-Line (al ritorno della corrente la Fascia riparte con la
+      Spia Black-Out del Calendario) o la sua velocità non si riesce a leggere (la VMC risponde al ping ma
+      non alle letture: resta alla velocità in cui si trova).
+      Se Home Assistant si riavvia durante lo script (attesa di 5 s o ripetizione del comando), lo script
+      non riprende: la spia della Fascia resta accesa e la VMC resta alla velocità in cui si trova (salvo
+      le allerte) finché non si sceglie un'altra Velocità o non finisce la Fascia; al riavvio la Fascia non
+      viene rilanciata, per non scavalcare una velocità scelta a mano durante la Fascia. Lo stesso vale per
+      la ripetizione della Velocità 0 di fine Fascia: la VMC resta alla velocità della Fascia (salvo le
+      allerte) finché non si sceglie un'altra Velocità o non inizia la Fascia successiva, e le memorie della
+      Fascia non vengono azzerate.
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   vmc_master_calendario_fascia_2_on:                                            # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 9 RICHIAMI]
@@ -24995,22 +25009,36 @@ script:
     icon: mdi:fingerprint-off
     description: >
       Richiamato dall'Automazione VMC Master all'inizio della 2° Fascia del Calendario e, durante la
-      Fascia, al ritorno della corrente dopo un Black-Out (VMC OFF-Line almeno 32 s). Dopo 5 s, solo
-      in assenza di allerta Congelamento e Δ Temp. (altrimenti non fa nulla), spegne le memorie di
-      Inquinanti e Punto di Rugiada e comanda la velocità scelta per la Fascia (Velocità 0-4, Notturna,
-      Iperventilazione o Free Cool./Heat.) secondo gli interruttori PdR e Inquinanti (CO₂/VOC):
-      - se il PdR è attivo e se ne sconsiglia l'impiego, la VMC va a Velocità 0 e memorizza la velocità da
-      avviare quando il Punto di Rugiada torna favorevole;
+      Fascia, al ritorno della corrente dopo un Black-Out (VMC OFF-Line almeno 32 s). All'avvio spegne
+      sempre le spie di velocità del Black-Out (la Fascia prevale sul ripristino di un Black-Out rilevato
+      prima della Fascia). Dopo 5 s, con un'allerta Congelamento o Δ Temp. in corso non manda nessun
+      comando; altrimenti spegne le memorie di Inquinanti e Punto di Rugiada e comanda la velocità scelta
+      per la Fascia (Velocità 0-4, Notturna, Iperventilazione o Free Cool./Heat.) secondo gli interruttori
+      PdR e Inquinanti (CO₂/VOC):
+      - se il PdR è attivo e se ne sconsiglia l'impiego, la VMC va a Velocità 0 e (salvo con la Fascia a
+      Velocità 0) memorizza la velocità da avviare quando il Punto di Rugiada torna favorevole;
       - se gli Inquinanti sono attivi e c'è un'allerta CO₂ o VOC, prevale la ventilazione: si comanda la
-      velocità della Fascia (Velocità 1 se la Fascia è a Velocità 0) con la memoria Inquinanti;
+      velocità della Fascia (Velocità 1 se la Fascia è a Velocità 0) con la memoria Inquinanti (con il PdR
+      attivo e sfavorevole anche con la memoria del PdR, salvo con la Fascia a Velocità 0);
       - altrimenti si comanda la velocità della Fascia.
+      Con i sensori CO₂/VOC non disponibili si considera che non ci sia un'allerta Inquinanti.
       Con Free Cool./Heat. si guarda anche il mese corrente: nei mesi programmati Free Heating o Free
-      Cooling, con un'allerta Free H./C. la VMC va a Velocità 0 (Velocità 1 con allerta Inquinanti),
-      senza allerta va in Free Cooling; nei mesi non programmati va in Free Cooling.
+      Cooling, con un'allerta Free H./C. la VMC va a Velocità 0 (Velocità 1 con gli Inquinanti attivi e
+      un'allerta CO₂ o VOC) e memorizza la ripresa in Free Cool./Heat.; senza allerta Free H./C., nei mesi
+      non programmati o con il mese non disponibile va in Free Cooling. Le regole del PdR e degli Inquinanti
+      qui sopra valgono anche con Free Cool./Heat.
       Come nelle altre allerte, il comando viene ripetuto (circa ogni 4 s) finché la VMC non lo esegue; la
-      ripetizione si ferma se nel frattempo si sceglie un'altra Velocità o se la VMC resta OFF-Line per il
-      tempo di rilevazione del Black-Out (al ritorno della corrente la Fascia riparte con la Spia Black-Out
-      del Calendario).
+      ripetizione si ferma se nel frattempo si sceglie un'altra Velocità oppure se, per il tempo di
+      rilevazione del Black-Out, la VMC resta OFF-Line (al ritorno della corrente la Fascia riparte con la
+      Spia Black-Out del Calendario) o la sua velocità non si riesce a leggere (la VMC risponde al ping ma
+      non alle letture: resta alla velocità in cui si trova).
+      Se Home Assistant si riavvia durante lo script (attesa di 5 s o ripetizione del comando), lo script
+      non riprende: la spia della Fascia resta accesa e la VMC resta alla velocità in cui si trova (salvo
+      le allerte) finché non si sceglie un'altra Velocità o non finisce la Fascia; al riavvio la Fascia non
+      viene rilanciata, per non scavalcare una velocità scelta a mano durante la Fascia. Lo stesso vale per
+      la ripetizione della Velocità 0 di fine Fascia: la VMC resta alla velocità della Fascia (salvo le
+      allerte) finché non si sceglie un'altra Velocità o non inizia la Fascia successiva, e le memorie della
+      Fascia non vengono azzerate.
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ################### Inizio Creazione Scripts Audio per Allertet ###################

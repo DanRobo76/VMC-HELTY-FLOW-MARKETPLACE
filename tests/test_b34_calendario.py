@@ -326,3 +326,69 @@ def test_b1_5_ogni_trigger_della_famiglia_ha_il_suo_testo() -> None:
     controllo = countdown["actions"][1]["else"][0]["repeat"]["sequence"][0]["if"][0]["value_template"]
     assert controllo == "{{ states('input_text.vmc_master_countdown_' ~ repeat.item) == testo }}"
     assert "si ferma solo se l'ha avviato quel trigger" in " ".join(countdown["description"].split())
+
+
+# ----------------------------------------------------------------------------------------------------- B1-4 e B1-7
+def _descrizione(nome: str) -> str:
+    return " ".join(_pacchetto()["script"][nome]["description"].split())
+
+
+def test_b1_4_nessuna_ripresa_della_fascia_al_riavvio() -> None:
+    """Decisione: al riavvio di HA la Fascia non viene rilanciata (scavalcherebbe una velocita' scelta a mano).
+    Verifica che nulla la riprenda: gli script di Fascia sono chiamati solo dai 14 rami «On» (il loro trigger vuole la
+    spia della Fascia spenta, che invece resta accesa dopo il riavvio) e dai 2 rami del ritorno della corrente (spia
+    Black-Out del Calendario accesa, oppure VMC tornata ON-Line dopo almeno 32 s OFF-Line); nel package nessuno li
+    chiama (solo elenchi) e il riallineamento al riavvio non li rilancia."""
+    automazione = _automazione()
+    trigger = {t["id"]: t for t in automazione["triggers"] if isinstance(t.get("id"), str)}
+    chiamate = []
+    for blocco in automazione["actions"]:
+        for ramo in blocco.get("choose", []):
+            if any(f"script.{nome}'" in str(ramo["sequence"]) for nome in FASCE):
+                chiamate.append(ramo["conditions"][0]["id"])
+    giorni = [c for c in chiamate if c.endswith(" On")]
+    assert len(giorni) == 14 and sorted(set(chiamate) - set(giorni)) == [
+        "calendario_ritorno_da_black_out", "calendario_ritorno_da_black_out_riallineamento"]
+    for id_ in giorni:
+        fascia = id_[0]
+        giorno = id_.split()[1].lower().replace("ì", "i")
+        assert f"states('input_boolean.vmc_master_spia_calendario_{giorno}_{fascia}')=='off'" in " ".join(
+            trigger[id_]["value_template"].split()), id_
+    ritorno = " ".join(trigger["calendario_ritorno_da_black_out"]["value_template"].split())
+    assert "states('input_boolean.vmc_master_spia_calendario_black_out') == 'on'" in ritorno
+    riallineamento = trigger["calendario_ritorno_da_black_out_riallineamento"]
+    assert (riallineamento["trigger"], riallineamento["from"], riallineamento["to"]) == ("state", "OFF-Line", "ON-Line")
+    pacchetto = (PKG / "vmc_master.yaml").read_text(encoding="utf-8")
+    for nome in FASCE:
+        assert f"action: script.{nome}" not in pacchetto and f"entity_id: script.{nome}" not in pacchetto
+    riavvio = next(a for a in _pacchetto()["automation"] if a.get("id") == "vmc_master_riallineamento_allerte_al_riavvio")
+    assert "calendario_fascia" not in str(riavvio)
+    for nome in FASCE:
+        testo = _descrizione(nome)
+        assert "Se Home Assistant si riavvia durante lo script (attesa di 5 s o ripetizione del comando), lo script " \
+               "non riprende" in testo
+        assert "al riavvio la Fascia non viene rilanciata, per non scavalcare una velocità scelta a mano" in testo
+        assert "Lo stesso vale per la ripetizione della Velocità 0 di fine Fascia" in testo
+
+
+def test_b1_7_descrizione_degli_script_di_fascia() -> None:
+    """La descrizione dice quello che fa il codice: le spie del Black-Out si spengono sempre (anche con Congelamento
+    o Δ Temp.), con Congelamento o Δ Temp. nessun comando, interruttore PdR letto in tutti i rami (B1-3), sensori
+    non disponibili (B1-6), uscite dal ciclo (B1-1)."""
+    uno, due = (_descrizione(n) for n in FASCE)
+    assert uno.replace("1° Fascia", "2° Fascia") == due
+    assert "altrimenti non fa nulla" not in uno
+    for frase in (
+        "All'avvio spegne sempre le spie di velocità del Black-Out",
+        "Dopo 5 s, con un'allerta Congelamento o Δ Temp. in corso non manda nessun comando",
+        "secondo gli interruttori PdR e Inquinanti",
+        "Con i sensori CO₂/VOC non disponibili si considera che non ci sia un'allerta Inquinanti",
+        "nei mesi non programmati o con il mese non disponibile va in Free Cooling",
+        "Le regole del PdR e degli Inquinanti qui sopra valgono anche con Free Cool./Heat.",
+        "la VMC resta OFF-Line (al ritorno della corrente la Fascia riparte con la Spia Black-Out del Calendario) o "
+        "la sua velocità non si riesce a leggere",
+    ):
+        assert frase in uno, frase
+    # regole delle descrizioni (lo script di clonazione riscrive queste parole)
+    for vietata in ("vmc_master", "master", "input_", "sensor.", "999.999"):
+        assert vietata not in uno
