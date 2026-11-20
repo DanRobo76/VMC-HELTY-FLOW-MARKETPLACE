@@ -26895,7 +26895,9 @@ automation:
       Mostra in scheda il tempo che manca prima che l'Automazione VMC Master esegua un trigger con attesa ("for"),
       e quale. Non comanda la VMC e non cambia spie: per ogni famiglia di allerte avvia e ferma un timer e scrive
       il testo dell'azione in attesa. Quando la condizione di un trigger diventa vera parte il timer della sua
-      famiglia con la stessa durata dell'attesa; se la condizione torna falsa prima della fine, il timer si ferma.
+      famiglia con la stessa durata dell'attesa; se la condizione torna falsa prima della fine, il timer si ferma
+      solo se l'ha avviato quel trigger (ogni trigger della stessa famiglia scrive un testo diverso: un trigger che
+      diventa falso non ferma il countdown appena avviato da un altro trigger della stessa famiglia).
       Copre tutti i 133 trigger con attesa dell'automazione; per il ritorno della corrente durante una Fascia del
       Calendario il timer parte solo se valgono anche le condizioni del ramo dell'automazione (interruttore del
       Calendario acceso, spia di una Fascia accesa; per il ritorno durante il riallineamento al riavvio anche
@@ -28270,7 +28272,7 @@ automation:
           {%- set vmc_master_esito = vmc_master_esito | trim | lower -%}
           {{ not (vmc_master_esito in ['true', 'yes', 'on', 'enable'] or (vmc_master_esito | is_number and vmc_master_esito | float(0) != 0)) }}
       - trigger: template                                                  # Rip. Vel. 1 No PdR se Spia Inquinanti ON (ATTESA: input_number.vmc_master_attesa_pdr_ripristino_inquinanti)
-        id: "ON|pdr_ripristino|pdr_ripristino_inquinanti|Condizioni Favorevoli Ripristinate su Velocità 1"
+        id: "ON|pdr_ripristino|pdr_ripristino_inquinanti|Condizioni Favorevoli Ripristinate su Velocità 1 se Spia Inquinanti ON"
         value_template: |-
           {{ (
             states('sensor.vmc_master_punto_di_rugiada_verifica_confronto') != "Se ne sconsiglia l'impiego"
@@ -28308,7 +28310,7 @@ automation:
             )
             and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile' ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       - trigger: template
-        id: "OFF|pdr_ripristino|pdr_ripristino_inquinanti|Condizioni Favorevoli Ripristinate su Velocità 1"
+        id: "OFF|pdr_ripristino|pdr_ripristino_inquinanti|Condizioni Favorevoli Ripristinate su Velocità 1 se Spia Inquinanti ON"
         value_template: |-
           {%- set vmc_master_esito -%}
           {{ (
@@ -28350,7 +28352,7 @@ automation:
           {%- set vmc_master_esito = vmc_master_esito | trim | lower -%}
           {{ not (vmc_master_esito in ['true', 'yes', 'on', 'enable'] or (vmc_master_esito | is_number and vmc_master_esito | float(0) != 0)) }}
       - trigger: template                                                  # Rip. Vel. 2 No PdR se Spia Inquinanti ON (ATTESA: input_number.vmc_master_attesa_pdr_ripristino_inquinanti)
-        id: "ON|pdr_ripristino|pdr_ripristino_inquinanti|Condizioni Favorevoli Ripristinate su Velocità 2"
+        id: "ON|pdr_ripristino|pdr_ripristino_inquinanti|Condizioni Favorevoli Ripristinate su Velocità 2 se Spia Inquinanti ON"
         value_template: |-
           {{ (
           (
@@ -28379,7 +28381,7 @@ automation:
           )
           and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile' ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       - trigger: template
-        id: "OFF|pdr_ripristino|pdr_ripristino_inquinanti|Condizioni Favorevoli Ripristinate su Velocità 2"
+        id: "OFF|pdr_ripristino|pdr_ripristino_inquinanti|Condizioni Favorevoli Ripristinate su Velocità 2 se Spia Inquinanti ON"
         value_template: |-
           {%- set vmc_master_esito -%}
           {{ (
@@ -28412,7 +28414,7 @@ automation:
           {%- set vmc_master_esito = vmc_master_esito | trim | lower -%}
           {{ not (vmc_master_esito in ['true', 'yes', 'on', 'enable'] or (vmc_master_esito | is_number and vmc_master_esito | float(0) != 0)) }}
       - trigger: template                                                  # Rip. Vel. 3 No PdR  se Spia Inquinanti ON (ATTESA: input_number.vmc_master_attesa_pdr_ripristino_inquinanti)
-        id: "ON|pdr_ripristino|pdr_ripristino_inquinanti|Condizioni Favorevoli Ripristinate su Velocità 3"
+        id: "ON|pdr_ripristino|pdr_ripristino_inquinanti|Condizioni Favorevoli Ripristinate su Velocità 3 se Spia Inquinanti ON"
         value_template: |-
           {{ (
           (
@@ -28441,7 +28443,7 @@ automation:
           )
           and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile' ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       - trigger: template
-        id: "OFF|pdr_ripristino|pdr_ripristino_inquinanti|Condizioni Favorevoli Ripristinate su Velocità 3"
+        id: "OFF|pdr_ripristino|pdr_ripristino_inquinanti|Condizioni Favorevoli Ripristinate su Velocità 3 se Spia Inquinanti ON"
         value_template: |-
           {%- set vmc_master_esito -%}
           {{ (
@@ -28474,7 +28476,7 @@ automation:
           {%- set vmc_master_esito = vmc_master_esito | trim | lower -%}
           {{ not (vmc_master_esito in ['true', 'yes', 'on', 'enable'] or (vmc_master_esito | is_number and vmc_master_esito | float(0) != 0)) }}
       - trigger: template                                                  # Rip. Vel. 4 No PdR se Spia Inquinanti ON (ATTESA: input_number.vmc_master_attesa_pdr_ripristino_inquinanti)
-        id: "ON|pdr_ripristino|pdr_ripristino_inquinanti|Condizioni Favorevoli Ripristinate su Velocità 4"
+        id: "ON|pdr_ripristino|pdr_ripristino_inquinanti|Condizioni Favorevoli Ripristinate su Velocità 4 se Spia Inquinanti ON"
         value_template: |-
           {{ (
           (
@@ -28503,7 +28505,7 @@ automation:
           )
           and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile' ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       - trigger: template
-        id: "OFF|pdr_ripristino|pdr_ripristino_inquinanti|Condizioni Favorevoli Ripristinate su Velocità 4"
+        id: "OFF|pdr_ripristino|pdr_ripristino_inquinanti|Condizioni Favorevoli Ripristinate su Velocità 4 se Spia Inquinanti ON"
         value_template: |-
           {%- set vmc_master_esito -%}
           {{ (
@@ -28536,7 +28538,7 @@ automation:
           {%- set vmc_master_esito = vmc_master_esito | trim | lower -%}
           {{ not (vmc_master_esito in ['true', 'yes', 'on', 'enable'] or (vmc_master_esito | is_number and vmc_master_esito | float(0) != 0)) }}
       - trigger: template                                                  # Rip. Notturno No PdR se Spia Inquinanti ON (ATTESA: input_number.vmc_master_attesa_pdr_ripristino_inquinanti)
-        id: "ON|pdr_ripristino|pdr_ripristino_inquinanti|Condizioni Favorevoli Ripristinate su Velocità Notturna"
+        id: "ON|pdr_ripristino|pdr_ripristino_inquinanti|Condizioni Favorevoli Ripristinate su Velocità Notturna se Spia Inquinanti ON"
         value_template: |-
           {{ (
           (
@@ -28565,7 +28567,7 @@ automation:
           )
           and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile' ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       - trigger: template
-        id: "OFF|pdr_ripristino|pdr_ripristino_inquinanti|Condizioni Favorevoli Ripristinate su Velocità Notturna"
+        id: "OFF|pdr_ripristino|pdr_ripristino_inquinanti|Condizioni Favorevoli Ripristinate su Velocità Notturna se Spia Inquinanti ON"
         value_template: |-
           {%- set vmc_master_esito -%}
           {{ (
@@ -28598,7 +28600,7 @@ automation:
           {%- set vmc_master_esito = vmc_master_esito | trim | lower -%}
           {{ not (vmc_master_esito in ['true', 'yes', 'on', 'enable'] or (vmc_master_esito | is_number and vmc_master_esito | float(0) != 0)) }}
       - trigger: template                                                  # Rip. Iperventilazione No PdR se Spia Inquinanti ON (ATTESA: input_number.vmc_master_attesa_pdr_ripristino_inquinanti)
-        id: "ON|pdr_ripristino|pdr_ripristino_inquinanti|Condizioni Favorevoli Ripristinate su Velocità Iperventilazione"
+        id: "ON|pdr_ripristino|pdr_ripristino_inquinanti|Condizioni Favorevoli Ripristinate su Velocità Iperventilazione se Spia Inquinanti ON"
         value_template: |-
           {{ (
           (
@@ -28627,7 +28629,7 @@ automation:
           )
           and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile' ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       - trigger: template
-        id: "OFF|pdr_ripristino|pdr_ripristino_inquinanti|Condizioni Favorevoli Ripristinate su Velocità Iperventilazione"
+        id: "OFF|pdr_ripristino|pdr_ripristino_inquinanti|Condizioni Favorevoli Ripristinate su Velocità Iperventilazione se Spia Inquinanti ON"
         value_template: |-
           {%- set vmc_master_esito -%}
           {{ (
@@ -28660,7 +28662,7 @@ automation:
           {%- set vmc_master_esito = vmc_master_esito | trim | lower -%}
           {{ not (vmc_master_esito in ['true', 'yes', 'on', 'enable'] or (vmc_master_esito | is_number and vmc_master_esito | float(0) != 0)) }}
       - trigger: template                                                  # Rip. Free Cool./Heat. No PdR se Spia Inquinanti ON (ATTESA: input_number.vmc_master_attesa_pdr_ripristino_inquinanti)
-        id: "ON|pdr_ripristino|pdr_ripristino_inquinanti|Condizioni Favorevoli Ripristinate su Velocità Free Cool./Heat."
+        id: "ON|pdr_ripristino|pdr_ripristino_inquinanti|Condizioni Favorevoli Ripristinate su Velocità Free Cool./Heat. se Spia Inquinanti ON"
         value_template: |-
                 {{ ( ( (states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se ne sconsiglia l\'impiego" and
                 states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr') ==
@@ -28684,7 +28686,7 @@ automation:
                 'off') and
                 states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')!='Non disponibile' ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       - trigger: template
-        id: "OFF|pdr_ripristino|pdr_ripristino_inquinanti|Condizioni Favorevoli Ripristinate su Velocità Free Cool./Heat."
+        id: "OFF|pdr_ripristino|pdr_ripristino_inquinanti|Condizioni Favorevoli Ripristinate su Velocità Free Cool./Heat. se Spia Inquinanti ON"
         value_template: |-
           {%- set vmc_master_esito -%}
                 {{ ( ( (states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se ne sconsiglia l\'impiego" and
@@ -29028,7 +29030,7 @@ automation:
           {%- set vmc_master_esito = vmc_master_esito | trim | lower -%}
           {{ not (vmc_master_esito in ['true', 'yes', 'on', 'enable'] or (vmc_master_esito | is_number and vmc_master_esito | float(0) != 0)) }}
       - trigger: template                                                  # Rip. Free Heating No TeVsTi e Spia Inquinanti ON (ATTESA: input_number.vmc_master_attesa_free_ripristino_inquinanti)
-        id: "ON|free_heating_ripristino|free_ripristino_inquinanti|Condizioni Favorevoli Temp. Ext Vs Temp. Int. Ripristinate su Velocità Free Heating"
+        id: "ON|free_heating_ripristino|free_ripristino_inquinanti|Condizioni Favorevoli Temp. Ext Vs Temp. Int. Ripristinate su Velocità Free Heating se Spia Inquinanti ON"
         value_template: |-
           {{ (
           (
@@ -29053,7 +29055,7 @@ automation:
             and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile'
           ) ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       - trigger: template
-        id: "OFF|free_heating_ripristino|free_ripristino_inquinanti|Condizioni Favorevoli Temp. Ext Vs Temp. Int. Ripristinate su Velocità Free Heating"
+        id: "OFF|free_heating_ripristino|free_ripristino_inquinanti|Condizioni Favorevoli Temp. Ext Vs Temp. Int. Ripristinate su Velocità Free Heating se Spia Inquinanti ON"
         value_template: |-
           {%- set vmc_master_esito -%}
           {{ (
@@ -29082,7 +29084,7 @@ automation:
           {%- set vmc_master_esito = vmc_master_esito | trim | lower -%}
           {{ not (vmc_master_esito in ['true', 'yes', 'on', 'enable'] or (vmc_master_esito | is_number and vmc_master_esito | float(0) != 0)) }}
       - trigger: template                                                  # Rip. Free Cooling No TeVsTi e Spia Inquinanti ON (ATTESA: input_number.vmc_master_attesa_free_ripristino_inquinanti)
-        id: "ON|free_cooling_ripristino|free_ripristino_inquinanti|Condizioni Favorevoli Temp. Ext Vs Temp. Int. Ripristinate su Velocità Free Cooling"
+        id: "ON|free_cooling_ripristino|free_ripristino_inquinanti|Condizioni Favorevoli Temp. Ext Vs Temp. Int. Ripristinate su Velocità Free Cooling se Spia Inquinanti ON"
         value_template: |-
           {{ (
           (
@@ -29107,7 +29109,7 @@ automation:
             and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile'
           ) ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       - trigger: template
-        id: "OFF|free_cooling_ripristino|free_ripristino_inquinanti|Condizioni Favorevoli Temp. Ext Vs Temp. Int. Ripristinate su Velocità Free Cooling"
+        id: "OFF|free_cooling_ripristino|free_ripristino_inquinanti|Condizioni Favorevoli Temp. Ext Vs Temp. Int. Ripristinate su Velocità Free Cooling se Spia Inquinanti ON"
         value_template: |-
           {%- set vmc_master_esito -%}
           {{ (
@@ -29284,7 +29286,7 @@ automation:
           {%- set vmc_master_esito = vmc_master_esito | trim | lower -%}
           {{ not (vmc_master_esito in ['true', 'yes', 'on', 'enable'] or (vmc_master_esito | is_number and vmc_master_esito | float(0) != 0)) }}
       - trigger: template                                                  # Black-Out a Velocità 1 caso [SPIE INQUINANTI ON] e [SPIE FREECOOLING OFF e FREEHEAING OFF] (ATTESA: input_number.vmc_master_attesa_blackout_rilevazione)
-        id: "ON|blackout_rilevazione|blackout_rilevazione|Black-Out Velocità 1 rilevato"
+        id: "ON|blackout_rilevazione|blackout_rilevazione|Black-Out Velocità 1 rilevato (Spie Inquinanti ON, Spie Free OFF)"
         value_template: |-
           {{ (
             states('sensor.vmc_master_status_ip_interfaccia') == "OFF-Line"
@@ -29318,7 +29320,7 @@ automation:
             and states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating') == 'off'
           ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 2) }}
       - trigger: template
-        id: "OFF|blackout_rilevazione|blackout_rilevazione|Black-Out Velocità 1 rilevato"
+        id: "OFF|blackout_rilevazione|blackout_rilevazione|Black-Out Velocità 1 rilevato (Spie Inquinanti ON, Spie Free OFF)"
         value_template: |-
           {%- set vmc_master_esito -%}
           {{ (
@@ -29356,7 +29358,7 @@ automation:
           {%- set vmc_master_esito = vmc_master_esito | trim | lower -%}
           {{ not (vmc_master_esito in ['true', 'yes', 'on', 'enable'] or (vmc_master_esito | is_number and vmc_master_esito | float(0) != 0)) }}
       - trigger: template                                                  # Black-Out a Velocità 1 caso [SPIE INQUINANTI ON] e [SPIE FREECOOLING ON o FREEHEAING ON] (ATTESA: input_number.vmc_master_attesa_blackout_rilevazione)
-        id: "ON|blackout_rilevazione|blackout_rilevazione|Black-Out Velocità 1 rilevato"
+        id: "ON|blackout_rilevazione|blackout_rilevazione|Black-Out Velocità 1 rilevato (Spie Inquinanti ON, Spie Free ON)"
         value_template: |-
           {{ (
             states('sensor.vmc_master_status_ip_interfaccia') == "OFF-Line"
@@ -29393,7 +29395,7 @@ automation:
             )
           ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 2) }}
       - trigger: template
-        id: "OFF|blackout_rilevazione|blackout_rilevazione|Black-Out Velocità 1 rilevato"
+        id: "OFF|blackout_rilevazione|blackout_rilevazione|Black-Out Velocità 1 rilevato (Spie Inquinanti ON, Spie Free ON)"
         value_template: |-
           {%- set vmc_master_esito -%}
           {{ (
@@ -29434,7 +29436,7 @@ automation:
           {%- set vmc_master_esito = vmc_master_esito | trim | lower -%}
           {{ not (vmc_master_esito in ['true', 'yes', 'on', 'enable'] or (vmc_master_esito | is_number and vmc_master_esito | float(0) != 0)) }}
       - trigger: template                                                  # Black-Out a Velocità 1 caso [SPIE INQUINANTI OFF] e [SPIE FREECOOLING ON o FREEHEATING ON o MEMORIE INQUINANTI ON] (ATTESA: input_number.vmc_master_attesa_blackout_rilevazione)
-        id: "ON|blackout_rilevazione|blackout_rilevazione|Black-Out Velocità 1 rilevato"
+        id: "ON|blackout_rilevazione|blackout_rilevazione|Black-Out Velocità 1 rilevato (Spie Inquinanti OFF, Spie Free o Memorie Inquinanti ON)"
         value_template: |-
           {{ (
           (
@@ -29475,7 +29477,7 @@ automation:
           )
           ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 2) }}
       - trigger: template
-        id: "OFF|blackout_rilevazione|blackout_rilevazione|Black-Out Velocità 1 rilevato"
+        id: "OFF|blackout_rilevazione|blackout_rilevazione|Black-Out Velocità 1 rilevato (Spie Inquinanti OFF, Spie Free o Memorie Inquinanti ON)"
         value_template: |-
           {%- set vmc_master_esito -%}
           {{ (
@@ -31905,7 +31907,7 @@ automation:
           {%- set vmc_master_esito = vmc_master_esito | trim | lower -%}
           {{ not (vmc_master_esito in ['true', 'yes', 'on', 'enable'] or (vmc_master_esito | is_number and vmc_master_esito | float(0) != 0)) }}
       - trigger: template                                                  # PdR Vel. 0 con Spia FreeHeating On -> Imposta Velocità 0 (ATTESA: input_number.vmc_master_attesa_pdr_cambio)
-        id: "ON|pdr_cambio|pdr_cambio|Condizioni Sfavorevoli a Velocità 0 con Spia FreeCooling PdR ON e Spia Inquinamento Velocita' 1 OFF"
+        id: "ON|pdr_cambio|pdr_cambio|Condizioni Sfavorevoli a Velocità 0 con Spia FreeHeating PdR ON e Spia Inquinamento Velocita' 1 OFF"
         value_template: |-
           {{ (
             states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' and
@@ -31933,7 +31935,7 @@ automation:
             states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
           ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       - trigger: template
-        id: "OFF|pdr_cambio|pdr_cambio|Condizioni Sfavorevoli a Velocità 0 con Spia FreeCooling PdR ON e Spia Inquinamento Velocita' 1 OFF"
+        id: "OFF|pdr_cambio|pdr_cambio|Condizioni Sfavorevoli a Velocità 0 con Spia FreeHeating PdR ON e Spia Inquinamento Velocita' 1 OFF"
         value_template: |-
           {%- set vmc_master_esito -%}
           {{ (
@@ -32025,7 +32027,7 @@ automation:
           {%- set vmc_master_esito = vmc_master_esito | trim | lower -%}
           {{ not (vmc_master_esito in ['true', 'yes', 'on', 'enable'] or (vmc_master_esito | is_number and vmc_master_esito | float(0) != 0)) }}
       - trigger: template                                                  # PdR Vel. 0 con Spia FreeHeating On e Inquinanti Vel. 1 ON  -> Imposta Velocità 1 (ATTESA: input_number.vmc_master_attesa_pdr_cambio_inquinanti)
-        id: "ON|pdr_cambio|pdr_cambio_inquinanti|Condizioni Sfavorevoli a Velocità 0 con Spia FreeCooling PdR ON e Spia Inquinamento Velocita' 1 ON"
+        id: "ON|pdr_cambio|pdr_cambio_inquinanti|Condizioni Sfavorevoli a Velocità 0 con Spia FreeHeating PdR ON e Spia Inquinamento Velocita' 1 ON"
         value_template: |-
           {{ (
             states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' and
@@ -32053,7 +32055,7 @@ automation:
             states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
           ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       - trigger: template
-        id: "OFF|pdr_cambio|pdr_cambio_inquinanti|Condizioni Sfavorevoli a Velocità 0 con Spia FreeCooling PdR ON e Spia Inquinamento Velocita' 1 ON"
+        id: "OFF|pdr_cambio|pdr_cambio_inquinanti|Condizioni Sfavorevoli a Velocità 0 con Spia FreeHeating PdR ON e Spia Inquinamento Velocita' 1 ON"
         value_template: |-
           {%- set vmc_master_esito -%}
           {{ (

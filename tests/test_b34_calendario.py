@@ -275,3 +275,54 @@ async def test_b1_6_sensori_non_disponibili_comando_come_senza_allerte(hass) -> 
             assert _esegui(hass, script[nome]["sequence"], {"comando": None, "accese": set()})["comando"] is None
             _imposta(hass, **{gelo: "off"})
     assert prove == 2 * (7 * 2 * 2 * 3 * 3 * 3 + 2 * 2 * 3 * 3 * 3 * 4 * 3)
+
+
+# ------------------------------------------------------------------------------------------------------------ B1-5
+_RIP = "Condizioni Favorevoli Ripristinate su Velocità "
+_FREE = "Condizioni Favorevoli Temp. Ext Vs Temp. Int. Ripristinate su Velocità Free "
+_SFAV = "Condizioni Sfavorevoli a Velocità 0 con Spia Free{} PdR ON e Spia Inquinamento Velocita' 1 {}"
+# i 12 gruppi della b33 (stessa famiglia e stesso testo): «famiglia|attesa|testo» dei loro trigger
+GRUPPI_B33 = [
+    *[[f"pdr_ripristino|pdr_ripristino|{_RIP}{v}", f"pdr_ripristino|pdr_ripristino_inquinanti|{_RIP}{v} se Spia Inquinanti ON"]
+      for v in ("1", "2", "3", "4", "Notturna", "Iperventilazione", "Free Cool./Heat.")],
+    *[[f"free_{f.lower()}_ripristino|free_ripristino|{_FREE}{f}",
+       f"free_{f.lower()}_ripristino|free_ripristino_inquinanti|{_FREE}{f} se Spia Inquinanti ON"] for f in ("Heating", "Cooling")],
+    ["blackout_rilevazione|blackout_rilevazione|Black-Out Velocità 1 rilevato",
+     "blackout_rilevazione|blackout_rilevazione|Black-Out Velocità 1 rilevato (Spie Inquinanti ON, Spie Free OFF)",
+     "blackout_rilevazione|blackout_rilevazione|Black-Out Velocità 1 rilevato (Spie Inquinanti ON, Spie Free ON)",
+     "blackout_rilevazione|blackout_rilevazione|Black-Out Velocità 1 rilevato (Spie Inquinanti OFF, Spie Free o Memorie Inquinanti ON)"],
+    [f"pdr_cambio|pdr_cambio_inquinanti|{_SFAV.format('Cooling', 'ON')}",
+     f"pdr_cambio|pdr_cambio_inquinanti|{_SFAV.format('Heating', 'ON')}"],
+    [f"pdr_cambio|pdr_cambio|{_SFAV.format('Heating', 'OFF')}", f"pdr_cambio|pdr_cambio|{_SFAV.format('Cooling', 'OFF')}"],
+]
+
+
+def _countdown() -> dict[str, Any]:
+    return next(a for a in _pacchetto()["automation"] if a.get("id") == "vmc_master_countdown_attese_automazione")
+
+
+def test_b1_5_ogni_trigger_della_famiglia_ha_il_suo_testo() -> None:
+    """L'OFF ferma il timer della famiglia solo se il testo scritto e' il suo: con un testo diverso per ogni trigger
+    della famiglia un trigger che diventa falso non ferma piu' il countdown appena avviato da un altro."""
+    countdown = _countdown()
+    ids = [t["id"] for t in countdown["triggers"]]
+    assert len(ids) == 266
+    for i in range(0, 266, 2):  # copie ON e OFF una dopo l'altra, stesso id dopo il prefisso
+        assert ids[i].startswith("ON|") and ids[i + 1] == "OFF|" + ids[i][3:]
+    visti: set[tuple[str, str]] = set()
+    for id_ in ids[::2]:
+        _, famiglia, _, testo = id_.split("|")
+        assert len(testo) <= 250 and (famiglia, testo) not in visti, id_
+        visti.add((famiglia, testo))
+    assert len(visti) == 133
+    for gruppo in GRUPPI_B33:
+        assert len({g.rsplit("|", 1)[1] for g in gruppo}) == len(gruppo)
+        for g in gruppo:
+            assert ids.count(f"ON|{g}") == ids.count(f"OFF|{g}") == 1, g
+    assert sum(len(g) for g in GRUPPI_B33) == 26
+    # l'azione non cambia: testo dall'id, l'OFF annulla solo se il testo della famiglia e' il suo
+    variabili = countdown["actions"][0]["variables"]
+    assert variabili["testo"] == "{{ parti[3][:250] }}"
+    controllo = countdown["actions"][1]["else"][0]["repeat"]["sequence"][0]["if"][0]["value_template"]
+    assert controllo == "{{ states('input_text.vmc_master_countdown_' ~ repeat.item) == testo }}"
+    assert "si ferma solo se l'ha avviato quel trigger" in " ".join(countdown["description"].split())
