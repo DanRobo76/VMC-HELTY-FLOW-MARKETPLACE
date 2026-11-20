@@ -32752,11 +32752,14 @@ actions:
             id:
               - umidita_velocita_0
         sequence:
+          - alias: Solo se la lettura non è appena tornata disponibile (stato precedente OFF-Line o Non disponibile) - il ritorno a Velocità 0 dopo un OFF-Line breve non è una scelta dell'utente e non cambia nessuna memoria (B4-4)
+            condition: template
+            value_template: "{{ not (trigger.from_state is defined and trigger.from_state is not none and trigger.from_state.state in ['Non disponibile', 'sconosciuto', 'unknown', 'unavailable', '', 'OFF-Line']) }}"
           - alias: Umidità che ha avviato la VMC da Velocità 0 e VMC ancora (o di nuovo) a 0 -> rimanda la velocità di avvio dell'opzione 175, la memoria resta (correzione U3); non se la Velocità 0 l'ha scelta l'utente durante l'Umidità (Velocità 0 mantenuta)
             if:
               - condition: template
-                value_template: "{{ is_state('input_boolean.vmc_master_spia_umidita_velocita_0', 'on') and is_state('input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0', 'off') and states('input_select.vmc_master_speed_umidita') != 'Velocità 0' and not (trigger.from_state is defined and trigger.from_state is not none and trigger.from_state.state in ['Non disponibile', 'sconosciuto', 'unknown', 'unavailable', '', 'OFF-Line']) }}"
-                alias: Memoria «a fine allerta torna a 0» dell'avvio da Velocità 0, programmata diversa da 0, lettura della velocità non appena tornata disponibile
+                value_template: "{{ is_state('input_boolean.vmc_master_spia_umidita_velocita_0', 'on') and is_state('input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0', 'off') and states('input_select.vmc_master_speed_umidita') != 'Velocità 0' }}"
+                alias: Memoria «a fine allerta torna a 0» dell'avvio da Velocità 0 (non mantenuta) e velocità di avvio programmata diversa da 0
             then:
               - action: input_boolean.turn_off
                 target:
