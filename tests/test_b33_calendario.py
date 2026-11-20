@@ -93,9 +93,14 @@ def test_entrata_in_fascia_ogni_comando_nel_ciclo_di_conferma() -> None:
     for nome in FASCE:
         sequenza = script[nome]["sequence"]
         assert sequenza[0]["action"] == "input_boolean.turn_off", nome  # spie del Black-Out (A4-1), restano prime
-        assert sequenza[1] == {"delay": {"hours": 0, "minutes": 0, "seconds": 5, "milliseconds": 0}}, nome
-        assert sequenza[2]["variables"] == {"vel_prima_del_comando": f"{{{{ states('{LETTURA}') }}}}"}, nome
-        assert "choose" in sequenza[3] and len(sequenza) == 4, nome
+        # b34: subito dopo si spegne la Spia Comando non eseguito, che l'ultimo passo riaccende se serve
+        assert sequenza[1]["action"] == "input_boolean.turn_off", nome
+        assert sequenza[1]["target"] == {"entity_id": "input_boolean.vmc_master_spia_calendario_comando_non_eseguito"}
+        assert sequenza[2] == {"delay": {"hours": 0, "minutes": 0, "seconds": 5, "milliseconds": 0}}, nome
+        assert sequenza[3]["variables"] == {"vel_prima_del_comando": f"{{{{ states('{LETTURA}') }}}}"}, nome
+        # b34: dopo la velocita' prima del comando, il controllo del ritorno dopo un comando non eseguito
+        assert sequenza[4]["condition"] == "template" and "comando_non_eseguito_dalle" in sequenza[4]["value_template"]
+        assert "choose" in sequenza[5] and "if" in sequenza[6] and len(sequenza) == 7, nome
         comandi = [(p, dentro) for p, dentro in _passi(sequenza) if p["action"].startswith("shell_command.")]
         assert comandi and all(dentro for _, dentro in comandi), nome
         cicli = list(_cicli(sequenza))
@@ -145,8 +150,8 @@ def test_ritorno_dal_black_out_in_fascia_usa_lo_script_con_il_ciclo() -> None:
             "script.vmc_master_calendario_fascia_1_on", "script.vmc_master_calendario_fascia_2_on"], id_
     # anche l'entrata nella Fascia richiama lo script direttamente (attende la fine), non con script.turn_on
     testo = (PKG / "vmc_master_automazione.txt").read_text(encoding="utf-8")
-    assert testo.count("action: script.vmc_master_calendario_fascia_1_on\n") == 9
-    assert testo.count("action: script.vmc_master_calendario_fascia_2_on\n") == 9
+    assert testo.count("action: script.vmc_master_calendario_fascia_1_on\n") == 10  # b34: +1 ritorno dopo un comando non eseguito
+    assert testo.count("action: script.vmc_master_calendario_fascia_2_on\n") == 10
 
 
 def test_tutti_i_cicli_dell_automazione_restano_uguali() -> None:

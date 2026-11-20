@@ -197,7 +197,10 @@ description: >-
   riallineamento (140 Secondi dall'avvio) più i 32 Secondi; se la corrente
   torna durante il riallineamento al riavvio (fasi 1-3) dopo almeno 32 Secondi
   OFF-Line, la VMC riparte 32 Secondi dopo il ritorno anche se il Black-Out non
-  è stato ancora memorizzato;
+  è stato ancora memorizzato; se invece la VMC risponde al ping ma non esegue i
+  comandi, dopo 32 Secondi la Fascia smette di ripetere il comando e lo invia di
+  nuovo appena la VMC torna a rispondere, salvo se nel frattempo la Velocità è
+  cambiata (per esempio con il Telecomando);
 
   - Avvisi (riquadro degli Avvisi e avviso di aggiornamento del Package):
   5 Secondi.
@@ -2941,6 +2944,16 @@ triggers:
     id: calendario_ritorno_da_black_out_riallineamento
     for:
       seconds: "{{ states('input_number.vmc_master_attesa_blackout_ripristino') | int(32) }}"
+  - alias: >-
+      Calendario - VMC di nuovo in grado di rispondere dopo un comando della Fascia non eseguito (la VMC rispondeva
+      al ping ma la sua velocità non si leggeva) [la VMC riparte in funzione della Spia Calendario accesa]
+    value_template: |
+      {{ (
+        states('input_boolean.vmc_master_spia_calendario_comando_non_eseguito') == 'on'
+        and states('sensor.vmc_master_status_ventola') not in ['unavailable', 'unknown', '']
+      ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
+    id: calendario_ritorno_comando
+    trigger: template
   - alias: >-
       All'Interno della 1° Fascia Lunedì se Spia Congelamento Off e Spia Delta
       Temp Off
@@ -8684,6 +8697,11 @@ actions:
       {{ (
         states('input_boolean.vmc_master_spia_calendario_black_out') == 'on'
         and states('sensor.vmc_master_status_ip_interfaccia') == "ON-Line"
+      ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
+      {%- elif trigger.id == 'calendario_ritorno_comando' -%}
+      {{ (
+        states('input_boolean.vmc_master_spia_calendario_comando_non_eseguito') == 'on'
+        and states('sensor.vmc_master_status_ventola') not in ['unavailable', 'unknown', '']
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == '1° Lunedì On' -%}
       {{ (( ((((states('sensor.vmc_master_status_accensione_vmc_tramite_calendario') == "Lunedi") and (states('sensor.vmc_master_status_spegnimento_vmc_tramite_calendario')== "Lunedi") and (now().strftime('%H:%M') >= strptime(states('input_datetime.vmc_master_accensione_lunedi'), '%H:%M:%S').strftime('%H:%M') and now().strftime('%H:%M') < strptime(states('input_datetime.vmc_master_spegnimento_lunedi'), '%H:%M:%S').strftime('%H:%M')))==true) and (states('sensor.vmc_master_status_ip_interfaccia')=="ON-Line") ) ) and (states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia')== 'off' and states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia')== 'off') and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')!='Non disponibile'and states('input_boolean.vmc_master_spia_calendario_lunedi_1')=='off' ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
@@ -19214,6 +19232,69 @@ actions:
         alias: >-
           Calendario - VMC di nuovo ON-Line durante il riallineamento al riavvio di Home Assistant (Black-Out a cavallo del
           riavvio, anche se non ancora memorizzato): la VMC riparte con la velocità della Fascia in corso [Foglio Logiche]
+      - conditions:
+          - condition: trigger
+            id: calendario_ritorno_comando
+        sequence:
+          - variables:
+              comando_non_eseguito_dalle: "{{ as_timestamp(states.input_boolean.vmc_master_spia_calendario_comando_non_eseguito.last_changed, 0) if states.input_boolean.vmc_master_spia_calendario_comando_non_eseguito is not none else 0 }}"
+            alias: Memorizza quando la Fascia non ha potuto comandare la VMC (accensione della Spia Comando non eseguito del Calendario)
+          - alias: Spia Comando non eseguito del Calendario OFF (il ritorno della VMC si gestisce una sola volta)
+            data: {}
+            target:
+              entity_id: input_boolean.vmc_master_spia_calendario_comando_non_eseguito
+            action: input_boolean.turn_off
+          - alias: Interruttore del Calendario acceso, VMC ON-Line senza Black-Out del Calendario e velocità della VMC disponibile
+            condition: template
+            value_template: >-
+              {{ states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_calendario') == 'on'
+              and states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line'
+              and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
+              and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile' }}
+          - choose:
+              - alias: Spia 1° Fascia accesa -> la VMC riparte con la velocità della 1° Fascia
+                conditions:
+                  - condition: template
+                    value_template: >-
+                      {{
+                      states('input_boolean.vmc_master_spia_calendario_lunedi_1') == 'on' or
+                      states('input_boolean.vmc_master_spia_calendario_martedi_1') == 'on' or
+                      states('input_boolean.vmc_master_spia_calendario_mercoledi_1') == 'on' or
+                      states('input_boolean.vmc_master_spia_calendario_giovedi_1') == 'on' or
+                      states('input_boolean.vmc_master_spia_calendario_venerdi_1') == 'on' or
+                      states('input_boolean.vmc_master_spia_calendario_sabato_1') == 'on' or
+                      states('input_boolean.vmc_master_spia_calendario_domenica_1') == 'on'
+                      }}
+                sequence:
+                  - action: script.vmc_master_calendario_fascia_1_on
+                    alias: >-
+                      Lo script della Fascia riparte solo se la velocità della VMC non è cambiata da quando la Fascia
+                      non ha potuto comandarla (controllo dopo i 5 s dello script, con le letture già aggiornate)
+                    data:
+                      comando_non_eseguito_dalle: "{{ comando_non_eseguito_dalle }}"
+              - alias: Spia 2° Fascia accesa -> la VMC riparte con la velocità della 2° Fascia
+                conditions:
+                  - condition: template
+                    value_template: >-
+                      {{
+                      states('input_boolean.vmc_master_spia_calendario_lunedi_2') == 'on' or
+                      states('input_boolean.vmc_master_spia_calendario_martedi_2') == 'on' or
+                      states('input_boolean.vmc_master_spia_calendario_mercoledi_2') == 'on' or
+                      states('input_boolean.vmc_master_spia_calendario_giovedi_2') == 'on' or
+                      states('input_boolean.vmc_master_spia_calendario_venerdi_2') == 'on' or
+                      states('input_boolean.vmc_master_spia_calendario_sabato_2') == 'on' or
+                      states('input_boolean.vmc_master_spia_calendario_domenica_2') == 'on'
+                      }}
+                sequence:
+                  - action: script.vmc_master_calendario_fascia_2_on
+                    alias: >-
+                      Lo script della Fascia riparte solo se la velocità della VMC non è cambiata da quando la Fascia
+                      non ha potuto comandarla (controllo dopo i 5 s dello script, con le letture già aggiornate)
+                    data:
+                      comando_non_eseguito_dalle: "{{ comando_non_eseguito_dalle }}"
+        alias: >-
+          Calendario - VMC di nuovo in grado di rispondere dopo un comando della Fascia non eseguito: la VMC riparte
+          con la velocità della Fascia in corso, salvo se nel frattempo la velocità è cambiata
       - conditions:
           - condition: trigger
             id: 1° Lunedì On

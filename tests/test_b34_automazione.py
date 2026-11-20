@@ -289,7 +289,7 @@ def test_agg_sensori_avviato_senza_bloccare_l_automazione() -> None:
 
     _cammina(_automazione()["actions"], visita)
     assert set(dirette) == SCRIPT_DEL_CALENDARIO
-    assert sum(dirette.values()) == 32
+    assert sum(dirette.values()) == 34  # b34: +2 nel ramo del ritorno della VMC dopo un comando della Fascia non eseguito
     assert hay.load_yaml(str(PKG / "vmc_master.yaml"))["script"]["vmc_master_upgrade_sensors"]["mode"] == "restart"
 
 

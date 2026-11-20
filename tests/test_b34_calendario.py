@@ -71,10 +71,11 @@ def test_b1_1_tutti_i_cicli_del_calendario_escono_con_la_lettura_persa() -> None
         (fine,) = ciclo["until"]
         assert fine["value_template"].endswith(f" or {LETTURA_PERSA} }}}}"), fine["value_template"][-200:]
         assert "lettura della velocità persa per il tempo di rilevazione del Black-Out" in fine["alias"]
-    # nessun altro ciclo ha la nuova uscita: 360 nel package, 14 nell'automazione, in tutto 374
+    # nessun altro ciclo ha la nuova uscita: 360 nel package, 14 nell'automazione, in tutto 374; nel package la stessa
+    # condizione c'e' anche nell'ultimo passo dei 2 script di Fascia (accende la Spia Comando non eseguito)
     pacchetto = (PKG / "vmc_master.yaml").read_text(encoding="utf-8")
     automazione = (PKG / "vmc_master_automazione.txt").read_text(encoding="utf-8")
-    assert pacchetto.count(LETTURA_PERSA) == 360
+    assert pacchetto.count(LETTURA_PERSA) == 360 + 2
     assert automazione.count(LETTURA_PERSA) == 14
 
 
@@ -167,7 +168,8 @@ def _imposta(hass, **stati: str) -> None:
 
 
 def _opzione_free(script: dict[str, Any], nome: str) -> list[dict[str, Any]]:
-    (opzione,) = [o for o in script[nome]["sequence"][3]["choose"]
+    (scelta,) = [p for p in script[nome]["sequence"] if "choose" in p]
+    (opzione,) = [o for o in scelta["choose"]
                   if o["conditions"][0]["conditions"][0]["state"] == "Free Cool./Heat."]
     return opzione["sequence"]
 
@@ -342,9 +344,10 @@ def _descrizione(nome: str) -> str:
 def test_b1_4_nessuna_ripresa_della_fascia_al_riavvio() -> None:
     """Decisione: al riavvio di HA la Fascia non viene rilanciata (scavalcherebbe una velocita' scelta a mano).
     Verifica che nulla la riprenda: gli script di Fascia sono chiamati solo dai 14 rami «On» (il loro trigger vuole la
-    spia della Fascia spenta, che invece resta accesa dopo il riavvio) e dai 2 rami del ritorno della corrente (spia
-    Black-Out del Calendario accesa, oppure VMC tornata ON-Line dopo almeno 32 s OFF-Line); nel package nessuno li
-    chiama (solo elenchi) e il riallineamento al riavvio non li rilancia."""
+    spia della Fascia spenta, che invece resta accesa dopo il riavvio), dai 2 rami del ritorno della corrente (spia
+    Black-Out del Calendario accesa, oppure VMC tornata ON-Line dopo almeno 32 s OFF-Line) e dal ramo del ritorno della
+    VMC dopo un comando non eseguito (la sua spia si spegne al riavvio: initial false); nel package nessuno li chiama
+    (solo elenchi) e il riallineamento al riavvio non li rilancia."""
     automazione = _automazione()
     trigger = {t["id"]: t for t in automazione["triggers"] if isinstance(t.get("id"), str)}
     chiamate = []
@@ -354,7 +357,7 @@ def test_b1_4_nessuna_ripresa_della_fascia_al_riavvio() -> None:
                 chiamate.append(ramo["conditions"][0]["id"])
     giorni = [c for c in chiamate if c.endswith(" On")]
     assert len(giorni) == 14 and sorted(set(chiamate) - set(giorni)) == [
-        "calendario_ritorno_da_black_out", "calendario_ritorno_da_black_out_riallineamento"]
+        "calendario_ritorno_comando", "calendario_ritorno_da_black_out", "calendario_ritorno_da_black_out_riallineamento"]
     for id_ in giorni:
         fascia = id_[0]
         giorno = id_.split()[1].lower().replace("ì", "i")

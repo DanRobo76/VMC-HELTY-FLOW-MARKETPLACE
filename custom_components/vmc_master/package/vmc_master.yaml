@@ -223,7 +223,7 @@ command_line:
 ################### Inizio Creazione Sensori Principali della VMC  ########################################################################################################################################################
 sensor:
   - platform: tcp
-    name: vmc_master_status_ventola                                             # [CONFIGURAZIONE, 1087 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 236 RICHIAMI] CREAZIONE DEL SENSORE LETTURA STATI DI VENTILAZIONE; N.b non tutti i valori sono identificabili
+    name: vmc_master_status_ventola                                             # [CONFIGURAZIONE, 1091 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 238 RICHIAMI] CREAZIONE DEL SENSORE LETTURA STATI DI VENTILAZIONE; N.b non tutti i valori sono identificabili
     host: 999.999.999.999                        # INDIRIZZO IP DELLA VMC MASTER
     port: 5001                                 # PORTA 5001 DELLA VMC IMPOSTAZIONE DI DEFAULT
     timeout: 3
@@ -616,7 +616,7 @@ template:
         icon: mdi:ip
 
   - sensor:
-      - default_entity_id: sensor.vmc_master_status_ip_interfaccia              # [CONFIGURAZIONE, 1047 RICHIAMI] [INTERFACCIA, 121 RICHIAMI] [AUTOMAZIONE, 324 RICHIAMI] SENSORE IMPIEGATO PER LA VISUALIZZAZIONE NELL'INTERFACCIA SE LA VMC E' IN RETE O MENO
+      - default_entity_id: sensor.vmc_master_status_ip_interfaccia              # [CONFIGURAZIONE, 1049 RICHIAMI] [INTERFACCIA, 123 RICHIAMI] [AUTOMAZIONE, 325 RICHIAMI] SENSORE IMPIEGATO PER LA VISUALIZZAZIONE NELL'INTERFACCIA SE LA VMC E' IN RETE O MENO
         name: "Status VMC"
         unique_id: vmc_master_status_ip_interfaccia
         state: >
@@ -1019,7 +1019,7 @@ template:
         icon: mdi:code-array
 
   - sensor:
-      - default_entity_id: sensor.vmc_master_status_ventola_lettura_codice_interpretato # [CONFIGURAZIONE, 868 RICHIAMI] [INTERFACCIA, 55 RICHIAMI] [AUTOMAZIONE, 919 RICHIAMI] SENSORE DI INTERPRETAZIONE DELLA LETTURA DEI DATI "VELOCITA'" MEMORIZZATI NELLA VMC CONVERITA IN "STRINGA", PREVIA VERIFICA DI AVVENUTA LETTURA DEI DATI "VELOCITA'"" MEMORIZZATI NELLA VMC
+      - default_entity_id: sensor.vmc_master_status_ventola_lettura_codice_interpretato # [CONFIGURAZIONE, 872 RICHIAMI] [INTERFACCIA, 55 RICHIAMI] [AUTOMAZIONE, 919 RICHIAMI] SENSORE DI INTERPRETAZIONE DELLA LETTURA DEI DATI "VELOCITA'" MEMORIZZATI NELLA VMC CONVERITA IN "STRINGA", PREVIA VERIFICA DI AVVENUTA LETTURA DEI DATI "VELOCITA'"" MEMORIZZATI NELLA VMC
         name: "Status Ventilazione"
         unique_id: vmc_master_status_ventola_lettura_codice_interpretato
         state: >
@@ -1169,7 +1169,7 @@ template:
           {{ (ns.righe | join(' · '))[:255] if ns.righe | count > 0 and att != 'Non disponibile' else 'Nessuna' }}
 
   - sensor:
-      - default_entity_id: sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia # [CONFIGURAZIONE, 254 RICHIAMI] [INTERFACCIA, 100 RICHIAMI] [AUTOMAZIONE, 270 RICHIAMI] SENSORE DI INTERPRETAZIONE DELLA LETTURA DEI DATI "VELOCITA'" MEMORIZZATI NELLA VMC CONVERITA IN "STRINGA" CON LA POSSIBILITA' DI VISUALIZZARE FREE COOLING O FREE HEATING O FREE C./H. (IN FUNZIONE DEL VALORE LETTO DEL SENSORE vmc_master_status_mese_corrente_freeheating_o_freecooling), PREVIA VERIFICA DI AVVENUTA LETTURA DEI DATI "VELOCITA'"" MEMORIZZATI NELLA VMC
+      - default_entity_id: sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia # [CONFIGURAZIONE, 254 RICHIAMI] [INTERFACCIA, 100 RICHIAMI] [AUTOMAZIONE, 271 RICHIAMI] SENSORE DI INTERPRETAZIONE DELLA LETTURA DEI DATI "VELOCITA'" MEMORIZZATI NELLA VMC CONVERITA IN "STRINGA" CON LA POSSIBILITA' DI VISUALIZZARE FREE COOLING O FREE HEATING O FREE C./H. (IN FUNZIONE DEL VALORE LETTO DEL SENSORE vmc_master_status_mese_corrente_freeheating_o_freecooling), PREVIA VERIFICA DI AVVENUTA LETTURA DEI DATI "VELOCITA'"" MEMORIZZATI NELLA VMC
         name: "Status Ventilazione"
         unique_id: vmc_master_status_ventola_lettura_codice_interpretato_interfaccia
         state: >
@@ -4391,6 +4391,7 @@ recorder:
       - input_boolean.vmc_master_spia_calendario_domenica_1
       - input_boolean.vmc_master_spia_calendario_domenica_2
       - input_boolean.vmc_master_spia_calendario_black_out
+      - input_boolean.vmc_master_spia_calendario_comando_non_eseguito
       - input_boolean.vmc_master_spia_velocita_0_un_solo_avvio
       - input_boolean.vmc_master_spia_velocita_1_un_solo_avvio
       - input_boolean.vmc_master_spia_velocita_2_un_solo_avvio
@@ -4798,7 +4799,7 @@ input_number:
     icon: mdi:knob
 
 ################### Inizio Creazione Fase di Riallineamento delle Allerte al Riavvio di Home Assistant ###################
-  vmc_master_fase_riallineamento_al_riavvio:                                    # [CONFIGURAZIONE, 525 RICHIAMI] [INTERFACCIA, 18 RICHIAMI] [AUTOMAZIONE, 566 RICHIAMI] FASE DEL RIALLINEAMENTO DELLE ALLERTE FINITE A HOME ASSISTANT SPENTO (0 = FUNZIONAMENTO NORMALE)
+  vmc_master_fase_riallineamento_al_riavvio:                                    # [CONFIGURAZIONE, 525 RICHIAMI] [INTERFACCIA, 18 RICHIAMI] [AUTOMAZIONE, 570 RICHIAMI] FASE DEL RIALLINEAMENTO DELLE ALLERTE FINITE A HOME ASSISTANT SPENTO (0 = FUNZIONAMENTO NORMALE)
     name: "Fase Riallineamento Allerte al Riavvio"
     min: 0
     max: 4
@@ -4872,7 +4873,7 @@ input_number:
     mode: box
     unit_of_measurement: s
     icon: mdi:timer-cog-outline
-  vmc_master_attesa_blackout_rilevazione:                                      # [CONFIGURAZIONE, 725 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 27 RICHIAMI] TEMPO DI ATTESA [s] DI 12 TRIGGER DELL'AUTOMAZIONE VMC MASTER (VALORE ORIGINALE 32 s), LETTO ANCHE DAL COUNTDOWN
+  vmc_master_attesa_blackout_rilevazione:                                      # [CONFIGURAZIONE, 727 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 27 RICHIAMI] TEMPO DI ATTESA [s] DI 12 TRIGGER DELL'AUTOMAZIONE VMC MASTER (VALORE ORIGINALE 32 s), LETTO ANCHE DAL COUNTDOWN
     name: "Attesa Rilevazione Black-Out"
     min: 1
     max: 300
@@ -5124,7 +5125,7 @@ input_boolean:
     name: "VMC ON/OFF, in Funzione del Lim. Δ P. di Rugiada"
     icon: mdi:light-switch-off
 
-  vmc_master_opzioni_accendi_spegni_vmc_vs_calendario:                          # [CONFIGURAZIONE, 63 RICHIAMI] [INTERFACCIA, 6 RICHIAMI] [AUTOMAZIONE, 38 RICHIAMI] VERIFICA SE RENDERE AUTONOMA LA VMC, SE "ON" VERRA' IMPIEGATO IL CALENDARIO AVVIANDO IN AUTONOMIA L'ACCENSIONE E LO SPEGNIMENTO; SE "OFF" NON VERRA' IMPIEGATO IL CALENDARIO PERTENDO L'AUTONOMIA DI ACCENSIONE E SPEGNIMENTO AUTOMATICO
+  vmc_master_opzioni_accendi_spegni_vmc_vs_calendario:                          # [CONFIGURAZIONE, 63 RICHIAMI] [INTERFACCIA, 6 RICHIAMI] [AUTOMAZIONE, 39 RICHIAMI] VERIFICA SE RENDERE AUTONOMA LA VMC, SE "ON" VERRA' IMPIEGATO IL CALENDARIO AVVIANDO IN AUTONOMIA L'ACCENSIONE E LO SPEGNIMENTO; SE "OFF" NON VERRA' IMPIEGATO IL CALENDARIO PERTENDO L'AUTONOMIA DI ACCENSIONE E SPEGNIMENTO AUTOMATICO
     name: "VMC ON/OFF, in Funzione del Calendario"
     icon: mdi:light-switch-off
 
@@ -5189,64 +5190,69 @@ input_boolean:
     name: "Spia Velocità Free Cool./Heat."
     icon: mdi:memory    
 
-  vmc_master_spia_calendario_lunedi_1:                                          # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 77 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL LUNEDì 1° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_lunedi_1:                                          # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 78 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL LUNEDì 1° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Lunedì 1°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_lunedi_2:                                          # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 77 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL LUNEDì 2° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_lunedi_2:                                          # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 78 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL LUNEDì 2° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Lunedì 2°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_martedi_1:                                         # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 77 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL MARTEDì 1° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_martedi_1:                                         # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 78 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL MARTEDì 1° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Martedì 1°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_martedi_2:                                         # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 77 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL MARTEDì 2° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_martedi_2:                                         # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 78 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL MARTEDì 2° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Martedì 2°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_mercoledi_1:                                       # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 77 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL MERCOLEDì 1° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_mercoledi_1:                                       # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 78 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL MERCOLEDì 1° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Mercoledì 1°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_mercoledi_2:                                       # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 77 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL MERCOLEDì 2° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_mercoledi_2:                                       # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 78 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL MERCOLEDì 2° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Mercoledì 2°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_giovedi_1:                                         # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 77 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL GIOVEDì 1° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_giovedi_1:                                         # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 78 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL GIOVEDì 1° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Giovedì 1°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_giovedi_2:                                         # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 77 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL GIOVEDì 2° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_giovedi_2:                                         # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 78 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL GIOVEDì 2° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Giovedì 2°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_venerdi_1:                                         # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 77 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL VENERDì 1° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_venerdi_1:                                         # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 78 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL VENERDì 1° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Venerdì 1°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_venerdi_2:                                         # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 77 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL VENERDì 2° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_venerdi_2:                                         # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 78 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL VENERDì 2° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Venerdì 2°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_sabato_1:                                          # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 77 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL SABATO 1° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_sabato_1:                                          # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 78 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL SABATO 1° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Sabato 1°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_sabato_2:                                          # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 77 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL SABATO 2° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_sabato_2:                                          # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 78 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL SABATO 2° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Sabato 2°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_domenica_1:                                        # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 77 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL DOMENICA 1° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_domenica_1:                                        # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 78 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL DOMENICA 1° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Domenica 1°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_domenica_2:                                        # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 77 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL DOMENICA 2° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_domenica_2:                                        # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 78 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL DOMENICA 2° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Domenica 2°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_black_out:                                         # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 9 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO UN BLACK-OUT INIZIA ALL'INTERNO DI UNA FASCIA DEL CALENDARIO (AL RITORNO DELLA CORRENTE LA VMC RIPARTE CON LA VELOCITA' DELLA FASCIA, ANCHE DOPO UN RIAVVIO DI HOME ASSISTANT)
+  vmc_master_spia_calendario_black_out:                                         # [CONFIGURAZIONE, 9 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 10 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO UN BLACK-OUT INIZIA ALL'INTERNO DI UNA FASCIA DEL CALENDARIO (AL RITORNO DELLA CORRENTE LA VMC RIPARTE CON LA VELOCITA' DELLA FASCIA, ANCHE DOPO UN RIAVVIO DI HOME ASSISTANT)
     name: "Spia Black-Out all'interno del Calendario"
+    icon: mdi:memory
+
+  vmc_master_spia_calendario_comando_non_eseguito:                              # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 3 RICHIAMI] [AUTOMAZIONE, 5 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO IL COMANDO DI UNA FASCIA DEL CALENDARIO NON VIENE ESEGUITO PERCHE' LA VMC RISPONDE AL PING MA LA SUA VELOCITA' NON SI LEGGE (APPENA LA VMC TORNA A RISPONDERE LA FASCIA RIPARTE; SI SPEGNE AL RIAVVIO DI HOME ASSISTANT)
+    name: "Spia Comando non eseguito all'interno del Calendario"
+    initial: false
     icon: mdi:memory
 
   vmc_master_spia_velocita_0_un_solo_avvio:                                     # [CONFIGURAZIONE, 51 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 244 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' 0, IN CASO SUPERAMENTO del Lim. Δ P. di Rugiada
@@ -7758,6 +7764,7 @@ script:
             - input_boolean.vmc_master_spia_calendario_domenica_1
             - input_boolean.vmc_master_spia_calendario_domenica_2
             - input_boolean.vmc_master_spia_calendario_black_out
+            - input_boolean.vmc_master_spia_calendario_comando_non_eseguito
             - input_boolean.vmc_master_spia_velocita_0_un_solo_avvio
             - input_boolean.vmc_master_spia_velocita_1_un_solo_avvio
             - input_boolean.vmc_master_spia_velocita_2_un_solo_avvio
@@ -7944,6 +7951,7 @@ script:
             - input_boolean.vmc_master_spia_calendario_domenica_1
             - input_boolean.vmc_master_spia_calendario_domenica_2
             - input_boolean.vmc_master_spia_calendario_black_out
+            - input_boolean.vmc_master_spia_calendario_comando_non_eseguito
             - input_boolean.vmc_master_spia_velocita_0_un_solo_avvio
             - input_boolean.vmc_master_spia_velocita_1_un_solo_avvio
             - input_boolean.vmc_master_spia_velocita_2_un_solo_avvio
@@ -8605,7 +8613,7 @@ script:
     icon: mdi:fingerprint-off
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  vmc_master_calendario_fascia_1_on:                                            # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 9 RICHIAMI]
+  vmc_master_calendario_fascia_1_on:                                            # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 10 RICHIAMI]
     alias: VMC Master - Calendario Fascia 1 On
     sequence:
       - alias: La Fascia prevale sul ripristino di un Black-Out rilevato prima della Fascia (memoria del Black-Out spenta) [Foglio Logiche A23 e A25]
@@ -8620,6 +8628,10 @@ script:
             - input_boolean.vmc_master_spia_velocita_notturna
             - input_boolean.vmc_master_spia_velocita_iperventilazione
             - input_boolean.vmc_master_spia_velocita_freecooling
+      - alias: Ogni avvio della Fascia decide di nuovo se il comando viene eseguito (Spia Comando non eseguito del Calendario OFF)
+        action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.vmc_master_spia_calendario_comando_non_eseguito
       - delay:
           hours: 0
           minutes: 0
@@ -8628,6 +8640,12 @@ script:
       - variables:
           vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
         alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+      - alias: >-
+          Ritorno della VMC dopo un comando non eseguito: la Fascia riparte solo se la velocità della VMC non è
+          cambiata nel frattempo (una velocità scelta, per esempio con il telecomando, si rispetta); controllo fatto
+          dopo i 5 s, con le letture già aggiornate
+        condition: template
+        value_template: "{{ (comando_non_eseguito_dalle | default(0) | float(0)) == 0 or (states.sensor.vmc_master_status_ventola_lettura_codice_interpretato is not none and as_timestamp(states.sensor.vmc_master_status_ventola_lettura_codice_interpretato.last_changed, 0) <= comando_non_eseguito_dalle | float(0)) }}"
       - choose:
           - conditions:
               - alias: Velocità 0 in Assenza di Congelamento e Delta Temperatura
@@ -16815,11 +16833,23 @@ script:
                                     alias: CASO PDR OFF E INQUINANTI OFF
                             alias: Interruttore PdR OFF e Interruttore Inquinanti OFF
                     alias: Mese Disabilitato
+      - alias: >-
+          Comando non eseguito perché la VMC risponde al ping ma la sua velocità non si legge (ripetizione finita per
+          la lettura persa, senza Black-Out) -> Spia Comando non eseguito del Calendario ON: appena la VMC torna a
+          rispondere la Fascia riparte, salvo se nel frattempo la velocità è cambiata
+        if:
+          - condition: template
+            value_template: "{{ (is_state('sensor.vmc_master_status_ventola', 'unavailable') and (now() - states.sensor.vmc_master_status_ventola.last_changed).total_seconds() >= states('input_number.vmc_master_attesa_blackout_rilevazione') | int(32)) and is_state('sensor.vmc_master_status_ip_interfaccia', 'ON-Line') and is_state('input_boolean.vmc_master_spia_calendario_black_out', 'off') }}"
+        then:
+          - action: input_boolean.turn_on
+            target:
+              entity_id: input_boolean.vmc_master_spia_calendario_comando_non_eseguito
     mode: restart
     icon: mdi:fingerprint-off
     description: >
       Richiamato dall'Automazione VMC Master all'inizio della 1° Fascia del Calendario e, durante la
-      Fascia, al ritorno della corrente dopo un Black-Out (VMC OFF-Line almeno 32 s). All'avvio spegne
+      Fascia, al ritorno della corrente dopo un Black-Out (VMC OFF-Line almeno 32 s) e quando la VMC torna a
+      rispondere dopo un comando non eseguito. All'avvio spegne
       sempre le spie di velocità del Black-Out (la Fascia prevale sul ripristino di un Black-Out rilevato
       prima della Fascia). Dopo 5 s, con un'allerta Congelamento o Δ Temp. in corso non manda nessun
       comando; altrimenti spegne le memorie di Inquinanti e Punto di Rugiada e comanda la velocità scelta
@@ -16841,17 +16871,20 @@ script:
       ripetizione si ferma se nel frattempo si sceglie un'altra Velocità oppure se, per il tempo di
       rilevazione del Black-Out, la VMC resta OFF-Line (al ritorno della corrente la Fascia riparte con la
       Spia Black-Out del Calendario) o la sua velocità non si riesce a leggere (la VMC risponde al ping ma
-      non alle letture: resta alla velocità in cui si trova).
+      non alle letture: si accende la Spia Comando non eseguito del Calendario e, appena la VMC torna a
+      rispondere, la Fascia riparte, salvo se nel frattempo la velocità è cambiata, per esempio con il
+      telecomando).
       Se Home Assistant si riavvia durante lo script (attesa di 5 s o ripetizione del comando), lo script
       non riprende: la spia della Fascia resta accesa e la VMC resta alla velocità in cui si trova (salvo
       le allerte) finché non si sceglie un'altra Velocità o non finisce la Fascia; al riavvio la Fascia non
-      viene rilanciata, per non scavalcare una velocità scelta a mano durante la Fascia. Lo stesso vale per
+      viene rilanciata, per non scavalcare una velocità scelta a mano durante la Fascia (anche la Spia Comando
+      non eseguito si spegne). Lo stesso vale per
       la ripetizione della Velocità 0 di fine Fascia: la VMC resta alla velocità della Fascia (salvo le
       allerte) finché non si sceglie un'altra Velocità o non inizia la Fascia successiva, e le memorie della
       Fascia non vengono azzerate.
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  vmc_master_calendario_fascia_2_on:                                            # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 9 RICHIAMI]
+  vmc_master_calendario_fascia_2_on:                                            # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 10 RICHIAMI]
     alias: VMC Master - Calendario Fascia 2 On
     sequence:
       - alias: La Fascia prevale sul ripristino di un Black-Out rilevato prima della Fascia (memoria del Black-Out spenta) [Foglio Logiche A23 e A25]
@@ -16866,6 +16899,10 @@ script:
             - input_boolean.vmc_master_spia_velocita_notturna
             - input_boolean.vmc_master_spia_velocita_iperventilazione
             - input_boolean.vmc_master_spia_velocita_freecooling
+      - alias: Ogni avvio della Fascia decide di nuovo se il comando viene eseguito (Spia Comando non eseguito del Calendario OFF)
+        action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.vmc_master_spia_calendario_comando_non_eseguito
       - delay:
           hours: 0
           minutes: 0
@@ -16874,6 +16911,12 @@ script:
       - variables:
           vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
         alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+      - alias: >-
+          Ritorno della VMC dopo un comando non eseguito: la Fascia riparte solo se la velocità della VMC non è
+          cambiata nel frattempo (una velocità scelta, per esempio con il telecomando, si rispetta); controllo fatto
+          dopo i 5 s, con le letture già aggiornate
+        condition: template
+        value_template: "{{ (comando_non_eseguito_dalle | default(0) | float(0)) == 0 or (states.sensor.vmc_master_status_ventola_lettura_codice_interpretato is not none and as_timestamp(states.sensor.vmc_master_status_ventola_lettura_codice_interpretato.last_changed, 0) <= comando_non_eseguito_dalle | float(0)) }}"
       - choose:
           - conditions:
               - alias: Velocità 0 in Assenza di Congelamento e Delta Temperatura
@@ -25061,11 +25104,23 @@ script:
                                     alias: CASO PDR OFF E INQUINANTI OFF
                             alias: Interruttore PdR OFF e Interruttore Inquinanti OFF
                     alias: Mese Disabilitato
+      - alias: >-
+          Comando non eseguito perché la VMC risponde al ping ma la sua velocità non si legge (ripetizione finita per
+          la lettura persa, senza Black-Out) -> Spia Comando non eseguito del Calendario ON: appena la VMC torna a
+          rispondere la Fascia riparte, salvo se nel frattempo la velocità è cambiata
+        if:
+          - condition: template
+            value_template: "{{ (is_state('sensor.vmc_master_status_ventola', 'unavailable') and (now() - states.sensor.vmc_master_status_ventola.last_changed).total_seconds() >= states('input_number.vmc_master_attesa_blackout_rilevazione') | int(32)) and is_state('sensor.vmc_master_status_ip_interfaccia', 'ON-Line') and is_state('input_boolean.vmc_master_spia_calendario_black_out', 'off') }}"
+        then:
+          - action: input_boolean.turn_on
+            target:
+              entity_id: input_boolean.vmc_master_spia_calendario_comando_non_eseguito
     mode: restart
     icon: mdi:fingerprint-off
     description: >
       Richiamato dall'Automazione VMC Master all'inizio della 2° Fascia del Calendario e, durante la
-      Fascia, al ritorno della corrente dopo un Black-Out (VMC OFF-Line almeno 32 s). All'avvio spegne
+      Fascia, al ritorno della corrente dopo un Black-Out (VMC OFF-Line almeno 32 s) e quando la VMC torna a
+      rispondere dopo un comando non eseguito. All'avvio spegne
       sempre le spie di velocità del Black-Out (la Fascia prevale sul ripristino di un Black-Out rilevato
       prima della Fascia). Dopo 5 s, con un'allerta Congelamento o Δ Temp. in corso non manda nessun
       comando; altrimenti spegne le memorie di Inquinanti e Punto di Rugiada e comanda la velocità scelta
@@ -25087,11 +25142,14 @@ script:
       ripetizione si ferma se nel frattempo si sceglie un'altra Velocità oppure se, per il tempo di
       rilevazione del Black-Out, la VMC resta OFF-Line (al ritorno della corrente la Fascia riparte con la
       Spia Black-Out del Calendario) o la sua velocità non si riesce a leggere (la VMC risponde al ping ma
-      non alle letture: resta alla velocità in cui si trova).
+      non alle letture: si accende la Spia Comando non eseguito del Calendario e, appena la VMC torna a
+      rispondere, la Fascia riparte, salvo se nel frattempo la velocità è cambiata, per esempio con il
+      telecomando).
       Se Home Assistant si riavvia durante lo script (attesa di 5 s o ripetizione del comando), lo script
       non riprende: la spia della Fascia resta accesa e la VMC resta alla velocità in cui si trova (salvo
       le allerte) finché non si sceglie un'altra Velocità o non finisce la Fascia; al riavvio la Fascia non
-      viene rilanciata, per non scavalcare una velocità scelta a mano durante la Fascia. Lo stesso vale per
+      viene rilanciata, per non scavalcare una velocità scelta a mano durante la Fascia (anche la Spia Comando
+      non eseguito si spegne). Lo stesso vale per
       la ripetizione della Velocità 0 di fine Fascia: la VMC resta alla velocità della Fascia (salvo le
       allerte) finché non si sceglie un'altra Velocità o non inizia la Fascia successiva, e le memorie della
       Fascia non vengono azzerate.
