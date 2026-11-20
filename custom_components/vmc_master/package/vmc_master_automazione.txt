@@ -11038,7 +11038,7 @@ actions:
                 input_boolean.vmc_master_opzioni_interruttore_monitoraggio_sensori_extra
             action: input_boolean.turn_off
         alias: >-
-          Trigger Attivazione Sotto Finestra Sensori Extra - Finestra
+          Trigger Disattivazione Sotto Finestra Sensori Extra - Finestra
           Monitoraggio
       - conditions:
           - condition: trigger
@@ -11191,7 +11191,6 @@ actions:
                 - input_boolean.vmc_master_opzioni_calendario_main
                 - input_boolean.vmc_master_opzioni_free_heating_o_free_cooling
                 - input_boolean.vmc_master_opzioni_calendario
-                - input_boolean.vmc_master_opzioni_free_heating_o_free_cooling
                 - input_boolean.vmc_master_opzioni_scelta_sensori
                 - input_boolean.vmc_master_opzioni_elementi_chimici
                 - input_boolean.vmc_master_opzione_finestra_audio
@@ -30695,7 +30694,6 @@ actions:
                 - input_boolean.vmc_master_opzioni_calendario_main
                 - input_boolean.vmc_master_opzioni_free_heating_o_free_cooling
                 - input_boolean.vmc_master_opzioni_calendario
-                - input_boolean.vmc_master_opzioni_free_heating_o_free_cooling
                 - input_boolean.vmc_master_opzioni_punto_di_rugiada
                 - input_boolean.vmc_master_opzioni_elementi_chimici
                 - input_boolean.vmc_master_opzione_finestra_audio
@@ -30732,7 +30730,6 @@ actions:
                 - input_boolean.vmc_master_opzioni_calendario_main
                 - input_boolean.vmc_master_opzioni_free_heating_o_free_cooling
                 - input_boolean.vmc_master_opzioni_calendario
-                - input_boolean.vmc_master_opzioni_free_heating_o_free_cooling
                 - input_boolean.vmc_master_opzioni_punto_di_rugiada
                 - input_boolean.vmc_master_opzioni_scelta_sensori
                 - input_boolean.vmc_master_opzione_finestra_audio
@@ -30767,7 +30764,6 @@ actions:
                 - input_boolean.vmc_master_opzioni_calendario_main
                 - input_boolean.vmc_master_opzioni_free_heating_o_free_cooling
                 - input_boolean.vmc_master_opzioni_calendario
-                - input_boolean.vmc_master_opzioni_free_heating_o_free_cooling
                 - input_boolean.vmc_master_opzioni_punto_di_rugiada
                 - input_boolean.vmc_master_opzioni_scelta_sensori
                 - input_boolean.vmc_master_opzioni_elementi_chimici
