@@ -2616,12 +2616,12 @@ template:
               {% set secondi = tempo_sec % 60 %}
               {% if ore > 0 %}
                 {{ ore }} {{ "ora" if ore == 1 else "ore" }}{{ ", " if minuti > 0 or secondi > 0 else "" }}
-                {{ (minuti ~ (" minuto" if minuti == 1 else " minuti")) if minuti > 0 else "" }}
-                {{ " e " if secondi > 0 and minuti > 0 else "" }}
-                {{ (secondi ~ (" secondo" if secondi == 1 else " secondi")) if secondi > 0 else "" }}
+                {{- (minuti ~ (" minuto" if minuti == 1 else " minuti")) if minuti > 0 else "" }}
+                {{- " e " if secondi > 0 and minuti > 0 else "" }}
+                {{- (secondi ~ (" secondo" if secondi == 1 else " secondi")) if secondi > 0 else "" }}
               {% elif minuti > 0 %}
                 {{ minuti }} {{ "minuto" if minuti == 1 else "minuti" }}{{ " e " if secondi > 0 else "" }}
-                {{ (secondi ~ (" secondo" if secondi == 1 else " secondi")) if secondi > 0 else "" }}
+                {{- (secondi ~ (" secondo" if secondi == 1 else " secondi")) if secondi > 0 else "" }}
               {% else %}
                 {{ secondi }} {{ "secondo" if secondi == 1 else "secondi" }}
               {% endif %}
