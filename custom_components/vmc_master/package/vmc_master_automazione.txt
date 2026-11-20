@@ -3720,7 +3720,7 @@ triggers:
     value_template: |
       {%- set _i = states('sensor.vmc_master_versione_corrente') | trim | regex_replace('^[^0-9]*', '') -%}
       {%- set _r = states('sensor.vmc_master_versione_repository') | trim | regex_replace('^[^0-9]*', '') -%}
-      {%- set _nuova = _i is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and _r is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and (((_r.split('b'))[0].split('.') | map('int') | list) + ([0, (_r.split('b'))[1] | int] if 'b' in _r else [1, 0])) > (((_i.split('b'))[0].split('.') | map('int') | list) + ([0, (_i.split('b'))[1] | int] if 'b' in _i else [1, 0])) -%}
+      {%- set _nuova = _i is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and _r is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and (((_r.split('b'))[0].split('.') | map('int') | list) + [0, 0][(_r.split('b'))[0].count('.'):] + ([0, (_r.split('b'))[1] | int] if 'b' in _r else [1, 0])) > (((_i.split('b'))[0].split('.') | map('int') | list) + [0, 0][(_i.split('b'))[0].count('.'):] + ([0, (_i.split('b'))[1] | int] if 'b' in _i else [1, 0])) -%}
       {%- set _valida = _i is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and _r is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') -%}
       {{
       (
@@ -3747,7 +3747,7 @@ triggers:
     value_template: |
       {%- set _i = states('sensor.vmc_master_versione_corrente') | trim | regex_replace('^[^0-9]*', '') -%}
       {%- set _r = states('sensor.vmc_master_versione_repository') | trim | regex_replace('^[^0-9]*', '') -%}
-      {%- set _nuova = _i is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and _r is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and (((_r.split('b'))[0].split('.') | map('int') | list) + ([0, (_r.split('b'))[1] | int] if 'b' in _r else [1, 0])) > (((_i.split('b'))[0].split('.') | map('int') | list) + ([0, (_i.split('b'))[1] | int] if 'b' in _i else [1, 0])) -%}
+      {%- set _nuova = _i is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and _r is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and (((_r.split('b'))[0].split('.') | map('int') | list) + [0, 0][(_r.split('b'))[0].count('.'):] + ([0, (_r.split('b'))[1] | int] if 'b' in _r else [1, 0])) > (((_i.split('b'))[0].split('.') | map('int') | list) + [0, 0][(_i.split('b'))[0].count('.'):] + ([0, (_i.split('b'))[1] | int] if 'b' in _i else [1, 0])) -%}
       {%- set _valida = _i is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and _r is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') -%}
       {{
       (
@@ -8793,7 +8793,7 @@ actions:
       {%- elif trigger.id == 'Repository Update ON' -%}
       {%- set _i = states('sensor.vmc_master_versione_corrente') | trim | regex_replace('^[^0-9]*', '') -%}
       {%- set _r = states('sensor.vmc_master_versione_repository') | trim | regex_replace('^[^0-9]*', '') -%}
-      {%- set _nuova = _i is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and _r is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and (((_r.split('b'))[0].split('.') | map('int') | list) + ([0, (_r.split('b'))[1] | int] if 'b' in _r else [1, 0])) > (((_i.split('b'))[0].split('.') | map('int') | list) + ([0, (_i.split('b'))[1] | int] if 'b' in _i else [1, 0])) -%}
+      {%- set _nuova = _i is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and _r is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and (((_r.split('b'))[0].split('.') | map('int') | list) + [0, 0][(_r.split('b'))[0].count('.'):] + ([0, (_r.split('b'))[1] | int] if 'b' in _r else [1, 0])) > (((_i.split('b'))[0].split('.') | map('int') | list) + [0, 0][(_i.split('b'))[0].count('.'):] + ([0, (_i.split('b'))[1] | int] if 'b' in _i else [1, 0])) -%}
       {%- set _valida = _i is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and _r is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') -%}
       {{
       (
@@ -8815,7 +8815,7 @@ actions:
       {%- elif trigger.id == 'Repository Update OFF' -%}
       {%- set _i = states('sensor.vmc_master_versione_corrente') | trim | regex_replace('^[^0-9]*', '') -%}
       {%- set _r = states('sensor.vmc_master_versione_repository') | trim | regex_replace('^[^0-9]*', '') -%}
-      {%- set _nuova = _i is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and _r is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and (((_r.split('b'))[0].split('.') | map('int') | list) + ([0, (_r.split('b'))[1] | int] if 'b' in _r else [1, 0])) > (((_i.split('b'))[0].split('.') | map('int') | list) + ([0, (_i.split('b'))[1] | int] if 'b' in _i else [1, 0])) -%}
+      {%- set _nuova = _i is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and _r is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and (((_r.split('b'))[0].split('.') | map('int') | list) + [0, 0][(_r.split('b'))[0].count('.'):] + ([0, (_r.split('b'))[1] | int] if 'b' in _r else [1, 0])) > (((_i.split('b'))[0].split('.') | map('int') | list) + [0, 0][(_i.split('b'))[0].count('.'):] + ([0, (_i.split('b'))[1] | int] if 'b' in _i else [1, 0])) -%}
       {%- set _valida = _i is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and _r is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') -%}
       {{
       (
