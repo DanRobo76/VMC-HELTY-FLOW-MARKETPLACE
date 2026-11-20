@@ -15207,8 +15207,8 @@ script:
                                       - condition: template
                                         value_template: >-
                                           {{
-                                          states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
-                                          ne sconsiglia l\'impiego" and
+                                          (states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
+                                          ne sconsiglia l\'impiego" and states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr')=='on') and
                                           ((states('sensor.vmc_master_alert_monitoraggio_co2')
                                           == 'Allerta' or
                                           states('sensor.vmc_master_alert_monitoraggio_voc')
@@ -15254,8 +15254,8 @@ script:
                                       - condition: template
                                         value_template: >-
                                           {{
-                                          states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
-                                          ne sconsiglia l\'impiego" and
+                                          (states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
+                                          ne sconsiglia l\'impiego" and states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr')=='on') and
                                           ((states('sensor.vmc_master_alert_monitoraggio_co2')
                                           == 'Nessuna Allerta' and
                                           states('sensor.vmc_master_alert_monitoraggio_voc')
@@ -15298,8 +15298,8 @@ script:
                                       - condition: template
                                         value_template: >-
                                           {{
-                                          states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
-                                          ne sconsiglia l\'impiego" and
+                                          (states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
+                                          ne sconsiglia l\'impiego" or states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr')=='off') and
                                           ((states('sensor.vmc_master_alert_monitoraggio_co2')
                                           == 'Allerta' or
                                           states('sensor.vmc_master_alert_monitoraggio_voc')
@@ -15343,8 +15343,8 @@ script:
                                       - condition: template
                                         value_template: >-
                                           {{
-                                          states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
-                                          ne sconsiglia l\'impiego" and
+                                          (states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
+                                          ne sconsiglia l\'impiego" or states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr')=='off') and
                                           ((states('sensor.vmc_master_alert_monitoraggio_co2')
                                           == 'Nessuna Allerta' and
                                           states('sensor.vmc_master_alert_monitoraggio_voc')
@@ -23439,8 +23439,8 @@ script:
                                       - condition: template
                                         value_template: >-
                                           {{
-                                          states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
-                                          ne sconsiglia l\'impiego" and
+                                          (states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
+                                          ne sconsiglia l\'impiego" and states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr')=='on') and
                                           ((states('sensor.vmc_master_alert_monitoraggio_co2')
                                           == 'Allerta' or
                                           states('sensor.vmc_master_alert_monitoraggio_voc')
@@ -23486,8 +23486,8 @@ script:
                                       - condition: template
                                         value_template: >-
                                           {{
-                                          states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
-                                          ne sconsiglia l\'impiego" and
+                                          (states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')=="Se
+                                          ne sconsiglia l\'impiego" and states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr')=='on') and
                                           ((states('sensor.vmc_master_alert_monitoraggio_co2')
                                           == 'Nessuna Allerta' and
                                           states('sensor.vmc_master_alert_monitoraggio_voc')
@@ -23530,8 +23530,8 @@ script:
                                       - condition: template
                                         value_template: >-
                                           {{
-                                          states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
-                                          ne sconsiglia l\'impiego" and
+                                          (states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
+                                          ne sconsiglia l\'impiego" or states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr')=='off') and
                                           ((states('sensor.vmc_master_alert_monitoraggio_co2')
                                           == 'Allerta' or
                                           states('sensor.vmc_master_alert_monitoraggio_voc')
@@ -23575,8 +23575,8 @@ script:
                                       - condition: template
                                         value_template: >-
                                           {{
-                                          states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
-                                          ne sconsiglia l\'impiego" and
+                                          (states('sensor.vmc_master_punto_di_rugiada_verifica_confronto')!="Se
+                                          ne sconsiglia l\'impiego" or states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr')=='off') and
                                           ((states('sensor.vmc_master_alert_monitoraggio_co2')
                                           == 'Nessuna Allerta' and
                                           states('sensor.vmc_master_alert_monitoraggio_voc')

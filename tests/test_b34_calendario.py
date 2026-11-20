@@ -108,3 +108,91 @@ async def test_b1_1_uscita_dal_ciclo(hass, stato_tcp, secondi_fa, attesa, atteso
         hass.states.async_set(TCP, stato_tcp, timestamp=time.time() - secondi_fa)
     reso = Template(_until_fascia(), hass).async_render({"vel_prima_del_comando": "Velocità 0"}, parse_result=False)
     assert reso == atteso
+
+
+# ------------------------------------------------------------------------- simulazione dei choose degli script di Fascia
+PDR_STATI = ("Se ne sconsiglia l'impiego", "Si può impiegare", "Non disponibile")
+INT_PDR = "input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr"
+INT_INQ = "input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc"
+CO2 = "sensor.vmc_master_alert_monitoraggio_co2"
+VOC = "sensor.vmc_master_alert_monitoraggio_voc"
+MESE = "sensor.vmc_master_status_mese_corrente_freeheating_o_freecooling"
+SPIA_FREE = "sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi"
+
+
+def _vera(hass, condizione: dict[str, Any]) -> bool:
+    from homeassistant.helpers.template import Template
+
+    tipo = condizione["condition"]
+    if tipo == "template":
+        reso = Template(condizione["value_template"], hass).async_render({}, parse_result=False).strip()
+        assert reso in ("True", "False"), reso
+        return reso == "True"
+    if tipo == "state":
+        return hass.states.get(condizione["entity_id"]).state == condizione["state"]
+    if tipo == "and":
+        return all(_vera(hass, c) for c in condizione["conditions"])
+    assert tipo == "or", tipo
+    return any(_vera(hass, c) for c in condizione["conditions"])
+
+
+def _esegui(hass, passi: list[dict[str, Any]], esito: dict[str, Any]) -> dict[str, Any]:
+    """Segue il percorso dello script (primo ramo vero di ogni choose, poi il default se c'e'): comando mandato
+    (primo passo del ciclo) e memorie accese. Nessun comando = None."""
+    for passo in passi:
+        if "choose" in passo:
+            ramo = next((o for o in passo["choose"] if all(_vera(hass, c) for c in o["conditions"])), None)
+            if ramo is not None:
+                _esegui(hass, ramo["sequence"], esito)
+            elif "default" in passo:
+                _esegui(hass, passo["default"], esito)
+        elif "repeat" in passo:
+            assert esito["comando"] is None
+            esito["comando"] = passo["repeat"]["sequence"][0]["action"].removeprefix("shell_command.vmc_master_")
+        elif passo.get("action") == "input_boolean.turn_on":
+            bersaglio = passo["target"]["entity_id"]
+            esito["accese"] |= {bersaglio} if isinstance(bersaglio, str) else set(bersaglio)
+    return esito
+
+
+def _imposta(hass, **stati: str) -> None:
+    for entita, stato in stati.items():
+        hass.states.async_set(entita, stato)
+
+
+def _opzione_free(script: dict[str, Any], nome: str) -> list[dict[str, Any]]:
+    (opzione,) = [o for o in script[nome]["sequence"][3]["choose"]
+                  if o["conditions"][0]["conditions"][0]["state"] == "Free Cool./Heat."]
+    return opzione["sequence"]
+
+
+# ------------------------------------------------------------------------------------------------------------ B1-3
+async def test_b1_3_allerte_free_cooling_on_legge_l_interruttore_pdr(hass) -> None:
+    """Il ramo «Allerte Free Cooling ON» fa esattamente quello che fa il ramo gemello «Allerte Free Heating ON»
+    (che ha lo strato degli interruttori PdR/Inquinanti), con la memoria della programmazione Free Cooling al posto
+    di quella Free Heating: con l'interruttore PdR spento la memoria PdR non si accende piu'."""
+    script = _pacchetto()["script"]
+    memoria_pdr = "input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio"
+    _imposta(hass, **{SPIA_FREE: "Allerta Free", "input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia": "off",
+                      "input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia": "off"})
+    prove = 0
+    for nome in FASCE:
+        passi = _opzione_free(script, nome)
+        for int_pdr in ("on", "off"):
+            for int_inq in ("on", "off"):
+                for pdr in PDR_STATI:
+                    for co2 in ("Allerta", "Nessuna Allerta"):
+                        for voc in ("Allerta", "Nessuna Allerta"):
+                            _imposta(hass, **{INT_PDR: int_pdr, INT_INQ: int_inq, CO2: co2, VOC: voc,
+                                              "sensor.vmc_master_punto_di_rugiada_verifica_confronto": pdr})
+                            _imposta(hass, **{MESE: "Free Cooling"})
+                            cooling = _esegui(hass, passi, {"comando": None, "accese": set()})
+                            _imposta(hass, **{MESE: "Free Heating"})
+                            heating = _esegui(hass, passi, {"comando": None, "accese": set()})
+                            gemello = {e.replace("_freeheating", "_freecooling") for e in heating["accese"]}
+                            assert cooling["comando"] == heating["comando"] is not None
+                            assert cooling["accese"] == gemello, (nome, int_pdr, int_inq, pdr, co2, voc)
+                            if int_pdr == "off":
+                                assert memoria_pdr not in cooling["accese"]
+                            prove += 1
+    assert prove == 2 * 2 * 2 * 3 * 2 * 2
