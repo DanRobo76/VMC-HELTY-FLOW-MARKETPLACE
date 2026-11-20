@@ -152,6 +152,8 @@ def test_richiami_interfaccia(entita: str) -> None:
 
 
 def test_versioni() -> None:
-    assert "RELEASE [VER. 9.0.0b32]" in _testo("vmc_master_scheda_manuale_interfaccia.txt")[:2000]
-    manifest = (PKG.parent / "manifest.json").read_text(encoding="utf-8")
-    assert '"version": "9.0.0b32"' in manifest
+    """Scheda e manifest sono cambiati nella b32: la loro versione e' almeno 9.0.0b32."""
+    scheda = re.search(r"RELEASE \[VER\. 9\.0\.0b(\d+)\]", _testo("vmc_master_scheda_manuale_interfaccia.txt")[:2000])
+    assert scheda and int(scheda.group(1)) >= 32
+    manifest = re.search(r'"version": "9\.0\.0b(\d+)"', (PKG.parent / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest and int(manifest.group(1)) >= 32
