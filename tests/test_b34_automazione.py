@@ -294,47 +294,83 @@ def test_agg_sensori_avviato_senza_bloccare_l_automazione() -> None:
 
 
 # ------------------------------------------------------------------------------------------------ B4-4
-def _passi_umidita_velocita_0() -> list[dict]:
-    return _ramo("umidita_velocita_0")["sequence"]
+SPIA_U0 = "input_boolean.vmc_master_spia_umidita_velocita_0"
+SPIA_U0_MANTENUTA = "input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0"
+VEL_UMIDITA = "input_select.vmc_master_speed_umidita"
+
+
+def _scelta_umidita_velocita_0() -> dict:
+    passi = _ramo("umidita_velocita_0")["sequence"]
+    assert len(passi) == 1
+    return passi[0]
 
 
 def test_umidita_velocita_0_lettura_appena_tornata_struttura() -> None:
-    """B4-4: prima dell'if una condizione ferma il ramo quando lo stato precedente non è valido; l'if e l'altrimenti
-    restano come prima (senza la vecchia esclusione nell'if)."""
+    """B4-4: l'if (rimanda la velocità di avvio) non guarda più lo stato precedente; l'«altrimenti» (Velocità 0
+    mantenuta) parte solo con uno stato precedente valido, cioè con lo 0 scelto dall'utente."""
     assert _trigger("umidita_velocita_0")["trigger"] == "template"
-    porta, scelta = _passi_umidita_velocita_0()
+    scelta = _scelta_umidita_velocita_0()
+    condizione = scelta["if"][0]["value_template"]
+    assert condizione == (
+        f"{{{{ is_state('{SPIA_U0}', 'on') and is_state('{SPIA_U0_MANTENUTA}', 'off') and "
+        f"states('{VEL_UMIDITA}') != 'Velocità 0' }}}}"
+    )
+    assert "(B4-4)" in scelta["alias"]
+    assert scelta["then"][0]["action"] == "input_boolean.turn_off"
+    porta, accende = scelta["else"][:2]
     assert porta["condition"] == "template" and "(B4-4)" in porta["alias"]
     assert all(f"'{s}'" in porta["value_template"] for s in STATI_NON_VALIDI)
-    condizione = scelta["if"][0]["value_template"]
-    assert "from_state" not in condizione
-    assert condizione == (
-        "{{ is_state('input_boolean.vmc_master_spia_umidita_velocita_0', 'on') and "
-        "is_state('input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0', 'off') and "
-        "states('input_select.vmc_master_speed_umidita') != 'Velocità 0' }}"
-    )
-    assert scelta["then"][0]["action"] == "input_boolean.turn_off"
-    assert scelta["else"][0]["target"]["entity_id"] == [
-        "input_boolean.vmc_master_spia_umidita_velocita_0", "input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0"]
+    assert accende["action"] == "input_boolean.turn_on"
+    assert accende["target"]["entity_id"] == [SPIA_U0, SPIA_U0_MANTENUTA]
+    assert "from_state" not in str(scelta["then"]) and "from_state" not in str(scelta["else"][1:])  # solo nella condizione dell'«altrimenti»
+
+
+def _ramo_eseguito(hass: HomeAssistant, precedente: str | None, memoria_0: str, mantenuta: str, velocita_avvio: str) -> str:
+    """Quale parte del ramo esegue Home Assistant: «if», «altrimenti» o «niente» (condizione falsa in testa all'altrimenti)."""
+    scelta = _scelta_umidita_velocita_0()
+    hass.states.async_set(SPIA_U0, memoria_0)
+    hass.states.async_set(SPIA_U0_MANTENUTA, mantenuta)
+    hass.states.async_set(VEL_UMIDITA, velocita_avvio)
+    trigger = {"platform": "template", "entity_id": "sensor.prova",
+               "from_state": None if precedente is None else State("sensor.prova", precedente),
+               "to_state": State("sensor.prova", "Velocità 0")}
+    if Template(scelta["if"][0]["value_template"], hass).async_render({"trigger": trigger}) is True:
+        return "if"
+    return "altrimenti" if Template(scelta["else"][0]["value_template"], hass).async_render({"trigger": trigger}) else "niente"
 
 
 @pytest.mark.parametrize(
-    ("precedente", "prosegue"),
+    ("precedente", "memoria_0", "mantenuta", "atteso"),
     [
-        # stato precedente valido: l'utente preme 0, una spia si spegne, la fase del riavvio passa a 4
-        ("Velocità 2", True), ("Free Cooling", True), ("on", True), ("Nessuna Allerta", True), ("3.0", True),
-        # VMC di nuovo leggibile: nessuna memoria cambiata
-        *[(s, False) for s in STATI_NON_VALIDI],
+        # Umidità avviata da 0 (memoria 0, non mantenuta), velocità di avvio Velocità 2
+        ("OFF-Line", "on", "off", "if"),  # 1° ordine: lettura già a 0, poi la VMC torna ON-Line -> rimanda Velocità 2
+        ("Velocità 2", "on", "off", "if"),  # 2° ordine: prima ON-Line, poi la lettura da 2 a 0 -> rimanda Velocità 2
+        ("Non disponibile", "on", "off", "if"),  # lettura tornata disponibile già a 0
+        # VMC già in moto all'inizio dell'Umidità (memoria Velocità 2: memoria 0 spenta)
+        ("OFF-Line", "off", "off", "niente"),  # ritorno a 0 dopo un OFF-Line breve: nessuna memoria cambiata
+        ("Non disponibile", "off", "off", "niente"),
+        ("Velocità 2", "off", "off", "altrimenti"),  # l'utente preme 0: Velocità 0 mantenuta
+        # Velocità 0 già mantenuta (scelta dall'utente prima): un ritorno della lettura non la riscrive
+        ("OFF-Line", "on", "on", "niente"),
+        ("unavailable", "on", "on", "niente"),
+        ("on", "on", "on", "altrimenti"),  # spia che si spegne con la VMC a 0: come prima
+        # fase del riavvio che passa a 4 (b25): stato precedente valido, come prima
+        ("3.0", "on", "off", "if"),
+        ("3.0", "on", "on", "altrimenti"),
+        (None, "off", "off", "altrimenti"),  # aggiornamento a tempo del template, senza stato precedente
     ],
 )
-async def test_umidita_velocita_0_lettura_appena_tornata_resa(hass: HomeAssistant, precedente: str, prosegue: bool) -> None:
-    porta = Template(_passi_umidita_velocita_0()[0]["value_template"], hass)
-    trigger = {"platform": "template", "from_state": State("sensor.prova", precedente),
-               "to_state": State("sensor.prova", "Velocità 0")}
-    assert porta.async_render({"trigger": trigger}) is prosegue
+async def test_umidita_velocita_0_ramo_eseguito(
+    hass: HomeAssistant, precedente: str | None, memoria_0: str, mantenuta: str, atteso: str
+) -> None:
+    """B4-4: con la lettura appena tornata disponibile la Velocità 0 non è una scelta dell'utente: con l'Umidità avviata
+    da 0 si rimanda la velocità di avvio (in tutti e due gli ordini dello scenario), negli altri casi non si cambia
+    nessuna memoria; la Velocità 0 mantenuta resta solo per la scelta dell'utente."""
+    assert _ramo_eseguito(hass, precedente, memoria_0, mantenuta, "Velocità 2") == atteso
 
 
-async def test_umidita_velocita_0_senza_stato_precedente(hass: HomeAssistant) -> None:
-    """B4-4: senza stato precedente (aggiornamento a tempo del template) il ramo prosegue come prima."""
-    porta = Template(_passi_umidita_velocita_0()[0]["value_template"], hass)
-    assert porta.async_render({"trigger": {"platform": "template", "from_state": None, "to_state": None}}) is True
-    assert porta.async_render({"trigger": {"platform": "template"}}) is True
+@pytest.mark.parametrize("precedente", STATI_NON_VALIDI)
+async def test_umidita_velocita_0_mai_mantenuta_dopo_un_off_line(hass: HomeAssistant, precedente: str) -> None:
+    """B4-4: con uno stato precedente non valido l'«altrimenti» non parte mai (anche con avvio programmato a 0)."""
+    for memoria_0, mantenuta, velocita_avvio in (("on", "off", "Velocità 0"), ("off", "off", "Velocità 2"), ("on", "on", "Velocità 2")):
+        assert _ramo_eseguito(hass, precedente, memoria_0, mantenuta, velocita_avvio) == "niente"
