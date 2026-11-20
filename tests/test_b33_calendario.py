@@ -148,4 +148,4 @@ def test_tutti_i_cicli_dell_automazione_restano_uguali() -> None:
     scelta dell'utente, Black-Out rilevato); nessuno ha la condizione OFF-Line, che vale solo in Fascia."""
     testo = (PKG / "vmc_master_automazione.txt").read_text(encoding="utf-8")
     assert "vmc_master_attesa_blackout_rilevazione') | int(32)) }}" not in testo
-    assert testo.count(UTENTE) == 176 + 14  # 176 nella b32, piu' i 14 rami «Off»
+    assert testo.count(UTENTE) == 176 + 14 + 17  # 176 nella b32, piu' i 14 rami «Off», piu' i 17 cicli della b34 (B1-2)
