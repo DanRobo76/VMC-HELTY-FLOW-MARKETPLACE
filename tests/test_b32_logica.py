@@ -67,7 +67,10 @@ def test_la_fascia_spegne_la_memoria_del_black_out() -> None:
         primo = script[nome]["sequence"][0]
         assert primo["action"] == "input_boolean.turn_off", nome
         assert set(primo["target"]["entity_id"]) == spie, nome
-        assert "delay" in script[nome]["sequence"][1], nome
+        # b34: tra le spie e l'attesa di 5 s si spegne la Spia Comando non eseguito del Calendario
+        assert script[nome]["sequence"][1]["target"] == {
+            "entity_id": "input_boolean.vmc_master_spia_calendario_comando_non_eseguito"}, nome
+        assert "delay" in script[nome]["sequence"][2], nome
 
 
 def test_scelta_durante_la_sospensione_free_con_umidita_annulla_la_ripresa() -> None:
