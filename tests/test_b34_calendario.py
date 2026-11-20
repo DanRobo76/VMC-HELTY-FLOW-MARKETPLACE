@@ -5,7 +5,13 @@ B1-1: il ciclo «ripeti finche' la VMC conferma» del Calendario non finiva se l
 non risponde (velocita' letta sempre quella di prima, nessun OFF-Line): l'automazione principale (in coda) restava
 ferma. Ora tutti i cicli del Calendario (360 negli script di Fascia, 14 nei rami «Off») escono anche quando la lettura
 della velocita' (sensore TCP, «unavailable» a ogni lettura fallita) manca da quanto dura la rilevazione del Black-Out.
-Nessun tempo nuovo: si usa la stessa attesa della rilevazione del Black-Out."""
+Nessun tempo nuovo: si usa la stessa attesa della rilevazione del Black-Out.
+B1-3: il ramo «Allerte Free Cooling ON» degli script di Fascia legge l'interruttore PdR come il ramo Free Heating.
+B1-4: al riavvio di HA la Fascia non viene rilanciata (decisione): nessun trigger la riprende, la descrizione lo dice.
+B1-5: Countdown Attese, un testo diverso per ogni trigger della stessa famiglia (l'OFF di uno non annulla il countdown
+appena avviato da un altro).
+B1-6: con i sensori CO₂/VOC o del mese «Non disponibile» parte il comando come senza allerte.
+B1-7: la descrizione degli script di Fascia dice quello che fa il codice."""
 
 from __future__ import annotations
 
