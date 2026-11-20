@@ -3,6 +3,7 @@ dinamiche (simulatore con Home Assistant reale)."""
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 from homeassistant.util import yaml as hay
@@ -17,7 +18,8 @@ def _automazione() -> str:
 def test_automazione_valida_e_versione() -> None:
     dati = hay.load_yaml(str(PKG / "vmc_master_automazione.txt"))
     assert dati
-    assert "AUTOMAZIONE VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b32]" in _automazione()[:1000]
+    versione = re.search(r"AUTOMAZIONE VMC HELTY FLOW PLUS RELEASE \[VER\. 9\.0\.0b(\d+)\]", _automazione()[:1000])
+    assert versione and int(versione.group(1)) >= 32
 
 
 def test_delta_temp_non_cancella_il_ritorno_a_velocita_0_degli_inquinanti() -> None:

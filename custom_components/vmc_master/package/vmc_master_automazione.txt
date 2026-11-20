@@ -1,6 +1,6 @@
 ###########################################################################################################################################################################################################################
 #                                                                                                                                                                                                                         #
-#                                                          AUTOMAZIONE VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b32]                                                                                                        #
+#                                                          AUTOMAZIONE VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b33]                                                                                                        #
 #                                                                                                                                                                                                                         #
 # SVILUPPATO DA ING. DANILO ROBOTTI, ALLE PRIME ARMI CON HOME ASSISTANT :)                                                                                                                                                #
 #                                                                                                                                                                                                                         #
@@ -171,7 +171,11 @@ description: >-
 
   - Free Cool./Heat.: 24 Secondi. Se durante l'avviso si sceglie un'altra Velocità
   e la si mantiene per 20 Secondi, la ripresa automatica in Free Cool./Heat. viene
-  annullata e la VMC resta sulla Velocità scelta;
+  annullata e la VMC resta sulla Velocità scelta, anche se le condizioni sono già
+  tornate favorevoli; se durante l'avviso il mese corrente esce dalla Fascia, la
+  ripresa viene annullata e la VMC resta a Velocità 0 (Velocità 1 con Inquinanti),
+  ma con un'allerta Umidità in corso va alla [Set Velocità Umidità di Avvio] e a
+  fine Umidità torna a Velocità 0;
 
   - Umidità: 28 Secondi (la logica Umidità memorizza subito la Velocità in uso);
   se durante l'allerta si cambia Velocità, la nuova Velocità viene memorizzata
@@ -232,7 +236,8 @@ description: >-
 
   - Free Cool./Heat. sfavorevole (VMC ferma in attesa): si sceglie un'altra
   Velocità → la VMC va alla Velocità scelta e la ripresa automatica in Free
-  Cool./Heat. viene annullata dopo 20 Secondi; si sceglie Velocità 0 → la VMC è
+  Cool./Heat. viene annullata dopo 20 Secondi, anche con le condizioni già tornate
+  favorevoli (ripresa in attesa); si sceglie Velocità 0 → la VMC è
   già ferma: nessun effetto; quando le condizioni tornano favorevoli riprende in
   Free Cool./Heat.;
 
@@ -285,8 +290,11 @@ description: >-
   - l'interruttore dell'Umidità, mentre è in corso un'allerta Umidità, non si può
   spegnere se c'è anche un'altra allerta qualsiasi (Congelamento, Δ Temp.,
   Inquinanti, Punto di Rugiada, Free Cooling/Heating), finché quell'allerta non è
-  finita. Esempio: l'Umidità ha avviato la VMC e poi sale la CO₂; finché dura
-  l'allerta CO₂, l'interruttore dell'Umidità non si può spegnere;
+  finita (salvo la sospensione Free Cool./Heat.: l'Umidità parte comunque a
+  Velocità 1 [Nota 3] e il suo interruttore non si spegne fino alla ripresa o
+  all'annullamento della Free). Esempio: l'Umidità ha avviato la VMC e poi sale
+  la CO₂; finché dura l'allerta CO₂, l'interruttore dell'Umidità non si può
+  spegnere;
 
   - se, con l'allerta Umidità in corso, inizia una fascia del Calendario,
   l'interruttore dell'Umidità non si può spegnere fino alla fine della fascia,
@@ -296,7 +304,9 @@ description: >-
   Umidità riparte con la [Set Velocità Umidità di Avvio], altrimenti la VMC resta
   a Velocità 0. Se invece si entra prima nel Calendario, oppure è già in corso
   un'altra allerta, e poi sale l'umidità, l'allerta Umidità non scatta e
-  l'interruttore si spegne normalmente;
+  l'interruttore si spegne normalmente (salvo la sospensione Free Cool./Heat.:
+  l'Umidità parte comunque a Velocità 1 [Nota 3] e il suo interruttore non si
+  spegne fino alla ripresa o all'annullamento della Free);
 
   - gli interruttori del Calendario (spento durante una fascia), del Punto di
   Rugiada, del Free Cooling e del Free Heating fermano la VMC; se però sono
@@ -1781,7 +1791,8 @@ triggers:
   - alias: >-
       Condizioni Favorevoli Temp. Ext Vs Temp. Int. Ripristinate su Velocità
       Free Heating se Spia Congelamento Off e Spia Delta Temp Off e se Spia
-      Inquinanti OFF
+      Inquinanti OFF (solo con la VMC a Velocità 0, in Free o a Velocità 1 dell'allerta Umidità
+      [Nota 3]: una velocità scelta dall'utente azzera l'attesa e vince l'annullamento, A3-10)
     value_template: |
       {{ (
       (
@@ -1791,6 +1802,7 @@ triggers:
         ]
         and states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating') == 'on'
         and states('input_boolean.vmc_master_spia_co2_o_voc') == 'off'
+        and (states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') in ['Velocità 0', 'Free Cooling'] or (states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia') == 'on' and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 1'))
         and states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia') == 'off'
         and states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia') == 'off'
         and states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line'
@@ -1811,7 +1823,8 @@ triggers:
   - alias: >-
       Condizioni Favorevoli Temp. Ext Vs Temp. Int. Ripristinate su Velocità
       Free Cooling se Spia Congelamento Off e Spia Delta Temp Off e se Spia
-      Inquinanti OFF
+      Inquinanti OFF (solo con la VMC a Velocità 0, in Free o a Velocità 1 dell'allerta Umidità
+      [Nota 3]: una velocità scelta dall'utente azzera l'attesa e vince l'annullamento, A3-10)
     value_template: |
       {{ (
       (
@@ -1821,6 +1834,7 @@ triggers:
         ]
         and states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling') == 'on'
         and states('input_boolean.vmc_master_spia_co2_o_voc') == 'off'
+        and (states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') in ['Velocità 0', 'Free Cooling'] or (states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia') == 'on' and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 1'))
         and states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia') == 'off'
         and states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia') == 'off'
         and states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line'
@@ -1841,7 +1855,8 @@ triggers:
   - alias: >-
       Condizioni Favorevoli Temp. Ext Vs Temp. Int. Ripristinate su Velocità
       Free Heating se Spia Congelamento Off e Spia Delta Temp Off e se Spia
-      Inquinanti ON
+      Inquinanti ON (solo con la VMC a Velocità 0, a Velocità 1 [Nota 3] o in Free: una velocità
+      scelta dall'utente azzera l'attesa e la memoria degli Inquinanti annulla la ripresa, A3-10)
     value_template: |
       {{ (
       (
@@ -1851,6 +1866,7 @@ triggers:
         ]
         and states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating') == 'on'
         and states('input_boolean.vmc_master_spia_co2_o_voc') == 'on'
+        and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') in ['Velocità 0', 'Velocità 1', 'Free Cooling']
         and states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia') == 'off'
         and states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia') == 'off'
         and states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line'
@@ -1871,7 +1887,8 @@ triggers:
   - alias: >-
       Condizioni Favorevoli Temp. Ext Vs Temp. Int. Ripristinate su Velocità
       Free Cooling se Spia Congelamento Off e Spia Delta Temp Off e se Spia
-      Inquinanti ON
+      Inquinanti ON (solo con la VMC a Velocità 0, a Velocità 1 [Nota 3] o in Free: una velocità
+      scelta dall'utente azzera l'attesa e la memoria degli Inquinanti annulla la ripresa, A3-10)
     value_template: |
       {{ (
       (
@@ -1881,6 +1898,7 @@ triggers:
         ]
         and states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling') == 'on'
         and states('input_boolean.vmc_master_spia_co2_o_voc') == 'on'
+        and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') in ['Velocità 0', 'Velocità 1', 'Free Cooling']
         and states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia') == 'off'
         and states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia') == 'off'
         and states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line'
@@ -7773,6 +7791,7 @@ actions:
         ]
         and states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating') == 'on'
         and states('input_boolean.vmc_master_spia_co2_o_voc') == 'off'
+        and (states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') in ['Velocità 0', 'Free Cooling'] or (states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia') == 'on' and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 1'))
         and states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia') == 'off'
         and states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia') == 'off'
         and states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line'
@@ -7795,6 +7814,7 @@ actions:
         ]
         and states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling') == 'on'
         and states('input_boolean.vmc_master_spia_co2_o_voc') == 'off'
+        and (states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') in ['Velocità 0', 'Free Cooling'] or (states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia') == 'on' and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 1'))
         and states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia') == 'off'
         and states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia') == 'off'
         and states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line'
@@ -7817,6 +7837,7 @@ actions:
         ]
         and states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating') == 'on'
         and states('input_boolean.vmc_master_spia_co2_o_voc') == 'on'
+        and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') in ['Velocità 0', 'Velocità 1', 'Free Cooling']
         and states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia') == 'off'
         and states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia') == 'off'
         and states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line'
@@ -7839,6 +7860,7 @@ actions:
         ]
         and states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling') == 'on'
         and states('input_boolean.vmc_master_spia_co2_o_voc') == 'on'
+        and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') in ['Velocità 0', 'Velocità 1', 'Free Cooling']
         and states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia') == 'off'
         and states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia') == 'off'
         and states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line'
@@ -16502,6 +16524,38 @@ actions:
                   - variables:
                       vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
                     alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+                  - variables:
+                      umidita_al_cambio_mese: "{{ is_state('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia', 'on') and is_state('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_freeheating', 'on') }}"
+                      free_con_allerte: "{{ states('input_select.vmc_master_speed_umidita') == 'Free Cool./Heat.' and\n   (\n    states('sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi') in [\n      \"Allerta Free Heating Programmato (Raffrescamento Arrestato)\",\n      \"Allerta Free Heating Programmato (Raffrescamento in atto)\",\n      \"Allerta Free Heating Programmato (Raffrescamento in atto, Presenza di Inquinanti)\",\n      \"Allerta Free Heating Programmato (Raffrescamento Arrestato, Presenza di Inquinanti)\",\n      \"Allerta Free Cooling Programmato (Riscaldamento in atto)\",\n      \"Allerta Free Cooling Programmato (Riscaldamento Arrestato)\",\n      \"Allerta Free Cooling Programmato (Riscaldamento Arrestato, Presenza di Inquinanti)\",\n      \"Allerta Free Cooling Programmato (Riscaldamento in atto, Presenza di Inquinanti)\",\n      \"Allerta Raffrescamento in atto\",\n      \"Allerta Riscaldamento in atto\",\n      \"Allerta Riscaldamento in atto, Presenza di Inquinanti\",\n      \"Allerta Raffrescamento in atto, Presenza di Inquinanti\",\n      \"Non Avviare in Velocità Free Heating Programmato (Allerta Raffrescamento)\",\n      \"Non Avviare in Velocità Free Heating Programmato (Allerta Raffrescamento, Presenza di Inquinanti)\",\n      \"Non Avviare in Velocità Free Cooling Programmato (Allerta Riscaldamento)\",\n      \"Non Avviare in Velocità Free Cooling Programmato (Allerta Riscaldamento, Presenza di Inquinanti)\"\n    ]\n  )\n}}"
+                      vel_avvio: "{{ 'Velocità 1' if free_con_allerte else states('input_select.vmc_master_speed_umidita') }}"
+                      velocita_finale: "{{ ('Free Cooling' if vel_avvio == 'Free Cool./Heat.' else vel_avvio) if umidita_al_cambio_mese else 'Velocità 0' }}"
+                      comando_vmc: "{{ {'Velocità 0': 'velocita_0', 'Velocità 1': 'velocita_1', 'Velocità 2': 'velocita_2', 'Velocità 3': 'velocita_3', 'Velocità 4': 'velocita_4', 'Notturna': 'notturna', 'Iperventilazione': 'iperventilazione', 'Free Cooling': 'freecooling'}.get(velocita_finale, 'velocita_0') }}"
+                    alias: >-
+                      Velocità finale: Velocità 0; con l'allerta Umidità in corso e il mese programmato cambiato
+                      (interruttore ancora acceso) la velocità di avvio dell'Umidità come nell'opzione 175 (A3-7);
+                      spegnendo l'interruttore resta la Velocità 0 (Foglio A27)
+                  - alias: >-
+                      Allerta Umidità in corso e mese programmato cambiato (interruttore ancora acceso) -> memoria
+                      Umidità «avviata da Velocità 0»: a fine Umidità Velocità 0, ripresa Free annullata; se la VMC
+                      torna a Velocità 0 riparte la velocità di avvio (A3-7)
+                    if:
+                      - condition: template
+                        value_template: "{{ umidita_al_cambio_mese }}"
+                    then:
+                      - action: input_boolean.turn_on
+                        target:
+                          entity_id: input_boolean.vmc_master_spia_umidita_velocita_0
+                      - action: input_boolean.turn_off
+                        target:
+                          entity_id:
+                            - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
+                            - input_boolean.vmc_master_spia_umidita_velocita_1
+                            - input_boolean.vmc_master_spia_umidita_velocita_2
+                            - input_boolean.vmc_master_spia_umidita_velocita_3
+                            - input_boolean.vmc_master_spia_umidita_velocita_4
+                            - input_boolean.vmc_master_spia_umidita_velocita_notturna
+                            - input_boolean.vmc_master_spia_umidita_velocita_iperventilazione
+                            - input_boolean.vmc_master_spia_umidita_velocita_freecooling
                   - repeat:
                       sequence:
                         - data: {}
@@ -16565,9 +16619,9 @@ actions:
                               - >-
                                 input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating
                           action: input_boolean.turn_off
-                        - alias: Imposta Velocità 0
+                        - alias: Imposta Velocità 0 (la velocità di avvio dell'Umidità se il mese programmato è cambiato con l'allerta Umidità in corso)
                           data: {}
-                          action: shell_command.vmc_master_velocita_0
+                          action: "shell_command.vmc_master_{{ comando_vmc }}"
                         - delay:
                             hours: 0
                             minutes: 0
@@ -16627,27 +16681,20 @@ actions:
                             and
                             states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating')=='off'
                             and
-                            states('sensor.vmc_master_status_ventola_lettura_codice_interpretato')=='Velocità
-                            0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}
+                            states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') ==
+                            velocita_finale or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}
                   - alias: Black-Out prima della conferma -> memorizza questa velocità per il ripristino dopo il Black-Out (Priorità 7)
                     if:
                       - condition: template
-                        value_template: "{{ is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 0' }}"
+                        value_template: "{{ is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != velocita_finale }}"
                     then:
                       - data: {}
                         target:
-                          entity_id: input_boolean.vmc_master_spia_velocita_0
+                          entity_id: "input_boolean.vmc_master_spia_{{ {'Velocità 0': 'velocita_0', 'Velocità 1': 'velocita_1', 'Velocità 2': 'velocita_2', 'Velocità 3': 'velocita_3', 'Velocità 4': 'velocita_4', 'Notturna': 'velocita_notturna', 'Iperventilazione': 'velocita_iperventilazione', 'Free Cooling': 'velocita_freecooling'}[velocita_finale] }}"
                         action: input_boolean.turn_on
                       - data: {}
                         target:
-                          entity_id:
-                            - input_boolean.vmc_master_spia_velocita_1
-                            - input_boolean.vmc_master_spia_velocita_2
-                            - input_boolean.vmc_master_spia_velocita_3
-                            - input_boolean.vmc_master_spia_velocita_4
-                            - input_boolean.vmc_master_spia_velocita_notturna
-                            - input_boolean.vmc_master_spia_velocita_iperventilazione
-                            - input_boolean.vmc_master_spia_velocita_freecooling
+                          entity_id: "{{ ['input_boolean.vmc_master_spia_velocita_0', 'input_boolean.vmc_master_spia_velocita_1', 'input_boolean.vmc_master_spia_velocita_2', 'input_boolean.vmc_master_spia_velocita_3', 'input_boolean.vmc_master_spia_velocita_4', 'input_boolean.vmc_master_spia_velocita_notturna', 'input_boolean.vmc_master_spia_velocita_iperventilazione', 'input_boolean.vmc_master_spia_velocita_freecooling'] | reject('eq', 'input_boolean.vmc_master_spia_' ~ {'Velocità 0': 'velocita_0', 'Velocità 1': 'velocita_1', 'Velocità 2': 'velocita_2', 'Velocità 3': 'velocita_3', 'Velocità 4': 'velocita_4', 'Notturna': 'velocita_notturna', 'Iperventilazione': 'velocita_iperventilazione', 'Free Cooling': 'velocita_freecooling'}[velocita_finale]) | join(',') }}"
                         action: input_boolean.turn_off
                 alias: se Spia Congelamento Off e Spia Delta Temp Off
               - conditions:
@@ -16678,7 +16725,8 @@ actions:
                 alias: se Spia Congelamento ON o Spia Delta Temp ON
         alias: >-
           Disattivazione VMC ON/OFF, in Funzione della Vel. Free Heating
-          precedentemente Armato -> Vel. 0 se Spia Inquinanti OFF
+          precedentemente Armato -> Vel. 0 se Spia Inquinanti OFF (con l'allerta Umidità in corso al cambio del mese
+          programmato: velocità di avvio dell'Umidità, A3-7)
       - conditions:
           - condition: trigger
             id:
@@ -16697,6 +16745,33 @@ actions:
                   - variables:
                       vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
                     alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+                  - variables:
+                      umidita_al_cambio_mese: "{{ is_state('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia', 'on') and is_state('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_freeheating', 'on') }}"
+                    alias: >-
+                      Con gli Inquinanti resta la Velocità 1 fino al loro rientro; con l'allerta Umidità in corso e il
+                      mese programmato cambiato la memoria Umidità diventa «avviata da Velocità 0» (A3-7)
+                  - alias: >-
+                      Allerta Umidità in corso e mese programmato cambiato (interruttore ancora acceso) -> memoria
+                      Umidità «avviata da Velocità 0»: a fine Umidità Velocità 0, ripresa Free annullata; se la VMC
+                      torna a Velocità 0 riparte la velocità di avvio (A3-7)
+                    if:
+                      - condition: template
+                        value_template: "{{ umidita_al_cambio_mese }}"
+                    then:
+                      - action: input_boolean.turn_on
+                        target:
+                          entity_id: input_boolean.vmc_master_spia_umidita_velocita_0
+                      - action: input_boolean.turn_off
+                        target:
+                          entity_id:
+                            - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
+                            - input_boolean.vmc_master_spia_umidita_velocita_1
+                            - input_boolean.vmc_master_spia_umidita_velocita_2
+                            - input_boolean.vmc_master_spia_umidita_velocita_3
+                            - input_boolean.vmc_master_spia_umidita_velocita_4
+                            - input_boolean.vmc_master_spia_umidita_velocita_notturna
+                            - input_boolean.vmc_master_spia_umidita_velocita_iperventilazione
+                            - input_boolean.vmc_master_spia_umidita_velocita_freecooling
                   - alias: >-
                       Lancia il Comando Velocità 0 Finchè la Velocità diventa
                       Velocità 1
@@ -16850,6 +16925,38 @@ actions:
                   - variables:
                       vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
                     alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+                  - variables:
+                      umidita_al_cambio_mese: "{{ is_state('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia', 'on') and is_state('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_freecooling', 'on') }}"
+                      free_con_allerte: "{{ states('input_select.vmc_master_speed_umidita') == 'Free Cool./Heat.' and\n   (\n    states('sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi') in [\n      \"Allerta Free Heating Programmato (Raffrescamento Arrestato)\",\n      \"Allerta Free Heating Programmato (Raffrescamento in atto)\",\n      \"Allerta Free Heating Programmato (Raffrescamento in atto, Presenza di Inquinanti)\",\n      \"Allerta Free Heating Programmato (Raffrescamento Arrestato, Presenza di Inquinanti)\",\n      \"Allerta Free Cooling Programmato (Riscaldamento in atto)\",\n      \"Allerta Free Cooling Programmato (Riscaldamento Arrestato)\",\n      \"Allerta Free Cooling Programmato (Riscaldamento Arrestato, Presenza di Inquinanti)\",\n      \"Allerta Free Cooling Programmato (Riscaldamento in atto, Presenza di Inquinanti)\",\n      \"Allerta Raffrescamento in atto\",\n      \"Allerta Riscaldamento in atto\",\n      \"Allerta Riscaldamento in atto, Presenza di Inquinanti\",\n      \"Allerta Raffrescamento in atto, Presenza di Inquinanti\",\n      \"Non Avviare in Velocità Free Heating Programmato (Allerta Raffrescamento)\",\n      \"Non Avviare in Velocità Free Heating Programmato (Allerta Raffrescamento, Presenza di Inquinanti)\",\n      \"Non Avviare in Velocità Free Cooling Programmato (Allerta Riscaldamento)\",\n      \"Non Avviare in Velocità Free Cooling Programmato (Allerta Riscaldamento, Presenza di Inquinanti)\"\n    ]\n  )\n}}"
+                      vel_avvio: "{{ 'Velocità 1' if free_con_allerte else states('input_select.vmc_master_speed_umidita') }}"
+                      velocita_finale: "{{ ('Free Cooling' if vel_avvio == 'Free Cool./Heat.' else vel_avvio) if umidita_al_cambio_mese else 'Velocità 0' }}"
+                      comando_vmc: "{{ {'Velocità 0': 'velocita_0', 'Velocità 1': 'velocita_1', 'Velocità 2': 'velocita_2', 'Velocità 3': 'velocita_3', 'Velocità 4': 'velocita_4', 'Notturna': 'notturna', 'Iperventilazione': 'iperventilazione', 'Free Cooling': 'freecooling'}.get(velocita_finale, 'velocita_0') }}"
+                    alias: >-
+                      Velocità finale: Velocità 0; con l'allerta Umidità in corso e il mese programmato cambiato
+                      (interruttore ancora acceso) la velocità di avvio dell'Umidità come nell'opzione 175 (A3-7);
+                      spegnendo l'interruttore resta la Velocità 0 (Foglio A27)
+                  - alias: >-
+                      Allerta Umidità in corso e mese programmato cambiato (interruttore ancora acceso) -> memoria
+                      Umidità «avviata da Velocità 0»: a fine Umidità Velocità 0, ripresa Free annullata; se la VMC
+                      torna a Velocità 0 riparte la velocità di avvio (A3-7)
+                    if:
+                      - condition: template
+                        value_template: "{{ umidita_al_cambio_mese }}"
+                    then:
+                      - action: input_boolean.turn_on
+                        target:
+                          entity_id: input_boolean.vmc_master_spia_umidita_velocita_0
+                      - action: input_boolean.turn_off
+                        target:
+                          entity_id:
+                            - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
+                            - input_boolean.vmc_master_spia_umidita_velocita_1
+                            - input_boolean.vmc_master_spia_umidita_velocita_2
+                            - input_boolean.vmc_master_spia_umidita_velocita_3
+                            - input_boolean.vmc_master_spia_umidita_velocita_4
+                            - input_boolean.vmc_master_spia_umidita_velocita_notturna
+                            - input_boolean.vmc_master_spia_umidita_velocita_iperventilazione
+                            - input_boolean.vmc_master_spia_umidita_velocita_freecooling
                   - repeat:
                       sequence:
                         - data: {}
@@ -16913,9 +17020,9 @@ actions:
                               - >-
                                 input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating
                           action: input_boolean.turn_off
-                        - alias: Imposta Velocità 0
+                        - alias: Imposta Velocità 0 (la velocità di avvio dell'Umidità se il mese programmato è cambiato con l'allerta Umidità in corso)
                           data: {}
-                          action: shell_command.vmc_master_velocita_0
+                          action: "shell_command.vmc_master_{{ comando_vmc }}"
                         - delay:
                             hours: 0
                             minutes: 0
@@ -16975,27 +17082,20 @@ actions:
                             and
                             states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating')=='off'
                             and
-                            states('sensor.vmc_master_status_ventola_lettura_codice_interpretato')=='Velocità
-                            0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}
+                            states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') ==
+                            velocita_finale or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}
                   - alias: Black-Out prima della conferma -> memorizza questa velocità per il ripristino dopo il Black-Out (Priorità 7)
                     if:
                       - condition: template
-                        value_template: "{{ is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 0' }}"
+                        value_template: "{{ is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != velocita_finale }}"
                     then:
                       - data: {}
                         target:
-                          entity_id: input_boolean.vmc_master_spia_velocita_0
+                          entity_id: "input_boolean.vmc_master_spia_{{ {'Velocità 0': 'velocita_0', 'Velocità 1': 'velocita_1', 'Velocità 2': 'velocita_2', 'Velocità 3': 'velocita_3', 'Velocità 4': 'velocita_4', 'Notturna': 'velocita_notturna', 'Iperventilazione': 'velocita_iperventilazione', 'Free Cooling': 'velocita_freecooling'}[velocita_finale] }}"
                         action: input_boolean.turn_on
                       - data: {}
                         target:
-                          entity_id:
-                            - input_boolean.vmc_master_spia_velocita_1
-                            - input_boolean.vmc_master_spia_velocita_2
-                            - input_boolean.vmc_master_spia_velocita_3
-                            - input_boolean.vmc_master_spia_velocita_4
-                            - input_boolean.vmc_master_spia_velocita_notturna
-                            - input_boolean.vmc_master_spia_velocita_iperventilazione
-                            - input_boolean.vmc_master_spia_velocita_freecooling
+                          entity_id: "{{ ['input_boolean.vmc_master_spia_velocita_0', 'input_boolean.vmc_master_spia_velocita_1', 'input_boolean.vmc_master_spia_velocita_2', 'input_boolean.vmc_master_spia_velocita_3', 'input_boolean.vmc_master_spia_velocita_4', 'input_boolean.vmc_master_spia_velocita_notturna', 'input_boolean.vmc_master_spia_velocita_iperventilazione', 'input_boolean.vmc_master_spia_velocita_freecooling'] | reject('eq', 'input_boolean.vmc_master_spia_' ~ {'Velocità 0': 'velocita_0', 'Velocità 1': 'velocita_1', 'Velocità 2': 'velocita_2', 'Velocità 3': 'velocita_3', 'Velocità 4': 'velocita_4', 'Notturna': 'velocita_notturna', 'Iperventilazione': 'velocita_iperventilazione', 'Free Cooling': 'velocita_freecooling'}[velocita_finale]) | join(',') }}"
                         action: input_boolean.turn_off
                 alias: se Spia Congelamento Off e Spia Delta Temp Off
               - conditions:
@@ -17026,7 +17126,8 @@ actions:
                 alias: se Spia Congelamento ON o Spia Delta Temp ON
         alias: >-
           Disattivazione VMC ON/OFF, in Funzione della Vel. Free Cooling
-          precedentemente Armato -> Vel. 0 se Spia Inquinanti OFF
+          precedentemente Armato -> Vel. 0 se Spia Inquinanti OFF (con l'allerta Umidità in corso al cambio del mese
+          programmato: velocità di avvio dell'Umidità, A3-7)
       - conditions:
           - condition: trigger
             id:
@@ -17045,6 +17146,33 @@ actions:
                   - variables:
                       vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
                     alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+                  - variables:
+                      umidita_al_cambio_mese: "{{ is_state('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia', 'on') and is_state('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_freecooling', 'on') }}"
+                    alias: >-
+                      Con gli Inquinanti resta la Velocità 1 fino al loro rientro; con l'allerta Umidità in corso e il
+                      mese programmato cambiato la memoria Umidità diventa «avviata da Velocità 0» (A3-7)
+                  - alias: >-
+                      Allerta Umidità in corso e mese programmato cambiato (interruttore ancora acceso) -> memoria
+                      Umidità «avviata da Velocità 0»: a fine Umidità Velocità 0, ripresa Free annullata; se la VMC
+                      torna a Velocità 0 riparte la velocità di avvio (A3-7)
+                    if:
+                      - condition: template
+                        value_template: "{{ umidita_al_cambio_mese }}"
+                    then:
+                      - action: input_boolean.turn_on
+                        target:
+                          entity_id: input_boolean.vmc_master_spia_umidita_velocita_0
+                      - action: input_boolean.turn_off
+                        target:
+                          entity_id:
+                            - input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0
+                            - input_boolean.vmc_master_spia_umidita_velocita_1
+                            - input_boolean.vmc_master_spia_umidita_velocita_2
+                            - input_boolean.vmc_master_spia_umidita_velocita_3
+                            - input_boolean.vmc_master_spia_umidita_velocita_4
+                            - input_boolean.vmc_master_spia_umidita_velocita_notturna
+                            - input_boolean.vmc_master_spia_umidita_velocita_iperventilazione
+                            - input_boolean.vmc_master_spia_umidita_velocita_freecooling
                   - alias: >-
                       Lancia il Comando Velocità 0 Finchè la Velocità diventa
                       Velocità 1
@@ -18706,11 +18834,55 @@ actions:
               and states('sensor.vmc_master_status_spegnimento_vmc_tramite_calendario_2') == "Lunedi"
               and now().strftime('%H:%M') >= strptime(states('input_datetime.vmc_master_accensione_lunedi_2'), '%H:%M:%S').strftime('%H:%M')
               and now().strftime('%H:%M') < strptime(states('input_datetime.vmc_master_spegnimento_lunedi_2'), '%H:%M:%S').strftime('%H:%M') ) }}
-          - action: shell_command.vmc_master_velocita_0
-            metadata: {}
-            data: {}
+          - variables:
+              vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+            alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
+            repeat:
+              sequence:
+                - action: shell_command.vmc_master_velocita_0
+                  metadata: {}
+                  data: {}
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 1
+                    milliseconds: 0
+                - action: homeassistant.update_entity
+                  target:
+                    entity_id: sensor.vmc_master_status_ventola
+                  alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 3
+                    milliseconds: 0
+              until:
+                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                  condition: template
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
           - data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
+          - alias: Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7)
+            if:
+              - condition: template
+                value_template: "{{ is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 0' }}"
+            then:
+              - data: {}
+                target:
+                  entity_id: input_boolean.vmc_master_spia_velocita_0
+                action: input_boolean.turn_on
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_1
+                    - input_boolean.vmc_master_spia_velocita_2
+                    - input_boolean.vmc_master_spia_velocita_3
+                    - input_boolean.vmc_master_spia_velocita_4
+                    - input_boolean.vmc_master_spia_velocita_notturna
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione
+                    - input_boolean.vmc_master_spia_velocita_freecooling
+                action: input_boolean.turn_off
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
               dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
@@ -18748,11 +18920,55 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_spia_calendario_lunedi_2
             action: input_boolean.turn_off
-          - action: shell_command.vmc_master_velocita_0
-            metadata: {}
-            data: {}
+          - variables:
+              vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+            alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
+            repeat:
+              sequence:
+                - action: shell_command.vmc_master_velocita_0
+                  metadata: {}
+                  data: {}
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 1
+                    milliseconds: 0
+                - action: homeassistant.update_entity
+                  target:
+                    entity_id: sensor.vmc_master_status_ventola
+                  alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 3
+                    milliseconds: 0
+              until:
+                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                  condition: template
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
           - data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
+          - alias: Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7)
+            if:
+              - condition: template
+                value_template: "{{ is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 0' }}"
+            then:
+              - data: {}
+                target:
+                  entity_id: input_boolean.vmc_master_spia_velocita_0
+                action: input_boolean.turn_on
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_1
+                    - input_boolean.vmc_master_spia_velocita_2
+                    - input_boolean.vmc_master_spia_velocita_3
+                    - input_boolean.vmc_master_spia_velocita_4
+                    - input_boolean.vmc_master_spia_velocita_notturna
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione
+                    - input_boolean.vmc_master_spia_velocita_freecooling
+                action: input_boolean.turn_off
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
               dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
@@ -18801,11 +19017,55 @@ actions:
               and states('sensor.vmc_master_status_spegnimento_vmc_tramite_calendario_2') == "Martedi"
               and now().strftime('%H:%M') >= strptime(states('input_datetime.vmc_master_accensione_martedi_2'), '%H:%M:%S').strftime('%H:%M')
               and now().strftime('%H:%M') < strptime(states('input_datetime.vmc_master_spegnimento_martedi_2'), '%H:%M:%S').strftime('%H:%M') ) }}
-          - action: shell_command.vmc_master_velocita_0
-            metadata: {}
-            data: {}
+          - variables:
+              vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+            alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
+            repeat:
+              sequence:
+                - action: shell_command.vmc_master_velocita_0
+                  metadata: {}
+                  data: {}
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 1
+                    milliseconds: 0
+                - action: homeassistant.update_entity
+                  target:
+                    entity_id: sensor.vmc_master_status_ventola
+                  alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 3
+                    milliseconds: 0
+              until:
+                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                  condition: template
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
           - data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
+          - alias: Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7)
+            if:
+              - condition: template
+                value_template: "{{ is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 0' }}"
+            then:
+              - data: {}
+                target:
+                  entity_id: input_boolean.vmc_master_spia_velocita_0
+                action: input_boolean.turn_on
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_1
+                    - input_boolean.vmc_master_spia_velocita_2
+                    - input_boolean.vmc_master_spia_velocita_3
+                    - input_boolean.vmc_master_spia_velocita_4
+                    - input_boolean.vmc_master_spia_velocita_notturna
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione
+                    - input_boolean.vmc_master_spia_velocita_freecooling
+                action: input_boolean.turn_off
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
               dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
@@ -18843,11 +19103,55 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_spia_calendario_martedi_2
             action: input_boolean.turn_off
-          - action: shell_command.vmc_master_velocita_0
-            metadata: {}
-            data: {}
+          - variables:
+              vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+            alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
+            repeat:
+              sequence:
+                - action: shell_command.vmc_master_velocita_0
+                  metadata: {}
+                  data: {}
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 1
+                    milliseconds: 0
+                - action: homeassistant.update_entity
+                  target:
+                    entity_id: sensor.vmc_master_status_ventola
+                  alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 3
+                    milliseconds: 0
+              until:
+                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                  condition: template
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
           - data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
+          - alias: Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7)
+            if:
+              - condition: template
+                value_template: "{{ is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 0' }}"
+            then:
+              - data: {}
+                target:
+                  entity_id: input_boolean.vmc_master_spia_velocita_0
+                action: input_boolean.turn_on
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_1
+                    - input_boolean.vmc_master_spia_velocita_2
+                    - input_boolean.vmc_master_spia_velocita_3
+                    - input_boolean.vmc_master_spia_velocita_4
+                    - input_boolean.vmc_master_spia_velocita_notturna
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione
+                    - input_boolean.vmc_master_spia_velocita_freecooling
+                action: input_boolean.turn_off
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
               dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
@@ -18895,11 +19199,55 @@ actions:
               and states('sensor.vmc_master_status_spegnimento_vmc_tramite_calendario_2') == "Mercoledi"
               and now().strftime('%H:%M') >= strptime(states('input_datetime.vmc_master_accensione_mercoledi_2'), '%H:%M:%S').strftime('%H:%M')
               and now().strftime('%H:%M') < strptime(states('input_datetime.vmc_master_spegnimento_mercoledi_2'), '%H:%M:%S').strftime('%H:%M') ) }}
-          - action: shell_command.vmc_master_velocita_0
-            metadata: {}
-            data: {}
+          - variables:
+              vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+            alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
+            repeat:
+              sequence:
+                - action: shell_command.vmc_master_velocita_0
+                  metadata: {}
+                  data: {}
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 1
+                    milliseconds: 0
+                - action: homeassistant.update_entity
+                  target:
+                    entity_id: sensor.vmc_master_status_ventola
+                  alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 3
+                    milliseconds: 0
+              until:
+                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                  condition: template
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
           - data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
+          - alias: Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7)
+            if:
+              - condition: template
+                value_template: "{{ is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 0' }}"
+            then:
+              - data: {}
+                target:
+                  entity_id: input_boolean.vmc_master_spia_velocita_0
+                action: input_boolean.turn_on
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_1
+                    - input_boolean.vmc_master_spia_velocita_2
+                    - input_boolean.vmc_master_spia_velocita_3
+                    - input_boolean.vmc_master_spia_velocita_4
+                    - input_boolean.vmc_master_spia_velocita_notturna
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione
+                    - input_boolean.vmc_master_spia_velocita_freecooling
+                action: input_boolean.turn_off
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
               dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
@@ -18937,11 +19285,55 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_spia_calendario_mercoledi_2
             action: input_boolean.turn_off
-          - action: shell_command.vmc_master_velocita_0
-            metadata: {}
-            data: {}
+          - variables:
+              vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+            alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
+            repeat:
+              sequence:
+                - action: shell_command.vmc_master_velocita_0
+                  metadata: {}
+                  data: {}
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 1
+                    milliseconds: 0
+                - action: homeassistant.update_entity
+                  target:
+                    entity_id: sensor.vmc_master_status_ventola
+                  alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 3
+                    milliseconds: 0
+              until:
+                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                  condition: template
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
           - data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
+          - alias: Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7)
+            if:
+              - condition: template
+                value_template: "{{ is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 0' }}"
+            then:
+              - data: {}
+                target:
+                  entity_id: input_boolean.vmc_master_spia_velocita_0
+                action: input_boolean.turn_on
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_1
+                    - input_boolean.vmc_master_spia_velocita_2
+                    - input_boolean.vmc_master_spia_velocita_3
+                    - input_boolean.vmc_master_spia_velocita_4
+                    - input_boolean.vmc_master_spia_velocita_notturna
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione
+                    - input_boolean.vmc_master_spia_velocita_freecooling
+                action: input_boolean.turn_off
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
               dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
@@ -18990,12 +19382,56 @@ actions:
               and states('sensor.vmc_master_status_spegnimento_vmc_tramite_calendario_2') == "Giovedi"
               and now().strftime('%H:%M') >= strptime(states('input_datetime.vmc_master_accensione_giovedi_2'), '%H:%M:%S').strftime('%H:%M')
               and now().strftime('%H:%M') < strptime(states('input_datetime.vmc_master_spegnimento_giovedi_2'), '%H:%M:%S').strftime('%H:%M') ) }}
-          - action: shell_command.vmc_master_velocita_0
-            metadata: {}
-            data: {}
+          - variables:
+              vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+            alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
+            repeat:
+              sequence:
+                - action: shell_command.vmc_master_velocita_0
+                  metadata: {}
+                  data: {}
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 1
+                    milliseconds: 0
+                - action: homeassistant.update_entity
+                  target:
+                    entity_id: sensor.vmc_master_status_ventola
+                  alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 3
+                    milliseconds: 0
+              until:
+                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                  condition: template
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
           - data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
             enabled: true
+          - alias: Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7)
+            if:
+              - condition: template
+                value_template: "{{ is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 0' }}"
+            then:
+              - data: {}
+                target:
+                  entity_id: input_boolean.vmc_master_spia_velocita_0
+                action: input_boolean.turn_on
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_1
+                    - input_boolean.vmc_master_spia_velocita_2
+                    - input_boolean.vmc_master_spia_velocita_3
+                    - input_boolean.vmc_master_spia_velocita_4
+                    - input_boolean.vmc_master_spia_velocita_notturna
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione
+                    - input_boolean.vmc_master_spia_velocita_freecooling
+                action: input_boolean.turn_off
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
               dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
@@ -19033,11 +19469,55 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_spia_calendario_giovedi_2
             action: input_boolean.turn_off
-          - action: shell_command.vmc_master_velocita_0
-            metadata: {}
-            data: {}
+          - variables:
+              vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+            alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
+            repeat:
+              sequence:
+                - action: shell_command.vmc_master_velocita_0
+                  metadata: {}
+                  data: {}
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 1
+                    milliseconds: 0
+                - action: homeassistant.update_entity
+                  target:
+                    entity_id: sensor.vmc_master_status_ventola
+                  alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 3
+                    milliseconds: 0
+              until:
+                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                  condition: template
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
           - data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
+          - alias: Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7)
+            if:
+              - condition: template
+                value_template: "{{ is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 0' }}"
+            then:
+              - data: {}
+                target:
+                  entity_id: input_boolean.vmc_master_spia_velocita_0
+                action: input_boolean.turn_on
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_1
+                    - input_boolean.vmc_master_spia_velocita_2
+                    - input_boolean.vmc_master_spia_velocita_3
+                    - input_boolean.vmc_master_spia_velocita_4
+                    - input_boolean.vmc_master_spia_velocita_notturna
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione
+                    - input_boolean.vmc_master_spia_velocita_freecooling
+                action: input_boolean.turn_off
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
               dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
@@ -19085,11 +19565,55 @@ actions:
               and states('sensor.vmc_master_status_spegnimento_vmc_tramite_calendario_2') == "Venerdi"
               and now().strftime('%H:%M') >= strptime(states('input_datetime.vmc_master_accensione_venerdi_2'), '%H:%M:%S').strftime('%H:%M')
               and now().strftime('%H:%M') < strptime(states('input_datetime.vmc_master_spegnimento_venerdi_2'), '%H:%M:%S').strftime('%H:%M') ) }}
-          - action: shell_command.vmc_master_velocita_0
-            metadata: {}
-            data: {}
+          - variables:
+              vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+            alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
+            repeat:
+              sequence:
+                - action: shell_command.vmc_master_velocita_0
+                  metadata: {}
+                  data: {}
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 1
+                    milliseconds: 0
+                - action: homeassistant.update_entity
+                  target:
+                    entity_id: sensor.vmc_master_status_ventola
+                  alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 3
+                    milliseconds: 0
+              until:
+                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                  condition: template
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
           - data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
+          - alias: Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7)
+            if:
+              - condition: template
+                value_template: "{{ is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 0' }}"
+            then:
+              - data: {}
+                target:
+                  entity_id: input_boolean.vmc_master_spia_velocita_0
+                action: input_boolean.turn_on
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_1
+                    - input_boolean.vmc_master_spia_velocita_2
+                    - input_boolean.vmc_master_spia_velocita_3
+                    - input_boolean.vmc_master_spia_velocita_4
+                    - input_boolean.vmc_master_spia_velocita_notturna
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione
+                    - input_boolean.vmc_master_spia_velocita_freecooling
+                action: input_boolean.turn_off
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
               dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
@@ -19127,11 +19651,55 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_spia_calendario_venerdi_2
             action: input_boolean.turn_off
-          - action: shell_command.vmc_master_velocita_0
-            metadata: {}
-            data: {}
+          - variables:
+              vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+            alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
+            repeat:
+              sequence:
+                - action: shell_command.vmc_master_velocita_0
+                  metadata: {}
+                  data: {}
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 1
+                    milliseconds: 0
+                - action: homeassistant.update_entity
+                  target:
+                    entity_id: sensor.vmc_master_status_ventola
+                  alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 3
+                    milliseconds: 0
+              until:
+                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                  condition: template
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
           - data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
+          - alias: Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7)
+            if:
+              - condition: template
+                value_template: "{{ is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 0' }}"
+            then:
+              - data: {}
+                target:
+                  entity_id: input_boolean.vmc_master_spia_velocita_0
+                action: input_boolean.turn_on
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_1
+                    - input_boolean.vmc_master_spia_velocita_2
+                    - input_boolean.vmc_master_spia_velocita_3
+                    - input_boolean.vmc_master_spia_velocita_4
+                    - input_boolean.vmc_master_spia_velocita_notturna
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione
+                    - input_boolean.vmc_master_spia_velocita_freecooling
+                action: input_boolean.turn_off
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
               dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
@@ -19179,11 +19747,55 @@ actions:
               and states('sensor.vmc_master_status_spegnimento_vmc_tramite_calendario_2') == "Sabato"
               and now().strftime('%H:%M') >= strptime(states('input_datetime.vmc_master_accensione_sabato_2'), '%H:%M:%S').strftime('%H:%M')
               and now().strftime('%H:%M') < strptime(states('input_datetime.vmc_master_spegnimento_sabato_2'), '%H:%M:%S').strftime('%H:%M') ) }}
-          - action: shell_command.vmc_master_velocita_0
-            metadata: {}
-            data: {}
+          - variables:
+              vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+            alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
+            repeat:
+              sequence:
+                - action: shell_command.vmc_master_velocita_0
+                  metadata: {}
+                  data: {}
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 1
+                    milliseconds: 0
+                - action: homeassistant.update_entity
+                  target:
+                    entity_id: sensor.vmc_master_status_ventola
+                  alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 3
+                    milliseconds: 0
+              until:
+                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                  condition: template
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
           - data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
+          - alias: Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7)
+            if:
+              - condition: template
+                value_template: "{{ is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 0' }}"
+            then:
+              - data: {}
+                target:
+                  entity_id: input_boolean.vmc_master_spia_velocita_0
+                action: input_boolean.turn_on
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_1
+                    - input_boolean.vmc_master_spia_velocita_2
+                    - input_boolean.vmc_master_spia_velocita_3
+                    - input_boolean.vmc_master_spia_velocita_4
+                    - input_boolean.vmc_master_spia_velocita_notturna
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione
+                    - input_boolean.vmc_master_spia_velocita_freecooling
+                action: input_boolean.turn_off
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
               dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
@@ -19221,11 +19833,55 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_spia_calendario_sabato_2
             action: input_boolean.turn_off
-          - action: shell_command.vmc_master_velocita_0
-            metadata: {}
-            data: {}
+          - variables:
+              vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+            alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
+            repeat:
+              sequence:
+                - action: shell_command.vmc_master_velocita_0
+                  metadata: {}
+                  data: {}
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 1
+                    milliseconds: 0
+                - action: homeassistant.update_entity
+                  target:
+                    entity_id: sensor.vmc_master_status_ventola
+                  alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 3
+                    milliseconds: 0
+              until:
+                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                  condition: template
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
           - data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
+          - alias: Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7)
+            if:
+              - condition: template
+                value_template: "{{ is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 0' }}"
+            then:
+              - data: {}
+                target:
+                  entity_id: input_boolean.vmc_master_spia_velocita_0
+                action: input_boolean.turn_on
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_1
+                    - input_boolean.vmc_master_spia_velocita_2
+                    - input_boolean.vmc_master_spia_velocita_3
+                    - input_boolean.vmc_master_spia_velocita_4
+                    - input_boolean.vmc_master_spia_velocita_notturna
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione
+                    - input_boolean.vmc_master_spia_velocita_freecooling
+                action: input_boolean.turn_off
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
               dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
@@ -19273,12 +19929,56 @@ actions:
               and states('sensor.vmc_master_status_spegnimento_vmc_tramite_calendario_2') == "Domenica"
               and now().strftime('%H:%M') >= strptime(states('input_datetime.vmc_master_accensione_domenica_2'), '%H:%M:%S').strftime('%H:%M')
               and now().strftime('%H:%M') < strptime(states('input_datetime.vmc_master_spegnimento_domenica_2'), '%H:%M:%S').strftime('%H:%M') ) }}
-          - action: shell_command.vmc_master_velocita_0
-            metadata: {}
-            data: {}
+          - variables:
+              vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+            alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
+            repeat:
+              sequence:
+                - action: shell_command.vmc_master_velocita_0
+                  metadata: {}
+                  data: {}
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 1
+                    milliseconds: 0
+                - action: homeassistant.update_entity
+                  target:
+                    entity_id: sensor.vmc_master_status_ventola
+                  alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 3
+                    milliseconds: 0
+              until:
+                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                  condition: template
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
           - metadata: {}
             data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
+          - alias: Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7)
+            if:
+              - condition: template
+                value_template: "{{ is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 0' }}"
+            then:
+              - data: {}
+                target:
+                  entity_id: input_boolean.vmc_master_spia_velocita_0
+                action: input_boolean.turn_on
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_1
+                    - input_boolean.vmc_master_spia_velocita_2
+                    - input_boolean.vmc_master_spia_velocita_3
+                    - input_boolean.vmc_master_spia_velocita_4
+                    - input_boolean.vmc_master_spia_velocita_notturna
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione
+                    - input_boolean.vmc_master_spia_velocita_freecooling
+                action: input_boolean.turn_off
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
               dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
@@ -19316,11 +20016,55 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_spia_calendario_domenica_2
             action: input_boolean.turn_off
-          - action: shell_command.vmc_master_velocita_0
-            metadata: {}
-            data: {}
+          - variables:
+              vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+            alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
+            repeat:
+              sequence:
+                - action: shell_command.vmc_master_velocita_0
+                  metadata: {}
+                  data: {}
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 1
+                    milliseconds: 0
+                - action: homeassistant.update_entity
+                  target:
+                    entity_id: sensor.vmc_master_status_ventola
+                  alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 3
+                    milliseconds: 0
+              until:
+                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                  condition: template
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
           - data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
+          - alias: Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7)
+            if:
+              - condition: template
+                value_template: "{{ is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 0' }}"
+            then:
+              - data: {}
+                target:
+                  entity_id: input_boolean.vmc_master_spia_velocita_0
+                action: input_boolean.turn_on
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_1
+                    - input_boolean.vmc_master_spia_velocita_2
+                    - input_boolean.vmc_master_spia_velocita_3
+                    - input_boolean.vmc_master_spia_velocita_4
+                    - input_boolean.vmc_master_spia_velocita_notturna
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione
+                    - input_boolean.vmc_master_spia_velocita_freecooling
+                action: input_boolean.turn_off
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
               dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)

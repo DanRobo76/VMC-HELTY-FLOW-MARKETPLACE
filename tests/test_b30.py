@@ -130,9 +130,9 @@ def _visibili(righe: list, stati: dict) -> list[str]:
 
 
 INTRO = "Home Assistant si è appena avviato: le allerte ripartono da sole, un gruppo dopo l'altro. Non serve fare nulla."
-G1 = "1° gruppo: Black-Out, Congelamento, Diff. Temp."
+G1 = "1° gruppo: Black-Out, Congelamento, Δ Temp."  # b33: nomi del Foglio A27 (A4-9)
 G2 = "2° gruppo: Inquinanti"
-G3 = "3° gruppo: Punto di Rugiada, Free Heating/Cooling, Calendario, Umidità"
+G3 = "3° gruppo: Lim. Δ Punto di Rugiada, Free Cool./Heat., Calendario, Umidità"
 
 
 @pytest.mark.parametrize(
