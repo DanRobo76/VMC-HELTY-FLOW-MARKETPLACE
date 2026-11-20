@@ -17915,8 +17915,33 @@ actions:
                       {{
                       states('input_boolean.vmc_master_spia_velocita_0_un_solo_avvio')=='on'}}
                 sequence:
-                  - data: {}
-                    action: shell_command.vmc_master_velocita_0
+                  - variables:
+                      vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+                    alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+                  - alias: >-
+                      Ripristino dopo il Black-Out: ripete il comando finché la VMC non lo esegue e solo dopo spegne le spie,
+                      così le allerte in attesa della fine del Black-Out memorizzano la velocità ripristinata e non quella letta alla riaccensione
+                    repeat:
+                      sequence:
+                        - data: {}
+                          action: shell_command.vmc_master_velocita_0
+                        - delay:
+                            hours: 0
+                            minutes: 0
+                            seconds: 1
+                            milliseconds: 0
+                        - action: homeassistant.update_entity
+                          target:
+                            entity_id: sensor.vmc_master_status_ventola
+                          alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                        - delay:
+                            hours: 0
+                            minutes: 0
+                            seconds: 3
+                            milliseconds: 0
+                      until:
+                        - condition: template
+                          value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
                 alias: PdR Velocità 0 ON
               - conditions:
                   - condition: template
@@ -17924,8 +17949,33 @@ actions:
                       {{
                       states('input_boolean.vmc_master_spia_velocita_1_un_solo_avvio')=='on'}}
                 sequence:
-                  - data: {}
-                    action: shell_command.vmc_master_velocita_1
+                  - variables:
+                      vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+                    alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+                  - alias: >-
+                      Ripristino dopo il Black-Out: ripete il comando finché la VMC non lo esegue e solo dopo spegne le spie,
+                      così le allerte in attesa della fine del Black-Out memorizzano la velocità ripristinata e non quella letta alla riaccensione
+                    repeat:
+                      sequence:
+                        - data: {}
+                          action: shell_command.vmc_master_velocita_1
+                        - delay:
+                            hours: 0
+                            minutes: 0
+                            seconds: 1
+                            milliseconds: 0
+                        - action: homeassistant.update_entity
+                          target:
+                            entity_id: sensor.vmc_master_status_ventola
+                          alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                        - delay:
+                            hours: 0
+                            minutes: 0
+                            seconds: 3
+                            milliseconds: 0
+                      until:
+                        - condition: template
+                          value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 1' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
                 alias: PdR Velocità 1 ON
               - conditions:
                   - condition: template
@@ -17933,8 +17983,33 @@ actions:
                       {{
                       states('input_boolean.vmc_master_spia_velocita_2_un_solo_avvio')=='on'}}
                 sequence:
-                  - action: shell_command.vmc_master_velocita_2
-                    data: {}
+                  - variables:
+                      vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+                    alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+                  - alias: >-
+                      Ripristino dopo il Black-Out: ripete il comando finché la VMC non lo esegue e solo dopo spegne le spie,
+                      così le allerte in attesa della fine del Black-Out memorizzano la velocità ripristinata e non quella letta alla riaccensione
+                    repeat:
+                      sequence:
+                        - data: {}
+                          action: shell_command.vmc_master_velocita_2
+                        - delay:
+                            hours: 0
+                            minutes: 0
+                            seconds: 1
+                            milliseconds: 0
+                        - action: homeassistant.update_entity
+                          target:
+                            entity_id: sensor.vmc_master_status_ventola
+                          alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                        - delay:
+                            hours: 0
+                            minutes: 0
+                            seconds: 3
+                            milliseconds: 0
+                      until:
+                        - condition: template
+                          value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 2' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
                 alias: PdR Velocità 2 ON
               - conditions:
                   - condition: template
@@ -17942,8 +18017,33 @@ actions:
                       {{
                       states('input_boolean.vmc_master_spia_velocita_3_un_solo_avvio')=='on'}}
                 sequence:
-                  - action: shell_command.vmc_master_velocita_3
-                    data: {}
+                  - variables:
+                      vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+                    alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+                  - alias: >-
+                      Ripristino dopo il Black-Out: ripete il comando finché la VMC non lo esegue e solo dopo spegne le spie,
+                      così le allerte in attesa della fine del Black-Out memorizzano la velocità ripristinata e non quella letta alla riaccensione
+                    repeat:
+                      sequence:
+                        - data: {}
+                          action: shell_command.vmc_master_velocita_3
+                        - delay:
+                            hours: 0
+                            minutes: 0
+                            seconds: 1
+                            milliseconds: 0
+                        - action: homeassistant.update_entity
+                          target:
+                            entity_id: sensor.vmc_master_status_ventola
+                          alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                        - delay:
+                            hours: 0
+                            minutes: 0
+                            seconds: 3
+                            milliseconds: 0
+                      until:
+                        - condition: template
+                          value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 3' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
                 alias: PdR Velocità 3 ON
               - conditions:
                   - condition: template
@@ -17951,8 +18051,33 @@ actions:
                       {{
                       states('input_boolean.vmc_master_spia_velocita_4_un_solo_avvio')=='on'}}
                 sequence:
-                  - action: shell_command.vmc_master_velocita_4
-                    data: {}
+                  - variables:
+                      vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+                    alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+                  - alias: >-
+                      Ripristino dopo il Black-Out: ripete il comando finché la VMC non lo esegue e solo dopo spegne le spie,
+                      così le allerte in attesa della fine del Black-Out memorizzano la velocità ripristinata e non quella letta alla riaccensione
+                    repeat:
+                      sequence:
+                        - data: {}
+                          action: shell_command.vmc_master_velocita_4
+                        - delay:
+                            hours: 0
+                            minutes: 0
+                            seconds: 1
+                            milliseconds: 0
+                        - action: homeassistant.update_entity
+                          target:
+                            entity_id: sensor.vmc_master_status_ventola
+                          alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                        - delay:
+                            hours: 0
+                            minutes: 0
+                            seconds: 3
+                            milliseconds: 0
+                      until:
+                        - condition: template
+                          value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 4' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
                 alias: PdR Velocità 4 ON
               - conditions:
                   - condition: template
@@ -17960,8 +18085,33 @@ actions:
                       {{
                       states('input_boolean.vmc_master_spia_velocita_notturna_un_solo_avvio')=='on'}}
                 sequence:
-                  - action: shell_command.vmc_master_notturna
-                    data: {}
+                  - variables:
+                      vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+                    alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+                  - alias: >-
+                      Ripristino dopo il Black-Out: ripete il comando finché la VMC non lo esegue e solo dopo spegne le spie,
+                      così le allerte in attesa della fine del Black-Out memorizzano la velocità ripristinata e non quella letta alla riaccensione
+                    repeat:
+                      sequence:
+                        - data: {}
+                          action: shell_command.vmc_master_notturna
+                        - delay:
+                            hours: 0
+                            minutes: 0
+                            seconds: 1
+                            milliseconds: 0
+                        - action: homeassistant.update_entity
+                          target:
+                            entity_id: sensor.vmc_master_status_ventola
+                          alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                        - delay:
+                            hours: 0
+                            minutes: 0
+                            seconds: 3
+                            milliseconds: 0
+                      until:
+                        - condition: template
+                          value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Notturna' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
                 alias: PdR Velocità Notturna
               - conditions:
                   - condition: template
@@ -17969,8 +18119,33 @@ actions:
                       {{
                       states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio')=='on'}}
                 sequence:
-                  - action: shell_command.vmc_master_freecooling
-                    data: {}
+                  - variables:
+                      vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+                    alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+                  - alias: >-
+                      Ripristino dopo il Black-Out: ripete il comando finché la VMC non lo esegue e solo dopo spegne le spie,
+                      così le allerte in attesa della fine del Black-Out memorizzano la velocità ripristinata e non quella letta alla riaccensione
+                    repeat:
+                      sequence:
+                        - data: {}
+                          action: shell_command.vmc_master_freecooling
+                        - delay:
+                            hours: 0
+                            minutes: 0
+                            seconds: 1
+                            milliseconds: 0
+                        - action: homeassistant.update_entity
+                          target:
+                            entity_id: sensor.vmc_master_status_ventola
+                          alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                        - delay:
+                            hours: 0
+                            minutes: 0
+                            seconds: 3
+                            milliseconds: 0
+                      until:
+                        - condition: template
+                          value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Free Cooling' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
                 alias: PdR Velocità Free Cooling/ Heating
               - conditions:
                   - condition: template
@@ -17978,8 +18153,33 @@ actions:
                       {{
                       states('input_boolean.vmc_master_spia_velocita_iperventilazione_un_solo_avvio')=='on'}}
                 sequence:
-                  - action: shell_command.vmc_master_iperventilazione
-                    data: {}
+                  - variables:
+                      vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+                    alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+                  - alias: >-
+                      Ripristino dopo il Black-Out: ripete il comando finché la VMC non lo esegue e solo dopo spegne le spie,
+                      così le allerte in attesa della fine del Black-Out memorizzano la velocità ripristinata e non quella letta alla riaccensione
+                    repeat:
+                      sequence:
+                        - data: {}
+                          action: shell_command.vmc_master_iperventilazione
+                        - delay:
+                            hours: 0
+                            minutes: 0
+                            seconds: 1
+                            milliseconds: 0
+                        - action: homeassistant.update_entity
+                          target:
+                            entity_id: sensor.vmc_master_status_ventola
+                          alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                        - delay:
+                            hours: 0
+                            minutes: 0
+                            seconds: 3
+                            milliseconds: 0
+                      until:
+                        - condition: template
+                          value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Iperventilazione' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
                 alias: PdR Velocità Iperventilazione
               - conditions:
                   - condition: template
@@ -18004,8 +18204,33 @@ actions:
                     condition: template
                     value_template: "{{ is_state('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia', 'off') }}"
                 sequence:
-                  - data: {}
-                    action: shell_command.vmc_master_velocita_1
+                  - variables:
+                      vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+                    alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+                  - alias: >-
+                      Ripristino dopo il Black-Out: ripete il comando finché la VMC non lo esegue e solo dopo spegne le spie,
+                      così le allerte in attesa della fine del Black-Out memorizzano la velocità ripristinata e non quella letta alla riaccensione
+                    repeat:
+                      sequence:
+                        - data: {}
+                          action: shell_command.vmc_master_velocita_1
+                        - delay:
+                            hours: 0
+                            minutes: 0
+                            seconds: 1
+                            milliseconds: 0
+                        - action: homeassistant.update_entity
+                          target:
+                            entity_id: sensor.vmc_master_status_ventola
+                          alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                        - delay:
+                            hours: 0
+                            minutes: 0
+                            seconds: 3
+                            milliseconds: 0
+                      until:
+                        - condition: template
+                          value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 1' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
                   - action: input_boolean.turn_off
                     metadata: {}
                     data: {}
@@ -18610,8 +18835,33 @@ actions:
                       states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating')=='off')
                       }}
                 sequence:
-                  - data: {}
-                    action: shell_command.vmc_master_freecooling
+                  - variables:
+                      vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+                    alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+                  - alias: >-
+                      Ripristino dopo il Black-Out: ripete il comando finché la VMC non lo esegue e solo dopo spegne le spie,
+                      così le allerte in attesa della fine del Black-Out memorizzano la velocità ripristinata e non quella letta alla riaccensione
+                    repeat:
+                      sequence:
+                        - data: {}
+                          action: shell_command.vmc_master_freecooling
+                        - delay:
+                            hours: 0
+                            minutes: 0
+                            seconds: 1
+                            milliseconds: 0
+                        - action: homeassistant.update_entity
+                          target:
+                            entity_id: sensor.vmc_master_status_ventola
+                          alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                        - delay:
+                            hours: 0
+                            minutes: 0
+                            seconds: 3
+                            milliseconds: 0
+                      until:
+                        - condition: template
+                          value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Free Cooling' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
                 alias: >-
                   [SPIE INQUINANTI OFF] e [SPIE FREECOOLING OFF e FREEHEAING
                   OFF]
@@ -18628,8 +18878,33 @@ actions:
                       and
                       states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating')=='off')}}
                 sequence:
-                  - data: {}
-                    action: shell_command.vmc_master_freecooling
+                  - variables:
+                      vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+                    alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+                  - alias: >-
+                      Ripristino dopo il Black-Out: ripete il comando finché la VMC non lo esegue e solo dopo spegne le spie,
+                      così le allerte in attesa della fine del Black-Out memorizzano la velocità ripristinata e non quella letta alla riaccensione
+                    repeat:
+                      sequence:
+                        - data: {}
+                          action: shell_command.vmc_master_freecooling
+                        - delay:
+                            hours: 0
+                            minutes: 0
+                            seconds: 1
+                            milliseconds: 0
+                        - action: homeassistant.update_entity
+                          target:
+                            entity_id: sensor.vmc_master_status_ventola
+                          alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                        - delay:
+                            hours: 0
+                            minutes: 0
+                            seconds: 3
+                            milliseconds: 0
+                      until:
+                        - condition: template
+                          value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Free Cooling' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
                 alias: '[SPIE INQUINANTI ON] e [SPIE FREECOOLING OFF e FREEHEAING OFF]'
               - conditions:
                   - alias: >-
@@ -18647,9 +18922,33 @@ actions:
                       states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating')=='on')
                       )  }}
                 sequence:
-                  - action: shell_command.vmc_master_freecooling
-                    metadata: {}
-                    data: {}
+                  - variables:
+                      vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+                    alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+                  - alias: >-
+                      Ripristino dopo il Black-Out: ripete il comando finché la VMC non lo esegue e solo dopo spegne le spie,
+                      così le allerte in attesa della fine del Black-Out memorizzano la velocità ripristinata e non quella letta alla riaccensione
+                    repeat:
+                      sequence:
+                        - data: {}
+                          action: shell_command.vmc_master_freecooling
+                        - delay:
+                            hours: 0
+                            minutes: 0
+                            seconds: 1
+                            milliseconds: 0
+                        - action: homeassistant.update_entity
+                          target:
+                            entity_id: sensor.vmc_master_status_ventola
+                          alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                        - delay:
+                            hours: 0
+                            minutes: 0
+                            seconds: 3
+                            milliseconds: 0
+                      until:
+                        - condition: template
+                          value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Free Cooling' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
               - conditions:
                   - alias: >-
                       ([SPIE INQUINANTI ON] e [SPIE FREECOOLING ON o FREEHEAING
@@ -18666,9 +18965,33 @@ actions:
                       states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating')=='on')
                       )}}
                 sequence:
-                  - action: shell_command.vmc_master_velocita_1
-                    metadata: {}
-                    data: {}
+                  - variables:
+                      vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+                    alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+                  - alias: >-
+                      Ripristino dopo il Black-Out: ripete il comando finché la VMC non lo esegue e solo dopo spegne le spie,
+                      così le allerte in attesa della fine del Black-Out memorizzano la velocità ripristinata e non quella letta alla riaccensione
+                    repeat:
+                      sequence:
+                        - data: {}
+                          action: shell_command.vmc_master_velocita_1
+                        - delay:
+                            hours: 0
+                            minutes: 0
+                            seconds: 1
+                            milliseconds: 0
+                        - action: homeassistant.update_entity
+                          target:
+                            entity_id: sensor.vmc_master_status_ventola
+                          alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                        - delay:
+                            hours: 0
+                            minutes: 0
+                            seconds: 3
+                            milliseconds: 0
+                      until:
+                        - condition: template
+                          value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 1' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
             default:
               - alias: >-
                   Combinazioni non coperte dai 4 casi (per esempio Inquinanti appena rilevati e memoria della Velocità 1
@@ -18679,14 +19002,62 @@ actions:
                         entity_id: input_boolean.vmc_master_spia_co2_o_voc
                         state: "on"
                     sequence:
-                      - action: shell_command.vmc_master_velocita_1
-                        metadata: {}
-                        data: {}
+                      - variables:
+                          vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+                        alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+                      - alias: >-
+                          Ripristino dopo il Black-Out: ripete il comando finché la VMC non lo esegue e solo dopo spegne le spie,
+                          così le allerte in attesa della fine del Black-Out memorizzano la velocità ripristinata e non quella letta alla riaccensione
+                        repeat:
+                          sequence:
+                            - data: {}
+                              action: shell_command.vmc_master_velocita_1
+                            - delay:
+                                hours: 0
+                                minutes: 0
+                                seconds: 1
+                                milliseconds: 0
+                            - action: homeassistant.update_entity
+                              target:
+                                entity_id: sensor.vmc_master_status_ventola
+                              alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                            - delay:
+                                hours: 0
+                                minutes: 0
+                                seconds: 3
+                                milliseconds: 0
+                          until:
+                            - condition: template
+                              value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 1' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
                     alias: Inquinanti in corso, Velocità 1 come chiedono gli Inquinanti
                 default:
-                  - action: shell_command.vmc_master_freecooling
-                    metadata: {}
-                    data: {}
+                  - variables:
+                      vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+                    alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+                  - alias: >-
+                      Ripristino dopo il Black-Out: ripete il comando finché la VMC non lo esegue e solo dopo spegne le spie,
+                      così le allerte in attesa della fine del Black-Out memorizzano la velocità ripristinata e non quella letta alla riaccensione
+                    repeat:
+                      sequence:
+                        - data: {}
+                          action: shell_command.vmc_master_freecooling
+                        - delay:
+                            hours: 0
+                            minutes: 0
+                            seconds: 1
+                            milliseconds: 0
+                        - action: homeassistant.update_entity
+                          target:
+                            entity_id: sensor.vmc_master_status_ventola
+                          alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                        - delay:
+                            hours: 0
+                            minutes: 0
+                            seconds: 3
+                            milliseconds: 0
+                      until:
+                        - condition: template
+                          value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Free Cooling' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
           - alias: >-
               Ripristino dopo il Black-Out: attende che la VMC esegua il comando (al massimo 12 s) prima di spegnere le spie,
               così le allerte in attesa della fine del Black-Out memorizzano la velocità ripristinata
@@ -24493,9 +24864,30 @@ actions:
                             states('input_boolean.vmc_master_spia_velocita_freecooling_co2_o_voc')=='off'
                             and
                             states('input_boolean.vmc_master_spia_velocita_1_co2_o_voc_pdr')=='off'}}
-                  - metadata: {}
-                    data: {}
-                    action: shell_command.vmc_master_velocita_1
+                  - variables:
+                      vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+                    alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+                  - repeat:
+                      sequence:
+                        - data: {}
+                          action: shell_command.vmc_master_velocita_1
+                        - delay:
+                            hours: 0
+                            minutes: 0
+                            seconds: 1
+                            milliseconds: 0
+                        - action: homeassistant.update_entity
+                          target:
+                            entity_id: sensor.vmc_master_status_ventola
+                          alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                        - delay:
+                            hours: 0
+                            minutes: 0
+                            seconds: 3
+                            milliseconds: 0
+                      until:
+                        - condition: template
+                          value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 1' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
                 alias: >-
                   Se la Spia 1° Avvio Free Heating è OFF e la Spia1° Avvio Free
                   Cooling è ON
@@ -24559,9 +24951,30 @@ actions:
                             and
                             states('input_boolean.vmc_master_spia_velocita_1_co2_o_voc_pdr')=='off'}}
                     enabled: true
-                  - metadata: {}
-                    data: {}
-                    action: shell_command.vmc_master_velocita_1
+                  - variables:
+                      vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+                    alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+                  - repeat:
+                      sequence:
+                        - data: {}
+                          action: shell_command.vmc_master_velocita_1
+                        - delay:
+                            hours: 0
+                            minutes: 0
+                            seconds: 1
+                            milliseconds: 0
+                        - action: homeassistant.update_entity
+                          target:
+                            entity_id: sensor.vmc_master_status_ventola
+                          alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                        - delay:
+                            hours: 0
+                            minutes: 0
+                            seconds: 3
+                            milliseconds: 0
+                      until:
+                        - condition: template
+                          value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 1' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
                 alias: >-
                   Se la Spia 1° Avvio Free Heating è ON oppure la Spia1° Avvio
                   Free Cooling è OFF
