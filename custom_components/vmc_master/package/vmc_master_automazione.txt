@@ -18711,11 +18711,55 @@ actions:
               and states('sensor.vmc_master_status_spegnimento_vmc_tramite_calendario_2') == "Lunedi"
               and now().strftime('%H:%M') >= strptime(states('input_datetime.vmc_master_accensione_lunedi_2'), '%H:%M:%S').strftime('%H:%M')
               and now().strftime('%H:%M') < strptime(states('input_datetime.vmc_master_spegnimento_lunedi_2'), '%H:%M:%S').strftime('%H:%M') ) }}
-          - action: shell_command.vmc_master_velocita_0
-            metadata: {}
-            data: {}
+          - variables:
+              vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+            alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
+            repeat:
+              sequence:
+                - action: shell_command.vmc_master_velocita_0
+                  metadata: {}
+                  data: {}
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 1
+                    milliseconds: 0
+                - action: homeassistant.update_entity
+                  target:
+                    entity_id: sensor.vmc_master_status_ventola
+                  alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 3
+                    milliseconds: 0
+              until:
+                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                  condition: template
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
           - data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
+          - alias: Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7)
+            if:
+              - condition: template
+                value_template: "{{ is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 0' }}"
+            then:
+              - data: {}
+                target:
+                  entity_id: input_boolean.vmc_master_spia_velocita_0
+                action: input_boolean.turn_on
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_1
+                    - input_boolean.vmc_master_spia_velocita_2
+                    - input_boolean.vmc_master_spia_velocita_3
+                    - input_boolean.vmc_master_spia_velocita_4
+                    - input_boolean.vmc_master_spia_velocita_notturna
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione
+                    - input_boolean.vmc_master_spia_velocita_freecooling
+                action: input_boolean.turn_off
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
               dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
@@ -18753,11 +18797,55 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_spia_calendario_lunedi_2
             action: input_boolean.turn_off
-          - action: shell_command.vmc_master_velocita_0
-            metadata: {}
-            data: {}
+          - variables:
+              vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+            alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
+            repeat:
+              sequence:
+                - action: shell_command.vmc_master_velocita_0
+                  metadata: {}
+                  data: {}
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 1
+                    milliseconds: 0
+                - action: homeassistant.update_entity
+                  target:
+                    entity_id: sensor.vmc_master_status_ventola
+                  alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 3
+                    milliseconds: 0
+              until:
+                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                  condition: template
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
           - data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
+          - alias: Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7)
+            if:
+              - condition: template
+                value_template: "{{ is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 0' }}"
+            then:
+              - data: {}
+                target:
+                  entity_id: input_boolean.vmc_master_spia_velocita_0
+                action: input_boolean.turn_on
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_1
+                    - input_boolean.vmc_master_spia_velocita_2
+                    - input_boolean.vmc_master_spia_velocita_3
+                    - input_boolean.vmc_master_spia_velocita_4
+                    - input_boolean.vmc_master_spia_velocita_notturna
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione
+                    - input_boolean.vmc_master_spia_velocita_freecooling
+                action: input_boolean.turn_off
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
               dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
@@ -18806,11 +18894,55 @@ actions:
               and states('sensor.vmc_master_status_spegnimento_vmc_tramite_calendario_2') == "Martedi"
               and now().strftime('%H:%M') >= strptime(states('input_datetime.vmc_master_accensione_martedi_2'), '%H:%M:%S').strftime('%H:%M')
               and now().strftime('%H:%M') < strptime(states('input_datetime.vmc_master_spegnimento_martedi_2'), '%H:%M:%S').strftime('%H:%M') ) }}
-          - action: shell_command.vmc_master_velocita_0
-            metadata: {}
-            data: {}
+          - variables:
+              vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+            alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
+            repeat:
+              sequence:
+                - action: shell_command.vmc_master_velocita_0
+                  metadata: {}
+                  data: {}
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 1
+                    milliseconds: 0
+                - action: homeassistant.update_entity
+                  target:
+                    entity_id: sensor.vmc_master_status_ventola
+                  alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 3
+                    milliseconds: 0
+              until:
+                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                  condition: template
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
           - data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
+          - alias: Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7)
+            if:
+              - condition: template
+                value_template: "{{ is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 0' }}"
+            then:
+              - data: {}
+                target:
+                  entity_id: input_boolean.vmc_master_spia_velocita_0
+                action: input_boolean.turn_on
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_1
+                    - input_boolean.vmc_master_spia_velocita_2
+                    - input_boolean.vmc_master_spia_velocita_3
+                    - input_boolean.vmc_master_spia_velocita_4
+                    - input_boolean.vmc_master_spia_velocita_notturna
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione
+                    - input_boolean.vmc_master_spia_velocita_freecooling
+                action: input_boolean.turn_off
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
               dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
@@ -18848,11 +18980,55 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_spia_calendario_martedi_2
             action: input_boolean.turn_off
-          - action: shell_command.vmc_master_velocita_0
-            metadata: {}
-            data: {}
+          - variables:
+              vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+            alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
+            repeat:
+              sequence:
+                - action: shell_command.vmc_master_velocita_0
+                  metadata: {}
+                  data: {}
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 1
+                    milliseconds: 0
+                - action: homeassistant.update_entity
+                  target:
+                    entity_id: sensor.vmc_master_status_ventola
+                  alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 3
+                    milliseconds: 0
+              until:
+                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                  condition: template
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
           - data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
+          - alias: Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7)
+            if:
+              - condition: template
+                value_template: "{{ is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 0' }}"
+            then:
+              - data: {}
+                target:
+                  entity_id: input_boolean.vmc_master_spia_velocita_0
+                action: input_boolean.turn_on
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_1
+                    - input_boolean.vmc_master_spia_velocita_2
+                    - input_boolean.vmc_master_spia_velocita_3
+                    - input_boolean.vmc_master_spia_velocita_4
+                    - input_boolean.vmc_master_spia_velocita_notturna
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione
+                    - input_boolean.vmc_master_spia_velocita_freecooling
+                action: input_boolean.turn_off
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
               dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
@@ -18900,11 +19076,55 @@ actions:
               and states('sensor.vmc_master_status_spegnimento_vmc_tramite_calendario_2') == "Mercoledi"
               and now().strftime('%H:%M') >= strptime(states('input_datetime.vmc_master_accensione_mercoledi_2'), '%H:%M:%S').strftime('%H:%M')
               and now().strftime('%H:%M') < strptime(states('input_datetime.vmc_master_spegnimento_mercoledi_2'), '%H:%M:%S').strftime('%H:%M') ) }}
-          - action: shell_command.vmc_master_velocita_0
-            metadata: {}
-            data: {}
+          - variables:
+              vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+            alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
+            repeat:
+              sequence:
+                - action: shell_command.vmc_master_velocita_0
+                  metadata: {}
+                  data: {}
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 1
+                    milliseconds: 0
+                - action: homeassistant.update_entity
+                  target:
+                    entity_id: sensor.vmc_master_status_ventola
+                  alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 3
+                    milliseconds: 0
+              until:
+                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                  condition: template
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
           - data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
+          - alias: Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7)
+            if:
+              - condition: template
+                value_template: "{{ is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 0' }}"
+            then:
+              - data: {}
+                target:
+                  entity_id: input_boolean.vmc_master_spia_velocita_0
+                action: input_boolean.turn_on
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_1
+                    - input_boolean.vmc_master_spia_velocita_2
+                    - input_boolean.vmc_master_spia_velocita_3
+                    - input_boolean.vmc_master_spia_velocita_4
+                    - input_boolean.vmc_master_spia_velocita_notturna
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione
+                    - input_boolean.vmc_master_spia_velocita_freecooling
+                action: input_boolean.turn_off
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
               dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
@@ -18942,11 +19162,55 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_spia_calendario_mercoledi_2
             action: input_boolean.turn_off
-          - action: shell_command.vmc_master_velocita_0
-            metadata: {}
-            data: {}
+          - variables:
+              vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+            alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
+            repeat:
+              sequence:
+                - action: shell_command.vmc_master_velocita_0
+                  metadata: {}
+                  data: {}
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 1
+                    milliseconds: 0
+                - action: homeassistant.update_entity
+                  target:
+                    entity_id: sensor.vmc_master_status_ventola
+                  alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 3
+                    milliseconds: 0
+              until:
+                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                  condition: template
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
           - data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
+          - alias: Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7)
+            if:
+              - condition: template
+                value_template: "{{ is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 0' }}"
+            then:
+              - data: {}
+                target:
+                  entity_id: input_boolean.vmc_master_spia_velocita_0
+                action: input_boolean.turn_on
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_1
+                    - input_boolean.vmc_master_spia_velocita_2
+                    - input_boolean.vmc_master_spia_velocita_3
+                    - input_boolean.vmc_master_spia_velocita_4
+                    - input_boolean.vmc_master_spia_velocita_notturna
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione
+                    - input_boolean.vmc_master_spia_velocita_freecooling
+                action: input_boolean.turn_off
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
               dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
@@ -18995,12 +19259,56 @@ actions:
               and states('sensor.vmc_master_status_spegnimento_vmc_tramite_calendario_2') == "Giovedi"
               and now().strftime('%H:%M') >= strptime(states('input_datetime.vmc_master_accensione_giovedi_2'), '%H:%M:%S').strftime('%H:%M')
               and now().strftime('%H:%M') < strptime(states('input_datetime.vmc_master_spegnimento_giovedi_2'), '%H:%M:%S').strftime('%H:%M') ) }}
-          - action: shell_command.vmc_master_velocita_0
-            metadata: {}
-            data: {}
+          - variables:
+              vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+            alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
+            repeat:
+              sequence:
+                - action: shell_command.vmc_master_velocita_0
+                  metadata: {}
+                  data: {}
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 1
+                    milliseconds: 0
+                - action: homeassistant.update_entity
+                  target:
+                    entity_id: sensor.vmc_master_status_ventola
+                  alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 3
+                    milliseconds: 0
+              until:
+                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                  condition: template
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
           - data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
             enabled: true
+          - alias: Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7)
+            if:
+              - condition: template
+                value_template: "{{ is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 0' }}"
+            then:
+              - data: {}
+                target:
+                  entity_id: input_boolean.vmc_master_spia_velocita_0
+                action: input_boolean.turn_on
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_1
+                    - input_boolean.vmc_master_spia_velocita_2
+                    - input_boolean.vmc_master_spia_velocita_3
+                    - input_boolean.vmc_master_spia_velocita_4
+                    - input_boolean.vmc_master_spia_velocita_notturna
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione
+                    - input_boolean.vmc_master_spia_velocita_freecooling
+                action: input_boolean.turn_off
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
               dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
@@ -19038,11 +19346,55 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_spia_calendario_giovedi_2
             action: input_boolean.turn_off
-          - action: shell_command.vmc_master_velocita_0
-            metadata: {}
-            data: {}
+          - variables:
+              vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+            alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
+            repeat:
+              sequence:
+                - action: shell_command.vmc_master_velocita_0
+                  metadata: {}
+                  data: {}
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 1
+                    milliseconds: 0
+                - action: homeassistant.update_entity
+                  target:
+                    entity_id: sensor.vmc_master_status_ventola
+                  alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 3
+                    milliseconds: 0
+              until:
+                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                  condition: template
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
           - data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
+          - alias: Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7)
+            if:
+              - condition: template
+                value_template: "{{ is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 0' }}"
+            then:
+              - data: {}
+                target:
+                  entity_id: input_boolean.vmc_master_spia_velocita_0
+                action: input_boolean.turn_on
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_1
+                    - input_boolean.vmc_master_spia_velocita_2
+                    - input_boolean.vmc_master_spia_velocita_3
+                    - input_boolean.vmc_master_spia_velocita_4
+                    - input_boolean.vmc_master_spia_velocita_notturna
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione
+                    - input_boolean.vmc_master_spia_velocita_freecooling
+                action: input_boolean.turn_off
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
               dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
@@ -19090,11 +19442,55 @@ actions:
               and states('sensor.vmc_master_status_spegnimento_vmc_tramite_calendario_2') == "Venerdi"
               and now().strftime('%H:%M') >= strptime(states('input_datetime.vmc_master_accensione_venerdi_2'), '%H:%M:%S').strftime('%H:%M')
               and now().strftime('%H:%M') < strptime(states('input_datetime.vmc_master_spegnimento_venerdi_2'), '%H:%M:%S').strftime('%H:%M') ) }}
-          - action: shell_command.vmc_master_velocita_0
-            metadata: {}
-            data: {}
+          - variables:
+              vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+            alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
+            repeat:
+              sequence:
+                - action: shell_command.vmc_master_velocita_0
+                  metadata: {}
+                  data: {}
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 1
+                    milliseconds: 0
+                - action: homeassistant.update_entity
+                  target:
+                    entity_id: sensor.vmc_master_status_ventola
+                  alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 3
+                    milliseconds: 0
+              until:
+                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                  condition: template
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
           - data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
+          - alias: Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7)
+            if:
+              - condition: template
+                value_template: "{{ is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 0' }}"
+            then:
+              - data: {}
+                target:
+                  entity_id: input_boolean.vmc_master_spia_velocita_0
+                action: input_boolean.turn_on
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_1
+                    - input_boolean.vmc_master_spia_velocita_2
+                    - input_boolean.vmc_master_spia_velocita_3
+                    - input_boolean.vmc_master_spia_velocita_4
+                    - input_boolean.vmc_master_spia_velocita_notturna
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione
+                    - input_boolean.vmc_master_spia_velocita_freecooling
+                action: input_boolean.turn_off
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
               dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
@@ -19132,11 +19528,55 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_spia_calendario_venerdi_2
             action: input_boolean.turn_off
-          - action: shell_command.vmc_master_velocita_0
-            metadata: {}
-            data: {}
+          - variables:
+              vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+            alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
+            repeat:
+              sequence:
+                - action: shell_command.vmc_master_velocita_0
+                  metadata: {}
+                  data: {}
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 1
+                    milliseconds: 0
+                - action: homeassistant.update_entity
+                  target:
+                    entity_id: sensor.vmc_master_status_ventola
+                  alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 3
+                    milliseconds: 0
+              until:
+                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                  condition: template
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
           - data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
+          - alias: Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7)
+            if:
+              - condition: template
+                value_template: "{{ is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 0' }}"
+            then:
+              - data: {}
+                target:
+                  entity_id: input_boolean.vmc_master_spia_velocita_0
+                action: input_boolean.turn_on
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_1
+                    - input_boolean.vmc_master_spia_velocita_2
+                    - input_boolean.vmc_master_spia_velocita_3
+                    - input_boolean.vmc_master_spia_velocita_4
+                    - input_boolean.vmc_master_spia_velocita_notturna
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione
+                    - input_boolean.vmc_master_spia_velocita_freecooling
+                action: input_boolean.turn_off
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
               dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
@@ -19184,11 +19624,55 @@ actions:
               and states('sensor.vmc_master_status_spegnimento_vmc_tramite_calendario_2') == "Sabato"
               and now().strftime('%H:%M') >= strptime(states('input_datetime.vmc_master_accensione_sabato_2'), '%H:%M:%S').strftime('%H:%M')
               and now().strftime('%H:%M') < strptime(states('input_datetime.vmc_master_spegnimento_sabato_2'), '%H:%M:%S').strftime('%H:%M') ) }}
-          - action: shell_command.vmc_master_velocita_0
-            metadata: {}
-            data: {}
+          - variables:
+              vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+            alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
+            repeat:
+              sequence:
+                - action: shell_command.vmc_master_velocita_0
+                  metadata: {}
+                  data: {}
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 1
+                    milliseconds: 0
+                - action: homeassistant.update_entity
+                  target:
+                    entity_id: sensor.vmc_master_status_ventola
+                  alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 3
+                    milliseconds: 0
+              until:
+                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                  condition: template
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
           - data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
+          - alias: Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7)
+            if:
+              - condition: template
+                value_template: "{{ is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 0' }}"
+            then:
+              - data: {}
+                target:
+                  entity_id: input_boolean.vmc_master_spia_velocita_0
+                action: input_boolean.turn_on
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_1
+                    - input_boolean.vmc_master_spia_velocita_2
+                    - input_boolean.vmc_master_spia_velocita_3
+                    - input_boolean.vmc_master_spia_velocita_4
+                    - input_boolean.vmc_master_spia_velocita_notturna
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione
+                    - input_boolean.vmc_master_spia_velocita_freecooling
+                action: input_boolean.turn_off
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
               dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
@@ -19226,11 +19710,55 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_spia_calendario_sabato_2
             action: input_boolean.turn_off
-          - action: shell_command.vmc_master_velocita_0
-            metadata: {}
-            data: {}
+          - variables:
+              vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+            alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
+            repeat:
+              sequence:
+                - action: shell_command.vmc_master_velocita_0
+                  metadata: {}
+                  data: {}
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 1
+                    milliseconds: 0
+                - action: homeassistant.update_entity
+                  target:
+                    entity_id: sensor.vmc_master_status_ventola
+                  alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 3
+                    milliseconds: 0
+              until:
+                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                  condition: template
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
           - data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
+          - alias: Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7)
+            if:
+              - condition: template
+                value_template: "{{ is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 0' }}"
+            then:
+              - data: {}
+                target:
+                  entity_id: input_boolean.vmc_master_spia_velocita_0
+                action: input_boolean.turn_on
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_1
+                    - input_boolean.vmc_master_spia_velocita_2
+                    - input_boolean.vmc_master_spia_velocita_3
+                    - input_boolean.vmc_master_spia_velocita_4
+                    - input_boolean.vmc_master_spia_velocita_notturna
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione
+                    - input_boolean.vmc_master_spia_velocita_freecooling
+                action: input_boolean.turn_off
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
               dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
@@ -19278,12 +19806,56 @@ actions:
               and states('sensor.vmc_master_status_spegnimento_vmc_tramite_calendario_2') == "Domenica"
               and now().strftime('%H:%M') >= strptime(states('input_datetime.vmc_master_accensione_domenica_2'), '%H:%M:%S').strftime('%H:%M')
               and now().strftime('%H:%M') < strptime(states('input_datetime.vmc_master_spegnimento_domenica_2'), '%H:%M:%S').strftime('%H:%M') ) }}
-          - action: shell_command.vmc_master_velocita_0
-            metadata: {}
-            data: {}
+          - variables:
+              vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+            alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
+            repeat:
+              sequence:
+                - action: shell_command.vmc_master_velocita_0
+                  metadata: {}
+                  data: {}
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 1
+                    milliseconds: 0
+                - action: homeassistant.update_entity
+                  target:
+                    entity_id: sensor.vmc_master_status_ventola
+                  alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 3
+                    milliseconds: 0
+              until:
+                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                  condition: template
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
           - metadata: {}
             data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
+          - alias: Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7)
+            if:
+              - condition: template
+                value_template: "{{ is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 0' }}"
+            then:
+              - data: {}
+                target:
+                  entity_id: input_boolean.vmc_master_spia_velocita_0
+                action: input_boolean.turn_on
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_1
+                    - input_boolean.vmc_master_spia_velocita_2
+                    - input_boolean.vmc_master_spia_velocita_3
+                    - input_boolean.vmc_master_spia_velocita_4
+                    - input_boolean.vmc_master_spia_velocita_notturna
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione
+                    - input_boolean.vmc_master_spia_velocita_freecooling
+                action: input_boolean.turn_off
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
               dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
@@ -19321,11 +19893,55 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_spia_calendario_domenica_2
             action: input_boolean.turn_off
-          - action: shell_command.vmc_master_velocita_0
-            metadata: {}
-            data: {}
+          - variables:
+              vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+            alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+          - alias: Lancia il Comando Velocità 0 Finchè la Velocità diventa Velocità 0
+            repeat:
+              sequence:
+                - action: shell_command.vmc_master_velocita_0
+                  metadata: {}
+                  data: {}
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 1
+                    milliseconds: 0
+                - action: homeassistant.update_entity
+                  target:
+                    entity_id: sensor.vmc_master_status_ventola
+                  alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 3
+                    milliseconds: 0
+              until:
+                - alias: Velocità raggiunta, scelta dall'utente oppure Black-Out rilevato
+                  condition: template
+                  value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
           - data: {}
             action: script.vmc_master_calendario_fascia_1_o_2_off
+          - alias: Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7)
+            if:
+              - condition: template
+                value_template: "{{ is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 0' }}"
+            then:
+              - data: {}
+                target:
+                  entity_id: input_boolean.vmc_master_spia_velocita_0
+                action: input_boolean.turn_on
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_1
+                    - input_boolean.vmc_master_spia_velocita_2
+                    - input_boolean.vmc_master_spia_velocita_3
+                    - input_boolean.vmc_master_spia_velocita_4
+                    - input_boolean.vmc_master_spia_velocita_notturna
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione
+                    - input_boolean.vmc_master_spia_velocita_freecooling
+                action: input_boolean.turn_off
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
               dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
