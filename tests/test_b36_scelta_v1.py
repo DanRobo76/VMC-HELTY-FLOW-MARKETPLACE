@@ -7,7 +7,8 @@ Vel. 1» la riconosce al momento della scelta:
   call_service con context.user_id), con la VMC già a Velocità 1;
 - da qualsiasi parte (anche dall'App): la lettura grezza della VMC che passa a 00001 da un'altra velocità letta (la
   ripartenza della VMC dopo un Black-Out arriva invece da una lettura fallita, unavailable).
-Con la VMC ON-Line e il ripristino di una velocità diversa dalla Velocità 1 in attesa: nessun comando, spie del
+Con la VMC ON-Line (o già letta prima che risulti ON-Line) e il ripristino di una velocità diversa dalla Velocità 1
+in attesa: nessun comando, spie del
 Black-Out spente (il ripristino non avviene) e memorie Inquinanti azzerate con CO2 o VOC in allerta, come nel blocco
 degli 8 rami. Resta irriconoscibile solo la Velocità 1 scelta dall'App con la VMC già a Velocità 1.
 """
@@ -118,6 +119,9 @@ async def test_telecomando_o_scheda_con_la_vmc_gia_a_velocita_1(hass: HomeAssist
         ("utente", {"input_boolean.vmc_master_spia_velocita_1": "on"}, False),  # ripristino della Velocità 1
         ("utente", {"input_boolean.vmc_master_spia_velocita_3": "off"}, False),  # nessun ripristino in attesa
         ("utente", {IP: "OFF-Line"}, False),
+        ("utente", {IP: "OFF-Line", GREZZA: "unavailable"}, False),  # VMC che non risponde
+        # VMC che risponde ma non ancora ON-Line (circa 9 Secondi): vale, come la tolleranza degli 8 rami
+        ("utente", {IP: "OFF-Line", GREZZA: _grezza("00001")}, True),
         ("utente", {"input_boolean.vmc_master_spia_calendario_lunedi_1": "on"}, False),  # Fascia del Calendario
         ("utente", {FASE: "1"}, False),  # riallineamento al riavvio
         ("utente", {FASE: "4"}, True),
@@ -145,6 +149,16 @@ async def test_quando_vale_il_cambio_della_lettura(hass: HomeAssistant, da: str,
     for e, s in _stati().items():
         hass.states.async_set(e, s)
     assert _render(hass, _condizione(), _cambio(_grezza(CODICI[da]), _grezza(CODICI[a]))) is atteso
+
+
+@pytest.mark.parametrize(("ip", "atteso"), [("ON-Line", True), ("OFF-Line", True)])
+async def test_cambio_della_lettura_prima_dell_on_line(hass: HomeAssistant, ip: str, atteso: bool) -> None:
+    """La lettura grezza che cambia prova da sola che la VMC risponde: la Velocità 1 scelta nei Secondi in cui
+    Home Assistant non vede ancora la VMC ON-Line resta (prima della correzione andava persa e il ripristino la
+    sovrascriveva)."""
+    for e, s in _stati(**{IP: ip, GREZZA: _grezza("00001")}).items():
+        hass.states.async_set(e, s)
+    assert _render(hass, _condizione(), _cambio(_grezza("00003"), _grezza("00001"))) is atteso
 
 
 async def test_cambio_della_lettura_con_altri_campi(hass: HomeAssistant) -> None:

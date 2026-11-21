@@ -18387,7 +18387,7 @@ actions:
               dalla scheda (comando Velocità 1 inviato da un utente con la VMC già a Velocità 1, la ripartenza con cui
               la VMC può riaccendersi da sola dopo un Black-Out) oppure lettura passata a Velocità 1 da un'altra
               velocità letta (anche dall'App; la ripartenza della VMC arriva da una lettura fallita), con la VMC
-              ON-Line e il ripristino di una velocità diversa dalla Velocità 1 in attesa, o il ritorno della Fascia del
+              ON-Line o già letta prima che risulti ON-Line (come la tolleranza di 20 Secondi degli altri rami) e il ripristino di una velocità diversa dalla Velocità 1 in attesa, o il ritorno della Fascia del
               Calendario in attesa (Spia Black-Out del Calendario accesa) -> come per le altre velocità scelte prima del
               ripristino (rami «Black-Out Off» e ritorno della Fascia): la Velocità 1 resta, il ripristino non avviene e
               la Fascia non riparte, si azzerano le memorie del Black-Out e le allerte in corso la trattano come una
@@ -18402,7 +18402,8 @@ actions:
                        and is_state('sensor.vmc_master_status_ventola_lettura_codice_interpretato', 'Velocità 1'))
                       or (trigger.platform == 'state' and da | length > 1 and a | length > 1 and a[1] == '00001'
                           and da[1] in ['00000', '00002', '00003', '00004', '00005', '00006', '00007']))
-                     and is_state('sensor.vmc_master_status_ip_interfaccia', 'ON-Line')
+                     and (is_state('sensor.vmc_master_status_ip_interfaccia', 'ON-Line')
+                          or states('sensor.vmc_master_status_ventola') not in ['unavailable', 'unknown', ''])
                      and ((is_state('input_boolean.vmc_master_spia_velocita_1', 'off')
                            and (is_state('input_boolean.vmc_master_spia_velocita_0', 'on') or is_state('input_boolean.vmc_master_spia_velocita_2', 'on') or is_state('input_boolean.vmc_master_spia_velocita_3', 'on') or is_state('input_boolean.vmc_master_spia_velocita_4', 'on') or is_state('input_boolean.vmc_master_spia_velocita_notturna', 'on') or is_state('input_boolean.vmc_master_spia_velocita_iperventilazione', 'on') or is_state('input_boolean.vmc_master_spia_velocita_freecooling', 'on'))
                            and is_state('input_boolean.vmc_master_spia_calendario_lunedi_1', 'off')
