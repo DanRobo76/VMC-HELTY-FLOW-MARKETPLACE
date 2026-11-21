@@ -31,8 +31,11 @@ def test_delta_temp_non_cancella_il_ritorno_a_velocita_0_degli_inquinanti() -> N
     condizione = testo[i : testo.index("then:", i)]
     assert "not is_state('input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0', 'on')" in condizione
     assert "not is_state('input_boolean.vmc_master_spia_velocita_1_co2_o_voc_pdr', 'on')" in condizione
-    # le altre 13 regole (Congelamento e Δ con memorie 0, 2, 3, 4, Notturna, Iperventilazione) restano come prima
-    assert testo.count("(regola 03-11-2026)") == 13
+    # b36: stessa esclusione nel gemello di fine Congelamento (Velocità 1); le altre 12 regole (Congelamento e Δ con
+    # memorie 2, 3, 4, Notturna, Iperventilazione e Free Cool./Heat.) restano come prima
+    i = testo.index("durante Congelamento -> diventa la memoria degli Inquinanti (regola 03-11-2026; non se la Velocità 1")
+    assert testo[i : testo.index("then:", i)].replace("Congelamento", "Δ Temp.") == condizione
+    assert testo.count("(regola 03-11-2026)") == 12
 
 
 def test_fine_umidita_con_inquinanti_anche_con_avvio_free() -> None:
