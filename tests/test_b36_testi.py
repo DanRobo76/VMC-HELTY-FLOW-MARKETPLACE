@@ -119,10 +119,12 @@ def test_fini_riga_e_yaml() -> None:
 # (frase, quante volte nella descrizione e nella voce 17): le frasi delle righe della tabella sono scelte senza la
 # prima lettera della cella, che nella descrizione è minuscola
 FRASI_17 = [
-    # C5-4 n. 1 (A21) e C4-4: Set Umidità a Velocità 0, anche con la Free sospesa
+    # C5-4 n. 1 (A21) e C4-4: Set Umidità a Velocità 0, anche con la Free sospesa (avvio, rami TeVsTi e fine
+    # Inquinanti, dove con un'altra Velocità di avvio la Free sospesa dà la Velocità 1)
     ("Umidità: 28 Secondi (la logica Umidità memorizza subito la Velocità in uso); con la [Set Velocità Umidità di "
-     "Avvio] su Velocità 0 l'allerta Umidità si accende ma la VMC resta ferma, anche con la Free Cool./Heat. sospesa; "
-     "se durante l'allerta si cambia Velocità", 1),
+     "Avvio] su Velocità 0 l'allerta Umidità si accende ma la VMC resta ferma, anche con la Free Cool./Heat. sospesa "
+     "(all'avvio dell'Umidità, all'arresto per condizioni sfavorevoli e a fine Inquinanti, dove con un'altra Velocità di "
+     "avvio la VMC va a Velocità 1 [Nota 3]); se durante l'allerta si cambia Velocità", 1),
     (f"finché quell'allerta non è finita ({FREE_ECC}; {SET0}). Esempio:", 1),
     (f"l'allerta Umidità non scatta e l'interruttore si spegne normalmente ({FREE_ECC}; {SET0});", 1),
     # C5-4 n. 2 (A21): Umidità avviata da 0 e Inquinanti a fine Umidità, 28 s, la velocità scelta resta
@@ -192,10 +194,13 @@ FRASI_17 = [
     # C4-3: velocità scelta poco prima del PdR con la ripresa Free in attesa
     ("anche al posto della ripresa in Free Cool./Heat. (lo stesso vale per una Velocità scelta poco prima "
      "dell'allerta, con la ripresa in attesa);", 1),
-    # C4-5 (e ramo del PdR con la VMC non disponibile)
-    ("- se la VMC è OFF-Line o la sua velocità non è disponibile, l'interruttore del Punto di Rugiada o dell'Umidità "
-     "spento durante l'allerta resta spento e si azzerano solo le memorie della sua allerta, senza comandi alla VMC: "
-     "al ritorno la VMC resta alla velocità letta (o a quella ripristinata dopo il Black-Out);", 1),
+    # C4-5 (e ramo del PdR con la VMC non disponibile): anche durante il ripristino dopo un Black-Out; l'interruttore
+    # dell'Umidita' si riaccende nei casi in cui non si puo' spegnere (altre allerte, Free in attesa, Calendario)
+    ("- se la VMC è OFF-Line, la sua velocità non è disponibile o è in corso il ripristino dopo un Black-Out, "
+     "l'interruttore del Punto di Rugiada o dell'Umidità spento durante l'allerta resta spento (salvo, per l'Umidità, i "
+     "casi qui sopra in cui il suo interruttore non si può spegnere) e si azzerano solo le memorie della sua allerta, "
+     "senza comandi alla VMC: al ritorno la VMC resta alla velocità letta (o a quella ripristinata dopo il "
+     "Black-Out);", 1),
     # b35 C4-2: Umidità partita da 0 e finita durante il PdR
     ("se l'Umidità aveva avviato la VMC da Velocità 0 ed è finita durante l'allerta, al termine dell'allerta la VMC "
      "resta a Velocità 0;", 1),
@@ -229,14 +234,17 @@ def test_voce_7_umidita() -> None:
     assert f"su ON e senza altre allerte in corso ({FREE_ECC}; {SET0}), comandano l'avvio" in voce
     assert f"l'interruttore si spegne normalmente ({FREE_ECC}; {SET0})." in voce
     assert ("L'avvio e l'arresto avvengono dopo 28 secondi. Con la [Set Velocità Umidità di Avvio] su Velocità 0 "
-            "l'allerta Umidità si accende ma la VMC resta ferma, anche con la Free Cool./Heat. sospesa.") in voce
+            "l'allerta Umidità si accende ma la VMC resta ferma, anche con la Free Cool./Heat. sospesa (all'avvio "
+            "dell'Umidità, all'arresto per condizioni sfavorevoli e a fine Inquinanti, dove con un'altra velocità di "
+            "avvio la VMC va a Velocità 1 [Nota 3]).") in voce
     assert ("Con la Free Cool./Heat. sospesa (Umidità partita a Velocità 1 [Nota 3]) nessun cambio: la VMC resta a "
             "Velocità 0.") in voce
     assert ("• Se l'Umidità ha avviato la VMC da Velocità 0, la VMC è ancora alla [Set Velocità Umidità di Avvio] e a "
             "fine Umidità sono ancora presenti gli Inquinanti, la VMC scende a Velocità 1 dopo 28 secondi e torna a "
             "Velocità 0 al rientro degli Inquinanti (se si è scelta un'altra velocità, quella resta).") in voce
-    assert ("• Se l'interruttore viene spento durante un'allerta Umidità, la VMC si arresta; con la VMC OFF-Line o con "
-            "la sua velocità non disponibile l'interruttore resta spento e si azzerano solo l'allerta e le memorie "
+    assert ("• Se l'interruttore viene spento durante un'allerta Umidità, la VMC si arresta; con la VMC OFF-Line, con "
+            "la sua velocità non disponibile o durante il ripristino dopo un Black-Out l'interruttore resta spento e si "
+            "azzerano solo l'allerta e le memorie "
             "dell'Umidità, senza comandi alla VMC: al ritorno la VMC resta alla velocità letta (o a quella ripristinata "
             "dopo il Black-Out).") in voce
 
@@ -277,6 +285,9 @@ def test_voce_14_free() -> None:
             "Inquinanti dopo 8 secondi. Se si sceglie Velocità 0 non cambia nulla (la VMC è già ferma) e quando la "
             "condizione torna favorevole la VMC riprende in Free Cool./Heat.; scegliendo Free Cool./Heat. con la "
             "condizione ancora sfavorevole la VMC torna a Velocità 0 dopo 24 secondi.") in voce
+    # C4-4 esteso ai rami TeVsTi: con il Set a Velocita' 0 l'Umidita' non porta la VMC a Velocita' 1
+    assert ("Anche con un'allerta Umidità in corso la VMC, invece di arrestarsi, passa a Velocità 1 (dopo 24 secondi), "
+            "salvo con la [Set Velocità Umidità di Avvio] su Velocità 0: in questo caso si arresta.") in voce
 
 
 def test_voce_15_ripristino_dopo_black_out() -> None:
@@ -319,6 +330,88 @@ async def test_scheda_umidita_msg_2_set_velocita_0(hass, set_umidita: str, spia_
     assert atteso in testo
     assert ("PER ALLERTA FREE" in testo) is (not nota)
     assert ("<strong>NOTA</strong>" in testo) is nota
+
+
+# ------------------------------------------------- schede Congelamento e Δ Temp.: comando del Calendario in sospeso
+CNE = "input_boolean.vmc_master_spia_calendario_comando_non_eseguito"
+ANNUNCIO = ("AL TERMINE DELL'ALLERTA RIPARTIRÀ IL COMANDO DEL CALENDARIO IN SOSPESO, NON LA VELOCITÀ MEMORIZZATA "
+            "DALL'ALLERTA: LA VMC ANDRÀ ALLA <strong>{{ cal_cne_vel }}</strong>")
+
+
+def _schede_gelo_delta() -> list[tuple[str, list[str]]]:
+    """Per le schede Congelamento e Δ Temp.: le righe «{% set cal_… %}» in cima e gli annunci della ripresa."""
+    scheda = _scheda().replace("\r\n", "\n")
+    schede = []
+    inizio = 0
+    while (inizio := scheda.find("{% set cal_g = ", inizio + 1)) != -1:
+        testa = scheda[inizio: scheda.index("{% set ti_vmc_ripresa", inizio)]
+        fine = scheda.find("{% set cal_g = ", inizio + 1)
+        corpo = scheda[inizio: fine if fine != -1 else len(scheda)]
+        annunci = [corpo[i: corpo.index("endif %}", i) + len("endif %}")]
+                   for i in [m.start() for m in re.finditer(r"\{% if cal_uscita %\}", corpo)]]
+        schede.append((testa, annunci))
+    return schede
+
+
+def test_schede_gelo_delta_annuncio_del_comando_in_sospeso() -> None:
+    schede = _schede_gelo_delta()
+    assert len(schede) == 2
+    assert sum(len(annunci) for _, annunci in schede) == 18
+    for testa, annunci in schede:
+        assert f"{{% set cal_cne = is_state('{CNE}', 'on') %}}" in testa
+        for annuncio in annunci:
+            # dopo la fascia finita o iniziata durante l'allerta (decide il Calendario), prima della velocita' memorizzata
+            assert annuncio.index("{% elif cal_ingresso %}") < annuncio.index("{% elif cal_cne %}" + ANNUNCIO) < \
+                annuncio.index('{% elif spia_velocita_0=="on"')
+    # le due schede intere restano Jinja valido
+    import jinja2
+
+    contenuti: list[str] = []
+
+    def cerca(nodo: Any) -> None:
+        if isinstance(nodo, dict):
+            for chiave, valore in nodo.items():
+                if chiave == "content" and isinstance(valore, str) and "{% set cal_cne =" in valore:
+                    contenuti.append(valore)
+                cerca(valore)
+        elif isinstance(nodo, list):
+            for valore in nodo:
+                cerca(valore)
+
+    cerca(hay.load_yaml(str(PKG / "vmc_master_scheda_manuale_interfaccia.txt")))
+    assert len(contenuti) == 2
+    for contenuto in contenuti:
+        jinja2.Environment(extensions=["jinja2.ext.loopcontrols"]).parse(contenuto)
+
+
+@pytest.mark.parametrize(
+    ("cne", "fascia", "inquinanti", "atteso"),
+    [
+        ("on", False, False, "LA VMC ANDRÀ ALLA <strong>VELOCITÀ 0</strong>"),
+        ("on", False, True, "LA VMC ANDRÀ ALLA <strong>VELOCITÀ 1 (INQUINANTI PRESENTI)</strong>"),
+        ("on", True, False, "LA VMC ANDRÀ ALLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong>"),
+        ("off", False, False, "RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITA' 2</strong>"),
+        ("off", True, False, "RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITA' 2</strong>"),
+    ],
+)
+async def test_schede_gelo_delta_annuncio_mostrato(hass, cne: str, fascia: bool, inquinanti: bool,
+                                                   atteso: str) -> None:
+    from homeassistant.util import dt as dt_util
+
+    giorno = ["lunedi", "martedi", "mercoledi", "giovedi", "venerdi", "sabato", "domenica"][dt_util.now().weekday()]
+    hass.states.async_set(CNE, cne)
+    hass.states.async_set(f"input_boolean.vmc_master_spia_calendario_{giorno}_1", "on" if fascia else "off")
+    hass.states.async_set(f"input_datetime.vmc_master_accensione_{giorno}", "00:00:00")
+    hass.states.async_set(f"input_datetime.vmc_master_spegnimento_{giorno}", "23:59:59")
+    hass.states.async_set("input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_calendario", "on")
+    for entita in ("input_boolean.vmc_master_spia_co2_o_voc",
+                   "input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0"):
+        hass.states.async_set(entita, "on" if inquinanti else "off")
+    for testa, annunci in _schede_gelo_delta():
+        for annuncio in annunci:
+            testo = _norm(_render(hass, testa + annuncio, {"spia_velocita_2": "on"}))
+            assert atteso in testo, testo
+            assert ("IL COMANDO DEL CALENDARIO IN SOSPESO" in testo) is (cne == "on")
 
 
 # ---------------------------------------------------------------------------- script delle Fasce e Countdown
