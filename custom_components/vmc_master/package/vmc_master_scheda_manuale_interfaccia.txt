@@ -1276,7 +1276,7 @@ cards:
         {% set cal_ingresso = cal_on and ((states('sensor.vmc_master_status_accensione_vmc_tramite_calendario') == cal_G and cal_in1 and not cal_sp1) or (states('sensor.vmc_master_status_accensione_vmc_tramite_calendario_2') == cal_G and cal_in2 and not cal_sp2)) %}
         {#- Comando del Calendario in sospeso (Spia Comando non eseguito accesa) senza fascia iniziata o finita durante l'allerta: a fine allerta riparte quel comando (velocità della fascia, o Velocità 0/1 in sospeso), non la velocità memorizzata dall'allerta -#}
         {% set cal_cne = is_state('input_boolean.vmc_master_spia_calendario_comando_non_eseguito', 'on') %}
-        {% set cal_cne_vel = "VELOCITÀ DELLA FASCIA DEL CALENDARIO" if cal_sp1 or cal_sp2 else ("VELOCITÀ 1 (INQUINANTI PRESENTI)" if is_state('input_boolean.vmc_master_spia_co2_o_voc', 'on') and is_state('input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0', 'on') else "VELOCITÀ 0") %}
+        {% set cal_cne_vel = "VELOCITÀ DELLA FASCIA DEL CALENDARIO" if cal_sp1 or cal_sp2 else ("VELOCITÀ 1 (INQUINANTI PRESENTI)" if is_state('input_boolean.vmc_master_spia_co2_o_voc', 'on') and (is_state('input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0', 'on') or not cal_on) else "VELOCITÀ 0") %}
         {% set ti_vmc_ripresa = states('sensor.vmc_master_temp_interna_status_senza_offset') | float(0) %}
         {% set freeheating_cooling =
         states('sensor.vmc_master_status_mese_corrente_freeheating_o_freecooling')
@@ -2051,7 +2051,7 @@ cards:
         {% set cal_ingresso = cal_on and ((states('sensor.vmc_master_status_accensione_vmc_tramite_calendario') == cal_G and cal_in1 and not cal_sp1) or (states('sensor.vmc_master_status_accensione_vmc_tramite_calendario_2') == cal_G and cal_in2 and not cal_sp2)) %}
         {#- Comando del Calendario in sospeso (Spia Comando non eseguito accesa) senza fascia iniziata o finita durante l'allerta: a fine allerta riparte quel comando (velocità della fascia, o Velocità 0/1 in sospeso), non la velocità memorizzata dall'allerta -#}
         {% set cal_cne = is_state('input_boolean.vmc_master_spia_calendario_comando_non_eseguito', 'on') %}
-        {% set cal_cne_vel = "VELOCITÀ DELLA FASCIA DEL CALENDARIO" if cal_sp1 or cal_sp2 else ("VELOCITÀ 1 (INQUINANTI PRESENTI)" if is_state('input_boolean.vmc_master_spia_co2_o_voc', 'on') and is_state('input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0', 'on') else "VELOCITÀ 0") %}
+        {% set cal_cne_vel = "VELOCITÀ DELLA FASCIA DEL CALENDARIO" if cal_sp1 or cal_sp2 else ("VELOCITÀ 1 (INQUINANTI PRESENTI)" if is_state('input_boolean.vmc_master_spia_co2_o_voc', 'on') and (is_state('input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0', 'on') or not cal_on) else "VELOCITÀ 0") %}
         {% set ti_vmc_ripresa = states('sensor.vmc_master_temp_interna_status_senza_offset') | float(0) %}
         {% set freeheating_cooling =
         states('sensor.vmc_master_status_mese_corrente_freeheating_o_freecooling')
