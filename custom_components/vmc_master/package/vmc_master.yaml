@@ -2230,7 +2230,7 @@ template:
         icon: mdi:water-thermometer
 #### Fine Creazione Sensore Confort Interno ###########################################################################################################################################################
 #### Inizio Creazione Sensori Interfaccia: Stato LED e Alert Avvio ###################################################################################################################################################
-# Sensori solo per l'interfaccia (immagine animata di intestazione e scritta Alert sotto i tasti di velocità).
+# Sensori solo per l'interfaccia (immagine animata di intestazione e scritta Alert sotto i tasti di velocità spenti).
 # Non sono usati da automazioni o script; leggono spie, allerte e velocità e si aggiornano da soli.
   - sensor:
       - default_entity_id: sensor.vmc_master_stato_led_interfaccia              # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 25 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] COLORE DEL LED E DEL FLUSSO NELL'IMMAGINE DI INTESTAZIONE

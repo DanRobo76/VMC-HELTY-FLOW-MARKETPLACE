@@ -9983,10 +9983,15 @@ cards:
                   hold_action:
                     action: none
                   visibility:
-                  - condition: state
-                    entity: sensor.vmc_master_alert_avvio_interfaccia
-                    state_not:
-                    - Alert
+                  - condition: or
+                    conditions:
+                    - condition: state
+                      entity: sensor.vmc_master_alert_avvio_interfaccia
+                      state_not:
+                      - Alert
+                    - condition: state
+                      entity: binary_sensor.vmc_master_tasto_velocita_1
+                      state: 'on'
                 - show_name: true
                   show_icon: true
                   type: button
@@ -10005,6 +10010,9 @@ cards:
                     entity: sensor.vmc_master_alert_avvio_interfaccia
                     state:
                     - Alert
+                  - condition: state
+                    entity: binary_sensor.vmc_master_tasto_velocita_1
+                    state_not: 'on'
                 - show_name: true
                   entity: binary_sensor.vmc_master_tasto_velocita_2
                   state_color: true
@@ -10019,11 +10027,16 @@ cards:
                   hold_action:
                     action: none
                   visibility:
-                  - condition: state
-                    entity: sensor.vmc_master_alert_avvio_interfaccia
-                    state_not:
-                    - Alert
-                    - Alert Δ Temp.
+                  - condition: or
+                    conditions:
+                    - condition: state
+                      entity: sensor.vmc_master_alert_avvio_interfaccia
+                      state_not:
+                      - Alert
+                      - Alert Δ Temp.
+                    - condition: state
+                      entity: binary_sensor.vmc_master_tasto_velocita_2
+                      state: 'on'
                 - show_name: true
                   show_icon: true
                   type: button
@@ -10043,6 +10056,9 @@ cards:
                     state:
                     - Alert
                     - Alert Δ Temp.
+                  - condition: state
+                    entity: binary_sensor.vmc_master_tasto_velocita_2
+                    state_not: 'on'
                 - show_name: true
                   entity: binary_sensor.vmc_master_tasto_velocita_3
                   state_color: true
@@ -10057,11 +10073,16 @@ cards:
                   hold_action:
                     action: none
                   visibility:
-                  - condition: state
-                    entity: sensor.vmc_master_alert_avvio_interfaccia
-                    state_not:
-                    - Alert
-                    - Alert Δ Temp.
+                  - condition: or
+                    conditions:
+                    - condition: state
+                      entity: sensor.vmc_master_alert_avvio_interfaccia
+                      state_not:
+                      - Alert
+                      - Alert Δ Temp.
+                    - condition: state
+                      entity: binary_sensor.vmc_master_tasto_velocita_3
+                      state: 'on'
                 - show_name: true
                   show_icon: true
                   type: button
@@ -10081,6 +10102,9 @@ cards:
                     state:
                     - Alert
                     - Alert Δ Temp.
+                  - condition: state
+                    entity: binary_sensor.vmc_master_tasto_velocita_3
+                    state_not: 'on'
                 - show_name: true
                   entity: binary_sensor.vmc_master_tasto_velocita_4
                   state_color: true
@@ -10095,11 +10119,16 @@ cards:
                   hold_action:
                     action: none
                   visibility:
-                  - condition: state
-                    entity: sensor.vmc_master_alert_avvio_interfaccia
-                    state_not:
-                    - Alert
-                    - Alert Δ Temp.
+                  - condition: or
+                    conditions:
+                    - condition: state
+                      entity: sensor.vmc_master_alert_avvio_interfaccia
+                      state_not:
+                      - Alert
+                      - Alert Δ Temp.
+                    - condition: state
+                      entity: binary_sensor.vmc_master_tasto_velocita_4
+                      state: 'on'
                 - show_name: true
                   show_icon: true
                   type: button
@@ -10119,6 +10148,9 @@ cards:
                     state:
                     - Alert
                     - Alert Δ Temp.
+                  - condition: state
+                    entity: binary_sensor.vmc_master_tasto_velocita_4
+                    state_not: 'on'
                 - show_name: true
                   entity: binary_sensor.vmc_master_tasto_notturna
                   state_color: true
@@ -10133,11 +10165,16 @@ cards:
                   hold_action:
                     action: none
                   visibility:
-                  - condition: state
-                    entity: sensor.vmc_master_alert_avvio_interfaccia
-                    state_not:
-                    - Alert
-                    - Alert Δ Temp.
+                  - condition: or
+                    conditions:
+                    - condition: state
+                      entity: sensor.vmc_master_alert_avvio_interfaccia
+                      state_not:
+                      - Alert
+                      - Alert Δ Temp.
+                    - condition: state
+                      entity: binary_sensor.vmc_master_tasto_notturna
+                      state: 'on'
                 - show_name: true
                   show_icon: true
                   type: button
@@ -10157,6 +10194,9 @@ cards:
                     state:
                     - Alert
                     - Alert Δ Temp.
+                  - condition: state
+                    entity: binary_sensor.vmc_master_tasto_notturna
+                    state_not: 'on'
                 - show_name: true
                   entity: binary_sensor.vmc_master_tasto_iperventilazione
                   state_color: true
@@ -10171,11 +10211,16 @@ cards:
                   hold_action:
                     action: none
                   visibility:
-                  - condition: state
-                    entity: sensor.vmc_master_alert_avvio_interfaccia
-                    state_not:
-                    - Alert
-                    - Alert Δ Temp.
+                  - condition: or
+                    conditions:
+                    - condition: state
+                      entity: sensor.vmc_master_alert_avvio_interfaccia
+                      state_not:
+                      - Alert
+                      - Alert Δ Temp.
+                    - condition: state
+                      entity: binary_sensor.vmc_master_tasto_iperventilazione
+                      state: 'on'
                 - show_name: true
                   show_icon: true
                   type: button
@@ -10195,6 +10240,9 @@ cards:
                     state:
                     - Alert
                     - Alert Δ Temp.
+                  - condition: state
+                    entity: binary_sensor.vmc_master_tasto_iperventilazione
+                    state_not: 'on'
                 - show_name: true
                   entity: binary_sensor.vmc_master_tasto_free_heating
                   state_color: true
@@ -10208,24 +10256,38 @@ cards:
                   hold_action:
                     action: none
                   visibility:
-                  - condition: and
+                  - condition: state
+                    entity: sensor.vmc_master_status_mese_corrente_freeheating_o_freecooling
+                    state: Free Heating
+                  - condition: or
                     conditions:
-                    - condition: state
-                      entity: sensor.vmc_master_status_mese_corrente_freeheating_o_freecooling
-                      state: Free Heating
-                    - condition: or
+                    - condition: and
+                      conditions:
+                      - condition: or
+                        conditions:
+                        - condition: state
+                          entity: sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi
+                          state: Nessuna Allerta Free Heating Programmato
+                        - condition: state
+                          entity: sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi
+                          state: Nessuna Allerta Free Heating Programmato, Presenza di Inquinanti
+                      - condition: state
+                        entity: sensor.vmc_master_alert_avvio_interfaccia
+                        state_not:
+                        - Alert
+                        - Alert Δ Temp.
+                        - Alert Free
+                    - condition: and
                       conditions:
                       - condition: state
-                        entity: sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi
-                        state: Nessuna Allerta Free Heating Programmato
+                        entity: binary_sensor.vmc_master_tasto_free_heating
+                        state: 'on'
                       - condition: state
-                        entity: sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi
-                        state: Nessuna Allerta Free Heating Programmato, Presenza di Inquinanti
-                  - condition: state
-                    entity: sensor.vmc_master_alert_avvio_interfaccia
-                    state_not:
-                    - Alert
-                    - Alert Δ Temp.
+                        entity: sensor.vmc_master_alert_avvio_interfaccia
+                        state:
+                        - Alert
+                        - Alert Δ Temp.
+                        - Alert Free
                 - show_name: true
                   show_icon: true
                   type: button
@@ -10248,6 +10310,9 @@ cards:
                     - Alert
                     - Alert Δ Temp.
                     - Alert Free
+                  - condition: state
+                    entity: binary_sensor.vmc_master_tasto_free_heating
+                    state_not: 'on'
                 - type: button
                   entity: binary_sensor.vmc_master_tasto_free_cooling
                   state_color: true
@@ -10261,24 +10326,38 @@ cards:
                   hold_action:
                     action: none
                   visibility:
-                  - condition: and
+                  - condition: state
+                    entity: sensor.vmc_master_status_mese_corrente_freeheating_o_freecooling
+                    state: Free Cooling
+                  - condition: or
                     conditions:
-                    - condition: state
-                      entity: sensor.vmc_master_status_mese_corrente_freeheating_o_freecooling
-                      state: Free Cooling
-                    - condition: or
+                    - condition: and
+                      conditions:
+                      - condition: or
+                        conditions:
+                        - condition: state
+                          entity: sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi
+                          state: Nessuna Allerta Free Cooling Programmato
+                        - condition: state
+                          entity: sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi
+                          state: Nessuna Allerta Free Cooling Programmato, Presenza di Inquinanti
+                      - condition: state
+                        entity: sensor.vmc_master_alert_avvio_interfaccia
+                        state_not:
+                        - Alert
+                        - Alert Δ Temp.
+                        - Alert Free
+                    - condition: and
                       conditions:
                       - condition: state
-                        entity: sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi
-                        state: Nessuna Allerta Free Cooling Programmato
+                        entity: binary_sensor.vmc_master_tasto_free_cooling
+                        state: 'on'
                       - condition: state
-                        entity: sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi
-                        state: Nessuna Allerta Free Cooling Programmato, Presenza di Inquinanti
-                  - condition: state
-                    entity: sensor.vmc_master_alert_avvio_interfaccia
-                    state_not:
-                    - Alert
-                    - Alert Δ Temp.
+                        entity: sensor.vmc_master_alert_avvio_interfaccia
+                        state:
+                        - Alert
+                        - Alert Δ Temp.
+                        - Alert Free
                 - show_name: true
                   show_icon: true
                   type: button
@@ -10301,6 +10380,9 @@ cards:
                     - Alert
                     - Alert Δ Temp.
                     - Alert Free
+                  - condition: state
+                    entity: binary_sensor.vmc_master_tasto_free_cooling
+                    state_not: 'on'
                 - type: button
                   entity: binary_sensor.vmc_master_tasto_free_cool_heat
                   state_color: true
@@ -10334,11 +10416,16 @@ cards:
                     - condition: state
                       entity: sensor.vmc_master_temp_esterna_status
                       state: Non disponibile
-                  - condition: state
-                    entity: sensor.vmc_master_alert_avvio_interfaccia
-                    state_not:
-                    - Alert
-                    - Alert Δ Temp.
+                  - condition: or
+                    conditions:
+                    - condition: state
+                      entity: sensor.vmc_master_alert_avvio_interfaccia
+                      state_not:
+                      - Alert
+                      - Alert Δ Temp.
+                    - condition: state
+                      entity: binary_sensor.vmc_master_tasto_free_cool_heat
+                      state: 'on'
                 - type: button
                   tap_action:
                     action: perform-action
@@ -10377,6 +10464,9 @@ cards:
                     state:
                     - Alert
                     - Alert Δ Temp.
+                  - condition: state
+                    entity: binary_sensor.vmc_master_tasto_free_cool_heat
+                    state_not: 'on'
                 columns: 4
               - type: horizontal-stack
                 cards:
@@ -14394,8 +14484,9 @@ cards:
                     aspetta, sotto il pannello VMC compare il riquadro con il «Tempo Mancante» dell'azione in attesa (es. «Annullamento
                     Memoria Free Heating», «Cambio Velocità per Lim. Δ PdR») e la «Velocità Registrata», cioè la velocità che verrà
                     ripristinata a fine allerta. Nella finestra Telecomando il tasto della velocità attiva è illuminato, quello della
-                    velocità da ripristinare è illuminato con l'icona ↺; i tasti Sensori e Led Pannello illuminano lo stato attuale
-                    (On oppure Off) e con «Verificare Filtro» il tasto «Led Pannello On» mostra l'icona del filtro.</i><br><br>
+                    velocità da ripristinare è illuminato con l'icona ↺, anche durante un'allerta (la scritta Alert compare solo
+                    sotto i tasti spenti); i tasti Sensori e Led Pannello illuminano lo stato attuale (On oppure Off) e con
+                    «Verificare Filtro» il tasto «Led Pannello On» mostra l'icona del filtro.</i><br><br>
                     - Congelamento ≤ -18 [°C] Temp. Ext.: 0 Secondi. Durante il Congelamento la VMC resta ferma: se si prova a cambiarle Velocità viene riportata subito a Velocità 0 e, se non si ferma, il comando di arresto viene ripetuto finché non si ferma (circa ogni 4 Secondi);<br>
                     - VMC Sensori Int. Δ Temp. > 23 [°C]: 4 Secondi; se durante l'allerta si cambia Velocità, la VMC viene riportata a Velocità 1 e la Velocità scelta viene memorizzata dopo 4 Secondi e impostata a fine allerta (se l'allerta finisce prima che sia memorizzata, la Velocità scelta resta); scegliere Velocità 1 non cambia la memoria;<br>
                     - Inquinanti (CO₂ e VOC): 8 Secondi. Se la VMC è partita da Velocità 0 resta a Velocità 1 fino al rientro degli Inquinanti, poi torna a Velocità 0; se nel frattempo l'utente sceglie un'altra Velocità diversa da 0 (anche durante il Congelamento o il Δ Temp.) questa viene memorizzata dopo 8 Secondi e mantenuta, anche dopo il rientro; se invece sceglie Velocità 0 con gli Inquinanti ancora presenti, dopo circa 8 Secondi la VMC riparte a Velocità 1 e al rientro degli Inquinanti torna a Velocità 0, anche se prima dell'allerta era a un'altra Velocità; una Velocità scelta durante gli 8 Secondi di attesa dopo il rientro degli Inquinanti resta e la Velocità memorizzata non viene ripristinata (salvo se la Velocità memorizzata è Free Cool./Heat., che ha la sua ripresa, o con un'allerta Congelamento o Δ Temp. in corso); se un'allerta Lim. Δ PdR è iniziata con la VMC a Velocità 0, all'arrivo degli Inquinanti la sua memoria di Velocità 0 si azzera e la VMC parte a Velocità 1 dopo 4 Secondi;<br>
@@ -14837,7 +14928,8 @@ cards:
                   <table><tr><td align="justify">
                   <b>Scritte Alert sotto i tasti.</b> Sotto un tasto di velocità compare la scritta Alert quando, premendolo,
                   la VMC viene subito bloccata o ridotta da un'allerta già presente. Il tasto Velocità 0 non mostra mai
-                  Alert, perché arresta la VMC.
+                  Alert, perché arresta la VMC. Il tasto della velocità attiva e quello della velocità da ripristinare
+                  (icona ↺) restano illuminati anche durante l'allerta: la scritta compare solo sotto i tasti spenti.
                   </td></tr></table>
                   <table>
                   <tr><th style="padding: 4px 8px; border: 1px solid #c3c2b7;">Scritta</th><th style="padding: 4px 8px; border: 1px solid #c3c2b7;">Tasti</th><th style="padding: 4px 8px; border: 1px solid #c3c2b7;">Allerta</th><th style="padding: 4px 8px; border: 1px solid #c3c2b7;">Premendo il tasto</th></tr>
