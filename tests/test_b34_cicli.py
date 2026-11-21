@@ -145,7 +145,8 @@ def test_ripristino_dopo_il_black_out_ogni_comando_nel_ciclo_standard() -> None:
         assert len(attesa) == 1 and attesa[0]["timeout"] == "00:00:12", ident
         assert attesa[0]["wait_template"] == (
             f"{{{{ states('{LETTURA}') != vel_prima_del_comando or {BLACK_OUT} }}}}"), ident
-        assert ramo["sequence"][0]["variables"] == MEMORIA, ident
+        # b36 (scelta): il primo passo e' la velocita' scelta dall'utente prima del ripristino (test_b36_scelta)
+        assert ramo["sequence"][1]["variables"] == MEMORIA, ident
     # Inquinanti -> Velocita' 1: la memoria della Velocita' 0 si spegne dopo il ciclo, come prima dopo il comando
     scelta = next(p for p in rami["Black-Out Off Vel. 0"]["sequence"] if "choose" in p)
     inquinanti = next(o for o in scelta["choose"] if o["alias"] == "Inquinanti ON, Partenza Vel.0 -> Vel. 1")

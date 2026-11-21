@@ -16,6 +16,8 @@ e il ritorno della corrente (simulatore con Home Assistant vero, scenari bo_a.py
 
 from __future__ import annotations
 
+import time
+
 import pytest
 from homeassistant.core import HomeAssistant
 
@@ -56,7 +58,7 @@ NON_PIU_IN_CORSO = ("{{ not (states('input_boolean.vmc_master_opzioni_accendi_sp
 
 
 def _opzioni_pdr() -> list[dict]:
-    opzioni = _ramo(TID_BO_OFF_0)["sequence"][1]["choose"]
+    opzioni = next(p for p in _ramo(TID_BO_OFF_0)["sequence"] if "choose" in p)["choose"]
     return [o for o in opzioni if "_un_solo_avvio')=='on'" in o["conditions"][0]["value_template"]]
 
 
@@ -66,6 +68,15 @@ def test_rami_pdr_del_ripristino_solo_con_l_allerta_pdr_finita() -> None:
     for opzione in opzioni:
         assert len(opzione["conditions"]) == 2
         assert " ".join(opzione["conditions"][1]["value_template"].split()) == NON_PIU_IN_CORSO
+
+
+def _ritorno(hass: HomeAssistant, lettura: str = "Velocità 0") -> None:
+    """b36 (scelta): VMC di nuovo ON-Line da 32 s con la velocità letta rimasta quella di prima del Black-Out (nessuna
+    velocità scelta dall'utente prima del ripristino, test_b36_scelta); _esegui reimposta gli stessi stati senza
+    cambiarne l'ultimo cambio."""
+    adesso = time.time()
+    hass.states.async_set(IP, "ON-Line", timestamp=adesso - 32)
+    hass.states.async_set(LETTURA, lettura, timestamp=adesso - 120)
 
 
 def _stati(memoria: str, **altri: str) -> dict[str, str]:
@@ -81,6 +92,7 @@ def _stati(memoria: str, **altri: str) -> dict[str, str]:
 async def test_pdr_ancora_in_corso_la_vmc_resta_ferma(hass: HomeAssistant, memoria: str) -> None:
     """Prima del ritorno la VMC era ferma per il PdR: il ripristino non manda la velocità della memoria PdR e lascia la
     memoria PdR accesa (Velocità Registrata = velocità di fine allerta)."""
+    _ritorno(hass)
     comandi = await _esegui(hass, _ramo(TID_BO_OFF_0)["sequence"], _stati(memoria), attesa=1.0)
     assert comandi == []
     assert _stato(hass, f"input_boolean.vmc_master_spia_velocita_{memoria}_un_solo_avvio") == "on"
@@ -89,6 +101,7 @@ async def test_pdr_ancora_in_corso_la_vmc_resta_ferma(hass: HomeAssistant, memor
 async def test_pdr_ancora_in_corso_spie_del_black_out_spente_dopo_l_attesa(hass: HomeAssistant) -> None:
     """Senza comando il ramo aspetta i 12 s dell'attesa di conferma (come prima con la VMC già ferma), poi spegne le
     spie del Black-Out; la memoria PdR resta."""
+    _ritorno(hass)
     comandi = await _esegui(hass, _ramo(TID_BO_OFF_0)["sequence"], _stati("2"), attesa=13.5)
     assert comandi == []
     assert all(_stato(hass, e) == "off" for e in BLACK_OUT)
@@ -100,12 +113,14 @@ async def test_pdr_ancora_in_corso_spie_del_black_out_spente_dopo_l_attesa(hass:
 async def test_pdr_finito_durante_il_black_out_ripristina_la_memoria(hass: HomeAssistant, memoria: str,
                                                                      altri: dict[str, str]) -> None:
     """Allerta finita durante il Black-Out (o mentre stava finendo): come prima, la VMC va alla velocità memorizzata."""
+    _ritorno(hass)
     comandi = await _esegui(hass, _ramo(TID_BO_OFF_0)["sequence"], _stati(memoria, **altri), attesa=1.0)
     assert comandi[:1] == [COMANDO[memoria]]
 
 
 async def test_pdr_ancora_in_corso_vmc_non_ferma_va_a_velocita_0(hass: HomeAssistant) -> None:
     """Se alla riaccensione la VMC non è ferma, con il PdR in corso va a Velocità 0 (ramo senza memoria)."""
+    _ritorno(hass, "Velocità 1")
     comandi = await _esegui(hass, _ramo(TID_BO_OFF_0)["sequence"], _stati("3", **{LETTURA: "Velocità 1"}), attesa=1.0)
     assert comandi[:1] == ["vmc_master_velocita_0"]
 
