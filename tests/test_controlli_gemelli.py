@@ -598,7 +598,8 @@ CLASSE_A = {
     "[trigger] Rip. Vel. X No PdR": 2,
     "[ramo d'azione] Rip. Vel. X No PdR": 20,
     "[trigger] Rip. Vel. X No PdR se Spia Inquinanti ON": 2,
-    "[ramo d'azione] Rip. Vel. X No PdR se Spia Inquinanti ON": 18,
+    # b36 (b36-pdr2): 18 -> 21, la protezione della scelta dell'utente nei 3 casi con comando del ramo Free (dentro il choose)
+    "[ramo d'azione] Rip. Vel. X No PdR se Spia Inquinanti ON": 21,
     "[trigger] Black-Out Velocità X [ON]": 1,
     "[ramo d'azione] Black-Out Velocità X [ON]": 2,
     "[ramo d'azione] Black-Out Velocità X [OFF, Ripristino]": 18,

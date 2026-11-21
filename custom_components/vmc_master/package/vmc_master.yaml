@@ -5376,7 +5376,7 @@ input_boolean:
     name: "Spia Velocità Free Cool./Heat. CO₂ e/o VOC"
     icon: mdi:memory        
 
-  vmc_master_spia_velocita_1_co2_o_voc_pdr:                                     # [CONFIGURAZIONE, 92 RICHIAMI] [INTERFACCIA, 11 RICHIAMI] [AUTOMAZIONE, 270 RICHIAMI] SENSORE TRACCIAMENTO VELOCITA' 1, IN CASO DI AVVIO PUNTO DI RUGIADA A VELOCITA 1 E INQUINANTI CO2 E VOC ASSENTI MA PRECEDENTEMENTE PRESENTI A VELOCITA 0
+  vmc_master_spia_velocita_1_co2_o_voc_pdr:                                     # [CONFIGURAZIONE, 92 RICHIAMI] [INTERFACCIA, 11 RICHIAMI] [AUTOMAZIONE, 271 RICHIAMI] SENSORE TRACCIAMENTO VELOCITA' 1, IN CASO DI AVVIO PUNTO DI RUGIADA A VELOCITA 1 E INQUINANTI CO2 E VOC ASSENTI MA PRECEDENTEMENTE PRESENTI A VELOCITA 0
     name: "Spia Velocità 1 CO₂ e/o VOC Vs PdR"
     icon: mdi:memory
 
