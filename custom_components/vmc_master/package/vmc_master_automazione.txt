@@ -195,20 +195,22 @@ description: >-
 
   - Umidità: 28 Secondi (la logica Umidità memorizza subito la Velocità in uso);
   con la [Set Velocità Umidità di Avvio] su Velocità 0 l'allerta Umidità si
-  accende ma la VMC resta ferma, anche con la Free Cool./Heat. sospesa; se
-  durante l'allerta si cambia Velocità, la nuova Velocità viene memorizzata dopo
-  4 Secondi e mantenuta a fine Umidità; se però l'Umidità ha avviato la VMC da
-  Velocità 0 e la VMC risulta ancora, o di nuovo, a Velocità 0, dopo 4 Secondi
-  viene riportata alla [Set Velocità Umidità di Avvio] e a fine Umidità torna a
-  Velocità 0 (per fermarla si spegne l'interruttore dell'Umidità; con la Free
-  Cool./Heat. sospesa nessun cambio: la VMC resta a Velocità 0); se invece prima
-  si sceglie una Velocità diversa da quella di avvio e la si tiene almeno 4
-  Secondi, la Velocità 0 scelta dopo viene memorizzata e la VMC resta ferma
-  anche a fine Umidità; se l'Umidità ha avviato la VMC da Velocità 0, la VMC è
-  ancora alla [Set Velocità Umidità di Avvio] e a fine Umidità sono ancora
-  presenti gli Inquinanti, la VMC scende a Velocità 1 dopo 28 Secondi e torna a
-  Velocità 0 al rientro degli Inquinanti (se l'utente ha scelto un'altra
-  Velocità, quella resta);
+  accende ma la VMC resta ferma, anche con la Free Cool./Heat. sospesa
+  (all'avvio dell'Umidità, all'arresto per condizioni sfavorevoli e a fine
+  Inquinanti, dove con un'altra Velocità di avvio la VMC va a Velocità 1 [Nota
+  3]); se durante l'allerta si cambia Velocità, la nuova Velocità viene
+  memorizzata dopo 4 Secondi e mantenuta a fine Umidità; se però l'Umidità ha
+  avviato la VMC da Velocità 0 e la VMC risulta ancora, o di nuovo, a Velocità
+  0, dopo 4 Secondi viene riportata alla [Set Velocità Umidità di Avvio] e a
+  fine Umidità torna a Velocità 0 (per fermarla si spegne l'interruttore
+  dell'Umidità; con la Free Cool./Heat. sospesa nessun cambio: la VMC resta a
+  Velocità 0); se invece prima si sceglie una Velocità diversa da quella di
+  avvio e la si tiene almeno 4 Secondi, la Velocità 0 scelta dopo viene
+  memorizzata e la VMC resta ferma anche a fine Umidità; se l'Umidità ha avviato
+  la VMC da Velocità 0, la VMC è ancora alla [Set Velocità Umidità di Avvio] e a
+  fine Umidità sono ancora presenti gli Inquinanti, la VMC scende a Velocità 1
+  dopo 28 Secondi e torna a Velocità 0 al rientro degli Inquinanti (se l'utente
+  ha scelto un'altra Velocità, quella resta);
 
   - Black-Out: 32 Secondi per il Rilevamento e per il Ripristino; durante una
   Fascia del Calendario la rilevazione del Black-Out non è attiva: al ritorno
@@ -381,10 +383,12 @@ description: >-
   VMC non lo esegue, anche se nel frattempo la sua velocità non si legge o la
   VMC va OFF-Line (vedere Black-Out);
 
-  - se la VMC è OFF-Line o la sua velocità non è disponibile, l'interruttore del
-  Punto di Rugiada o dell'Umidità spento durante l'allerta resta spento e si
-  azzerano solo le memorie della sua allerta, senza comandi alla VMC: al ritorno
-  la VMC resta alla velocità letta (o a quella ripristinata dopo il Black-Out);
+  - se la VMC è OFF-Line, la sua velocità non è disponibile o è in corso il
+  ripristino dopo un Black-Out, l'interruttore del Punto di Rugiada o
+  dell'Umidità spento durante l'allerta resta spento (salvo, per l'Umidità, i
+  casi qui sopra in cui il suo interruttore non si può spegnere) e si azzerano
+  solo le memorie della sua allerta, senza comandi alla VMC: al ritorno la VMC
+  resta alla velocità letta (o a quella ripristinata dopo il Black-Out);
 
   - se invece la sua funzione non sta comandando la VMC, spegnendo l'interruttore
   la VMC non cambia Velocità: la funzione semplicemente non interverrà più finché
