@@ -31832,6 +31832,8 @@ automation:
                   states('sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi') == 'Non Avviare in Velocità Free Cooling Programmato (Allerta Riscaldamento, Presenza di Inquinanti)' or
                   (states('sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi') in ['Nessuna Allerta Free Cooling Programmato', 'Nessuna Allerta Free Cooling Programmato, Presenza di Inquinanti'] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0')
               )
+              and (states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') in ['Velocità 0', 'Free Cooling'] or (states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia') == 'on' and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 1'))
+              and not ((states('input_boolean.vmc_master_spia_velocita_1_un_solo_avvio') == 'on' and states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia') != 'on') or states('input_boolean.vmc_master_spia_velocita_2_un_solo_avvio') == 'on' or states('input_boolean.vmc_master_spia_velocita_3_un_solo_avvio') == 'on' or states('input_boolean.vmc_master_spia_velocita_4_un_solo_avvio') == 'on' or states('input_boolean.vmc_master_spia_velocita_notturna_un_solo_avvio') == 'on' or states('input_boolean.vmc_master_spia_velocita_iperventilazione_un_solo_avvio') == 'on')
               and ((states('sensor.vmc_master_alert_monitoraggio_voc') == 'Nessuna Allerta'
               and states('sensor.vmc_master_alert_monitoraggio_co2') == 'Nessuna Allerta')
               or states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc') == 'off')
@@ -31866,6 +31868,8 @@ automation:
                   states('sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi') == 'Non Avviare in Velocità Free Cooling Programmato (Allerta Riscaldamento, Presenza di Inquinanti)' or
                   (states('sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi') in ['Nessuna Allerta Free Cooling Programmato', 'Nessuna Allerta Free Cooling Programmato, Presenza di Inquinanti'] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0')
               )
+              and (states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') in ['Velocità 0', 'Free Cooling'] or (states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia') == 'on' and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 1'))
+              and not ((states('input_boolean.vmc_master_spia_velocita_1_un_solo_avvio') == 'on' and states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia') != 'on') or states('input_boolean.vmc_master_spia_velocita_2_un_solo_avvio') == 'on' or states('input_boolean.vmc_master_spia_velocita_3_un_solo_avvio') == 'on' or states('input_boolean.vmc_master_spia_velocita_4_un_solo_avvio') == 'on' or states('input_boolean.vmc_master_spia_velocita_notturna_un_solo_avvio') == 'on' or states('input_boolean.vmc_master_spia_velocita_iperventilazione_un_solo_avvio') == 'on')
               and ((states('sensor.vmc_master_alert_monitoraggio_voc') == 'Nessuna Allerta'
               and states('sensor.vmc_master_alert_monitoraggio_co2') == 'Nessuna Allerta')
               or states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc') == 'off')
@@ -31901,6 +31905,7 @@ automation:
               states('sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi') == 'Non Avviare in Velocità Free Cooling Programmato (Allerta Riscaldamento)' or
               states('sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi') == 'Non Avviare in Velocità Free Cooling Programmato (Allerta Riscaldamento, Presenza di Inquinanti)'
           ) and
+          states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') in ['Velocità 0', 'Velocità 1', 'Free Cooling'] and
           (states('sensor.vmc_master_alert_monitoraggio_voc')=='Allerta' or states('sensor.vmc_master_alert_monitoraggio_co2')=='Allerta') and states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc')=='on' and
           states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia')== 'off' and
           states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia')== 'off' and
@@ -31932,6 +31937,7 @@ automation:
               states('sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi') == 'Non Avviare in Velocità Free Cooling Programmato (Allerta Riscaldamento)' or
               states('sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi') == 'Non Avviare in Velocità Free Cooling Programmato (Allerta Riscaldamento, Presenza di Inquinanti)'
           ) and
+          states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') in ['Velocità 0', 'Velocità 1', 'Free Cooling'] and
           (states('sensor.vmc_master_alert_monitoraggio_voc')=='Allerta' or states('sensor.vmc_master_alert_monitoraggio_co2')=='Allerta') and states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc')=='on' and
           states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia')== 'off' and
           states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia')== 'off' and
@@ -31966,6 +31972,8 @@ automation:
               states('sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi') == 'Non Avviare in Velocità Free Heating Programmato (Allerta Raffrescamento, Presenza di Inquinanti)' or
               (states('sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi') in ['Nessuna Allerta Free Heating Programmato', 'Nessuna Allerta Free Heating Programmato, Presenza di Inquinanti'] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0')
           ) and
+          (states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') in ['Velocità 0', 'Free Cooling'] or (states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia') == 'on' and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 1')) and
+          not ((states('input_boolean.vmc_master_spia_velocita_1_un_solo_avvio') == 'on' and states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia') != 'on') or states('input_boolean.vmc_master_spia_velocita_2_un_solo_avvio') == 'on' or states('input_boolean.vmc_master_spia_velocita_3_un_solo_avvio') == 'on' or states('input_boolean.vmc_master_spia_velocita_4_un_solo_avvio') == 'on' or states('input_boolean.vmc_master_spia_velocita_notturna_un_solo_avvio') == 'on' or states('input_boolean.vmc_master_spia_velocita_iperventilazione_un_solo_avvio') == 'on') and
           ((states('sensor.vmc_master_alert_monitoraggio_voc')=='Nessuna Allerta' and states('sensor.vmc_master_alert_monitoraggio_co2')=='Nessuna Allerta') or states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc')=='off') and
           states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia')== 'off' and
           states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia')== 'off' and
@@ -31998,6 +32006,8 @@ automation:
               states('sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi') == 'Non Avviare in Velocità Free Heating Programmato (Allerta Raffrescamento, Presenza di Inquinanti)' or
               (states('sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi') in ['Nessuna Allerta Free Heating Programmato', 'Nessuna Allerta Free Heating Programmato, Presenza di Inquinanti'] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0')
           ) and
+          (states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') in ['Velocità 0', 'Free Cooling'] or (states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia') == 'on' and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 1')) and
+          not ((states('input_boolean.vmc_master_spia_velocita_1_un_solo_avvio') == 'on' and states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia') != 'on') or states('input_boolean.vmc_master_spia_velocita_2_un_solo_avvio') == 'on' or states('input_boolean.vmc_master_spia_velocita_3_un_solo_avvio') == 'on' or states('input_boolean.vmc_master_spia_velocita_4_un_solo_avvio') == 'on' or states('input_boolean.vmc_master_spia_velocita_notturna_un_solo_avvio') == 'on' or states('input_boolean.vmc_master_spia_velocita_iperventilazione_un_solo_avvio') == 'on') and
           ((states('sensor.vmc_master_alert_monitoraggio_voc')=='Nessuna Allerta' and states('sensor.vmc_master_alert_monitoraggio_co2')=='Nessuna Allerta') or states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc')=='off') and
           states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia')== 'off' and
           states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia')== 'off' and
@@ -32031,6 +32041,7 @@ automation:
               states('sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi') == 'Non Avviare in Velocità Free Heating Programmato (Allerta Raffrescamento)' or
               states('sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi') == 'Non Avviare in Velocità Free Heating Programmato (Allerta Raffrescamento, Presenza di Inquinanti)'
           ) and
+          states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') in ['Velocità 0', 'Velocità 1', 'Free Cooling'] and
           (states('sensor.vmc_master_alert_monitoraggio_voc') == 'Allerta' or states('sensor.vmc_master_alert_monitoraggio_co2') == 'Allerta') and states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc') == 'on' and
           (states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia') == 'off') and
           (states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia') == 'off') and
@@ -32062,6 +32073,7 @@ automation:
               states('sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi') == 'Non Avviare in Velocità Free Heating Programmato (Allerta Raffrescamento)' or
               states('sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi') == 'Non Avviare in Velocità Free Heating Programmato (Allerta Raffrescamento, Presenza di Inquinanti)'
           ) and
+          states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') in ['Velocità 0', 'Velocità 1', 'Free Cooling'] and
           (states('sensor.vmc_master_alert_monitoraggio_voc') == 'Allerta' or states('sensor.vmc_master_alert_monitoraggio_co2') == 'Allerta') and states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc') == 'on' and
           (states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia') == 'off') and
           (states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia') == 'off') and
