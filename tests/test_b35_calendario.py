@@ -471,12 +471,19 @@ async def test_c1_4_fascia_di_un_altro_giorno_ancora_accesa(hass, freezer, ora, 
 
 
 # ------------------------------------------------------------------------------------------------ C5-1
+# b36 (C1-3, C1-5): l'attesa della fine di Congelamento/Δ e il comando dello spegnimento del Calendario
 FRASE = ("se invece la VMC risponde al ping ma la sua velocità non si legge (porta 5001), dopo 32 Secondi la Fascia "
-         "smette di ripetere il comando e, appena la velocità torna leggibile, la Fascia riparte, salvo se nel frattempo "
-         "la Velocità è cambiata (per esempio con il Telecomando); lo stesso vale per la Velocità 0 di fine Fascia: "
-         "appena la velocità torna leggibile la Velocità 0 viene ripetuta, salvo se nel frattempo la Velocità è cambiata "
-         "o è in corso un'allerta Congelamento o Δ Temp.; se invece la corrente manca proprio mentre la Fascia finisce, "
-         "al ritorno della corrente la VMC si arresta dopo 32 Secondi;")
+         "smette di ripetere il comando e, appena la velocità torna leggibile, la Fascia riparte, salvo se nel "
+         "frattempo la Velocità è cambiata (per esempio con il Telecomando); lo stesso vale per la Velocità 0 di fine "
+         "Fascia e per il comando dato spegnendo l'interruttore del Calendario durante una Fascia (Velocità 0, o "
+         "Velocità 1 con Inquinanti): appena la velocità torna leggibile il comando viene ripetuto, anche con "
+         "l'interruttore del Calendario spento, salvo se nel frattempo la Velocità è cambiata; con un'allerta "
+         "Congelamento o Δ Temp. in corso il comando del Calendario aspetta la fine dell'allerta: a fine allerta, "
+         "appena la velocità è leggibile, la Fascia riparte con la sua Velocità (o si ripete la Velocità 0, o 1, in "
+         "sospeso) al posto della Velocità memorizzata dall'allerta, salvo se si sceglie un'altra Velocità dopo la "
+         "fine dell'allerta; se invece la corrente manca proprio mentre la Fascia finisce o mentre si spegne "
+         "l'interruttore del Calendario, al ritorno della corrente la VMC si arresta dopo 32 Secondi (o va a Velocità "
+         "1, se l'interruttore è stato spento con Inquinanti presenti);")
 
 
 def test_c5_1_descrizione_e_voce_17() -> None:
@@ -491,10 +498,12 @@ def test_c5_1_descrizione_e_voce_17() -> None:
 
 def test_c5_1_riquadro_avvisi() -> None:
     scheda = _testo("vmc_master_scheda_manuale_interfaccia.txt")
+    # b36 (C1-3, C1-5): il comando dello spegnimento del Calendario e l'attesa della fine di Congelamento/Δ
     riga = ('label: "La VMC risponde in rete ma la sua velocità non si legge: il comando del Calendario (velocità della '
-            "fascia o Velocità 0 di fine fascia) non è confermato. Appena la velocità torna leggibile il comando riparte, "
-            "salvo se nel frattempo la velocità è cambiata o è in corso un'allerta Congelamento o Δ Temp. Non serve fare "
-            'nulla."')
+            "fascia, Velocità 0 di fine fascia o comando dato spegnendo l'interruttore del Calendario durante la fascia) "
+            "non è confermato. Appena la velocità torna leggibile il comando riparte, salvo se nel frattempo la velocità "
+            "è cambiata; con un'allerta Congelamento o Δ Temp. in corso il comando riparte alla fine dell'allerta, al "
+            "posto della velocità memorizzata dall'allerta. Non serve fare nulla.\"")
     assert scheda.count(riga) == 1
     blocco = scheda[scheda.rindex("- type: conditional", 0, scheda.index(riga)): scheda.index(riga)]
     assert SPIA_CNE in blocco and "state: ON-Line" in blocco
@@ -504,10 +513,12 @@ def test_c5_1_descrizioni_degli_script_di_fascia() -> None:
     script = _pacchetto()["script"]
     uno, due = (" ".join(script[f"vmc_master_calendario_fascia_{n}_on"]["description"].split()) for n in (1, 2))
     assert uno.replace("1° Fascia", "2° Fascia") == due
+    # b36 (C1-3): con Congelamento/Δ in corso la Velocita' 0 si ripete alla fine dell'allerta
     frase = ("Anche la Velocità 0 che l'Automazione manda alla fine della Fascia smette di essere ripetuta se la velocità "
              "non si legge: si accende la stessa Spia e, appena la VMC torna a rispondere, la Velocità 0 viene ripetuta, "
-             "salvo se nel frattempo la velocità è cambiata o è in corso un'allerta Congelamento o Δ Temp.; se invece la "
-             "VMC va OFF-Line prima di confermarla, la Velocità 0 viene memorizzata e rimandata al ritorno della corrente.")
+             "salvo se nel frattempo la velocità è cambiata (con un'allerta Congelamento o Δ Temp. in corso, alla fine "
+             "dell'allerta); se invece la VMC va OFF-Line prima di confermarla, la Velocità 0 viene memorizzata e "
+             "rimandata al ritorno della corrente.")
     assert frase in uno
     for vietata in ("vmc_master", "master", "input_", "sensor.", "999.999"):
         assert vietata not in uno
