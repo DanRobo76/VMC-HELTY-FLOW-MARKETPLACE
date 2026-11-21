@@ -8,6 +8,12 @@ era acceso: con «Alert Free» e la Velocità Registrata Free Heating il tasto F
 Ora, dove compare la variante alert, si vede la variante normale se il binary_sensor del tasto è acceso: la scritta
 resta sotto i tasti spenti; fuori dalle allerte non cambia niente.
 
+Tasti Free: in ogni combinazione di mese programmato, monitoraggio Free, Alert Avvio e sensori di temperatura si vede
+esattamente un tasto Free (in una delle sue due varianti), quello del nome Free della Velocità Registrata (nome_free):
+Free Heating o Free Cooling nel mese programmato, Free Cool./Heat. («Free Heat./Cool.») negli altri mesi o con il
+monitoraggio Free «[Non Calcolabile]». Prima, nel mese programmato con una temperatura «[Non Calcolabile]», non si vedeva
+nessun tasto Free.
+
 Le condizioni di visibilità della scheda (state, and, or) sono valutate come fa il frontend di Home Assistant.
 """
 
@@ -19,6 +25,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
+import jinja2
 import pytest
 from homeassistant.util import yaml as hay
 
@@ -29,6 +36,8 @@ SCHEDA = PKG / "vmc_master_scheda_manuale_interfaccia.txt"
 ALERT = "sensor.vmc_master_alert_avvio_interfaccia"
 MESE = "sensor.vmc_master_status_mese_corrente_freeheating_o_freecooling"
 FREE = "sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi"
+MON = "sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling"
+NC = "[Non Calcolabile]"
 T_EST = "sensor.vmc_master_temp_esterna_status"
 T_INT = "sensor.vmc_master_temp_interna_status"
 TASTO = "binary_sensor.vmc_master_tasto_"
@@ -60,6 +69,9 @@ MONITORAGGIO = {
                      "[Non Calcolabile]"),
     "Disabilitata": ("Nessuna Allerta", "Se Avviata in Velocità Free Cool./Heat. (Allerta Raffrescamento)"),
 }
+# nome Free della Velocità Registrata -> tasto Free
+TASTO_DEL_NOME = {"Free Heating": "free_heating", "Free Cooling": "free_cooling", "Free Heat./Cool.": "free_cool_heat"}
+NOMI_FREE = {"Free Heating", "Free Cooling", "Free Cool./Heat."}
 
 
 def _norm(testo: str) -> str:
@@ -91,6 +103,28 @@ def _vale(condizione: dict[str, Any], stati: dict[str, str]) -> bool:
 
 def _visibile(card: dict[str, Any], stati: dict[str, str]) -> bool:
     return all(_vale(c, stati) for c in card.get("visibility", []))
+
+
+@lru_cache
+def _modello_nome_free() -> jinja2.Template:
+    """Le due righe di sensor.vmc_master_velocita_registrata che danno il nome della velocità Free."""
+    pacchetto = _testo(PKG / "vmc_master.yaml")
+    righe = [re.search(r"\{%- set mese_free = .*?-%\}", pacchetto).group(0),
+             re.search(r"\{%- set nome_free = .*?-%\}", pacchetto).group(0)]
+    assert MON in righe[1] and MESE in righe[0]
+    return jinja2.Environment().from_string("".join(righe) + "{{ nome_free }}")
+
+
+@lru_cache
+def _nome_free(mese: str, monitoraggio: str) -> str:
+    stati = {MESE: mese, MON: monitoraggio}
+    return _modello_nome_free().render(states=lambda entita: stati.get(entita, "unavailable"))
+
+
+def _stati(s: str, mese: str, avvisi: str, tasto: str, acceso: str) -> dict[str, str]:
+    """Stati coerenti: con il monitoraggio Free «[Non Calcolabile]» la Temperatura Esterna non è un numero."""
+    return {ALERT: s, MESE: mese, FREE: avvisi, MON: NC if avvisi == NC else "Nessuna Allerta",
+            T_EST: NC if avvisi == NC else "10.0", T_INT: "21.0", f"{TASTO}{tasto}": acceso}
 
 
 def _liste_di_card(nodo: Any):
@@ -144,9 +178,9 @@ def test_scritte_del_tasto(tasto: str) -> None:
     scritte, mesi = ATTESI[tasto]
     _, alert = _coppie()[tasto]
     viste = {
-        s for s, mese, monitoraggio in itertools.product(STATI_ALERT, mesi, MONITORAGGIO[mesi[0]])
-        if _visibile(alert, {ALERT: s, MESE: mese, FREE: monitoraggio, T_EST: "10.0", T_INT: "21.0",
-                             f"{TASTO}{tasto}": "off"})
+        s for s, mese in itertools.product(STATI_ALERT, mesi)
+        for avvisi in MONITORAGGIO[mese] if avvisi != NC
+        if _visibile(alert, _stati(s, mese, avvisi, tasto, "off"))
     }
     assert viste == scritte
 
@@ -154,30 +188,52 @@ def test_scritte_del_tasto(tasto: str) -> None:
 @pytest.mark.parametrize("tasto", sorted(ATTESI))
 def test_durante_le_allerte_il_tasto_acceso_resta_acceso(tasto: str) -> None:
     """Con il tasto acceso (velocità attiva o Velocità Registrata) si vede la variante normale, con il tasto spento
-    la scritta Alert; mai le due varianti insieme; fuori dalle allerte del tasto vale come prima, acceso o spento."""
-    scritte, mesi = ATTESI[tasto]
+    la scritta Alert; mai le due varianti insieme; fuori dalle allerte del tasto si vede la variante normale, acceso o
+    spento. Un tasto Free c'è solo se è quello del nome Free della Velocità Registrata."""
+    scritte, _ = ATTESI[tasto]
     normale, alert = _coppie()[tasto]
     for mese in TUTTI_I_MESI:
-        for s, monitoraggio in itertools.product(STATI_ALERT, MONITORAGGIO[mese]):
-            visto = {}
+        for s, avvisi in itertools.product(STATI_ALERT, MONITORAGGIO[mese]):
+            stati = _stati(s, mese, avvisi, tasto, "on")
+            presente = not tasto.startswith("free_") or TASTO_DEL_NOME[_nome_free(mese, stati[MON])] == tasto
             for acceso in ("on", "off", "unavailable"):
-                stati = {ALERT: s, MESE: mese, FREE: monitoraggio, T_EST: "10.0", T_INT: "21.0",
-                         f"{TASTO}{tasto}": acceso}
-                visto[acceso] = (_visibile(normale, stati), _visibile(alert, stati))
-                assert visto[acceso] != (True, True), (mese, s, monitoraggio, acceso)
-                if mese in mesi and s in scritte:
+                stati = _stati(s, mese, avvisi, tasto, acceso)
+                visto = (_visibile(normale, stati), _visibile(alert, stati))
+                if not presente:
+                    atteso = (False, False)
+                elif s in scritte:
                     atteso = (True, False) if acceso == "on" else (False, True)
-                    assert visto[acceso] == atteso, (mese, s, monitoraggio, acceso)
-            if s not in scritte or mese not in mesi:
-                assert visto["on"] == visto["off"] == visto["unavailable"], (mese, s, monitoraggio)
-                assert not visto["on"][1], (mese, s, monitoraggio)
-            if s == "Nessuna" and mese in mesi and not tasto.startswith("free_"):
-                assert visto["off"] == (True, False)
+                else:
+                    atteso = (True, False)
+                assert visto == atteso, (mese, s, avvisi, acceso)
+
+
+TEMPERATURE = ("10.0", NC, "Non disponibile", "unavailable")
+MESI = ("Free Heating", "Free Cooling", "Disabilitata", "Non disponibile", "unavailable", "unknown")
+MONITORAGGI = ("Nessuna Allerta", "Allerta Free Heating Programmato (Raffrescamento in atto)",
+               "Allerta Free Cooling Programmato (Riscaldamento in atto)", "Allerta Raffrescamento in atto",
+               "Riscaldamento in atto", NC, "Non disponibile", "unavailable")
+AVVISI = tuple(dict.fromkeys(a for valori in MONITORAGGIO.values() for a in valori)) + ("Non disponibile", "unavailable")
+
+
+def test_esattamente_un_tasto_free() -> None:
+    """In ogni combinazione (anche non coerente) di mese, monitoraggio Free, avvisi Free, Alert Avvio, temperature e
+    tasti Free accesi o spenti si vede un solo tasto Free, quello del nome Free della Velocità Registrata."""
+    free = [c for c in _tastiera() if c.get("name") in NOMI_FREE]
+    assert len(free) == 6
+    nomi = {"free_heating": "Free Heating", "free_cooling": "Free Cooling", "free_cool_heat": "Free Cool./Heat."}
+    for mese, monitoraggio, avvisi, s, t_est, t_int, acceso in itertools.product(
+        MESI, MONITORAGGI, AVVISI, STATI_ALERT, TEMPERATURE, TEMPERATURE, ("on", "off")
+    ):
+        stati = {MESE: mese, MON: monitoraggio, FREE: avvisi, ALERT: s, T_EST: t_est, T_INT: t_int}
+        stati.update({f"{TASTO}{t}": acceso for t in nomi})
+        visti = [c["name"] for c in free if _visibile(c, stati)]
+        assert visti == [nomi[TASTO_DEL_NOME[_nome_free(mese, monitoraggio)]]], (stati, visti)
 
 
 def test_caso_della_segnalazione() -> None:
     """Velocità 1 con «Alert Free» e Velocità Registrata Free Heating: accesi Velocità 1 e Free Heating (↺)."""
-    stati = {ALERT: "Alert Free", MESE: "Free Heating",
+    stati = {ALERT: "Alert Free", MESE: "Free Heating", MON: "Nessuna Allerta",
              FREE: "Allerta Free Heating Programmato (Raffrescamento Arrestato, Presenza di Inquinanti)",
              T_EST: "10.0", T_INT: "21.0", f"{TASTO}velocita_1": "on", f"{TASTO}free_heating": "on"}
     visibili = [c for c in _tastiera() if _visibile(c, stati)]
@@ -188,6 +244,14 @@ def test_caso_della_segnalazione() -> None:
     stati[f"{TASTO}free_heating"] = "off"
     visibili = [c for c in _tastiera() if _visibile(c, stati)]
     assert [c["name"] for c in visibili if c.get("entity") == ALERT] == ["Free Heating"]
+
+
+def test_caso_temperatura_non_calcolabile() -> None:
+    """Mese Free Heating con la Temperatura Esterna «[Non Calcolabile]»: si vede il tasto Free Cool./Heat., come il nome
+    «Free Heat./Cool.» della Velocità Registrata."""
+    stati = {ALERT: "Nessuna", MESE: "Free Heating", MON: NC, FREE: NC, T_EST: NC, T_INT: "21.0"}
+    assert _nome_free("Free Heating", NC) == "Free Heat./Cool."
+    assert [c["name"] for c in _tastiera() if c.get("name") in NOMI_FREE and _visibile(c, stati)] == ["Free Cool./Heat."]
 
 
 def test_fini_riga_e_yaml() -> None:

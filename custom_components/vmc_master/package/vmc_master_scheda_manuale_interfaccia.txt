@@ -10259,35 +10259,20 @@ cards:
                   - condition: state
                     entity: sensor.vmc_master_status_mese_corrente_freeheating_o_freecooling
                     state: Free Heating
+                  - condition: state
+                    entity: sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling
+                    state_not: '[Non Calcolabile]'
                   - condition: or
                     conditions:
-                    - condition: and
-                      conditions:
-                      - condition: or
-                        conditions:
-                        - condition: state
-                          entity: sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi
-                          state: Nessuna Allerta Free Heating Programmato
-                        - condition: state
-                          entity: sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi
-                          state: Nessuna Allerta Free Heating Programmato, Presenza di Inquinanti
-                      - condition: state
-                        entity: sensor.vmc_master_alert_avvio_interfaccia
-                        state_not:
-                        - Alert
-                        - Alert Δ Temp.
-                        - Alert Free
-                    - condition: and
-                      conditions:
-                      - condition: state
-                        entity: binary_sensor.vmc_master_tasto_free_heating
-                        state: 'on'
-                      - condition: state
-                        entity: sensor.vmc_master_alert_avvio_interfaccia
-                        state:
-                        - Alert
-                        - Alert Δ Temp.
-                        - Alert Free
+                    - condition: state
+                      entity: sensor.vmc_master_alert_avvio_interfaccia
+                      state_not:
+                      - Alert
+                      - Alert Δ Temp.
+                      - Alert Free
+                    - condition: state
+                      entity: binary_sensor.vmc_master_tasto_free_heating
+                      state: 'on'
                 - show_name: true
                   show_icon: true
                   type: button
@@ -10304,6 +10289,9 @@ cards:
                   - condition: state
                     entity: sensor.vmc_master_status_mese_corrente_freeheating_o_freecooling
                     state: Free Heating
+                  - condition: state
+                    entity: sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling
+                    state_not: '[Non Calcolabile]'
                   - condition: state
                     entity: sensor.vmc_master_alert_avvio_interfaccia
                     state:
@@ -10329,35 +10317,20 @@ cards:
                   - condition: state
                     entity: sensor.vmc_master_status_mese_corrente_freeheating_o_freecooling
                     state: Free Cooling
+                  - condition: state
+                    entity: sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling
+                    state_not: '[Non Calcolabile]'
                   - condition: or
                     conditions:
-                    - condition: and
-                      conditions:
-                      - condition: or
-                        conditions:
-                        - condition: state
-                          entity: sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi
-                          state: Nessuna Allerta Free Cooling Programmato
-                        - condition: state
-                          entity: sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi
-                          state: Nessuna Allerta Free Cooling Programmato, Presenza di Inquinanti
-                      - condition: state
-                        entity: sensor.vmc_master_alert_avvio_interfaccia
-                        state_not:
-                        - Alert
-                        - Alert Δ Temp.
-                        - Alert Free
-                    - condition: and
-                      conditions:
-                      - condition: state
-                        entity: binary_sensor.vmc_master_tasto_free_cooling
-                        state: 'on'
-                      - condition: state
-                        entity: sensor.vmc_master_alert_avvio_interfaccia
-                        state:
-                        - Alert
-                        - Alert Δ Temp.
-                        - Alert Free
+                    - condition: state
+                      entity: sensor.vmc_master_alert_avvio_interfaccia
+                      state_not:
+                      - Alert
+                      - Alert Δ Temp.
+                      - Alert Free
+                    - condition: state
+                      entity: binary_sensor.vmc_master_tasto_free_cooling
+                      state: 'on'
                 - show_name: true
                   show_icon: true
                   type: button
@@ -10374,6 +10347,9 @@ cards:
                   - condition: state
                     entity: sensor.vmc_master_status_mese_corrente_freeheating_o_freecooling
                     state: Free Cooling
+                  - condition: state
+                    entity: sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling
+                    state_not: '[Non Calcolabile]'
                   - condition: state
                     entity: sensor.vmc_master_alert_avvio_interfaccia
                     state:
@@ -10400,22 +10376,12 @@ cards:
                     conditions:
                     - condition: state
                       entity: sensor.vmc_master_status_mese_corrente_freeheating_o_freecooling
-                      state: Disabilitata
+                      state_not:
+                      - Free Heating
+                      - Free Cooling
                     - condition: state
-                      entity: sensor.vmc_master_status_mese_corrente_freeheating_o_freecooling
-                      state: Non disponibile
-                    - condition: state
-                      entity: sensor.vmc_master_temp_esterna_status
-                      state: unavailable
-                    - condition: state
-                      entity: sensor.vmc_master_temp_interna_status
-                      state: unavailable
-                    - condition: state
-                      entity: sensor.vmc_master_temp_interna_status
-                      state: Non disponibile
-                    - condition: state
-                      entity: sensor.vmc_master_temp_esterna_status
-                      state: Non disponibile
+                      entity: sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling
+                      state: '[Non Calcolabile]'
                   - condition: or
                     conditions:
                     - condition: state
@@ -10443,22 +10409,12 @@ cards:
                     conditions:
                     - condition: state
                       entity: sensor.vmc_master_status_mese_corrente_freeheating_o_freecooling
-                      state: Disabilitata
+                      state_not:
+                      - Free Heating
+                      - Free Cooling
                     - condition: state
-                      entity: sensor.vmc_master_status_mese_corrente_freeheating_o_freecooling
-                      state: Non disponibile
-                    - condition: state
-                      entity: sensor.vmc_master_temp_esterna_status
-                      state: unavailable
-                    - condition: state
-                      entity: sensor.vmc_master_temp_interna_status
-                      state: unavailable
-                    - condition: state
-                      entity: sensor.vmc_master_temp_interna_status
-                      state: Non disponibile
-                    - condition: state
-                      entity: sensor.vmc_master_temp_esterna_status
-                      state: Non disponibile
+                      entity: sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling
+                      state: '[Non Calcolabile]'
                   - condition: state
                     entity: sensor.vmc_master_alert_avvio_interfaccia
                     state:
