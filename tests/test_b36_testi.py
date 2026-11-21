@@ -166,10 +166,10 @@ FRASI_17 = [
      "rispettata il giorno risulta «Disabilitata» e nessuna delle due Fasce parte.", 1),
     # C3-2: velocità scelta durante gli 8 s di attesa della fine degli Inquinanti (voce e tabella)
     ("anche se prima dell'allerta era a un'altra Velocità; una Velocità scelta durante gli 8 Secondi di attesa dopo il "
-     "rientro degli Inquinanti resta e la Velocità memorizzata non viene ripristinata (salvo se la Velocità memorizzata "
-     "è Free Cool./Heat., che ha la sua ripresa, o con un'allerta Congelamento o Δ Temp. in corso);", 1),
+     "rientro degli Inquinanti resta e la Velocità memorizzata non viene ripristinata (salvo se la Free Cool./Heat. è "
+     "sospesa da un'allerta, che ha la sua ripresa, o con un'allerta Congelamento o Δ Temp. in corso);", 1),
     ("e PdR superato); anche una Velocità scelta durante gli 8 Secondi di attesa dopo il rientro resta (salvo se la "
-     "Velocità memorizzata è Free Cool./Heat. o con un'allerta Congelamento o Δ Temp. in corso)", 1),
+     "Free Cool./Heat. è sospesa da un'allerta o con un'allerta Congelamento o Δ Temp. in corso)", 1),
     # C1-2: i 32 s si contano da quando la VMC è ON-Line con la velocità di nuovo leggibile (Black-Out e Calendario);
     # durante il riallineamento al riavvio dal ritorno ON-Line, o dalla lettura valida se la velocità non si legge
     ("la VMC riparte con la Velocità della Fascia in corso 32 Secondi dopo che è di nuovo ON-Line con la velocità "

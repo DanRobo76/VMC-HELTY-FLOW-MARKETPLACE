@@ -2,7 +2,8 @@
 
 - C3-2: una velocità scelta dall'utente negli 8 s di attesa della fine degli Inquinanti veniva sovrascritta dal
   ripristino della memoria: ora resta, le memorie Inquinanti si spengono e il ramo si ferma, come la protezione del PdR.
-  Esclusa l'opzione Free (ha la sua ripresa); con Congelamento o Δ Temp. accesi comportamento di prima.
+  Esclusa la Free sospesa da un'allerta (ha la sua ripresa); la Free memorizzata senza sospensione (spie «per
+  programmazione» spente) vale come le altre velocità; con Congelamento o Δ Temp. accesi comportamento di prima.
 - C4-4: con [Set Velocità Umidità di Avvio] su Velocità 0 e la Free sospesa l'avvio dell'Umidità mandava la VMC a
   Velocità 1 (nota 3): ora vale il Set 0 (la VMC resta ferma, memoria Velocità 0) e a fine Umidità la ripresa Free non
   viene annullata. Lo stesso nei 2 rami TeVsTi e nella fine Inquinanti in Free (R8): Velocità 0 invece della nota 3.
@@ -179,7 +180,9 @@ def _memorie_co2(**accese: str) -> dict[str, str]:
         ({"input_boolean.vmc_master_spia_velocita_4_co2_o_voc": "on"}, "Velocità 4"),
         ({"input_boolean.vmc_master_spia_velocita_notturna_co2_o_voc": "on"}, "Notturna"),
         ({"input_boolean.vmc_master_spia_velocita_iperventilazione_co2_o_voc": "on"}, "Iperventilazione"),
-        ({"input_boolean.vmc_master_spia_velocita_freecooling_co2_o_voc": "on"}, ""),  # opzione Free
+        ({"input_boolean.vmc_master_spia_velocita_freecooling_co2_o_voc": "on"}, "Free Cooling"),  # Free non sospesa
+        ({"input_boolean.vmc_master_spia_velocita_freecooling_co2_o_voc": "on", FREE_C: "on"}, ""),  # Free sospesa
+        ({"input_boolean.vmc_master_spia_velocita_freecooling_co2_o_voc": "on", FREE_H: "on"}, ""),  # Free sospesa
         ({}, ""),
     ],
 )
@@ -191,7 +194,8 @@ async def test_c3_2_velocita_del_ripristino_come_le_opzioni(hass: HomeAssistant,
     # stessa scelta del «choose» del ripristino: la prima opzione valida e' quella della velocita' calcolata
     valide = [k for k, opzione in enumerate(ripristino["choose"])
               if all(_render(hass, c["value_template"]) for c in opzione["conditions"])]
-    ordine = ["Velocità 0", "Velocità 1", "Velocità 2", "Velocità 3", "Velocità 4", "Notturna", "Iperventilazione"]
+    ordine = ["Velocità 0", "Velocità 1", "Velocità 2", "Velocità 3", "Velocità 4", "Notturna", "Iperventilazione",
+              "Free Cooling"]
     if attesa:
         assert valide[0] == ordine.index(attesa)
     else:
@@ -209,7 +213,10 @@ async def test_c3_2_velocita_del_ripristino_come_le_opzioni(hass: HomeAssistant,
         ("Velocità 0", "Velocità 1", {}, False),  # Velocita' 1 degli Inquinanti partiti da ferma
         ("Velocità 2", "Velocità 1", {V1_PDR: "on"}, False),  # Velocita' 1 imposta da un altro ramo
         ("Velocità 2", "Velocità 1", {}, True),
-        ("", "Velocità 3", {}, False),  # opzione Free: ha la sua ripresa
+        ("", "Velocità 3", {}, False),  # Free sospesa da un'allerta: ha la sua ripresa
+        ("Free Cooling", "Velocità 2", {}, True),  # Free memorizzata senza sospensione: come le altre velocita'
+        ("Free Cooling", "Velocità 0", {}, True),
+        ("Free Cooling", "Free Cooling", {}, False),
         ("Velocità 2", "Non disponibile", {}, False),
         ("Velocità 2", "Velocità 3", {SPIA_GELO: "on"}, False),
         ("Velocità 2", "Velocità 3", {SPIA_DELTA: "on"}, False),
@@ -271,11 +278,30 @@ async def test_c3_2_senza_scelta_ripristino_come_prima(hass: HomeAssistant, altr
     assert comandi[:1] == ["vmc_master_velocita_2"]
 
 
-async def test_c3_2_opzione_free_esclusa(hass: HomeAssistant) -> None:
+async def test_c3_2_free_sospesa_esclusa(hass: HomeAssistant) -> None:
+    """Free sospesa da un'allerta (spia «per programmazione» accesa): ha la sua ripresa, la protezione non vale."""
     stati = _stati_fine_inquinanti(**{"input_boolean.vmc_master_spia_velocita_freecooling_co2_o_voc": "on",
-                                      LETTURA: "Velocità 3"})
+                                      FREE_C: "on", LETTURA: "Velocità 3"})
     comandi = await _esegui(hass, _ramo("inquinanti_co2_voc_off")["sequence"], stati, attesa=0.5)
     assert comandi[:1] in (["vmc_master_freecooling"], ["vmc_master_velocita_0"], ["vmc_master_velocita_1"])
+
+
+async def test_c3_2_free_non_sospesa_scelta_resta(hass: HomeAssistant) -> None:
+    """Free memorizzata con le spie «per programmazione» spente (Free scelta a un mese non programmato): una
+    velocità scelta negli 8 s di attesa resta come per le altre velocità (simulazione completa b36, S|CO2|7|F)."""
+    stati = _stati_fine_inquinanti(**{"input_boolean.vmc_master_spia_velocita_freecooling_co2_o_voc": "on",
+                                      LETTURA: "Velocità 2"})
+    comandi = await _esegui(hass, _ramo("inquinanti_co2_voc_off")["sequence"], stati, attesa=0.5)
+    assert comandi == []
+    assert _stato(hass, "input_boolean.vmc_master_spia_velocita_freecooling_co2_o_voc") == "off"
+    assert _stato(hass, SPIA_CO2) == "off"
+
+
+async def test_c3_2_free_non_sospesa_senza_scelta_ripristina(hass: HomeAssistant) -> None:
+    stati = _stati_fine_inquinanti(**{"input_boolean.vmc_master_spia_velocita_freecooling_co2_o_voc": "on",
+                                      LETTURA: "Free Cooling"})
+    comandi = await _esegui(hass, _ramo("inquinanti_co2_voc_off")["sequence"], stati, attesa=0.5)
+    assert comandi[:1] == ["vmc_master_freecooling"]
 
 
 async def test_c3_2_con_delta_acceso_come_prima(hass: HomeAssistant) -> None:

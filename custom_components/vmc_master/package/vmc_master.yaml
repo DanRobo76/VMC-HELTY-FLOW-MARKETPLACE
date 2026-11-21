@@ -5291,11 +5291,11 @@ input_boolean:
     name: "Spia Velocità freecooling 1° Avvio"
     icon: mdi:memory
 
-  vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling: # [CONFIGURAZIONE, 72 RICHIAMI] [INTERFACCIA, 20 RICHIAMI] [AUTOMAZIONE, 222 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' FREE-COOLING, IN CASO DI ALLERTA PROGRAMMATA DEL FREE COOLING
+  vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling: # [CONFIGURAZIONE, 72 RICHIAMI] [INTERFACCIA, 20 RICHIAMI] [AUTOMAZIONE, 223 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' FREE-COOLING, IN CASO DI ALLERTA PROGRAMMATA DEL FREE COOLING
     name: "Spia su Programmazione Velocità Free Cooling 1° Avvio"
     icon: mdi:memory
 
-  vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating: # [CONFIGURAZIONE, 96 RICHIAMI] [INTERFACCIA, 20 RICHIAMI] [AUTOMAZIONE, 221 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' FREE-COOLING, IN CASO DI ALLERTA PROGRAMMATA DEL FREE HEATING
+  vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating: # [CONFIGURAZIONE, 96 RICHIAMI] [INTERFACCIA, 20 RICHIAMI] [AUTOMAZIONE, 222 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' FREE-COOLING, IN CASO DI ALLERTA PROGRAMMATA DEL FREE HEATING
     name: "Spia su Programmazione Velocità Free Heating 1° Avvio"
     icon: mdi:memory
 
@@ -5373,7 +5373,7 @@ input_boolean:
     name: "Spia Velocità Notturna CO₂ e/o VOC"
     icon: mdi:memory
 
-  vmc_master_spia_velocita_freecooling_co2_o_voc:                               # [CONFIGURAZIONE, 65 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 227 RICHIAMI] SENSORE TRACCIAMENTO VELOCITA' FREE-COOLING, IN CASO DI INQUINANTI CO2 E VOC
+  vmc_master_spia_velocita_freecooling_co2_o_voc:                               # [CONFIGURAZIONE, 65 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 228 RICHIAMI] SENSORE TRACCIAMENTO VELOCITA' FREE-COOLING, IN CASO DI INQUINANTI CO2 E VOC
     name: "Spia Velocità Free Cool./Heat. CO₂ e/o VOC"
     icon: mdi:memory        
 
