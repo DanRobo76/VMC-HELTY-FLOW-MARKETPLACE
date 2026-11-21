@@ -48,8 +48,10 @@ description: >-
   esegue solo se la sua condizione è ancora vera quando arriva il suo turno;
 
   - Se un Black-Out arriva mentre un'allerta sta finendo, al ripristino la VMC
-  torna alla velocità di fine allerta (Priorità 7); ogni ciclo di conferma si
-  ferma se l'utente sceglie un'altra velocità;
+  torna alla velocità di fine allerta (Priorità 7); con un'allerta ancora in
+  corso (per esempio il Lim. Δ PdR) resta alla velocità dell'allerta e la
+  velocità memorizzata torna a fine allerta; ogni ciclo di conferma si ferma se
+  l'utente sceglie un'altra velocità;
 
   - Avvisa l'utente tramite notifica sul Dispositivo Mobile selezionato tra i
   disponibili nel sistema di Home Assistant (H.A.), in caso di Avvio, Arresto,

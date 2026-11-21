@@ -14464,7 +14464,7 @@ cards:
                     originali. Mentre l'automazione
                     aspetta, sotto il pannello VMC compare il riquadro con il «Tempo Mancante» dell'azione in attesa (es. «Annullamento
                     Memoria Free Heating», «Cambio Velocità per Lim. Δ PdR») e la «Velocità Registrata», cioè la velocità che verrà
-                    ripristinata a fine allerta. Nella finestra Telecomando il tasto della velocità attiva è illuminato, quello della
+                    ripristinata a fine allerta o, dopo un Black-Out, al ripristino. Nella finestra Telecomando il tasto della velocità attiva è illuminato, quello della
                     velocità da ripristinare è illuminato con l'icona ↺, anche durante un'allerta (la scritta Alert compare solo
                     sotto i tasti spenti); i tasti Sensori e Led Pannello illuminano lo stato attuale (On oppure Off) e con
                     «Verificare Filtro» il tasto «Led Pannello On» mostra l'icona del filtro.</i><br><br>
