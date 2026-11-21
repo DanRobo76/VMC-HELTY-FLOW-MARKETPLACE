@@ -81,9 +81,10 @@ def test_ripresa_free_solo_senza_velocita_scelta() -> None:
     anche quando le condizioni sono gia' tornate favorevoli. Trigger, copia trigger.id e 2 copie del Countdown."""
     automazione = _testo("vmc_master_automazione.txt")
     pacchetto = _testo("vmc_master.yaml")
-    for nuova in (RIPRESA_SENZA_INQUINANTI, RIPRESA_CON_INQUINANTI):
-        assert automazione.count(nuova) == 4
-        assert pacchetto.count(nuova) == 4
+    # b36 (C4-3): +2 copie della condizione senza Inquinanti nel trigger PdR 154 (trigger e guardia, ON e OFF)
+    for nuova, copie in ((RIPRESA_SENZA_INQUINANTI, 6), (RIPRESA_CON_INQUINANTI, 4)):
+        assert automazione.count(nuova) == copie
+        assert pacchetto.count(nuova) == copie
     for id_, nuova in RIPRESE.items():
         trigger = _trigger(id_)
         assert nuova in trigger["value_template"], id_
