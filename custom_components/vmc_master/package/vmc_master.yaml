@@ -1157,7 +1157,8 @@ template:
             ['Lim. Δ Punto di Rugiada', 'input_boolean.vmc_master_spia_velocita_1_co2_o_voc_pdr', ['0']],
             ['Avviso Free Cooling', 'input_boolean.vmc_master_spia_velocita_{}_un_solo_avvio_per_programmazione_freecooling', ['freecooling'], 'Free Cooling'],
             ['Avviso Free Heating', 'input_boolean.vmc_master_spia_velocita_{}_un_solo_avvio_per_programmazione_freeheating', ['freecooling'], 'Free Heating'],
-            ['Umidità', 'input_boolean.vmc_master_spia_umidita_velocita_{}', nomi.keys() | list]
+            ['Umidità', 'input_boolean.vmc_master_spia_umidita_velocita_{}', nomi.keys() | list],
+            ['Black-Out', 'input_boolean.vmc_master_spia_velocita_{}', nomi.keys() | list]
           ] -%}
           {%- set ns = namespace(righe=[], viste=[]) -%}
           {%- for a in allerte -%}{%- for k in a[2] -%}
@@ -31322,6 +31323,8 @@ automation:
           {{ (
           (
             states('input_boolean.vmc_master_spia_co2_o_voc') == 'on'
+            and (states('sensor.vmc_master_alert_monitoraggio_co2') == 'Allerta'
+             or states('sensor.vmc_master_alert_monitoraggio_voc') == 'Allerta')
             and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0'
             and states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia') == 'off'
             and states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia') == 'off'
@@ -31345,6 +31348,8 @@ automation:
           {{ (
           (
             states('input_boolean.vmc_master_spia_co2_o_voc') == 'on'
+            and (states('sensor.vmc_master_alert_monitoraggio_co2') == 'Allerta'
+             or states('sensor.vmc_master_alert_monitoraggio_voc') == 'Allerta')
             and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0'
             and states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia') == 'off'
             and states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia') == 'off'

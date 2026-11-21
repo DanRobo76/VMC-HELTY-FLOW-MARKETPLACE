@@ -3979,6 +3979,8 @@ triggers:
       {{ (
       (
         states('input_boolean.vmc_master_spia_co2_o_voc') == 'on'
+        and (states('sensor.vmc_master_alert_monitoraggio_co2') == 'Allerta'
+         or states('sensor.vmc_master_alert_monitoraggio_voc') == 'Allerta')
         and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0'
         and states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia') == 'off'
         and states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia') == 'off'
@@ -9061,6 +9063,8 @@ actions:
       {{ (
       (
         states('input_boolean.vmc_master_spia_co2_o_voc') == 'on'
+        and (states('sensor.vmc_master_alert_monitoraggio_co2') == 'Allerta'
+         or states('sensor.vmc_master_alert_monitoraggio_voc') == 'Allerta')
         and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0'
         and states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia') == 'off'
         and states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia') == 'off'
@@ -18346,6 +18350,13 @@ actions:
                     value_template: >-
                       {{
                       states('input_boolean.vmc_master_spia_velocita_0_un_solo_avvio')=='on'}}
+                  - alias: >-
+                      Allerta Lim. Δ PdR non più in corso (con l'allerta ancora in corso la VMC resta a Velocità 0 come la
+                      lascia il Black-Out e la memoria PdR resta per la fine dell'allerta)
+                    condition: template
+                    value_template: >-
+                      {{ not (states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr') == 'on'
+                      and states('sensor.vmc_master_punto_di_rugiada_verifica_confronto') == "Se ne sconsiglia l'impiego") }}
                 sequence:
                   - variables:
                       vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
@@ -18380,6 +18391,13 @@ actions:
                     value_template: >-
                       {{
                       states('input_boolean.vmc_master_spia_velocita_1_un_solo_avvio')=='on'}}
+                  - alias: >-
+                      Allerta Lim. Δ PdR non più in corso (con l'allerta ancora in corso la VMC resta a Velocità 0 come la
+                      lascia il Black-Out e la memoria PdR resta per la fine dell'allerta)
+                    condition: template
+                    value_template: >-
+                      {{ not (states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr') == 'on'
+                      and states('sensor.vmc_master_punto_di_rugiada_verifica_confronto') == "Se ne sconsiglia l'impiego") }}
                 sequence:
                   - variables:
                       vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
@@ -18414,6 +18432,13 @@ actions:
                     value_template: >-
                       {{
                       states('input_boolean.vmc_master_spia_velocita_2_un_solo_avvio')=='on'}}
+                  - alias: >-
+                      Allerta Lim. Δ PdR non più in corso (con l'allerta ancora in corso la VMC resta a Velocità 0 come la
+                      lascia il Black-Out e la memoria PdR resta per la fine dell'allerta)
+                    condition: template
+                    value_template: >-
+                      {{ not (states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr') == 'on'
+                      and states('sensor.vmc_master_punto_di_rugiada_verifica_confronto') == "Se ne sconsiglia l'impiego") }}
                 sequence:
                   - variables:
                       vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
@@ -18448,6 +18473,13 @@ actions:
                     value_template: >-
                       {{
                       states('input_boolean.vmc_master_spia_velocita_3_un_solo_avvio')=='on'}}
+                  - alias: >-
+                      Allerta Lim. Δ PdR non più in corso (con l'allerta ancora in corso la VMC resta a Velocità 0 come la
+                      lascia il Black-Out e la memoria PdR resta per la fine dell'allerta)
+                    condition: template
+                    value_template: >-
+                      {{ not (states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr') == 'on'
+                      and states('sensor.vmc_master_punto_di_rugiada_verifica_confronto') == "Se ne sconsiglia l'impiego") }}
                 sequence:
                   - variables:
                       vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
@@ -18482,6 +18514,13 @@ actions:
                     value_template: >-
                       {{
                       states('input_boolean.vmc_master_spia_velocita_4_un_solo_avvio')=='on'}}
+                  - alias: >-
+                      Allerta Lim. Δ PdR non più in corso (con l'allerta ancora in corso la VMC resta a Velocità 0 come la
+                      lascia il Black-Out e la memoria PdR resta per la fine dell'allerta)
+                    condition: template
+                    value_template: >-
+                      {{ not (states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr') == 'on'
+                      and states('sensor.vmc_master_punto_di_rugiada_verifica_confronto') == "Se ne sconsiglia l'impiego") }}
                 sequence:
                   - variables:
                       vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
@@ -18516,6 +18555,13 @@ actions:
                     value_template: >-
                       {{
                       states('input_boolean.vmc_master_spia_velocita_notturna_un_solo_avvio')=='on'}}
+                  - alias: >-
+                      Allerta Lim. Δ PdR non più in corso (con l'allerta ancora in corso la VMC resta a Velocità 0 come la
+                      lascia il Black-Out e la memoria PdR resta per la fine dell'allerta)
+                    condition: template
+                    value_template: >-
+                      {{ not (states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr') == 'on'
+                      and states('sensor.vmc_master_punto_di_rugiada_verifica_confronto') == "Se ne sconsiglia l'impiego") }}
                 sequence:
                   - variables:
                       vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
@@ -18550,6 +18596,13 @@ actions:
                     value_template: >-
                       {{
                       states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio')=='on'}}
+                  - alias: >-
+                      Allerta Lim. Δ PdR non più in corso (con l'allerta ancora in corso la VMC resta a Velocità 0 come la
+                      lascia il Black-Out e la memoria PdR resta per la fine dell'allerta)
+                    condition: template
+                    value_template: >-
+                      {{ not (states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr') == 'on'
+                      and states('sensor.vmc_master_punto_di_rugiada_verifica_confronto') == "Se ne sconsiglia l'impiego") }}
                 sequence:
                   - variables:
                       vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
@@ -18584,6 +18637,13 @@ actions:
                     value_template: >-
                       {{
                       states('input_boolean.vmc_master_spia_velocita_iperventilazione_un_solo_avvio')=='on'}}
+                  - alias: >-
+                      Allerta Lim. Δ PdR non più in corso (con l'allerta ancora in corso la VMC resta a Velocità 0 come la
+                      lascia il Black-Out e la memoria PdR resta per la fine dell'allerta)
+                    condition: template
+                    value_template: >-
+                      {{ not (states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr') == 'on'
+                      and states('sensor.vmc_master_punto_di_rugiada_verifica_confronto') == "Se ne sconsiglia l'impiego") }}
                 sequence:
                   - variables:
                       vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
@@ -18672,7 +18732,7 @@ actions:
                 alias: Inquinanti ON, Partenza Vel.0 -> Vel. 1
             default:
               - alias: >-
-                  Nessuna memoria PdR o Inquinanti: se alla riaccensione la VMC non è ferma (era in moto quando è mancata la
+                  Nessuna memoria PdR o Inquinanti (o allerta Lim. Δ PdR ancora in corso): se alla riaccensione la VMC non è ferma (era in moto quando è mancata la
                   corrente e la velocità di ritorno è Velocità 0, per esempio un'allerta finita durante il Black-Out) la si riporta a Velocità 0;
                   se è già ferma non si invia alcun comando
                 if:
