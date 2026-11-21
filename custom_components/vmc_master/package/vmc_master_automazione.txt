@@ -217,9 +217,10 @@ description: >-
 
   - Black-Out: 32 Secondi per il Rilevamento e per il Ripristino; una Velocità
   scelta dopo il ritorno della corrente e prima del ripristino (Telecomando,
-  scheda o App) resta e il ripristino non avviene (la Velocità 1 no:
-  l'automazione non la distingue dalla ripartenza della VMC, che dopo un
-  Black-Out può riaccendersi da sola a Velocità 1); le
+  scheda o App) resta e il ripristino non avviene (la Velocità 1 scelta
+  dall'App con la VMC già a Velocità 1 no: l'automazione non la distingue
+  dalla ripartenza della VMC, che dopo un Black-Out può riaccendersi da sola a
+  Velocità 1); le
   allerte in corso la trattano come una scelta fatta durante l'allerta
   (Congelamento e Δ Temp. impongono comunque la loro Velocità); durante una
   Fascia del Calendario la rilevazione del Black-Out non è attiva: al ritorno
@@ -2992,6 +2993,27 @@ triggers:
     trigger: template
     for:
       seconds: "{{ states('input_number.vmc_master_attesa_blackout_ripristino') | int(32) }}"
+  - alias: >-
+      Black-Out Velocità 1 scelta prima del Ripristino [comando Velocità 1 inviato dall'utente dal Telecomando o dalla
+      scheda: Home Assistant sa chi lo ha premuto, anche se con la VMC già a Velocità 1 la lettura non cambia]
+    trigger: event
+    event_type: call_service
+    event_data:
+      domain: shell_command
+      service: vmc_master_velocita_1
+    id: Black-Out Scelta Vel. 1
+  - alias: >-
+      Black-Out Velocità 1 scelta prima del Ripristino [lettura della VMC passata a Velocità 1 da un'altra velocità
+      letta (Telecomando, scheda o App); la ripartenza della VMC dopo un Black-Out arriva invece da una lettura fallita]
+    trigger: state
+    entity_id: sensor.vmc_master_status_ventola
+    not_from:
+      - unavailable
+      - unknown
+    not_to:
+      - unavailable
+      - unknown
+    id: Black-Out Scelta Vel. 1
   - alias: >-
       Calendario - Black-Out durante una Fascia [Spia Black-Out del Calendario accesa se la VMC resta OFF-Line
       per il tempo di rilevazione del Black-Out con la Spia di una Fascia accesa; resta memorizzata anche se
@@ -18358,6 +18380,88 @@ actions:
           CALENDARIO E' ON] 
       - conditions:
           - condition: trigger
+            id: Black-Out Scelta Vel. 1
+        sequence:
+          - alias: >-
+              Velocità 1 scelta dall'utente dopo il ritorno della corrente e prima del ripristino: dal Telecomando o
+              dalla scheda (comando Velocità 1 inviato da un utente con la VMC già a Velocità 1, la ripartenza con cui
+              la VMC può riaccendersi da sola dopo un Black-Out) oppure lettura passata a Velocità 1 da un'altra
+              velocità letta (anche dall'App; la ripartenza della VMC arriva da una lettura fallita), con la VMC
+              ON-Line e il ripristino di una velocità diversa dalla Velocità 1 in attesa -> come per le altre velocità
+              scelte prima del ripristino (rami «Black-Out Off»): la Velocità 1 resta e il ripristino non avviene, si
+              azzerano le memorie del Black-Out e le allerte in corso la trattano come una scelta fatta durante
+              l'allerta [Foglio Logiche A23]. Resta irriconoscibile solo la Velocità 1 scelta dall'App con la VMC già
+              a Velocità 1 (nessun comando da Home Assistant e nessun cambio di lettura)
+            if:
+              - condition: template
+                value_template: >-
+                  {%- set da = trigger.from_state.state.split(',') if trigger.platform == 'state' and trigger.from_state is not none else [] -%}
+                  {%- set a = trigger.to_state.state.split(',') if trigger.platform == 'state' and trigger.to_state is not none else [] -%}
+                  {{ ((trigger.platform == 'event' and trigger.event.context.user_id is not none
+                       and is_state('sensor.vmc_master_status_ventola_lettura_codice_interpretato', 'Velocità 1'))
+                      or (trigger.platform == 'state' and da | length > 1 and a | length > 1 and a[1] == '00001'
+                          and da[1] in ['00000', '00002', '00003', '00004', '00005', '00006', '00007']))
+                     and is_state('sensor.vmc_master_status_ip_interfaccia', 'ON-Line')
+                     and is_state('input_boolean.vmc_master_spia_velocita_1', 'off')
+                     and (is_state('input_boolean.vmc_master_spia_velocita_0', 'on') or is_state('input_boolean.vmc_master_spia_velocita_2', 'on') or is_state('input_boolean.vmc_master_spia_velocita_3', 'on') or is_state('input_boolean.vmc_master_spia_velocita_4', 'on') or is_state('input_boolean.vmc_master_spia_velocita_notturna', 'on') or is_state('input_boolean.vmc_master_spia_velocita_iperventilazione', 'on') or is_state('input_boolean.vmc_master_spia_velocita_freecooling', 'on'))
+                     and is_state('input_boolean.vmc_master_spia_calendario_lunedi_1', 'off')
+                     and is_state('input_boolean.vmc_master_spia_calendario_lunedi_2', 'off')
+                     and is_state('input_boolean.vmc_master_spia_calendario_martedi_1', 'off')
+                     and is_state('input_boolean.vmc_master_spia_calendario_martedi_2', 'off')
+                     and is_state('input_boolean.vmc_master_spia_calendario_mercoledi_1', 'off')
+                     and is_state('input_boolean.vmc_master_spia_calendario_mercoledi_2', 'off')
+                     and is_state('input_boolean.vmc_master_spia_calendario_giovedi_1', 'off')
+                     and is_state('input_boolean.vmc_master_spia_calendario_giovedi_2', 'off')
+                     and is_state('input_boolean.vmc_master_spia_calendario_venerdi_1', 'off')
+                     and is_state('input_boolean.vmc_master_spia_calendario_venerdi_2', 'off')
+                     and is_state('input_boolean.vmc_master_spia_calendario_sabato_1', 'off')
+                     and is_state('input_boolean.vmc_master_spia_calendario_sabato_2', 'off')
+                     and is_state('input_boolean.vmc_master_spia_calendario_domenica_1', 'off')
+                     and is_state('input_boolean.vmc_master_spia_calendario_domenica_2', 'off')
+                     and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 2) }}
+            then:
+              - alias: >-
+                  Inquinanti in corso: si azzerano le memorie della velocità degli Inquinanti, così all'avvio
+                  dell'allerta dopo lo spegnimento delle spie del Black-Out la Velocità 1 scelta non viene sostituita
+                  dalla memoria di prima del Black-Out e viene memorizzata con le regole degli Inquinanti, come una
+                  scelta fatta durante l'allerta [Foglio Logiche A23]
+                if:
+                  - condition: template
+                    value_template: >-
+                      {{ is_state('input_boolean.vmc_master_spia_co2_o_voc', 'on')
+                         and (is_state('sensor.vmc_master_alert_monitoraggio_co2', 'Allerta')
+                              or is_state('sensor.vmc_master_alert_monitoraggio_voc', 'Allerta')) }}
+                then:
+                  - data: {}
+                    target:
+                      entity_id:
+                        - input_boolean.vmc_master_spia_velocita_0_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_1_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_2_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_3_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_4_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_notturna_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_iperventilazione_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_freecooling_co2_o_voc
+                    action: input_boolean.turn_off
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_0
+                    - input_boolean.vmc_master_spia_velocita_1
+                    - input_boolean.vmc_master_spia_velocita_2
+                    - input_boolean.vmc_master_spia_velocita_3
+                    - input_boolean.vmc_master_spia_velocita_4
+                    - input_boolean.vmc_master_spia_velocita_notturna
+                    - input_boolean.vmc_master_spia_velocita_freecooling
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione
+                action: input_boolean.turn_off
+              - stop: Velocità 1 scelta dall'utente dopo il ritorno della corrente mantenuta (nessun ripristino)
+        alias: >-
+          Black-Out Velocità 1 scelta prima del Ripristino [Telecomando o scheda, oppure lettura passata a Velocità 1
+          da un'altra velocità]
+      - conditions:
+          - condition: trigger
             id: Black-Out Off Vel. 0
         sequence:
           - alias: >-
@@ -18365,7 +18469,8 @@ actions:
               App): la velocità letta è cambiata dopo la riaccensione della VMC (meno di 20 s prima del ritorno
               ON-Line o dopo: l'ultima lettura prima del Black-Out è di almeno 32 s prima del ritorno ON-Line, la prima
               lettura dopo la riaccensione al più circa 15 s prima) e non è la Velocità 1, con cui la VMC può ripartire
-              da sola dopo un Black-Out (la velocità di prima, con cui può ripartire da sola, non cambia la lettura) ->
+              da sola dopo un Black-Out (la velocità di prima, con cui può ripartire da sola, non cambia la lettura;
+              la Velocità 1 scelta dall'utente la riconosce il ramo «Black-Out Velocità 1 scelta prima del Ripristino») ->
               la velocità scelta resta e il ripristino non avviene: si azzerano le memorie del Black-Out come dopo un
               ripristino eseguito e le allerte in corso la trattano come una scelta fatta durante l'allerta
               (Congelamento e Δ Temp. impongono comunque la loro velocità) [Foglio Logiche A23 e A27]
@@ -19034,7 +19139,8 @@ actions:
               App): la velocità letta è cambiata dopo la riaccensione della VMC (meno di 20 s prima del ritorno
               ON-Line o dopo: l'ultima lettura prima del Black-Out è di almeno 32 s prima del ritorno ON-Line, la prima
               lettura dopo la riaccensione al più circa 15 s prima) e non è la Velocità 1, con cui la VMC può ripartire
-              da sola dopo un Black-Out (la velocità di prima, con cui può ripartire da sola, non cambia la lettura) ->
+              da sola dopo un Black-Out (la velocità di prima, con cui può ripartire da sola, non cambia la lettura;
+              la Velocità 1 scelta dall'utente la riconosce il ramo «Black-Out Velocità 1 scelta prima del Ripristino») ->
               la velocità scelta resta e il ripristino non avviene: si azzerano le memorie del Black-Out come dopo un
               ripristino eseguito e le allerte in corso la trattano come una scelta fatta durante l'allerta
               (Congelamento e Δ Temp. impongono comunque la loro velocità) [Foglio Logiche A23 e A27]
@@ -19181,7 +19287,8 @@ actions:
               App): la velocità letta è cambiata dopo la riaccensione della VMC (meno di 20 s prima del ritorno
               ON-Line o dopo: l'ultima lettura prima del Black-Out è di almeno 32 s prima del ritorno ON-Line, la prima
               lettura dopo la riaccensione al più circa 15 s prima) e non è la Velocità 1, con cui la VMC può ripartire
-              da sola dopo un Black-Out (la velocità di prima, con cui può ripartire da sola, non cambia la lettura) ->
+              da sola dopo un Black-Out (la velocità di prima, con cui può ripartire da sola, non cambia la lettura;
+              la Velocità 1 scelta dall'utente la riconosce il ramo «Black-Out Velocità 1 scelta prima del Ripristino») ->
               la velocità scelta resta e il ripristino non avviene: si azzerano le memorie del Black-Out come dopo un
               ripristino eseguito e le allerte in corso la trattano come una scelta fatta durante l'allerta
               (Congelamento e Δ Temp. impongono comunque la loro velocità) [Foglio Logiche A23 e A27]
@@ -19328,7 +19435,8 @@ actions:
               App): la velocità letta è cambiata dopo la riaccensione della VMC (meno di 20 s prima del ritorno
               ON-Line o dopo: l'ultima lettura prima del Black-Out è di almeno 32 s prima del ritorno ON-Line, la prima
               lettura dopo la riaccensione al più circa 15 s prima) e non è la Velocità 1, con cui la VMC può ripartire
-              da sola dopo un Black-Out (la velocità di prima, con cui può ripartire da sola, non cambia la lettura) ->
+              da sola dopo un Black-Out (la velocità di prima, con cui può ripartire da sola, non cambia la lettura;
+              la Velocità 1 scelta dall'utente la riconosce il ramo «Black-Out Velocità 1 scelta prima del Ripristino») ->
               la velocità scelta resta e il ripristino non avviene: si azzerano le memorie del Black-Out come dopo un
               ripristino eseguito e le allerte in corso la trattano come una scelta fatta durante l'allerta
               (Congelamento e Δ Temp. impongono comunque la loro velocità) [Foglio Logiche A23 e A27]
@@ -19475,7 +19583,8 @@ actions:
               App): la velocità letta è cambiata dopo la riaccensione della VMC (meno di 20 s prima del ritorno
               ON-Line o dopo: l'ultima lettura prima del Black-Out è di almeno 32 s prima del ritorno ON-Line, la prima
               lettura dopo la riaccensione al più circa 15 s prima) e non è la Velocità 1, con cui la VMC può ripartire
-              da sola dopo un Black-Out (la velocità di prima, con cui può ripartire da sola, non cambia la lettura) ->
+              da sola dopo un Black-Out (la velocità di prima, con cui può ripartire da sola, non cambia la lettura;
+              la Velocità 1 scelta dall'utente la riconosce il ramo «Black-Out Velocità 1 scelta prima del Ripristino») ->
               la velocità scelta resta e il ripristino non avviene: si azzerano le memorie del Black-Out come dopo un
               ripristino eseguito e le allerte in corso la trattano come una scelta fatta durante l'allerta
               (Congelamento e Δ Temp. impongono comunque la loro velocità) [Foglio Logiche A23 e A27]
@@ -19622,7 +19731,8 @@ actions:
               App): la velocità letta è cambiata dopo la riaccensione della VMC (meno di 20 s prima del ritorno
               ON-Line o dopo: l'ultima lettura prima del Black-Out è di almeno 32 s prima del ritorno ON-Line, la prima
               lettura dopo la riaccensione al più circa 15 s prima) e non è la Velocità 1, con cui la VMC può ripartire
-              da sola dopo un Black-Out (la velocità di prima, con cui può ripartire da sola, non cambia la lettura) ->
+              da sola dopo un Black-Out (la velocità di prima, con cui può ripartire da sola, non cambia la lettura;
+              la Velocità 1 scelta dall'utente la riconosce il ramo «Black-Out Velocità 1 scelta prima del Ripristino») ->
               la velocità scelta resta e il ripristino non avviene: si azzerano le memorie del Black-Out come dopo un
               ripristino eseguito e le allerte in corso la trattano come una scelta fatta durante l'allerta
               (Congelamento e Δ Temp. impongono comunque la loro velocità) [Foglio Logiche A23 e A27]
@@ -19769,7 +19879,8 @@ actions:
               App): la velocità letta è cambiata dopo la riaccensione della VMC (meno di 20 s prima del ritorno
               ON-Line o dopo: l'ultima lettura prima del Black-Out è di almeno 32 s prima del ritorno ON-Line, la prima
               lettura dopo la riaccensione al più circa 15 s prima) e non è la Velocità 1, con cui la VMC può ripartire
-              da sola dopo un Black-Out (la velocità di prima, con cui può ripartire da sola, non cambia la lettura) ->
+              da sola dopo un Black-Out (la velocità di prima, con cui può ripartire da sola, non cambia la lettura;
+              la Velocità 1 scelta dall'utente la riconosce il ramo «Black-Out Velocità 1 scelta prima del Ripristino») ->
               la velocità scelta resta e il ripristino non avviene: si azzerano le memorie del Black-Out come dopo un
               ripristino eseguito e le allerte in corso la trattano come una scelta fatta durante l'allerta
               (Congelamento e Δ Temp. impongono comunque la loro velocità) [Foglio Logiche A23 e A27]
@@ -19915,7 +20026,8 @@ actions:
               App): la velocità letta è cambiata dopo la riaccensione della VMC (meno di 20 s prima del ritorno
               ON-Line o dopo: l'ultima lettura prima del Black-Out è di almeno 32 s prima del ritorno ON-Line, la prima
               lettura dopo la riaccensione al più circa 15 s prima) e non è la Velocità 1, con cui la VMC può ripartire
-              da sola dopo un Black-Out (la velocità di prima, con cui può ripartire da sola, non cambia la lettura) ->
+              da sola dopo un Black-Out (la velocità di prima, con cui può ripartire da sola, non cambia la lettura;
+              la Velocità 1 scelta dall'utente la riconosce il ramo «Black-Out Velocità 1 scelta prima del Ripristino») ->
               la velocità scelta resta e il ripristino non avviene: si azzerano le memorie del Black-Out come dopo un
               ripristino eseguito e le allerte in corso la trattano come una scelta fatta durante l'allerta
               (Congelamento e Δ Temp. impongono comunque la loro velocità) [Foglio Logiche A23 e A27]
