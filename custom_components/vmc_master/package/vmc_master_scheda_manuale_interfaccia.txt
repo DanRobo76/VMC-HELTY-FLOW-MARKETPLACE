@@ -13102,7 +13102,8 @@ cards:
                   </td></tr></table>
                   <table><tr><td align="justify">
                   <b>Valori impostabili.</b> [Offset CO₂ Int.] da −1500 a +1500 ppm (passo 1 ppm), si somma
-                  al valore letto. Le fasce di concentrazione sono fisse.
+                  al valore letto; un valore letto ≤ 0 (sensore non presente o valore non valido) resta «-»
+                  anche con l'Offset. Le fasce di concentrazione sono fisse.
                   </td></tr></table>
                   </details>
 
@@ -13136,7 +13137,8 @@ cards:
                   </td></tr></table>
                   <table><tr><td align="justify">
                   <b>Valori impostabili.</b> [Offset VOC Int.] da −1000 a +1000 ppb (passo 1 ppb), si somma
-                  al valore letto. Le fasce di concentrazione sono fisse.
+                  al valore letto; un valore letto ≤ 0 (sensore non presente o valore non valido) resta «-»
+                  anche con l'Offset. Le fasce di concentrazione sono fisse.
                   </td></tr></table>
                   </details>
 
@@ -13538,6 +13540,26 @@ cards:
                   Scelte non Disponibili. Lo storico del grafico
                   parte dal primo avvio di Home Assistant con i sensori dei
                   grafici (sensor.vmc_master_..._grafico).
+
+                  Sulle VMC senza sonda CO₂/VOC la risposta Sensori Ambientali
+                  ha la CO₂ e i VOC a 00000: CO₂ e VOC restano sempre «-», anche
+                  con un Offset, e i loro quattro grafici (con e senza Offset)
+                  restano vuoti; in Home Assistant questi sensori «_grafico»
+                  risultano non disponibili. Non è un guasto.
+
+                  Durante un Black-Out (VMC OFF-Line) i sensori della VMC e i
+                  loro grafici restano sull'ultima lettura valida, senza buchi.
+                  Dopo il ritorno della corrente la prima lettura dei Sensori
+                  Ambientali arriva con la lettura programmata (ogni 1227
+                  secondi, cioè entro circa 20 minuti) oppure subito con
+                  «Agg. Sensori»: fino ad allora restano i valori di prima del
+                  Black-Out. Se in quella lettura la VMC indica un valore ≤ 0
+                  (per esempio la CO₂), il sensore mostra «-» e il suo grafico
+                  resta vuoto fino alla lettura successiva, anche con un
+                  Offset: in quel tempo il sensore «_grafico» risulta non
+                  disponibile. Il valore letto si vede nella voce 1 (Info
+                  Lettura Dati nella VMC, Sensori Ambientali: dopo VMGI la CO₂
+                  è il quarto numero, i VOC l'undicesimo).
 
                   <br>
 

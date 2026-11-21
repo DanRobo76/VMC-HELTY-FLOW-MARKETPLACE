@@ -1496,7 +1496,8 @@ template:
           {% else %}
             {% set co2_float = co2_int | float(default=0) %}
             {% set co2_with_offset = (co2_float + states('input_number.vmc_master_offset_co2') | float(default=0)) | round(0) %}
-            {% if co2_with_offset == 0 %}
+            {#- Un valore letto <= 0 (sensore non presente o valore non valido, come il «-» della sonda della VMC, che il sensore «CO₂ Int. Selezionata» passa come 0) resta «-» anche con l'Offset: il grafico mostra un buco e non il valore dell'Offset -#}
+            {% if co2_float <= 0 or co2_with_offset == 0 %}
               -
             {% elif co2_with_offset > 0 %}
               {{ co2_with_offset }}
@@ -1545,7 +1546,8 @@ template:
             {% set componenti = dati_sensori.split(',') %}
             {% if componenti|length > 11 %}
               {% set voc = float(componenti[11], 0) + float(states('input_number.vmc_master_offset_voc'), 0) %}
-              {% if voc > 0 %}
+              {#- Un valore letto <= 0 (sensore non presente o valore non valido) resta «-» anche con l'Offset: il grafico mostra un buco e non il valore dell'Offset -#}
+              {% if voc > 0 and float(componenti[11], 0) > 0 %}
                 {{ voc|round(0) }}
               {% else %}
                 -
