@@ -5340,7 +5340,7 @@ input_boolean:
     name: "Spia Inquinanti CO₂ e/o VOC"
     icon: mdi:memory
 
-  vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0:                        # [CONFIGURAZIONE, 60 RICHIAMI] [INTERFACCIA, 14 RICHIAMI] [AUTOMAZIONE, 228 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER LA VERIFICA DI INQUINANTI CO2 E VOC PARTENZA DA VELOCITA' 0 E RITORNO A VELOCITA' 0
+  vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0:                        # [CONFIGURAZIONE, 60 RICHIAMI] [INTERFACCIA, 14 RICHIAMI] [AUTOMAZIONE, 229 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER LA VERIFICA DI INQUINANTI CO2 E VOC PARTENZA DA VELOCITA' 0 E RITORNO A VELOCITA' 0
     name: "Spia di Richiamo Vel. 0 CO₂ e/o VOC "
     icon: mdi:memory
 
@@ -5376,7 +5376,7 @@ input_boolean:
     name: "Spia Velocità Free Cool./Heat. CO₂ e/o VOC"
     icon: mdi:memory        
 
-  vmc_master_spia_velocita_1_co2_o_voc_pdr:                                     # [CONFIGURAZIONE, 92 RICHIAMI] [INTERFACCIA, 11 RICHIAMI] [AUTOMAZIONE, 269 RICHIAMI] SENSORE TRACCIAMENTO VELOCITA' 1, IN CASO DI AVVIO PUNTO DI RUGIADA A VELOCITA 1 E INQUINANTI CO2 E VOC ASSENTI MA PRECEDENTEMENTE PRESENTI A VELOCITA 0
+  vmc_master_spia_velocita_1_co2_o_voc_pdr:                                     # [CONFIGURAZIONE, 92 RICHIAMI] [INTERFACCIA, 11 RICHIAMI] [AUTOMAZIONE, 270 RICHIAMI] SENSORE TRACCIAMENTO VELOCITA' 1, IN CASO DI AVVIO PUNTO DI RUGIADA A VELOCITA 1 E INQUINANTI CO2 E VOC ASSENTI MA PRECEDENTEMENTE PRESENTI A VELOCITA 0
     name: "Spia Velocità 1 CO₂ e/o VOC Vs PdR"
     icon: mdi:memory
 
