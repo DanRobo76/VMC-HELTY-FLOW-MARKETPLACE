@@ -1157,7 +1157,8 @@ template:
             ['Lim. Δ Punto di Rugiada', 'input_boolean.vmc_master_spia_velocita_1_co2_o_voc_pdr', ['0']],
             ['Avviso Free Cooling', 'input_boolean.vmc_master_spia_velocita_{}_un_solo_avvio_per_programmazione_freecooling', ['freecooling'], 'Free Cooling'],
             ['Avviso Free Heating', 'input_boolean.vmc_master_spia_velocita_{}_un_solo_avvio_per_programmazione_freeheating', ['freecooling'], 'Free Heating'],
-            ['Umidità', 'input_boolean.vmc_master_spia_umidita_velocita_{}', nomi.keys() | list]
+            ['Umidità', 'input_boolean.vmc_master_spia_umidita_velocita_{}', nomi.keys() | list],
+            ['Black-Out', 'input_boolean.vmc_master_spia_velocita_{}', nomi.keys() | list]
           ] -%}
           {%- set ns = namespace(righe=[], viste=[]) -%}
           {%- for a in allerte -%}{%- for k in a[2] -%}
