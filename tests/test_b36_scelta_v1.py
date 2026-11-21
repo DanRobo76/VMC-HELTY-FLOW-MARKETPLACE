@@ -83,7 +83,8 @@ def test_ramo_senza_comandi_ne_attese() -> None:
     (passo,) = _ramo(TID)["sequence"]
     inquinanti, spegni, stop = passo["then"]
     assert sorted(inquinanti["then"][0]["target"]["entity_id"]) == sorted(MEMORIE_INQ)
-    assert spegni["action"] == "input_boolean.turn_off" and sorted(spegni["target"]["entity_id"]) == sorted(BLACK_OUT)
+    assert spegni["action"] == "input_boolean.turn_off" and sorted(spegni["target"]["entity_id"]) == sorted(
+        BLACK_OUT + ["input_boolean.vmc_master_spia_calendario_black_out"])
     assert stop == {"stop": STOP}
     testo = str(passo)
     for parola in ("delay", "wait_template", "timeout", "'for'", "shell_command", "repeat"):
@@ -181,3 +182,75 @@ async def test_inquinanti_rientrati_memorie_restano(hass: HomeAssistant) -> None
     await _esegui(hass, _ramo(TID)["sequence"], stati, attesa=0.5, variabili=_evento("utente"))
     assert _stato(hass, "input_boolean.vmc_master_spia_velocita_3_co2_o_voc") == "on"
     assert all(_stato(hass, e) == "off" for e in BLACK_OUT)
+
+
+# ------------------------------------------------------------------ ritorno della Fascia del Calendario dopo un Black-Out
+SPIA_BO_CAL = "input_boolean.vmc_master_spia_calendario_black_out"
+INT_CAL = "input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_calendario"
+LETTURA_INT = "sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia"
+STOP_CAL = "Velocità scelta dall'utente dopo il ritorno della corrente mantenuta (la Fascia non riparte)"
+
+
+@pytest.mark.parametrize(("altri", "atteso"), [
+    ({SPIA_BO_CAL: "on", "input_boolean.vmc_master_spia_calendario_martedi_2": "on"}, True),
+    ({SPIA_BO_CAL: "on", "input_boolean.vmc_master_spia_calendario_martedi_2": "on", FASE: "2"}, False),
+    ({SPIA_BO_CAL: "on"}, False),  # nessuna Fascia accesa
+    ({"input_boolean.vmc_master_spia_calendario_martedi_2": "on"}, False),  # nessun ritorno della Fascia in attesa
+])
+async def test_velocita_1_nel_ritorno_della_fascia(hass: HomeAssistant, altri: dict[str, str], atteso: bool) -> None:
+    stati = _stati(**altri)
+    stati["input_boolean.vmc_master_spia_velocita_3"] = "off"  # nelle Fasce la rilevazione del Black-Out non è attiva
+    stati.setdefault(SPIA_BO_CAL, "off")
+    for e, s in stati.items():
+        hass.states.async_set(e, s)
+    assert _render(hass, _condizione(), _evento("utente")) is atteso
+
+
+async def test_velocita_1_nel_ritorno_della_fascia_spegne_la_spia(hass: HomeAssistant) -> None:
+    stati = _stati(**{SPIA_BO_CAL: "on", "input_boolean.vmc_master_spia_calendario_lunedi_1": "on"})
+    stati["input_boolean.vmc_master_spia_velocita_3"] = "off"
+    comandi = await _esegui(hass, _ramo(TID)["sequence"], stati, attesa=0.5,
+                            variabili=_cambio(_grezza("00003"), _grezza("00001")))
+    assert comandi == []
+    assert _stato(hass, SPIA_BO_CAL) == "off"
+
+
+def _blocco_fascia() -> dict[str, Any]:
+    sequenza = _ramo("calendario_ritorno_da_black_out")["sequence"]
+    (blocco,) = [p for p in sequenza if "if" in p and "then" in p and p["then"] == [{"stop": STOP_CAL}]]
+    assert sequenza.index(blocco) == 2 and "choose" in sequenza[3]
+    return blocco
+
+
+def test_scelta_nel_ritorno_della_fascia_come_negli_8_rami() -> None:
+    """Stessa condizione dei rami «Black-Out Off» (blocco gemello), solo nel ritorno normale: non nel ritorno durante
+    il riallineamento al riavvio, dove le letture rinascono all'avvio di Home Assistant."""
+    from tests.test_b36_scelta import CONDIZIONE
+    (condizione,) = _blocco_fascia()["if"]
+    assert " ".join(condizione["value_template"].split()) == " ".join(CONDIZIONE.split())
+    assert STOP_CAL not in str(_ramo("calendario_ritorno_da_black_out_riallineamento"))
+
+
+@pytest.mark.parametrize(("letta", "cambiata", "fascia_riparte"), [
+    ("Velocità 3", 10.0, False),  # scelta dopo il ritorno: resta
+    ("Velocità 1", 10.0, True),  # ripartenza della VMC da sola (o Velocità 1: la riconosce l'altro ramo)
+    ("Velocità 2", 120.0, True),  # lettura di prima del Black-Out (VMC ripartita alla velocità di prima)
+])
+async def test_ritorno_della_fascia(hass: HomeAssistant, letta: str, cambiata: float, fascia_riparte: bool) -> None:
+    import time
+    adesso = time.time()
+    chiamati: list[str] = []
+
+    async def _script(call: Any) -> None:
+        chiamati.append(call.service)
+
+    hass.services.async_register("script", "vmc_master_calendario_fascia_1_on", _script)
+    hass.services.async_register("script", "vmc_master_calendario_fascia_2_on", _script)
+    stati = {SPIA_BO_CAL: "on", INT_CAL: "on", LETTURA_INT: letta, **_spente(CALENDARIO),
+             "input_boolean.vmc_master_spia_calendario_mercoledi_1": "on"}
+    hass.states.async_set(IP, "ON-Line", timestamp=adesso - 32)
+    hass.states.async_set(LETTURA, letta, timestamp=adesso - cambiata)
+    comandi = await _esegui(hass, _ramo("calendario_ritorno_da_black_out")["sequence"], stati, attesa=0.5)
+    assert comandi == []
+    assert chiamati == (["vmc_master_calendario_fascia_1_on"] if fascia_riparte else [])
+    assert _stato(hass, SPIA_BO_CAL) == "off"

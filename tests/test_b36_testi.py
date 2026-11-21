@@ -446,9 +446,10 @@ def test_descrizione_del_countdown_attese() -> None:
 # ------------------------------------------------------------------------------------------------- README
 @pytest.mark.parametrize("nome", ["README.md", ".github/README.md"])
 def test_readme_black_out_a_fine_fascia(nome: str) -> None:
-    """b35 C1-1: se la corrente torna a Fascia finita la VMC si arresta (IT ed EN)."""
+    """b35 C1-1: se la corrente torna a Fascia finita la VMC si arresta (IT ed EN); b36: una velocità scelta prima del
+    ritorno della Fascia resta."""
     testo = (RADICE / nome).read_text(encoding="utf-8")
     assert testo.count("la VMC riparte con la velocità della fascia in corso (se nel frattempo la fascia è finita, si "
-                       "arresta).</sub>") == 1
+                       "arresta; una velocità scelta prima resta).</sub>") == 1
     assert testo.count("the unit restarts at the speed of the current slot (if the slot has ended in the meantime, it "
-                       "stops).</sub>") == 1
+                       "stops; a speed picked before is kept).</sub>") == 1

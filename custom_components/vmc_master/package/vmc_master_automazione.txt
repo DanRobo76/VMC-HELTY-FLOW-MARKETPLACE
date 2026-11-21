@@ -226,7 +226,7 @@ description: >-
   Fascia del Calendario la rilevazione del Black-Out non è attiva: al ritorno
   della corrente (VMC OFF-Line almeno 32 Secondi) la VMC riparte con la Velocità
   della Fascia in corso 32 Secondi dopo che è di nuovo ON-Line con la velocità
-  leggibile (+5 Secondi dello script della Fascia); il Black-Out resta
+  leggibile (+5 Secondi dello script della Fascia) (una Velocità scelta nel frattempo resta e la Fascia non riparte); il Black-Out resta
   memorizzato nella Spia Black-Out del Calendario, così la VMC riparte anche
   dopo un riavvio di Home Assistant o se la corrente torna a Home Assistant
   spento: in questo caso riparte dall'ultima fase del riallineamento (140
@@ -342,7 +342,7 @@ description: >-
   non ha effetto e la rilevazione del Black-Out non è attiva: al ritorno della
   corrente (VMC OFF-Line almeno 32 Secondi) la VMC riparte con la Velocità della
   Fascia in corso 32 Secondi dopo che è di nuovo ON-Line con la velocità
-  leggibile (+5 Secondi dello script della Fascia). All'uscita dalla Fascia la
+  leggibile (+5 Secondi dello script della Fascia) (una Velocità scelta nel frattempo resta e la Fascia non riparte). All'uscita dalla Fascia la
   VMC si arresta: con Inquinanti presenti la logica Inquinanti riparte dalla VMC
   ferma (Velocità 1 fino al rientro, poi Velocità 0); se la 2° Fascia dello
   stesso giorno è già in corso, la fine della 1° Fascia non ferma la VMC (la
@@ -18387,10 +18387,11 @@ actions:
               dalla scheda (comando Velocità 1 inviato da un utente con la VMC già a Velocità 1, la ripartenza con cui
               la VMC può riaccendersi da sola dopo un Black-Out) oppure lettura passata a Velocità 1 da un'altra
               velocità letta (anche dall'App; la ripartenza della VMC arriva da una lettura fallita), con la VMC
-              ON-Line e il ripristino di una velocità diversa dalla Velocità 1 in attesa -> come per le altre velocità
-              scelte prima del ripristino (rami «Black-Out Off»): la Velocità 1 resta e il ripristino non avviene, si
-              azzerano le memorie del Black-Out e le allerte in corso la trattano come una scelta fatta durante
-              l'allerta [Foglio Logiche A23]. Resta irriconoscibile solo la Velocità 1 scelta dall'App con la VMC già
+              ON-Line e il ripristino di una velocità diversa dalla Velocità 1 in attesa, o il ritorno della Fascia del
+              Calendario in attesa (Spia Black-Out del Calendario accesa) -> come per le altre velocità scelte prima del
+              ripristino (rami «Black-Out Off» e ritorno della Fascia): la Velocità 1 resta, il ripristino non avviene e
+              la Fascia non riparte, si azzerano le memorie del Black-Out e le allerte in corso la trattano come una
+              scelta fatta durante l'allerta [Foglio Logiche A23]. Resta irriconoscibile solo la Velocità 1 scelta dall'App con la VMC già
               a Velocità 1 (nessun comando da Home Assistant e nessun cambio di lettura)
             if:
               - condition: template
@@ -18402,23 +18403,26 @@ actions:
                       or (trigger.platform == 'state' and da | length > 1 and a | length > 1 and a[1] == '00001'
                           and da[1] in ['00000', '00002', '00003', '00004', '00005', '00006', '00007']))
                      and is_state('sensor.vmc_master_status_ip_interfaccia', 'ON-Line')
-                     and is_state('input_boolean.vmc_master_spia_velocita_1', 'off')
-                     and (is_state('input_boolean.vmc_master_spia_velocita_0', 'on') or is_state('input_boolean.vmc_master_spia_velocita_2', 'on') or is_state('input_boolean.vmc_master_spia_velocita_3', 'on') or is_state('input_boolean.vmc_master_spia_velocita_4', 'on') or is_state('input_boolean.vmc_master_spia_velocita_notturna', 'on') or is_state('input_boolean.vmc_master_spia_velocita_iperventilazione', 'on') or is_state('input_boolean.vmc_master_spia_velocita_freecooling', 'on'))
-                     and is_state('input_boolean.vmc_master_spia_calendario_lunedi_1', 'off')
-                     and is_state('input_boolean.vmc_master_spia_calendario_lunedi_2', 'off')
-                     and is_state('input_boolean.vmc_master_spia_calendario_martedi_1', 'off')
-                     and is_state('input_boolean.vmc_master_spia_calendario_martedi_2', 'off')
-                     and is_state('input_boolean.vmc_master_spia_calendario_mercoledi_1', 'off')
-                     and is_state('input_boolean.vmc_master_spia_calendario_mercoledi_2', 'off')
-                     and is_state('input_boolean.vmc_master_spia_calendario_giovedi_1', 'off')
-                     and is_state('input_boolean.vmc_master_spia_calendario_giovedi_2', 'off')
-                     and is_state('input_boolean.vmc_master_spia_calendario_venerdi_1', 'off')
-                     and is_state('input_boolean.vmc_master_spia_calendario_venerdi_2', 'off')
-                     and is_state('input_boolean.vmc_master_spia_calendario_sabato_1', 'off')
-                     and is_state('input_boolean.vmc_master_spia_calendario_sabato_2', 'off')
-                     and is_state('input_boolean.vmc_master_spia_calendario_domenica_1', 'off')
-                     and is_state('input_boolean.vmc_master_spia_calendario_domenica_2', 'off')
-                     and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 2) }}
+                     and ((is_state('input_boolean.vmc_master_spia_velocita_1', 'off')
+                           and (is_state('input_boolean.vmc_master_spia_velocita_0', 'on') or is_state('input_boolean.vmc_master_spia_velocita_2', 'on') or is_state('input_boolean.vmc_master_spia_velocita_3', 'on') or is_state('input_boolean.vmc_master_spia_velocita_4', 'on') or is_state('input_boolean.vmc_master_spia_velocita_notturna', 'on') or is_state('input_boolean.vmc_master_spia_velocita_iperventilazione', 'on') or is_state('input_boolean.vmc_master_spia_velocita_freecooling', 'on'))
+                           and is_state('input_boolean.vmc_master_spia_calendario_lunedi_1', 'off')
+                           and is_state('input_boolean.vmc_master_spia_calendario_lunedi_2', 'off')
+                           and is_state('input_boolean.vmc_master_spia_calendario_martedi_1', 'off')
+                           and is_state('input_boolean.vmc_master_spia_calendario_martedi_2', 'off')
+                           and is_state('input_boolean.vmc_master_spia_calendario_mercoledi_1', 'off')
+                           and is_state('input_boolean.vmc_master_spia_calendario_mercoledi_2', 'off')
+                           and is_state('input_boolean.vmc_master_spia_calendario_giovedi_1', 'off')
+                           and is_state('input_boolean.vmc_master_spia_calendario_giovedi_2', 'off')
+                           and is_state('input_boolean.vmc_master_spia_calendario_venerdi_1', 'off')
+                           and is_state('input_boolean.vmc_master_spia_calendario_venerdi_2', 'off')
+                           and is_state('input_boolean.vmc_master_spia_calendario_sabato_1', 'off')
+                           and is_state('input_boolean.vmc_master_spia_calendario_sabato_2', 'off')
+                           and is_state('input_boolean.vmc_master_spia_calendario_domenica_1', 'off')
+                           and is_state('input_boolean.vmc_master_spia_calendario_domenica_2', 'off')
+                           and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 2))
+                          or (is_state('input_boolean.vmc_master_spia_calendario_black_out', 'on')
+                              and (is_state('input_boolean.vmc_master_spia_calendario_lunedi_1', 'on') or is_state('input_boolean.vmc_master_spia_calendario_lunedi_2', 'on') or is_state('input_boolean.vmc_master_spia_calendario_martedi_1', 'on') or is_state('input_boolean.vmc_master_spia_calendario_martedi_2', 'on') or is_state('input_boolean.vmc_master_spia_calendario_mercoledi_1', 'on') or is_state('input_boolean.vmc_master_spia_calendario_mercoledi_2', 'on') or is_state('input_boolean.vmc_master_spia_calendario_giovedi_1', 'on') or is_state('input_boolean.vmc_master_spia_calendario_giovedi_2', 'on') or is_state('input_boolean.vmc_master_spia_calendario_venerdi_1', 'on') or is_state('input_boolean.vmc_master_spia_calendario_venerdi_2', 'on') or is_state('input_boolean.vmc_master_spia_calendario_sabato_1', 'on') or is_state('input_boolean.vmc_master_spia_calendario_sabato_2', 'on') or is_state('input_boolean.vmc_master_spia_calendario_domenica_1', 'on') or is_state('input_boolean.vmc_master_spia_calendario_domenica_2', 'on'))
+                              and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4))) }}
             then:
               - alias: >-
                   Inquinanti in corso: si azzerano le memorie della velocità degli Inquinanti, così all'avvio
@@ -18455,6 +18459,7 @@ actions:
                     - input_boolean.vmc_master_spia_velocita_notturna
                     - input_boolean.vmc_master_spia_velocita_freecooling
                     - input_boolean.vmc_master_spia_velocita_iperventilazione
+                    - input_boolean.vmc_master_spia_calendario_black_out
                 action: input_boolean.turn_off
               - stop: Velocità 1 scelta dall'utente dopo il ritorno della corrente mantenuta (nessun ripristino)
         alias: >-
@@ -18470,7 +18475,9 @@ actions:
               ON-Line o dopo: l'ultima lettura prima del Black-Out è di almeno 32 s prima del ritorno ON-Line, la prima
               lettura dopo la riaccensione al più circa 15 s prima) e non è la Velocità 1, con cui la VMC può ripartire
               da sola dopo un Black-Out (la velocità di prima, con cui può ripartire da sola, non cambia la lettura;
-              la Velocità 1 scelta dall'utente la riconosce il ramo «Black-Out Velocità 1 scelta prima del Ripristino») ->
+              la Velocità 1 scelta dall'utente la riconosce il ramo «Black-Out Velocità 1 scelta prima del Ripristino»;
+              dopo un riavvio di Home Assistant vale solo un cambio successivo all'ultimo passo del riallineamento,
+              perché all'avvio le letture rinascono tutte insieme) ->
               la velocità scelta resta e il ripristino non avviene: si azzerano le memorie del Black-Out come dopo un
               ripristino eseguito e le allerte in corso la trattano come una scelta fatta durante l'allerta
               (Congelamento e Δ Temp. impongono comunque la loro velocità) [Foglio Logiche A23 e A27]
@@ -18479,9 +18486,11 @@ actions:
                 value_template: >-
                   {%- set vel = states.sensor.vmc_master_status_ventola_lettura_codice_interpretato -%}
                   {%- set rete = states.sensor.vmc_master_status_ip_interfaccia -%}
+                  {%- set fase = states.input_number.vmc_master_fase_riallineamento_al_riavvio -%}
                   {{ vel is not none and rete is not none
                      and vel.state not in ['Velocità 1', 'Non disponibile', 'unknown', 'unavailable', '']
-                     and as_timestamp(vel.last_changed) > as_timestamp(rete.last_changed) - 20 }}
+                     and as_timestamp(vel.last_changed) > as_timestamp(rete.last_changed) - 20
+                     and (fase is none or as_timestamp(vel.last_changed) > as_timestamp(fase.last_changed)) }}
             then:
               - alias: >-
                   Inquinanti in corso: si azzerano le memorie della velocità degli Inquinanti, così all'avvio
@@ -19140,7 +19149,9 @@ actions:
               ON-Line o dopo: l'ultima lettura prima del Black-Out è di almeno 32 s prima del ritorno ON-Line, la prima
               lettura dopo la riaccensione al più circa 15 s prima) e non è la Velocità 1, con cui la VMC può ripartire
               da sola dopo un Black-Out (la velocità di prima, con cui può ripartire da sola, non cambia la lettura;
-              la Velocità 1 scelta dall'utente la riconosce il ramo «Black-Out Velocità 1 scelta prima del Ripristino») ->
+              la Velocità 1 scelta dall'utente la riconosce il ramo «Black-Out Velocità 1 scelta prima del Ripristino»;
+              dopo un riavvio di Home Assistant vale solo un cambio successivo all'ultimo passo del riallineamento,
+              perché all'avvio le letture rinascono tutte insieme) ->
               la velocità scelta resta e il ripristino non avviene: si azzerano le memorie del Black-Out come dopo un
               ripristino eseguito e le allerte in corso la trattano come una scelta fatta durante l'allerta
               (Congelamento e Δ Temp. impongono comunque la loro velocità) [Foglio Logiche A23 e A27]
@@ -19149,9 +19160,11 @@ actions:
                 value_template: >-
                   {%- set vel = states.sensor.vmc_master_status_ventola_lettura_codice_interpretato -%}
                   {%- set rete = states.sensor.vmc_master_status_ip_interfaccia -%}
+                  {%- set fase = states.input_number.vmc_master_fase_riallineamento_al_riavvio -%}
                   {{ vel is not none and rete is not none
                      and vel.state not in ['Velocità 1', 'Non disponibile', 'unknown', 'unavailable', '']
-                     and as_timestamp(vel.last_changed) > as_timestamp(rete.last_changed) - 20 }}
+                     and as_timestamp(vel.last_changed) > as_timestamp(rete.last_changed) - 20
+                     and (fase is none or as_timestamp(vel.last_changed) > as_timestamp(fase.last_changed)) }}
             then:
               - alias: >-
                   Inquinanti in corso: si azzerano le memorie della velocità degli Inquinanti, così all'avvio
@@ -19288,7 +19301,9 @@ actions:
               ON-Line o dopo: l'ultima lettura prima del Black-Out è di almeno 32 s prima del ritorno ON-Line, la prima
               lettura dopo la riaccensione al più circa 15 s prima) e non è la Velocità 1, con cui la VMC può ripartire
               da sola dopo un Black-Out (la velocità di prima, con cui può ripartire da sola, non cambia la lettura;
-              la Velocità 1 scelta dall'utente la riconosce il ramo «Black-Out Velocità 1 scelta prima del Ripristino») ->
+              la Velocità 1 scelta dall'utente la riconosce il ramo «Black-Out Velocità 1 scelta prima del Ripristino»;
+              dopo un riavvio di Home Assistant vale solo un cambio successivo all'ultimo passo del riallineamento,
+              perché all'avvio le letture rinascono tutte insieme) ->
               la velocità scelta resta e il ripristino non avviene: si azzerano le memorie del Black-Out come dopo un
               ripristino eseguito e le allerte in corso la trattano come una scelta fatta durante l'allerta
               (Congelamento e Δ Temp. impongono comunque la loro velocità) [Foglio Logiche A23 e A27]
@@ -19297,9 +19312,11 @@ actions:
                 value_template: >-
                   {%- set vel = states.sensor.vmc_master_status_ventola_lettura_codice_interpretato -%}
                   {%- set rete = states.sensor.vmc_master_status_ip_interfaccia -%}
+                  {%- set fase = states.input_number.vmc_master_fase_riallineamento_al_riavvio -%}
                   {{ vel is not none and rete is not none
                      and vel.state not in ['Velocità 1', 'Non disponibile', 'unknown', 'unavailable', '']
-                     and as_timestamp(vel.last_changed) > as_timestamp(rete.last_changed) - 20 }}
+                     and as_timestamp(vel.last_changed) > as_timestamp(rete.last_changed) - 20
+                     and (fase is none or as_timestamp(vel.last_changed) > as_timestamp(fase.last_changed)) }}
             then:
               - alias: >-
                   Inquinanti in corso: si azzerano le memorie della velocità degli Inquinanti, così all'avvio
@@ -19436,7 +19453,9 @@ actions:
               ON-Line o dopo: l'ultima lettura prima del Black-Out è di almeno 32 s prima del ritorno ON-Line, la prima
               lettura dopo la riaccensione al più circa 15 s prima) e non è la Velocità 1, con cui la VMC può ripartire
               da sola dopo un Black-Out (la velocità di prima, con cui può ripartire da sola, non cambia la lettura;
-              la Velocità 1 scelta dall'utente la riconosce il ramo «Black-Out Velocità 1 scelta prima del Ripristino») ->
+              la Velocità 1 scelta dall'utente la riconosce il ramo «Black-Out Velocità 1 scelta prima del Ripristino»;
+              dopo un riavvio di Home Assistant vale solo un cambio successivo all'ultimo passo del riallineamento,
+              perché all'avvio le letture rinascono tutte insieme) ->
               la velocità scelta resta e il ripristino non avviene: si azzerano le memorie del Black-Out come dopo un
               ripristino eseguito e le allerte in corso la trattano come una scelta fatta durante l'allerta
               (Congelamento e Δ Temp. impongono comunque la loro velocità) [Foglio Logiche A23 e A27]
@@ -19445,9 +19464,11 @@ actions:
                 value_template: >-
                   {%- set vel = states.sensor.vmc_master_status_ventola_lettura_codice_interpretato -%}
                   {%- set rete = states.sensor.vmc_master_status_ip_interfaccia -%}
+                  {%- set fase = states.input_number.vmc_master_fase_riallineamento_al_riavvio -%}
                   {{ vel is not none and rete is not none
                      and vel.state not in ['Velocità 1', 'Non disponibile', 'unknown', 'unavailable', '']
-                     and as_timestamp(vel.last_changed) > as_timestamp(rete.last_changed) - 20 }}
+                     and as_timestamp(vel.last_changed) > as_timestamp(rete.last_changed) - 20
+                     and (fase is none or as_timestamp(vel.last_changed) > as_timestamp(fase.last_changed)) }}
             then:
               - alias: >-
                   Inquinanti in corso: si azzerano le memorie della velocità degli Inquinanti, così all'avvio
@@ -19584,7 +19605,9 @@ actions:
               ON-Line o dopo: l'ultima lettura prima del Black-Out è di almeno 32 s prima del ritorno ON-Line, la prima
               lettura dopo la riaccensione al più circa 15 s prima) e non è la Velocità 1, con cui la VMC può ripartire
               da sola dopo un Black-Out (la velocità di prima, con cui può ripartire da sola, non cambia la lettura;
-              la Velocità 1 scelta dall'utente la riconosce il ramo «Black-Out Velocità 1 scelta prima del Ripristino») ->
+              la Velocità 1 scelta dall'utente la riconosce il ramo «Black-Out Velocità 1 scelta prima del Ripristino»;
+              dopo un riavvio di Home Assistant vale solo un cambio successivo all'ultimo passo del riallineamento,
+              perché all'avvio le letture rinascono tutte insieme) ->
               la velocità scelta resta e il ripristino non avviene: si azzerano le memorie del Black-Out come dopo un
               ripristino eseguito e le allerte in corso la trattano come una scelta fatta durante l'allerta
               (Congelamento e Δ Temp. impongono comunque la loro velocità) [Foglio Logiche A23 e A27]
@@ -19593,9 +19616,11 @@ actions:
                 value_template: >-
                   {%- set vel = states.sensor.vmc_master_status_ventola_lettura_codice_interpretato -%}
                   {%- set rete = states.sensor.vmc_master_status_ip_interfaccia -%}
+                  {%- set fase = states.input_number.vmc_master_fase_riallineamento_al_riavvio -%}
                   {{ vel is not none and rete is not none
                      and vel.state not in ['Velocità 1', 'Non disponibile', 'unknown', 'unavailable', '']
-                     and as_timestamp(vel.last_changed) > as_timestamp(rete.last_changed) - 20 }}
+                     and as_timestamp(vel.last_changed) > as_timestamp(rete.last_changed) - 20
+                     and (fase is none or as_timestamp(vel.last_changed) > as_timestamp(fase.last_changed)) }}
             then:
               - alias: >-
                   Inquinanti in corso: si azzerano le memorie della velocità degli Inquinanti, così all'avvio
@@ -19732,7 +19757,9 @@ actions:
               ON-Line o dopo: l'ultima lettura prima del Black-Out è di almeno 32 s prima del ritorno ON-Line, la prima
               lettura dopo la riaccensione al più circa 15 s prima) e non è la Velocità 1, con cui la VMC può ripartire
               da sola dopo un Black-Out (la velocità di prima, con cui può ripartire da sola, non cambia la lettura;
-              la Velocità 1 scelta dall'utente la riconosce il ramo «Black-Out Velocità 1 scelta prima del Ripristino») ->
+              la Velocità 1 scelta dall'utente la riconosce il ramo «Black-Out Velocità 1 scelta prima del Ripristino»;
+              dopo un riavvio di Home Assistant vale solo un cambio successivo all'ultimo passo del riallineamento,
+              perché all'avvio le letture rinascono tutte insieme) ->
               la velocità scelta resta e il ripristino non avviene: si azzerano le memorie del Black-Out come dopo un
               ripristino eseguito e le allerte in corso la trattano come una scelta fatta durante l'allerta
               (Congelamento e Δ Temp. impongono comunque la loro velocità) [Foglio Logiche A23 e A27]
@@ -19741,9 +19768,11 @@ actions:
                 value_template: >-
                   {%- set vel = states.sensor.vmc_master_status_ventola_lettura_codice_interpretato -%}
                   {%- set rete = states.sensor.vmc_master_status_ip_interfaccia -%}
+                  {%- set fase = states.input_number.vmc_master_fase_riallineamento_al_riavvio -%}
                   {{ vel is not none and rete is not none
                      and vel.state not in ['Velocità 1', 'Non disponibile', 'unknown', 'unavailable', '']
-                     and as_timestamp(vel.last_changed) > as_timestamp(rete.last_changed) - 20 }}
+                     and as_timestamp(vel.last_changed) > as_timestamp(rete.last_changed) - 20
+                     and (fase is none or as_timestamp(vel.last_changed) > as_timestamp(fase.last_changed)) }}
             then:
               - alias: >-
                   Inquinanti in corso: si azzerano le memorie della velocità degli Inquinanti, così all'avvio
@@ -19880,7 +19909,9 @@ actions:
               ON-Line o dopo: l'ultima lettura prima del Black-Out è di almeno 32 s prima del ritorno ON-Line, la prima
               lettura dopo la riaccensione al più circa 15 s prima) e non è la Velocità 1, con cui la VMC può ripartire
               da sola dopo un Black-Out (la velocità di prima, con cui può ripartire da sola, non cambia la lettura;
-              la Velocità 1 scelta dall'utente la riconosce il ramo «Black-Out Velocità 1 scelta prima del Ripristino») ->
+              la Velocità 1 scelta dall'utente la riconosce il ramo «Black-Out Velocità 1 scelta prima del Ripristino»;
+              dopo un riavvio di Home Assistant vale solo un cambio successivo all'ultimo passo del riallineamento,
+              perché all'avvio le letture rinascono tutte insieme) ->
               la velocità scelta resta e il ripristino non avviene: si azzerano le memorie del Black-Out come dopo un
               ripristino eseguito e le allerte in corso la trattano come una scelta fatta durante l'allerta
               (Congelamento e Δ Temp. impongono comunque la loro velocità) [Foglio Logiche A23 e A27]
@@ -19889,9 +19920,11 @@ actions:
                 value_template: >-
                   {%- set vel = states.sensor.vmc_master_status_ventola_lettura_codice_interpretato -%}
                   {%- set rete = states.sensor.vmc_master_status_ip_interfaccia -%}
+                  {%- set fase = states.input_number.vmc_master_fase_riallineamento_al_riavvio -%}
                   {{ vel is not none and rete is not none
                      and vel.state not in ['Velocità 1', 'Non disponibile', 'unknown', 'unavailable', '']
-                     and as_timestamp(vel.last_changed) > as_timestamp(rete.last_changed) - 20 }}
+                     and as_timestamp(vel.last_changed) > as_timestamp(rete.last_changed) - 20
+                     and (fase is none or as_timestamp(vel.last_changed) > as_timestamp(fase.last_changed)) }}
             then:
               - alias: >-
                   Inquinanti in corso: si azzerano le memorie della velocità degli Inquinanti, così all'avvio
@@ -20027,7 +20060,9 @@ actions:
               ON-Line o dopo: l'ultima lettura prima del Black-Out è di almeno 32 s prima del ritorno ON-Line, la prima
               lettura dopo la riaccensione al più circa 15 s prima) e non è la Velocità 1, con cui la VMC può ripartire
               da sola dopo un Black-Out (la velocità di prima, con cui può ripartire da sola, non cambia la lettura;
-              la Velocità 1 scelta dall'utente la riconosce il ramo «Black-Out Velocità 1 scelta prima del Ripristino») ->
+              la Velocità 1 scelta dall'utente la riconosce il ramo «Black-Out Velocità 1 scelta prima del Ripristino»;
+              dopo un riavvio di Home Assistant vale solo un cambio successivo all'ultimo passo del riallineamento,
+              perché all'avvio le letture rinascono tutte insieme) ->
               la velocità scelta resta e il ripristino non avviene: si azzerano le memorie del Black-Out come dopo un
               ripristino eseguito e le allerte in corso la trattano come una scelta fatta durante l'allerta
               (Congelamento e Δ Temp. impongono comunque la loro velocità) [Foglio Logiche A23 e A27]
@@ -20036,9 +20071,11 @@ actions:
                 value_template: >-
                   {%- set vel = states.sensor.vmc_master_status_ventola_lettura_codice_interpretato -%}
                   {%- set rete = states.sensor.vmc_master_status_ip_interfaccia -%}
+                  {%- set fase = states.input_number.vmc_master_fase_riallineamento_al_riavvio -%}
                   {{ vel is not none and rete is not none
                      and vel.state not in ['Velocità 1', 'Non disponibile', 'unknown', 'unavailable', '']
-                     and as_timestamp(vel.last_changed) > as_timestamp(rete.last_changed) - 20 }}
+                     and as_timestamp(vel.last_changed) > as_timestamp(rete.last_changed) - 20
+                     and (fase is none or as_timestamp(vel.last_changed) > as_timestamp(fase.last_changed)) }}
             then:
               - alias: >-
                   Inquinanti in corso: si azzerano le memorie della velocità degli Inquinanti, così all'avvio
@@ -20390,6 +20427,27 @@ actions:
               {{ states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_calendario') == 'on'
               and states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line'
               and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile' }}
+          - alias: >-
+              Velocità scelta dall'utente dopo il ritorno della corrente e prima del ritorno della Fascia (Telecomando,
+              scheda o App): la velocità letta è cambiata dopo la riaccensione della VMC (meno di 20 s prima del ritorno
+              ON-Line o dopo, come nei rami «Black-Out Off») e non è la Velocità 1, con cui la VMC può ripartire da sola
+              dopo un Black-Out (la Velocità 1 scelta dall'utente la riconosce il ramo «Black-Out Velocità 1 scelta prima
+              del Ripristino») -> la velocità scelta resta e la Fascia non riparte, come il ripristino dopo un Black-Out
+              fuori dalle Fasce [Foglio Logiche A23]. Dopo un riavvio di Home Assistant vale solo un cambio successivo
+              all'ultimo passo del riallineamento (all'avvio le letture rinascono tutte insieme); per lo stesso motivo
+              non nel ritorno durante il riallineamento al riavvio
+            if:
+              - condition: template
+                value_template: >-
+                  {%- set vel = states.sensor.vmc_master_status_ventola_lettura_codice_interpretato -%}
+                  {%- set rete = states.sensor.vmc_master_status_ip_interfaccia -%}
+                  {%- set fase = states.input_number.vmc_master_fase_riallineamento_al_riavvio -%}
+                  {{ vel is not none and rete is not none
+                     and vel.state not in ['Velocità 1', 'Non disponibile', 'unknown', 'unavailable', '']
+                     and as_timestamp(vel.last_changed) > as_timestamp(rete.last_changed) - 20
+                     and (fase is none or as_timestamp(vel.last_changed) > as_timestamp(fase.last_changed)) }}
+            then:
+              - stop: Velocità scelta dall'utente dopo il ritorno della corrente mantenuta (la Fascia non riparte)
           - choose:
               - alias: Spia 1° Fascia accesa -> la VMC riparte con la velocità della 1° Fascia
                 conditions:

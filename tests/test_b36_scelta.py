@@ -32,9 +32,11 @@ COMANDO = {"0": "vmc_master_velocita_0", "1": "vmc_master_velocita_1", "2": "vmc
 CONDIZIONE = (
     "{%- set vel = states.sensor.vmc_master_status_ventola_lettura_codice_interpretato -%}\n"
     "{%- set rete = states.sensor.vmc_master_status_ip_interfaccia -%}\n"
+    "{%- set fase = states.input_number.vmc_master_fase_riallineamento_al_riavvio -%}\n"
     "{{ vel is not none and rete is not none\n"
     "   and vel.state not in ['Velocità 1', 'Non disponibile', 'unknown', 'unavailable', '']\n"
-    "   and as_timestamp(vel.last_changed) > as_timestamp(rete.last_changed) - 20 }}"
+    "   and as_timestamp(vel.last_changed) > as_timestamp(rete.last_changed) - 20\n"
+    "   and (fase is none or as_timestamp(vel.last_changed) > as_timestamp(fase.last_changed)) }}"
 )
 CONDIZIONE_INQ = (
     "{{ is_state('input_boolean.vmc_master_spia_co2_o_voc', 'on')\n"
@@ -106,6 +108,7 @@ def _prepara(hass: HomeAssistant, memoria: str, letta: str, cambiata: float, **a
     """VMC di nuovo ON-Line da 32 s (inizio dell'attesa del ripristino), velocità letta cambiata «cambiata» secondi fa
     (o rimasta quella di prima del Black-Out, 120 s fa); spia del Black-Out della velocità «memoria» accesa."""
     adesso = time.time()
+    hass.states.async_set(FASE, "0", timestamp=adesso - 3600)  # riallineamento al riavvio finito da tempo
     hass.states.async_set(IP, "ON-Line", timestamp=adesso - 32)
     hass.states.async_set(LETTURA, letta, timestamp=adesso - cambiata)
     stati = {LETTURA_I: letta, FASE: "0", BLACK_OUT_RILEVATO: "off", **_spente(BLACK_OUT),
