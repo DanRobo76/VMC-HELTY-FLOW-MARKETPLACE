@@ -5,7 +5,7 @@
   Esclusa l'opzione Free (ha la sua ripresa); con Congelamento o Δ Temp. accesi comportamento di prima.
 - C4-4: con [Set Velocità Umidità di Avvio] su Velocità 0 e la Free sospesa l'avvio dell'Umidità mandava la VMC a
   Velocità 1 (nota 3): ora vale il Set 0 (la VMC resta ferma, memoria Velocità 0) e a fine Umidità la ripresa Free non
-  viene annullata.
+  viene annullata. Lo stesso nei 2 rami TeVsTi e nella fine Inquinanti in Free (R8): Velocità 0 invece della nota 3.
 - C4-3: i trigger del PdR con la ripresa Free in attesa (154/156 e gemelli con gli Inquinanti, guardia e Countdown)
   valevano con qualsiasi velocità: ora solo con la VMC a Velocità 0, in Free o a Velocità 1 dell'Umidità (gemelli: 0, 1
   o Free) e, senza Inquinanti, senza una memoria PdR di velocità già accesa.
@@ -531,3 +531,91 @@ async def test_c4_5_rami_validi_per_home_assistant(hass: HomeAssistant) -> None:
     for ramo in _rami_interruttore_umidita():
         cv.SCRIPT_SCHEMA(ramo["sequence"])
     assert len(_automazione()["actions"][1]["choose"]) == 196
+
+
+# ------------------------------------------------------------------------------------------------ C4-4 ovunque
+# Il Set 0 vale anche nei 2 rami TeVsTi (Free sospesa con l'Umidità in corso) e nella fine Inquinanti in Free (R8):
+# Velocità 0 con il ciclo del ramo e memoria Umidità «avviata da Velocità 0», come all'avvio con la Free sospesa.
+TEVSTI = {"TeVsTi Free-Heating -> Imposta Velocità 0": FREE_H, "TeVsTi Free-Cooling -> Imposta Velocità 0": FREE_C}
+
+
+def _stati_tevsti(**altri: str) -> dict[str, str]:
+    stati = {SPIA_UMIDITA: "on", **_spente(MEMORIE_UMIDITA), SPIA_U_FREE: "on", FREE_C: "off", FREE_H: "off",
+             SET_UMIDITA: "Velocità 0", LETTURA: "Free Cooling", BLACK_OUT_RILEVATO: "off"}
+    stati.update(altri)
+    return stati
+
+
+@pytest.mark.parametrize("tid", list(TEVSTI))
+async def test_c4_4_tevsti_con_set_0_velocita_0(hass: HomeAssistant, tid: str) -> None:
+    comandi = await _esegui(hass, _ramo(tid)["sequence"], _stati_tevsti(), attesa=0.5)
+    assert comandi[:1] == ["vmc_master_velocita_0"]
+    assert _stato(hass, TEVSTI[tid]) == "on"  # Free sospesa: la ripresa resta in attesa
+    assert _stato(hass, SPIA_U0) == "on"
+    assert all(_stato(hass, e) == "off" for e in MEMORIE_UMIDITA if e != SPIA_U0)
+
+
+@pytest.mark.parametrize("tid", list(TEVSTI))
+@pytest.mark.parametrize(
+    ("altri", "comando"),
+    [({SET_UMIDITA: "Velocità 2"}, "vmc_master_velocita_1"), ({SPIA_UMIDITA: "off"}, "vmc_master_velocita_0")],
+)
+async def test_c4_4_tevsti_altrimenti_come_prima(hass: HomeAssistant, tid: str, altri: dict[str, str],
+                                                 comando: str) -> None:
+    comandi = await _esegui(hass, _ramo(tid)["sequence"], _stati_tevsti(**altri), attesa=0.5)
+    assert comandi[:1] == [comando]
+    assert _stato(hass, SPIA_U_FREE) == "on" and _stato(hass, SPIA_U0) == "off"  # memorie Umidità non toccate
+
+
+@pytest.mark.parametrize("tid", list(TEVSTI))
+@pytest.mark.parametrize(
+    ("valore_set", "letta", "fine"),
+    [("Velocità 0", "Velocità 0", True), ("Velocità 0", "Velocità 1", False), ("Velocità 2", "Velocità 1", True),
+     ("Velocità 2", "Velocità 0", False)],
+)
+async def test_c4_4_tevsti_fine_del_ciclo(hass: HomeAssistant, tid: str, valore_set: str, letta: str,
+                                          fine: bool) -> None:
+    ciclo = next(p for p in _ramo(tid)["sequence"] if "repeat" in p)
+    _imposta(hass, {SPIA_UMIDITA: "on", SET_UMIDITA: valore_set, LETTURA: letta, BLACK_OUT_RILEVATO: "off"})
+    assert _render(hass, ciclo["repeat"]["until"][0]["value_template"], {"vel_prima_del_comando": letta}) is fine
+
+
+def _stati_r8(**altri: str) -> dict[str, str]:
+    return _stati_fine_inquinanti(**{"input_boolean.vmc_master_spia_velocita_freecooling_co2_o_voc": "on",
+                                     "input_boolean.vmc_master_spia_velocita_1_co2_o_voc": "on", FREE_C: "on",
+                                     SPIA_UMIDITA: "on", SET_UMIDITA: "Velocità 0", LETTURA: "Velocità 1",
+                                     **_spente(MEMORIE_UMIDITA), SPIA_U_FREE: "on", **altri})
+
+
+async def test_c4_4_fine_inquinanti_in_free_con_set_0_velocita_0(hass: HomeAssistant) -> None:
+    comandi = await _esegui(hass, _ramo("inquinanti_co2_voc_off")["sequence"], _stati_r8(), attesa=0.5)
+    assert comandi[:1] == ["vmc_master_velocita_0"]
+    assert _stato(hass, FREE_C) == "on"
+    assert _stato(hass, SPIA_U0) == "on"
+    assert all(_stato(hass, e) == "off" for e in MEMORIE_UMIDITA if e != SPIA_U0)
+
+
+@pytest.mark.parametrize(
+    ("altri", "comando"),
+    [({SET_UMIDITA: "Velocità 2"}, "vmc_master_velocita_1"), ({SPIA_UMIDITA: "off"}, "vmc_master_velocita_0")],
+)
+async def test_c4_4_fine_inquinanti_in_free_altrimenti_come_prima(hass: HomeAssistant, altri: dict[str, str],
+                                                                  comando: str) -> None:
+    comandi = await _esegui(hass, _ramo("inquinanti_co2_voc_off")["sequence"], _stati_r8(**altri), attesa=0.5)
+    assert comandi[:1] == [comando]
+    assert _stato(hass, SPIA_U_FREE) == "on" and _stato(hass, SPIA_U0) == "off"
+
+
+@pytest.mark.parametrize(("valore_set", "attesa"), [("Velocità 0", "Velocità 0"), ("Velocità 2", "Velocità 1")])
+async def test_c4_4_fine_inquinanti_in_free_velocita_per_il_black_out(hass: HomeAssistant, valore_set: str,
+                                                                      attesa: str) -> None:
+    _, _, ripristino = _passi_fine_inquinanti()
+    passi = ripristino["choose"][7]["sequence"][0]["choose"][0]["sequence"]  # Congelamento e Δ spenti
+    fine = next(p for p in passi if "velocita_fine_allerta" in p.get("variables", {}))
+    _imposta(hass, {SPIA_UMIDITA: "on", SET_UMIDITA: valore_set, FREE_C: "on", FREE_H: "off"})
+    assert _render(hass, fine["variables"]["velocita_fine_allerta"]) == attesa
+
+
+async def test_c4_4_ovunque_rami_validi_per_home_assistant(hass: HomeAssistant) -> None:
+    for tid in (*TEVSTI, "inquinanti_co2_voc_off"):
+        cv.SCRIPT_SCHEMA(_ramo(tid)["sequence"])

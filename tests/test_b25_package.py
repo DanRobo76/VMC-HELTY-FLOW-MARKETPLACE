@@ -190,8 +190,9 @@ def test_memoria_velocita_0_mantenuta_dell_umidita():
             seguente = passi[k + 1]
             assert seguente["action"] == "input_boolean.turn_off" and SPIA_U0_MANTENUTA in _entita(seguente), passo
             spente += 1
-    # b33: +4 spente al cambio del mese con l'Umidità in corso (A3-7); b36: +1 interruttore Umidità con la VMC non disponibile (C4-5)
-    assert (accese, spente) == (1, 47)
+    # b33: +4 spente al cambio del mese con l'Umidità in corso (A3-7); b36: +1 interruttore Umidità con la VMC non disponibile (C4-5),
+    # +3 Set 0 con la Free sospesa nei 2 rami TeVsTi e nella fine Inquinanti in Free (C4-4)
+    assert (accese, spente) == (1, 50)
     testo = (PKG / "vmc_master_automazione.txt").read_text(encoding="utf-8")
     ramo = testo[testo.index("              - umidita_velocita_0\n") :]
     ramo = ramo[: ramo.index("\n      - conditions:")]
@@ -199,8 +200,8 @@ def test_memoria_velocita_0_mantenuta_dell_umidita():
     altrimenti = ramo[ramo.index("            else:\n") :]
     assert allora.index(f"entity_id: {SPIA_U0_MANTENUTA}") < allora.index("- variables:")
     assert f"- {SPIA_U0}\n                    - {SPIA_U0_MANTENUTA}" in altrimenti
-    # b32: +1 nella condizione di umidita_velocita_0 (A3-3); b33: +4 (A3-7); b36: +1 C4-5, +1 nella condizione di fine Umidità (C4-4)
-    assert testo.count(SPIA_U0_MANTENUTA) == 53
+    # b32: +1 nella condizione di umidita_velocita_0 (A3-3); b33: +4 (A3-7); b36: +1 C4-5, +4 C4-4 (fine Umidità, TeVsTi x2, R8)
+    assert testo.count(SPIA_U0_MANTENUTA) == 56
 
 
 def test_memoria_velocita_0_mantenuta_nel_package_e_nella_scheda():
