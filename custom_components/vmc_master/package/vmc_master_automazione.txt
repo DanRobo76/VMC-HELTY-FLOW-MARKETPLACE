@@ -2944,12 +2944,13 @@ triggers:
     for:
       seconds: "{{ states('input_number.vmc_master_attesa_blackout_rilevazione') | int(32) }}"
   - alias: >-
-      Calendario - VMC di nuovo ON-Line dopo un Black-Out [la VMC riparte in
-      funzione della Spia Calendario accesa]
+      Calendario - VMC di nuovo ON-Line dopo un Black-Out [la VMC riparte in funzione della Spia Calendario accesa;
+      l'attesa si conta da quando la velocità della VMC torna leggibile, non dal ping]
     value_template: |
       {{ (
         states('input_boolean.vmc_master_spia_calendario_black_out') == 'on'
         and states('sensor.vmc_master_status_ip_interfaccia') == "ON-Line"
+        and states('sensor.vmc_master_status_ventola') not in ['unavailable', 'unknown', '']
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
     id: calendario_ritorno_da_black_out
     trigger: template
@@ -2968,12 +2969,15 @@ triggers:
       seconds: "{{ states('input_number.vmc_master_attesa_blackout_ripristino') | int(32) }}"
   - alias: >-
       Calendario - VMC di nuovo in grado di rispondere dopo un comando del Calendario non eseguito (la VMC rispondeva
-      al ping ma la sua velocità non si leggeva) [la VMC riparte in funzione della Spia Calendario accesa; a Fascia
-      finita torna a Velocità 0]
+      al ping ma la sua velocità non si leggeva) senza Congelamento e Δ Temp. in corso [la VMC riparte in funzione della
+      Spia Calendario accesa; a Fascia finita, o con il Calendario spento durante la Fascia, torna a Velocità 0 (Velocità 1
+      con gli Inquinanti); con un'allerta Congelamento o Δ Temp. aspetta la fine dell'allerta]
     value_template: |
       {{ (
         states('input_boolean.vmc_master_spia_calendario_comando_non_eseguito') == 'on'
         and states('sensor.vmc_master_status_ventola') not in ['unavailable', 'unknown', '']
+        and states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia') == 'off'
+        and states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia') == 'off'
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
     id: calendario_ritorno_comando
     trigger: template
@@ -8730,11 +8734,14 @@ actions:
       {{ (
         states('input_boolean.vmc_master_spia_calendario_black_out') == 'on'
         and states('sensor.vmc_master_status_ip_interfaccia') == "ON-Line"
+        and states('sensor.vmc_master_status_ventola') not in ['unavailable', 'unknown', '']
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == 'calendario_ritorno_comando' -%}
       {{ (
         states('input_boolean.vmc_master_spia_calendario_comando_non_eseguito') == 'on'
         and states('sensor.vmc_master_status_ventola') not in ['unavailable', 'unknown', '']
+        and states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia') == 'off'
+        and states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia') == 'off'
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == '1° Lunedì On' -%}
       {{ (( ((((states('sensor.vmc_master_status_accensione_vmc_tramite_calendario') == "Lunedi") and (states('sensor.vmc_master_status_spegnimento_vmc_tramite_calendario')== "Lunedi") and (now().strftime('%H:%M') >= strptime(states('input_datetime.vmc_master_accensione_lunedi'), '%H:%M:%S').strftime('%H:%M') and now().strftime('%H:%M') < strptime(states('input_datetime.vmc_master_spegnimento_lunedi'), '%H:%M:%S').strftime('%H:%M')))==true) and (states('sensor.vmc_master_status_ip_interfaccia')=="ON-Line") ) ) and (states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia')== 'off' and states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia')== 'off') and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')!='Non disponibile'and states('input_boolean.vmc_master_spia_calendario_lunedi_1')=='off' ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
@@ -17586,6 +17593,7 @@ actions:
                         - input_boolean.vmc_master_spia_calendario_domenica_1
                         - input_boolean.vmc_master_spia_calendario_domenica_2
                         - input_boolean.vmc_master_spia_calendario_black_out
+                        - input_boolean.vmc_master_spia_calendario_comando_non_eseguito
                         - input_boolean.vmc_master_spia_co2_o_voc
                         - input_boolean.vmc_master_spia_velocita_1_co2_o_voc_pdr
                         - input_boolean.vmc_master_spia_velocita_0_co2_o_voc
@@ -17655,8 +17663,42 @@ actions:
                             seconds: 3
                             milliseconds: 0
                       until:
-                        - condition: template
-                          value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 1' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
+                        - alias: Velocità raggiunta, scelta dall'utente, Black-Out rilevato oppure lettura della velocità persa per il tempo di rilevazione del Black-Out
+                          condition: template
+                          value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 1' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') or (is_state('sensor.vmc_master_status_ventola', 'unavailable') and (now() - states.sensor.vmc_master_status_ventola.last_changed).total_seconds() >= states('input_number.vmc_master_attesa_blackout_rilevazione') | int(32)) }}"
+                  - alias: >-
+                      Black-Out prima della conferma -> memorizza la Velocità 1 per il ripristino dopo il Black-Out (Priorità 7),
+                      anche con la VMC già OFF-Line ma il Black-Out non ancora rilevato (il ciclo esce prima per la lettura persa)
+                    if:
+                      - condition: template
+                        value_template: "{{ (is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') or (is_state('sensor.vmc_master_status_ip_interfaccia', 'OFF-Line') and (is_state('sensor.vmc_master_status_ventola', 'unavailable') and (now() - states.sensor.vmc_master_status_ventola.last_changed).total_seconds() >= states('input_number.vmc_master_attesa_blackout_rilevazione') | int(32)))) and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 1' }}"
+                    then:
+                      - data: {}
+                        target:
+                          entity_id: input_boolean.vmc_master_spia_velocita_1
+                        action: input_boolean.turn_on
+                      - data: {}
+                        target:
+                          entity_id:
+                            - input_boolean.vmc_master_spia_velocita_0
+                            - input_boolean.vmc_master_spia_velocita_2
+                            - input_boolean.vmc_master_spia_velocita_3
+                            - input_boolean.vmc_master_spia_velocita_4
+                            - input_boolean.vmc_master_spia_velocita_notturna
+                            - input_boolean.vmc_master_spia_velocita_iperventilazione
+                            - input_boolean.vmc_master_spia_velocita_freecooling
+                        action: input_boolean.turn_off
+                  - alias: >-
+                      Velocità 1 non confermata perché la VMC risponde al ping ma la sua velocità non si legge (ripetizione finita
+                      per la lettura persa, senza Black-Out) -> Spia Comando non eseguito del Calendario ON: appena la VMC torna a
+                      rispondere la Velocità 1 viene ripetuta, salvo se nel frattempo la velocità è cambiata
+                    if:
+                      - condition: template
+                        value_template: "{{ (is_state('sensor.vmc_master_status_ventola', 'unavailable') and (now() - states.sensor.vmc_master_status_ventola.last_changed).total_seconds() >= states('input_number.vmc_master_attesa_blackout_rilevazione') | int(32)) and is_state('sensor.vmc_master_status_ip_interfaccia', 'ON-Line') and not is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 1' }}"
+                    then:
+                      - action: input_boolean.turn_on
+                        target:
+                          entity_id: input_boolean.vmc_master_spia_calendario_comando_non_eseguito
                 alias: se Spia Congelamento Off e Spia Delta Temp Off
               - conditions:
                   - alias: se Spia Congelamento ON o Spia Delta Temp ON
@@ -17710,6 +17752,7 @@ actions:
                         - input_boolean.vmc_master_spia_calendario_domenica_1
                         - input_boolean.vmc_master_spia_calendario_domenica_2
                         - input_boolean.vmc_master_spia_calendario_black_out
+                        - input_boolean.vmc_master_spia_calendario_comando_non_eseguito
                         - input_boolean.vmc_master_spia_co2_o_voc
                         - >-
                           input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0
@@ -17774,8 +17817,42 @@ actions:
                             seconds: 3
                             milliseconds: 0
                       until:
-                        - condition: template
-                          value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') }}"
+                        - alias: Velocità raggiunta, scelta dall'utente, Black-Out rilevato oppure lettura della velocità persa per il tempo di rilevazione del Black-Out
+                          condition: template
+                          value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') or (is_state('sensor.vmc_master_status_ventola', 'unavailable') and (now() - states.sensor.vmc_master_status_ventola.last_changed).total_seconds() >= states('input_number.vmc_master_attesa_blackout_rilevazione') | int(32)) }}"
+                  - alias: >-
+                      Black-Out prima della conferma -> memorizza la Velocità 0 per il ripristino dopo il Black-Out (Priorità 7),
+                      anche con la VMC già OFF-Line ma il Black-Out non ancora rilevato (il ciclo esce prima per la lettura persa)
+                    if:
+                      - condition: template
+                        value_template: "{{ (is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') or (is_state('sensor.vmc_master_status_ip_interfaccia', 'OFF-Line') and (is_state('sensor.vmc_master_status_ventola', 'unavailable') and (now() - states.sensor.vmc_master_status_ventola.last_changed).total_seconds() >= states('input_number.vmc_master_attesa_blackout_rilevazione') | int(32)))) and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 0' }}"
+                    then:
+                      - data: {}
+                        target:
+                          entity_id: input_boolean.vmc_master_spia_velocita_0
+                        action: input_boolean.turn_on
+                      - data: {}
+                        target:
+                          entity_id:
+                            - input_boolean.vmc_master_spia_velocita_1
+                            - input_boolean.vmc_master_spia_velocita_2
+                            - input_boolean.vmc_master_spia_velocita_3
+                            - input_boolean.vmc_master_spia_velocita_4
+                            - input_boolean.vmc_master_spia_velocita_notturna
+                            - input_boolean.vmc_master_spia_velocita_iperventilazione
+                            - input_boolean.vmc_master_spia_velocita_freecooling
+                        action: input_boolean.turn_off
+                  - alias: >-
+                      Velocità 0 non confermata perché la VMC risponde al ping ma la sua velocità non si legge (ripetizione finita
+                      per la lettura persa, senza Black-Out) -> Spia Comando non eseguito del Calendario ON: appena la VMC torna a
+                      rispondere la Velocità 0 viene ripetuta, salvo se nel frattempo la velocità è cambiata
+                    if:
+                      - condition: template
+                        value_template: "{{ (is_state('sensor.vmc_master_status_ventola', 'unavailable') and (now() - states.sensor.vmc_master_status_ventola.last_changed).total_seconds() >= states('input_number.vmc_master_attesa_blackout_rilevazione') | int(32)) and is_state('sensor.vmc_master_status_ip_interfaccia', 'ON-Line') and not is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 0' }}"
+                    then:
+                      - action: input_boolean.turn_on
+                        target:
+                          entity_id: input_boolean.vmc_master_spia_calendario_comando_non_eseguito
                 alias: se Spia Congelamento Off e Spia Delta Temp Off
               - conditions:
                   - alias: se Spia Congelamento ON o Spia Delta Temp ON
@@ -19246,6 +19323,36 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_spia_calendario_black_out
             action: input_boolean.turn_off
+          - alias: >-
+              Velocità della VMC non ancora leggibile (lettura TCP assente) con la Spia di una Fascia accesa -> Spia Black-Out
+              del Calendario di nuovo ON: la Fascia riparte con il ritorno dopo un Black-Out, cioè quando la velocità è di nuovo
+              leggibile da almeno il tempo di ripristino del Black-Out (a riallineamento al riavvio finito)
+            if:
+              - condition: template
+                value_template: >-
+                  {{ states('sensor.vmc_master_status_ventola') in ['unavailable', 'unknown', '']
+                  and (
+                  states('input_boolean.vmc_master_spia_calendario_lunedi_1') == 'on' or
+                  states('input_boolean.vmc_master_spia_calendario_martedi_1') == 'on' or
+                  states('input_boolean.vmc_master_spia_calendario_mercoledi_1') == 'on' or
+                  states('input_boolean.vmc_master_spia_calendario_giovedi_1') == 'on' or
+                  states('input_boolean.vmc_master_spia_calendario_venerdi_1') == 'on' or
+                  states('input_boolean.vmc_master_spia_calendario_sabato_1') == 'on' or
+                  states('input_boolean.vmc_master_spia_calendario_domenica_1') == 'on' or
+                  states('input_boolean.vmc_master_spia_calendario_lunedi_2') == 'on' or
+                  states('input_boolean.vmc_master_spia_calendario_martedi_2') == 'on' or
+                  states('input_boolean.vmc_master_spia_calendario_mercoledi_2') == 'on' or
+                  states('input_boolean.vmc_master_spia_calendario_giovedi_2') == 'on' or
+                  states('input_boolean.vmc_master_spia_calendario_venerdi_2') == 'on' or
+                  states('input_boolean.vmc_master_spia_calendario_sabato_2') == 'on' or
+                  states('input_boolean.vmc_master_spia_calendario_domenica_2') == 'on'
+                  ) }}
+            then:
+              - data: {}
+                target:
+                  entity_id: input_boolean.vmc_master_spia_calendario_black_out
+                action: input_boolean.turn_on
+              - stop: Ritorno della Fascia lasciato alla Spia Black-Out del Calendario (velocità non ancora leggibile)
           - alias: Interruttore del Calendario acceso, VMC ON-Line e velocità della VMC disponibile
             condition: template
             value_template: >-
@@ -19300,15 +19407,16 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_spia_calendario_comando_non_eseguito
             action: input_boolean.turn_off
-          - alias: Interruttore del Calendario acceso, VMC ON-Line senza Black-Out del Calendario e velocità della VMC disponibile
+          - alias: >-
+              VMC ON-Line senza Black-Out del Calendario e velocità della VMC disponibile (l'interruttore del Calendario serve
+              solo per far ripartire la Fascia: la Velocità 0, o 1, dello spegnimento del Calendario si ripete anche spento)
             condition: template
             value_template: >-
-              {{ states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_calendario') == 'on'
-              and states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line'
+              {{ states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line'
               and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
               and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile' }}
           - choose:
-              - alias: Spia 1° Fascia accesa -> la VMC riparte con la velocità della 1° Fascia
+              - alias: Spia 1° Fascia accesa e interruttore del Calendario acceso -> la VMC riparte con la velocità della 1° Fascia
                 conditions:
                   - condition: template
                     value_template: >-
@@ -19321,6 +19429,10 @@ actions:
                       states('input_boolean.vmc_master_spia_calendario_sabato_1') == 'on' or
                       states('input_boolean.vmc_master_spia_calendario_domenica_1') == 'on'
                       }}
+                  - alias: Interruttore del Calendario acceso
+                    condition: state
+                    entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_calendario
+                    state: "on"
                 sequence:
                   - action: script.vmc_master_calendario_fascia_1_on
                     alias: >-
@@ -19328,7 +19440,7 @@ actions:
                       non ha potuto comandarla (controllo dopo i 5 s dello script, con le letture già aggiornate)
                     data:
                       comando_non_eseguito_dalle: "{{ comando_non_eseguito_dalle }}"
-              - alias: Spia 2° Fascia accesa -> la VMC riparte con la velocità della 2° Fascia
+              - alias: Spia 2° Fascia accesa e interruttore del Calendario acceso -> la VMC riparte con la velocità della 2° Fascia
                 conditions:
                   - condition: template
                     value_template: >-
@@ -19341,6 +19453,10 @@ actions:
                       states('input_boolean.vmc_master_spia_calendario_sabato_2') == 'on' or
                       states('input_boolean.vmc_master_spia_calendario_domenica_2') == 'on'
                       }}
+                  - alias: Interruttore del Calendario acceso
+                    condition: state
+                    entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_calendario
+                    state: "on"
                 sequence:
                   - action: script.vmc_master_calendario_fascia_2_on
                     alias: >-
@@ -19349,11 +19465,12 @@ actions:
                     data:
                       comando_non_eseguito_dalle: "{{ comando_non_eseguito_dalle }}"
               - alias: >-
-                  Nessuna Spia del Calendario accesa (Fascia finita con la Velocità 0 non confermata) -> ripete la
-                  Velocità 0 con lo stesso ciclo della fine della Fascia, salvo se nel frattempo la velocità della VMC è
-                  cambiata; con un'allerta Congelamento o Δ Temp. in corso non fa nulla (comanda l'allerta)
+                  Nessuna Spia del Calendario accesa (Fascia finita, oppure Calendario spento durante la Fascia senza Inquinanti,
+                  con la Velocità 0 non confermata) -> ripete la Velocità 0 con lo stesso ciclo della fine della Fascia, salvo se
+                  nel frattempo la velocità della VMC è cambiata; con un'allerta Congelamento o Δ Temp. in corso non fa nulla
+                  (il ritorno aspetta la fine dell'allerta)
                 conditions:
-                  - alias: Nessuna Spia del Calendario accesa (la Fascia è finita)
+                  - alias: Nessuna Spia del Calendario accesa (Fascia finita o Calendario spento durante la Fascia)
                     condition: template
                     value_template: >-
                       {{
@@ -19391,6 +19508,13 @@ actions:
                       {{ lettura | length > 1 and codici.get(lettura[1], 'Non disponibile') == states('sensor.vmc_master_status_ventola_lettura_codice_interpretato')
                       and states.sensor.vmc_master_status_ventola_lettura_codice_interpretato is not none
                       and as_timestamp(states.sensor.vmc_master_status_ventola_lettura_codice_interpretato.last_changed, 0) <= comando_non_eseguito_dalle | float(0) }}
+                  - alias: >-
+                      Nessuna memoria Inquinanti della partenza da Velocità 0 (con la memoria accesa si ripete la Velocità 1,
+                      opzione seguente)
+                    condition: template
+                    value_template: >-
+                      {{ not (states('input_boolean.vmc_master_spia_co2_o_voc') == 'on'
+                      and states('input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0') == 'on') }}
                 sequence:
                   - variables:
                       vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
@@ -19452,10 +19576,120 @@ actions:
                       - action: input_boolean.turn_on
                         target:
                           entity_id: input_boolean.vmc_master_spia_calendario_comando_non_eseguito
+              - alias: >-
+                  Nessuna Spia del Calendario accesa con la memoria Inquinanti della partenza da Velocità 0 (Calendario spento
+                  durante la Fascia con gli Inquinanti presenti e Velocità 1 non confermata) -> ripete la Velocità 1 con lo stesso
+                  ciclo dello spegnimento del Calendario, salvo se nel frattempo la velocità della VMC è cambiata; al rientro
+                  degli Inquinanti la VMC torna a Velocità 0
+                conditions:
+                  - alias: Nessuna Spia del Calendario accesa (Fascia finita o Calendario spento durante la Fascia)
+                    condition: template
+                    value_template: >-
+                      {{
+                      states('input_boolean.vmc_master_spia_calendario_lunedi_1') == 'off' and
+                      states('input_boolean.vmc_master_spia_calendario_martedi_1') == 'off' and
+                      states('input_boolean.vmc_master_spia_calendario_mercoledi_1') == 'off' and
+                      states('input_boolean.vmc_master_spia_calendario_giovedi_1') == 'off' and
+                      states('input_boolean.vmc_master_spia_calendario_venerdi_1') == 'off' and
+                      states('input_boolean.vmc_master_spia_calendario_sabato_1') == 'off' and
+                      states('input_boolean.vmc_master_spia_calendario_domenica_1') == 'off' and
+                      states('input_boolean.vmc_master_spia_calendario_lunedi_2') == 'off' and
+                      states('input_boolean.vmc_master_spia_calendario_martedi_2') == 'off' and
+                      states('input_boolean.vmc_master_spia_calendario_mercoledi_2') == 'off' and
+                      states('input_boolean.vmc_master_spia_calendario_giovedi_2') == 'off' and
+                      states('input_boolean.vmc_master_spia_calendario_venerdi_2') == 'off' and
+                      states('input_boolean.vmc_master_spia_calendario_sabato_2') == 'off' and
+                      states('input_boolean.vmc_master_spia_calendario_domenica_2') == 'off'
+                      }}
+                  - alias: Congelamento Assente e Delta Temperatura Assente
+                    condition: template
+                    value_template: >-
+                      {{ states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia') == 'off'
+                      and states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia') == 'off' }}
+                  - alias: >-
+                      Velocità della VMC non cambiata da quando la Velocità 1 non è stata confermata (una velocità scelta,
+                      per esempio con il telecomando, si rispetta): la lettura appena tornata dà ancora la velocità
+                      memorizzata e questa non è cambiata dopo l'accensione della Spia Comando non eseguito (stesso
+                      controllo dello script della Fascia; senza i suoi 5 s le letture derivate possono non essere ancora
+                      aggiornate, per questo si confronta anche la lettura appena tornata)
+                    condition: template
+                    value_template: >-
+                      {% set codici = {'00000': 'Velocità 0', '00001': 'Velocità 1', '00002': 'Velocità 2', '00003': 'Velocità 3',
+                      '00004': 'Velocità 4', '00005': 'Iperventilazione', '00006': 'Notturna', '00007': 'Free Cooling'} %}
+                      {% set lettura = states('sensor.vmc_master_status_ventola').split(',') %}
+                      {{ lettura | length > 1 and codici.get(lettura[1], 'Non disponibile') == states('sensor.vmc_master_status_ventola_lettura_codice_interpretato')
+                      and states.sensor.vmc_master_status_ventola_lettura_codice_interpretato is not none
+                      and as_timestamp(states.sensor.vmc_master_status_ventola_lettura_codice_interpretato.last_changed, 0) <= comando_non_eseguito_dalle | float(0) }}
+                  - alias: Memoria Inquinanti della partenza da Velocità 0 accesa (Velocità 1 fino al rientro degli Inquinanti)
+                    condition: template
+                    value_template: >-
+                      {{ states('input_boolean.vmc_master_spia_co2_o_voc') == 'on'
+                      and states('input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0') == 'on' }}
+                sequence:
+                  - variables:
+                      vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
+                    alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
+                  - alias: Imposta Velocità 1 a Causa dell'Inquinamento presente
+                    repeat:
+                      sequence:
+                        - data: {}
+                          action: shell_command.vmc_master_velocita_1
+                        - delay:
+                            hours: 0
+                            minutes: 0
+                            seconds: 1
+                            milliseconds: 0
+                        - action: homeassistant.update_entity
+                          target:
+                            entity_id: sensor.vmc_master_status_ventola
+                          alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
+                        - delay:
+                            hours: 0
+                            minutes: 0
+                            seconds: 3
+                            milliseconds: 0
+                      until:
+                        - alias: Velocità raggiunta, scelta dall'utente, Black-Out rilevato oppure lettura della velocità persa per il tempo di rilevazione del Black-Out
+                          condition: template
+                          value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 1' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') or (is_state('sensor.vmc_master_status_ventola', 'unavailable') and (now() - states.sensor.vmc_master_status_ventola.last_changed).total_seconds() >= states('input_number.vmc_master_attesa_blackout_rilevazione') | int(32)) }}"
+                  - alias: >-
+                      Black-Out prima della conferma -> memorizza la Velocità 1 per il ripristino dopo il Black-Out (Priorità 7),
+                      anche con la VMC già OFF-Line ma il Black-Out non ancora rilevato (il ciclo esce prima per la lettura persa)
+                    if:
+                      - condition: template
+                        value_template: "{{ (is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') or (is_state('sensor.vmc_master_status_ip_interfaccia', 'OFF-Line') and (is_state('sensor.vmc_master_status_ventola', 'unavailable') and (now() - states.sensor.vmc_master_status_ventola.last_changed).total_seconds() >= states('input_number.vmc_master_attesa_blackout_rilevazione') | int(32)))) and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 1' }}"
+                    then:
+                      - data: {}
+                        target:
+                          entity_id: input_boolean.vmc_master_spia_velocita_1
+                        action: input_boolean.turn_on
+                      - data: {}
+                        target:
+                          entity_id:
+                            - input_boolean.vmc_master_spia_velocita_0
+                            - input_boolean.vmc_master_spia_velocita_2
+                            - input_boolean.vmc_master_spia_velocita_3
+                            - input_boolean.vmc_master_spia_velocita_4
+                            - input_boolean.vmc_master_spia_velocita_notturna
+                            - input_boolean.vmc_master_spia_velocita_iperventilazione
+                            - input_boolean.vmc_master_spia_velocita_freecooling
+                        action: input_boolean.turn_off
+                  - alias: >-
+                      Velocità 1 non confermata perché la VMC risponde al ping ma la sua velocità non si legge (ripetizione finita
+                      per la lettura persa, senza Black-Out) -> Spia Comando non eseguito del Calendario ON: appena la VMC torna a
+                      rispondere la Velocità 1 viene ripetuta, salvo se nel frattempo la velocità è cambiata
+                    if:
+                      - condition: template
+                        value_template: "{{ (is_state('sensor.vmc_master_status_ventola', 'unavailable') and (now() - states.sensor.vmc_master_status_ventola.last_changed).total_seconds() >= states('input_number.vmc_master_attesa_blackout_rilevazione') | int(32)) and is_state('sensor.vmc_master_status_ip_interfaccia', 'ON-Line') and not is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 1' }}"
+                    then:
+                      - action: input_boolean.turn_on
+                        target:
+                          entity_id: input_boolean.vmc_master_spia_calendario_comando_non_eseguito
         alias: >-
           Calendario - VMC di nuovo in grado di rispondere dopo un comando del Calendario non eseguito: la VMC riparte
-          con la velocità della Fascia in corso oppure, se la Fascia è finita, torna a Velocità 0, salvo se nel frattempo
-          la velocità è cambiata
+          con la velocità della Fascia in corso oppure, se la Fascia è finita o il Calendario è stato spento durante la
+          Fascia, torna a Velocità 0 (Velocità 1 con gli Inquinanti), salvo se nel frattempo la velocità è cambiata;
+          con un'allerta Congelamento o Δ Temp. aspetta la fine dell'allerta
       - conditions:
           - condition: trigger
             id: 1° Lunedì On
@@ -29955,7 +30189,8 @@ actions:
         sequence:
           - alias: >-
               Calendario in transizione (fascia finita o iniziata durante Congelamento, anche una fascia di un altro giorno finita
-              prima della mezzanotte) -> nessuna ripresa, decide il Calendario (C1/C2)
+              prima della mezzanotte) -> nessuna ripresa, decide il Calendario (C1/C2); altrimenti, con un comando del Calendario
+              in sospeso (Spia Comando non eseguito del Calendario accesa), nessuna ripresa: decide il ritorno della VMC
             if:
               - condition: template
                 value_template: >-
@@ -29973,6 +30208,12 @@ actions:
                   {% for d in ['lunedi','martedi','mercoledi','giovedi','venerdi','sabato','domenica'] if d != g %}{% set altro.sp = altro.sp or is_state('input_boolean.vmc_master_spia_calendario_' ~ d ~ '_1', 'on') or is_state('input_boolean.vmc_master_spia_calendario_' ~ d ~ '_2', 'on') %}{% endfor %}
                   {{ altro.sp or (sp1 and not in1) or (sp2 and not in2) or (cal and ok1 and in1 and not sp1) or (cal and ok2 and in2 and not sp2) }}
             then:
+              - alias: >-
+                  Spia Comando non eseguito del Calendario OFF: il comando lo rifà il Calendario (la fascia finita o iniziata
+                  comanda da sé la VMC)
+                action: input_boolean.turn_off
+                target:
+                  entity_id: input_boolean.vmc_master_spia_calendario_comando_non_eseguito
               - action: input_boolean.turn_off
                 target:
                   entity_id:
@@ -29986,6 +30227,37 @@ actions:
                     - input_boolean.vmc_master_spia_velocita_notturna_congelamento
                     - input_boolean.vmc_master_spia_velocita_freecooling_congelamento
               - stop: Ripresa lasciata al Calendario
+            else:
+              - alias: >-
+                  Comando del Calendario in sospeso (Spia Comando non eseguito del Calendario accesa: velocità della Fascia,
+                  Velocità 0 di fine Fascia o comando dello spegnimento del Calendario durante la Fascia non confermati perché
+                  la velocità non si leggeva) -> nessuna ripresa: la Spia si spegne e si riaccende, così il ritorno della VMC,
+                  che aspetta la fine dell'allerta, riparte adesso e conta come velocità cambiata solo una scelta fatta da qui
+                  in poi (la velocità comandata dall'allerta non ferma il comando del Calendario)
+                if:
+                  - condition: state
+                    entity_id: input_boolean.vmc_master_spia_calendario_comando_non_eseguito
+                    state: "on"
+                then:
+                  - action: input_boolean.turn_off
+                    target:
+                      entity_id: input_boolean.vmc_master_spia_calendario_comando_non_eseguito
+                  - action: input_boolean.turn_on
+                    target:
+                      entity_id: input_boolean.vmc_master_spia_calendario_comando_non_eseguito
+                  - action: input_boolean.turn_off
+                    target:
+                      entity_id:
+                        - input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia
+                        - input_boolean.vmc_master_spia_velocita_0_congelamento
+                        - input_boolean.vmc_master_spia_velocita_1_congelamento
+                        - input_boolean.vmc_master_spia_velocita_2_congelamento
+                        - input_boolean.vmc_master_spia_velocita_3_congelamento
+                        - input_boolean.vmc_master_spia_velocita_4_congelamento
+                        - input_boolean.vmc_master_spia_velocita_iperventilazione_congelamento
+                        - input_boolean.vmc_master_spia_velocita_notturna_congelamento
+                        - input_boolean.vmc_master_spia_velocita_freecooling_congelamento
+                  - stop: Ripresa lasciata al Calendario (comando del Calendario in sospeso)
           - alias: Ripristino Velocità
             choose:
               - conditions:
@@ -34935,7 +35207,8 @@ actions:
         sequence:
           - alias: >-
               Calendario in transizione (fascia finita o iniziata durante Δ Temp., anche una fascia di un altro giorno finita
-              prima della mezzanotte) -> nessuna ripresa, decide il Calendario (C1/C2)
+              prima della mezzanotte) -> nessuna ripresa, decide il Calendario (C1/C2); altrimenti, con un comando del Calendario
+              in sospeso (Spia Comando non eseguito del Calendario accesa), nessuna ripresa: decide il ritorno della VMC
             if:
               - condition: template
                 value_template: >-
@@ -34953,6 +35226,12 @@ actions:
                   {% for d in ['lunedi','martedi','mercoledi','giovedi','venerdi','sabato','domenica'] if d != g %}{% set altro.sp = altro.sp or is_state('input_boolean.vmc_master_spia_calendario_' ~ d ~ '_1', 'on') or is_state('input_boolean.vmc_master_spia_calendario_' ~ d ~ '_2', 'on') %}{% endfor %}
                   {{ altro.sp or (sp1 and not in1) or (sp2 and not in2) or (cal and ok1 and in1 and not sp1) or (cal and ok2 and in2 and not sp2) }}
             then:
+              - alias: >-
+                  Spia Comando non eseguito del Calendario OFF: il comando lo rifà il Calendario (la fascia finita o iniziata
+                  comanda da sé la VMC)
+                action: input_boolean.turn_off
+                target:
+                  entity_id: input_boolean.vmc_master_spia_calendario_comando_non_eseguito
               - action: input_boolean.turn_off
                 target:
                   entity_id:
@@ -34966,6 +35245,37 @@ actions:
                     - input_boolean.vmc_master_spia_velocita_notturna_delta_temp_verifica_soglia_valore
                     - input_boolean.vmc_master_spia_velocita_freecooling_delta_temp_verifica_soglia_valore
               - stop: Ripresa lasciata al Calendario
+            else:
+              - alias: >-
+                  Comando del Calendario in sospeso (Spia Comando non eseguito del Calendario accesa: velocità della Fascia,
+                  Velocità 0 di fine Fascia o comando dello spegnimento del Calendario durante la Fascia non confermati perché
+                  la velocità non si leggeva) -> nessuna ripresa: la Spia si spegne e si riaccende, così il ritorno della VMC,
+                  che aspetta la fine dell'allerta, riparte adesso e conta come velocità cambiata solo una scelta fatta da qui
+                  in poi (la velocità comandata dall'allerta non ferma il comando del Calendario)
+                if:
+                  - condition: state
+                    entity_id: input_boolean.vmc_master_spia_calendario_comando_non_eseguito
+                    state: "on"
+                then:
+                  - action: input_boolean.turn_off
+                    target:
+                      entity_id: input_boolean.vmc_master_spia_calendario_comando_non_eseguito
+                  - action: input_boolean.turn_on
+                    target:
+                      entity_id: input_boolean.vmc_master_spia_calendario_comando_non_eseguito
+                  - action: input_boolean.turn_off
+                    target:
+                      entity_id:
+                        - input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia
+                        - input_boolean.vmc_master_spia_velocita_0_delta_temp_verifica_soglia_valore
+                        - input_boolean.vmc_master_spia_velocita_1_delta_temp_verifica_soglia_valore
+                        - input_boolean.vmc_master_spia_velocita_2_delta_temp_verifica_soglia_valore
+                        - input_boolean.vmc_master_spia_velocita_3_delta_temp_verifica_soglia_valore
+                        - input_boolean.vmc_master_spia_velocita_4_delta_temp_verifica_soglia_valore
+                        - input_boolean.vmc_master_spia_velocita_iperventilazione_delta_temp_verifica_soglia_valore
+                        - input_boolean.vmc_master_spia_velocita_notturna_delta_temp_verifica_soglia_valore
+                        - input_boolean.vmc_master_spia_velocita_freecooling_delta_temp_verifica_soglia_valore
+                  - stop: Ripresa lasciata al Calendario (comando del Calendario in sospeso)
           - variables:
               vel_fine_delta: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
               memoria_inquinanti_fine_delta: "{{ {'Velocità 0': 'input_boolean.vmc_master_spia_velocita_0_co2_o_voc', 'Velocità 2': 'input_boolean.vmc_master_spia_velocita_2_co2_o_voc', 'Velocità 3': 'input_boolean.vmc_master_spia_velocita_3_co2_o_voc', 'Velocità 4': 'input_boolean.vmc_master_spia_velocita_4_co2_o_voc', 'Notturna': 'input_boolean.vmc_master_spia_velocita_notturna_co2_o_voc', 'Iperventilazione': 'input_boolean.vmc_master_spia_velocita_iperventilazione_co2_o_voc', 'Free Cooling': 'input_boolean.vmc_master_spia_velocita_freecooling_co2_o_voc'}.get(vel_fine_delta, '') }}"

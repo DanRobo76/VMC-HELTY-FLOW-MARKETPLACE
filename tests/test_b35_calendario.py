@@ -313,7 +313,10 @@ def _ritorno(hass, tcp: str = "VMGO,00001", lettura: str = "Velocità 1", lettur
     for entita, stato in stati.items():
         hass.states.async_set(entita, stato)
     (trigger,) = [t for t in _automazione()["triggers"] if t.get("id") == "calendario_ritorno_comando"]
-    assert _render(hass, trigger["value_template"]) == "True"
+    # b36 (C1-3): con Congelamento o Δ Temp. in corso il trigger non scatta (il ritorno aspetta la fine dell'allerta);
+    # il ramo resta comunque senza comandi se l'evento era gia' in coda
+    allerta = "on" in (stati.get(GELO), stati.get(DELTA))
+    assert _render(hass, trigger["value_template"]) == ("False" if allerta else "True")
     return _nuovo_esito(), {}
 
 
@@ -340,7 +343,7 @@ async def test_c1_1b_ritorno_della_vmc_a_fascia_finita_ripete_la_velocita_0(hass
         ("velocità tornata uguale dopo la spia", {"lettura_fa": 10}),
         ("Congelamento in corso", {GELO: "on"}),
         ("Δ Temp. in corso", {DELTA: "on"}),
-        ("interruttore del Calendario spento", {INTERRUTTORE: "off"}),
+        # b36 (C1-5): con l'interruttore del Calendario spento la Velocita' 0 ora si ripete (tests/test_b36_calendario.py)
         ("VMC OFF-Line", {IP: "OFF-Line"}),
         ("Black-Out del Calendario", {SPIA_BO: "on"}),
     ],
@@ -389,7 +392,7 @@ def test_c1_1b_struttura_del_ramo_del_ritorno() -> None:
     dati = _automazione()
     passi = _ramo_ritorno()["sequence"]
     (scelta,) = passi[3:]
-    assert len(scelta["choose"]) == 3 and "default" not in scelta
+    assert len(scelta["choose"]) == 4 and "default" not in scelta  # b36 (C1-5): quarta opzione, Velocita' 1
     terza = scelta["choose"][2]
     assert " ".join(terza["conditions"][0]["value_template"].split()) == "{{ " + " and ".join(
         f"states('input_boolean.vmc_master_spia_calendario_{g}_{n}') == 'off'" for n in (1, 2) for g in GIORNI) + " }}"

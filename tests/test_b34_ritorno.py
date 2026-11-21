@@ -149,6 +149,9 @@ def test_trigger_senza_attesa_e_con_la_copia_in_evento_ancora_valido() -> None:
     ],
 )
 async def test_condizione_del_trigger(hass, spia, tcp, fase, atteso) -> None:
+    for allerta in ("input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia",
+                    "input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia"):
+        hass.states.async_set(allerta, "off")  # b36 (C1-3): il ritorno aspetta la fine di Congelamento e Δ Temp.
     hass.states.async_set(SPIA, spia)
     hass.states.async_set(TCP, tcp)
     hass.states.async_set(FASE, fase)
@@ -163,11 +166,16 @@ def test_ramo_spegne_la_spia_e_rilancia_lo_script_della_fascia_accesa() -> None:
     assert passi[1]["action"] == "input_boolean.turn_off" and passi[1]["target"] == {"entity_id": SPIA}
     assert passi[2]["condition"] == "template"
     (scelta,) = passi[3:]
-    assert len(scelta["choose"]) == 3  # b35 (C1-1): la terza opzione ripete la Velocita' 0 di fine Fascia
+    # b35 (C1-1): la terza opzione ripete la Velocita' 0 di fine Fascia; b36 (C1-5): la quarta la Velocita' 1 dello
+    # spegnimento del Calendario con gli Inquinanti
+    assert len(scelta["choose"]) == 4
     for n, opzione in zip((1, 2), scelta["choose"]):
         modello = " ".join(opzione["conditions"][0]["value_template"].split())
         assert modello == "{{ " + " or ".join(
             f"states('input_boolean.vmc_master_spia_calendario_{g}_{n}') == 'on'" for g in GIORNI) + " }}"
+        # b36 (C1-5): l'interruttore del Calendario serve solo per far ripartire la Fascia
+        assert opzione["conditions"][1] == {"alias": "Interruttore del Calendario acceso", "condition": "state",
+                                            "entity_id": INTERRUTTORE, "state": "on"}
         (chiamata,) = opzione["sequence"]
         assert chiamata["action"] == f"script.vmc_master_calendario_fascia_{n}_on"
         assert chiamata["data"] == {"comando_non_eseguito_dalle": "{{ comando_non_eseguito_dalle }}"}
@@ -179,7 +187,9 @@ def test_ramo_spegne_la_spia_e_rilancia_lo_script_della_fascia_accesa() -> None:
     ("interruttore", "ip", "bo", "interfaccia", "atteso"),
     [
         ("on", "ON-Line", "off", "Velocità 0", "True"),
-        ("off", "ON-Line", "off", "Velocità 0", "False"),  # Calendario spento nel frattempo
+        # b36 (C1-5): con il Calendario spento la Fascia non riparte (condizione nelle opzioni della Fascia), ma la
+        # Velocita' 0 (o 1) dello spegnimento del Calendario si ripete
+        ("off", "ON-Line", "off", "Velocità 0", "True"),
         ("on", "OFF-Line", "off", "Velocità 0", "False"),
         ("on", "ON-Line", "on", "Velocità 0", "False"),  # Black-Out in Fascia: riparte con la Spia Black-Out
         ("on", "ON-Line", "off", "Non disponibile", "False"),

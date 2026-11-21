@@ -30634,6 +30634,7 @@ automation:
           {{ (
             states('input_boolean.vmc_master_spia_calendario_black_out') == 'on'
             and states('sensor.vmc_master_status_ip_interfaccia') == "ON-Line"
+            and states('sensor.vmc_master_status_ventola') not in ['unavailable', 'unknown', '']
           ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       - trigger: template
         id: "OFF|blackout_ripristino|blackout_ripristino|Calendario - VMC di nuovo ON-Line dopo un Black-Out"
@@ -30642,6 +30643,7 @@ automation:
           {{ (
             states('input_boolean.vmc_master_spia_calendario_black_out') == 'on'
             and states('sensor.vmc_master_status_ip_interfaccia') == "ON-Line"
+            and states('sensor.vmc_master_status_ventola') not in ['unavailable', 'unknown', '']
           ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
           {%- endset -%}
           {%- set vmc_master_esito = vmc_master_esito | trim | lower -%}
