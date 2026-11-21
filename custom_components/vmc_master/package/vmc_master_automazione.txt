@@ -14265,6 +14265,16 @@ actions:
               vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
             alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
           - alias: >-
+              Velocità 1 dell'allerta Umidità con la Free sospesa [Nota 3] (non è una scelta dell'utente; lo è con
+              [Set Velocità Umidità di Avvio] su Velocità 0, regola 21-11-2026) -> è già la velocità di fine allerta:
+              la VMC resta a Velocità 1, la ripresa Free resta in attesa e a fine Umidità la VMC torna a Velocità 0
+              [Foglio Logiche F6, B15, G15, B19, G19, Nota 2, Nota 3, A21]
+            if:
+              - condition: template
+                value_template: "{{ vel_prima_del_comando == 'Velocità 1' and states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia') == 'on' and states('input_select.vmc_master_speed_umidita') != 'Velocità 0' and (states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling') == 'on' or states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating') == 'on') }}"
+            then:
+              - stop: "Velocità 1 dell'allerta Umidità con la Free sospesa mantenuta [Nota 3]: la ripresa Free resta in attesa"
+          - alias: >-
               Velocità cambiata dall'utente durante l'allerta PdR e non ancora memorizzata (allerta finita prima del tempo
               di memorizzazione) -> resta la velocità scelta, che diventa quella di fine allerta [Foglio Logiche F6]
             if:
