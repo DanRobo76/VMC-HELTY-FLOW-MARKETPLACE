@@ -3974,6 +3974,8 @@ triggers:
       {{ (
       (
         states('input_boolean.vmc_master_spia_co2_o_voc') == 'on'
+        and (states('sensor.vmc_master_alert_monitoraggio_co2') == 'Allerta'
+         or states('sensor.vmc_master_alert_monitoraggio_voc') == 'Allerta')
         and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0'
         and states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia') == 'off'
         and states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia') == 'off'
@@ -9056,6 +9058,8 @@ actions:
       {{ (
       (
         states('input_boolean.vmc_master_spia_co2_o_voc') == 'on'
+        and (states('sensor.vmc_master_alert_monitoraggio_co2') == 'Allerta'
+         or states('sensor.vmc_master_alert_monitoraggio_voc') == 'Allerta')
         and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0'
         and states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia') == 'off'
         and states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia') == 'off'

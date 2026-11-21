@@ -6,6 +6,12 @@ e il ritorno della corrente (simulatore con Home Assistant vero, scenari bo_a.py
   velocità sbagliata, Velocità Registrata «Nessuna» nel frattempo). Ora quei rami valgono solo se l'allerta PdR non è più
   in corso (allerta finita durante il Black-Out o mentre stava finendo): con l'allerta in corso la VMC resta a Velocità 0
   e la memoria PdR resta per la fine dell'allerta.
+- Trigger «spia_velocita_0_inquinanti_co2_voc» (ripartenza a Velocità 1 della VMC ferma con gli Inquinanti): guardava la
+  spia dell'allerta Inquinanti, che resta accesa fino al ramo di fine Inquinanti. Con gli Inquinanti finiti durante un
+  Black-Out e la VMC ferma (per esempio dopo la fine di una fascia del Calendario) dopo il ripristino scattava insieme a
+  «inquinanti_co2_voc_off»: la VMC andava a Velocità 1 per 4-8 s con gli Inquinanti già finiti (segnalazione dell'agente
+  B, scenario E|CQ|v0|out). Ora il trigger (e le sue copie) chiede anche che CO₂ o VOC siano ancora in allerta, come il
+  trigger di inizio Inquinanti (Foglio: «GLI INQUINANTI ANCORA PRESENTI, CHE RIAVVIANO A VELOCITA' 1»).
 """
 
 from __future__ import annotations
@@ -25,10 +31,17 @@ from tests.test_b35_allerte import (
     PARTENZA,
     SCONSIGLIATO,
     SPIA_CO2,
+    SPIA_DELTA,
     SUFFISSI,
     V1_PDR,
+    _copia_guardia,
+    _copie_countdown,
+    _imposta,
+    _norm,
     _ramo,
+    _render,
     _spente,
+    _trigger,
 )
 from tests.test_b36_allerte import _esegui, _stato
 
@@ -95,3 +108,48 @@ async def test_pdr_ancora_in_corso_vmc_non_ferma_va_a_velocita_0(hass: HomeAssis
     """Se alla riaccensione la VMC non è ferma, con il PdR in corso va a Velocità 0 (ramo senza memoria)."""
     comandi = await _esegui(hass, _ramo(TID_BO_OFF_0)["sequence"], _stati("3", **{LETTURA: "Velocità 1"}), attesa=1.0)
     assert comandi[:1] == ["vmc_master_velocita_0"]
+
+
+TID_RIPARTENZA = "spia_velocita_0_inquinanti_co2_voc"
+ALLERTA_CO2 = "sensor.vmc_master_alert_monitoraggio_co2"
+ALLERTA_VOC = "sensor.vmc_master_alert_monitoraggio_voc"
+INQUINANTI_IN_ALLERTA = ("and (states('sensor.vmc_master_alert_monitoraggio_co2') == 'Allerta' "
+                         "or states('sensor.vmc_master_alert_monitoraggio_voc') == 'Allerta')")
+
+
+def test_ripartenza_inquinanti_da_velocita_0_con_l_allerta_in_corso_in_tutte_le_copie() -> None:
+    """Il trigger (con «for») e le sue 3 copie: guardia «Evento ancora valido» e Countdown Attese ON/OFF del package."""
+    trigger = _trigger(TID_RIPARTENZA)
+    assert "for" in trigger
+    modello = _norm(trigger["value_template"])
+    assert modello.count(INQUINANTI_IN_ALLERTA) == 1
+    assert _norm(_copia_guardia(TID_RIPARTENZA)) == modello
+    acceso, spento = _copie_countdown(TID_RIPARTENZA)
+    assert _norm(acceso) == modello
+    assert _norm(spento).count(modello) == 1
+
+
+def _stati_ripartenza(**altri: str) -> dict[str, str]:
+    stati = {SPIA_CO2: "on", LETTURA: "Velocità 0", LETTURA_I: "Velocità 0", IP: "ON-Line", FASE: "0", SPIA_GELO: "off",
+             SPIA_DELTA: "off", **_spente(BLACK_OUT), ALLERTA_CO2: "Allerta", ALLERTA_VOC: "Nessuna Allerta"}
+    stati.update(altri)
+    return stati
+
+
+@pytest.mark.parametrize(
+    ("altri", "atteso"),
+    [
+        ({}, True),  # Inquinanti in corso con la VMC ferma: riparte a Velocità 1 (come prima)
+        ({ALLERTA_CO2: "Nessuna Allerta", ALLERTA_VOC: "Allerta"}, True),
+        ({ALLERTA_CO2: "Nessuna Allerta"}, False),  # finiti (per esempio durante il Black-Out): solo la fine Inquinanti
+        ({SPIA_CO2: "off"}, False),
+        ({LETTURA: "Velocità 2"}, False),
+    ],
+)
+async def test_ripartenza_inquinanti_da_velocita_0_reso(hass: HomeAssistant, altri: dict[str, str], atteso: bool) -> None:
+    _imposta(hass, _stati_ripartenza(**altri))
+    acceso, spento = _copie_countdown(TID_RIPARTENZA)
+    assert _render(hass, _trigger(TID_RIPARTENZA)["value_template"]) is atteso
+    assert _render(hass, _copia_guardia(TID_RIPARTENZA)) is atteso
+    assert _render(hass, acceso) is atteso
+    assert _render(hass, spento) is (not atteso)
