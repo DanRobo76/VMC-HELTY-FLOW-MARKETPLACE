@@ -21660,11 +21660,17 @@ actions:
                               - >-
                                 input_boolean.vmc_master_spia_velocita_2_co2_o_voc
                           action: input_boolean.turn_on
-                        - alias: Memoria del PdR solo con interruttore PdR acceso (correzione R4)
+                        - alias: >-
+                            Memoria del PdR solo con interruttore PdR acceso (correzione R4) e allerta PdR in corso
+                            (senza allerta PdR, per esempio Inquinanti che ripartono dopo un Black-Out, la memoria PdR
+                            farebbe rimandare la velocità dopo 12 s da «Rip. Vel. ... No PdR se Spia Inquinanti ON»)
                           if:
                             - condition: state
                               entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr
                               state: 'on'
+                            - condition: template
+                              value_template: >-
+                                {{ states('sensor.vmc_master_punto_di_rugiada_verifica_confronto') == "Se ne sconsiglia l'impiego" }}
                           then:
                             - action: input_boolean.turn_on
                               target:
@@ -21757,7 +21763,7 @@ actions:
                             'off' and 
 
                             states('input_boolean.vmc_master_spia_velocita_2_un_solo_avvio')==
-                            ('on' if is_state('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr', 'on') else 'off') and 
+                            ('on' if (is_state('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr', 'on') and states('sensor.vmc_master_punto_di_rugiada_verifica_confronto') == "Se ne sconsiglia l'impiego") else 'off') and 
 
                             states('input_boolean.vmc_master_spia_velocita_3_un_solo_avvio')==
                             'off' and 
@@ -21828,11 +21834,17 @@ actions:
                               - >-
                                 input_boolean.vmc_master_spia_velocita_3_co2_o_voc
                           action: input_boolean.turn_on
-                        - alias: Memoria del PdR solo con interruttore PdR acceso (correzione R4)
+                        - alias: >-
+                            Memoria del PdR solo con interruttore PdR acceso (correzione R4) e allerta PdR in corso
+                            (senza allerta PdR, per esempio Inquinanti che ripartono dopo un Black-Out, la memoria PdR
+                            farebbe rimandare la velocità dopo 12 s da «Rip. Vel. ... No PdR se Spia Inquinanti ON»)
                           if:
                             - condition: state
                               entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr
                               state: 'on'
+                            - condition: template
+                              value_template: >-
+                                {{ states('sensor.vmc_master_punto_di_rugiada_verifica_confronto') == "Se ne sconsiglia l'impiego" }}
                           then:
                             - action: input_boolean.turn_on
                               target:
@@ -21928,7 +21940,7 @@ actions:
                             'off' and 
 
                             states('input_boolean.vmc_master_spia_velocita_3_un_solo_avvio')==
-                            ('on' if is_state('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr', 'on') else 'off') and 
+                            ('on' if (is_state('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr', 'on') and states('sensor.vmc_master_punto_di_rugiada_verifica_confronto') == "Se ne sconsiglia l'impiego") else 'off') and 
 
                             states('input_boolean.vmc_master_spia_velocita_4_un_solo_avvio')==
                             'off' and 
@@ -21996,11 +22008,17 @@ actions:
                               - >-
                                 input_boolean.vmc_master_spia_velocita_4_co2_o_voc
                           action: input_boolean.turn_on
-                        - alias: Memoria del PdR solo con interruttore PdR acceso (correzione R4)
+                        - alias: >-
+                            Memoria del PdR solo con interruttore PdR acceso (correzione R4) e allerta PdR in corso
+                            (senza allerta PdR, per esempio Inquinanti che ripartono dopo un Black-Out, la memoria PdR
+                            farebbe rimandare la velocità dopo 12 s da «Rip. Vel. ... No PdR se Spia Inquinanti ON»)
                           if:
                             - condition: state
                               entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr
                               state: 'on'
+                            - condition: template
+                              value_template: >-
+                                {{ states('sensor.vmc_master_punto_di_rugiada_verifica_confronto') == "Se ne sconsiglia l'impiego" }}
                           then:
                             - action: input_boolean.turn_on
                               target:
@@ -22099,7 +22117,7 @@ actions:
                             'off' and 
 
                             states('input_boolean.vmc_master_spia_velocita_4_un_solo_avvio')==
-                            ('on' if is_state('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr', 'on') else 'off') and 
+                            ('on' if (is_state('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr', 'on') and states('sensor.vmc_master_punto_di_rugiada_verifica_confronto') == "Se ne sconsiglia l'impiego") else 'off') and 
 
                             states('input_boolean.vmc_master_spia_velocita_notturna_un_solo_avvio')==
                             'off' and 
@@ -22164,11 +22182,17 @@ actions:
                               - >-
                                 input_boolean.vmc_master_spia_velocita_notturna_co2_o_voc
                           action: input_boolean.turn_on
-                        - alias: Memoria del PdR solo con interruttore PdR acceso (correzione R4)
+                        - alias: >-
+                            Memoria del PdR solo con interruttore PdR acceso (correzione R4) e allerta PdR in corso
+                            (senza allerta PdR, per esempio Inquinanti che ripartono dopo un Black-Out, la memoria PdR
+                            farebbe rimandare la velocità dopo 12 s da «Rip. Vel. ... No PdR se Spia Inquinanti ON»)
                           if:
                             - condition: state
                               entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr
                               state: 'on'
+                            - condition: template
+                              value_template: >-
+                                {{ states('sensor.vmc_master_punto_di_rugiada_verifica_confronto') == "Se ne sconsiglia l'impiego" }}
                           then:
                             - action: input_boolean.turn_on
                               target:
@@ -22270,7 +22294,7 @@ actions:
                             'off' and 
 
                             states('input_boolean.vmc_master_spia_velocita_notturna_un_solo_avvio')==
-                            ('on' if is_state('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr', 'on') else 'off') and 
+                            ('on' if (is_state('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr', 'on') and states('sensor.vmc_master_punto_di_rugiada_verifica_confronto') == "Se ne sconsiglia l'impiego") else 'off') and 
 
                             states('input_boolean.vmc_master_spia_velocita_iperventilazione_un_solo_avvio')==
                             'off' and 
@@ -22332,11 +22356,17 @@ actions:
                               - >-
                                 input_boolean.vmc_master_spia_velocita_iperventilazione_co2_o_voc
                           action: input_boolean.turn_on
-                        - alias: Memoria del PdR solo con interruttore PdR acceso (correzione R4)
+                        - alias: >-
+                            Memoria del PdR solo con interruttore PdR acceso (correzione R4) e allerta PdR in corso
+                            (senza allerta PdR, per esempio Inquinanti che ripartono dopo un Black-Out, la memoria PdR
+                            farebbe rimandare la velocità dopo 12 s da «Rip. Vel. ... No PdR se Spia Inquinanti ON»)
                           if:
                             - condition: state
                               entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr
                               state: 'on'
+                            - condition: template
+                              value_template: >-
+                                {{ states('sensor.vmc_master_punto_di_rugiada_verifica_confronto') == "Se ne sconsiglia l'impiego" }}
                           then:
                             - action: input_boolean.turn_on
                               target:
@@ -22441,7 +22471,7 @@ actions:
                             'off' and 
 
                             states('input_boolean.vmc_master_spia_velocita_iperventilazione_un_solo_avvio')==
-                            ('on' if is_state('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr', 'on') else 'off') and 
+                            ('on' if (is_state('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr', 'on') and states('sensor.vmc_master_punto_di_rugiada_verifica_confronto') == "Se ne sconsiglia l'impiego") else 'off') and 
 
                             states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio')==
                             'off' and 
