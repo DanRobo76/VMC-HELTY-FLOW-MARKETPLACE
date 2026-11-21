@@ -3,8 +3,10 @@ velocita' non si legge, il Calendario smette di ripetere il comando della Fascia
 Black-Out (B1-1) e accende la Spia Comando non eseguito del Calendario; appena la VMC torna a rispondere la Fascia
 riparte (stesso script della Fascia), salvo se nel frattempo la velocita' e' cambiata (per esempio con il
 telecomando): il controllo e' nello script, dopo i suoi 5 s, perche' al ritorno della VMC le letture derivate dal
-sensore TCP possono non essere ancora aggiornate (visto sul vero Home Assistant del simulatore). La spia si spegne all'avvio di ogni Fascia, a fine Fascia (azzeramento delle spie) e al riavvio di
-Home Assistant (initial: false: al riavvio la Fascia non viene rilanciata, decisione B1-4)."""
+sensore TCP possono non essere ancora aggiornate (visto sul vero Home Assistant del simulatore). La spia si spegne all'avvio di ogni Fascia e a fine Fascia (azzeramento delle spie); dalla b36 resta accesa dopo un
+riavvio di Home Assistant (niente initial: false, E1 della verifica dei riavvii) e il comando viene ripetuto a
+riallineamento finito, sempre salvo se la velocita' e' cambiata (la decisione B1-4 resta: nessuna Fascia rilanciata
+senza un comando in sospeso)."""
 
 from __future__ import annotations
 
@@ -63,10 +65,9 @@ def _render(hass, modello: str, variabili: dict[str, Any] | None = None) -> str:
 
 
 # ------------------------------------------------------------------------------------------------ la spia
-def test_spia_definita_spenta_al_riavvio_e_negli_elenchi() -> None:
+def test_spia_definita_ripristinata_al_riavvio_e_negli_elenchi() -> None:
     spia = _pacchetto()["input_boolean"]["vmc_master_spia_calendario_comando_non_eseguito"]
-    assert spia == {"name": "Spia Comando non eseguito all'interno del Calendario", "initial": False,
-                    "icon": "mdi:memory"}
+    assert spia == {"name": "Spia Comando non eseguito all'interno del Calendario", "icon": "mdi:memory"}
     pacchetto = _testo("vmc_master.yaml")
     escluse = pacchetto[pacchetto.index("&vmc_master_entita_escluse_recorder"):]
     assert SPIA in escluse[: escluse.index("\n\n")]
