@@ -6,6 +6,9 @@
 - C4-4: con [Set Velocità Umidità di Avvio] su Velocità 0 e la Free sospesa l'avvio dell'Umidità mandava la VMC a
   Velocità 1 (nota 3): ora vale il Set 0 (la VMC resta ferma, memoria Velocità 0) e a fine Umidità la ripresa Free non
   viene annullata. Lo stesso nei 2 rami TeVsTi e nella fine Inquinanti in Free (R8): Velocità 0 invece della nota 3.
+  Con il Set 0 l'Umidità non dà mai la Velocità 1: con l'Umidità accesa la Velocità 1 vale come scelta dell'utente
+  nella ripresa Free (62/63), nell'annullamento della ripresa (153), nei PdR con la ripresa in attesa (154/156) e nelle
+  condizioni dei Msg. 7, 15 e 15.1 delle schede Free.
 - C4-3: i trigger del PdR con la ripresa Free in attesa (154/156 e gemelli con gli Inquinanti, guardia e Countdown)
   valevano con qualsiasi velocità: ora solo con la VMC a Velocità 0, in Free o a Velocità 1 dell'Umidità (gemelli: 0, 1
   o Free) e, senza Inquinanti, senza una memoria PdR di velocità già accesa.
@@ -17,6 +20,7 @@
 from __future__ import annotations
 
 import asyncio
+import re
 from typing import Any
 
 import pytest
@@ -42,6 +46,7 @@ from tests.test_b35_allerte import (
     MEMORIE_PDR,
     PARTENZA,
     PDR_FREE,
+    RIPRESA,
     SCONSIGLIATO,
     SPIA_CO2,
     SPIA_DELTA,
@@ -58,6 +63,7 @@ from tests.test_b35_allerte import (
     _rami,
     _render,
     _spente,
+    _stati_ripresa,
     _testo,
     _trigger,
 )
@@ -349,7 +355,7 @@ async def test_c4_4_rami_validi_per_home_assistant(hass: HomeAssistant) -> None:
 
 # ------------------------------------------------------------------------------------------------ C4-3
 RIGA_VEL = (f"(states('{LETTURA}') in ['Velocità 0', 'Free Cooling'] or (states('{SPIA_UMIDITA}') == 'on' and "
-            f"states('{LETTURA}') == 'Velocità 1'))")
+            f"states('{SET_UMIDITA}') != 'Velocità 0' and states('{LETTURA}') == 'Velocità 1'))")
 RIGA_VEL_INQ = f"states('{LETTURA}') in ['Velocità 0', 'Velocità 1', 'Free Cooling'] and"
 
 
@@ -619,3 +625,98 @@ async def test_c4_4_fine_inquinanti_in_free_velocita_per_il_black_out(hass: Home
 async def test_c4_4_ovunque_rami_validi_per_home_assistant(hass: HomeAssistant) -> None:
     for tid in (*TEVSTI, "inquinanti_co2_voc_off"):
         cv.SCRIPT_SCHEMA(_ramo(tid)["sequence"])
+
+
+# ------------------------------------------------------------------------------------------------ Set 0: Velocità 1 scelta
+# Con [Set Velocità Umidità di Avvio] su Velocità 0 l'Umidità non porta mai la VMC a Velocità 1: con l'Umidità accesa la
+# Velocità 1 è una scelta dell'utente (annulla la ripresa Free dopo 20 s; nel PdR vale il trigger della velocità).
+TID_ANNULLAMENTO = "Cambio Velocità quanto Spia FreeHeating o FreeCooling è ON - Inquinanti OFF"
+
+
+@pytest.mark.parametrize("tid", list(RIPRESA))
+@pytest.mark.parametrize(
+    ("altri", "atteso"),
+    [
+        ({LETTURA: "Velocità 1", SPIA_UMIDITA: "on", SET_UMIDITA: "Velocità 2"}, True),  # Velocità 1 della nota 3
+        ({LETTURA: "Velocità 1", SPIA_UMIDITA: "on", SET_UMIDITA: "Velocità 0"}, False),  # Velocità 1 scelta
+        ({LETTURA: "Velocità 0", SPIA_UMIDITA: "on", SET_UMIDITA: "Velocità 0"}, True),
+        ({LETTURA: "Free Cooling", SPIA_UMIDITA: "on", SET_UMIDITA: "Velocità 0"}, True),
+    ],
+)
+async def test_set_0_ripresa_free_non_con_la_velocita_1_scelta(hass: HomeAssistant, tid: str, altri: dict[str, str],
+                                                               atteso: bool) -> None:
+    _imposta(hass, _stati_ripresa(RIPRESA[tid], **{INT_PDR: "off", **altri}))
+    assert _rendi_tutte(hass, tid) is atteso
+
+
+def _stati_annullamento(**altri: str) -> dict[str, str]:
+    stati = {FREE_C: "on", FREE_H: "off", LETTURA: "Velocità 1", LETTURA_I: "Velocità 1", SPIA_CO2: "off",
+             PARTENZA: "off", V1_PDR: "off", SPIA_UMIDITA: "on", SET_UMIDITA: "Velocità 0", SPIA_GELO: "off",
+             SPIA_DELTA: "off", IP: "ON-Line", FASE: "0", **_spente(BLACK_OUT)}
+    stati.update(altri)
+    return stati
+
+
+@pytest.mark.parametrize(
+    ("altri", "atteso"),
+    [
+        ({}, True),  # Set 0: la Velocità 1 con l'Umidità accesa e' una scelta, annulla la ripresa
+        ({SET_UMIDITA: "Velocità 2"}, False),  # Velocità 1 della nota 3: niente annullamento, come prima
+        ({SPIA_UMIDITA: "off", SET_UMIDITA: "Velocità 2"}, True),
+        ({LETTURA: "Velocità 2", SET_UMIDITA: "Velocità 2"}, True),
+        ({LETTURA: "Velocità 0"}, False),
+    ],
+)
+async def test_set_0_annullamento_della_ripresa_con_la_velocita_1(hass: HomeAssistant, altri: dict[str, str],
+                                                                  atteso: bool) -> None:
+    _imposta(hass, _stati_annullamento(**altri))
+    assert _rendi_tutte(hass, TID_ANNULLAMENTO) is atteso
+
+
+@pytest.mark.parametrize("tid", list(PDR_FREE))
+@pytest.mark.parametrize(
+    ("altri", "atteso"),
+    [
+        ({LETTURA: "Velocità 1", SPIA_UMIDITA: "on", SET_UMIDITA: "Velocità 2"}, True),
+        ({LETTURA: "Velocità 1", SPIA_UMIDITA: "on", SET_UMIDITA: "Velocità 0"}, False),  # vale «PdR Vel. 1»
+        ({"input_boolean.vmc_master_spia_velocita_1_un_solo_avvio": "on", SPIA_UMIDITA: "on",
+          SET_UMIDITA: "Velocità 2"}, True),
+        ({"input_boolean.vmc_master_spia_velocita_1_un_solo_avvio": "on", SPIA_UMIDITA: "on",
+          SET_UMIDITA: "Velocità 0"}, False),  # memoria PdR Velocità 1 della scelta: a fine PdR torna la Velocità 1
+        ({SPIA_UMIDITA: "on", SET_UMIDITA: "Velocità 0"}, True),
+    ],
+)
+async def test_set_0_pdr_con_la_ripresa_in_attesa_e_la_velocita_1_scelta(hass: HomeAssistant, tid: str,
+                                                                        altri: dict[str, str], atteso: bool) -> None:
+    _imposta(hass, _stati_pdr_free(PDR_FREE[tid], **altri))
+    assert _rendi_tutte(hass, tid) is atteso
+
+
+CONDIZIONE_SCHEDA = (f"is_state('{SPIA_UMIDITA}', 'on') and not is_state('{SET_UMIDITA}', 'Velocità 0') and "
+                     'velocita == "Velocità 1"')
+
+
+def test_set_0_condizioni_dei_messaggi_delle_schede_free() -> None:
+    scheda = _testo("vmc_master_scheda_manuale_interfaccia.txt")
+    assert scheda.count(CONDIZIONE_SCHEDA) == 8  # Msg. 7 (titolo e testo) e Msg. 15/15.1, Free Heating e Cooling
+    assert scheda.count(f"is_state('{SPIA_UMIDITA}', 'on') and velocita") == 0
+
+
+@pytest.mark.parametrize(
+    ("valore_set", "titolo", "ripristino"),
+    [("Velocità 2", "1 PER L'ALLERTA UMIDITÀ", True), ("Velocità 0", "SCELTA DALL'UTENTE", False)],
+)
+async def test_set_0_messaggi_delle_schede_free(hass: HomeAssistant, valore_set: str, titolo: str,
+                                                ripristino: bool) -> None:
+    scheda = _testo("vmc_master_scheda_manuale_interfaccia.txt")
+    _imposta(hass, {SPIA_UMIDITA: "on", SET_UMIDITA: valore_set})
+    titoli = re.findall(r"\{\{ \"1 PER L'ALLERTA UMIDITÀ\" if .+? else \"SCELTA DALL'UTENTE\" \}\}", scheda)
+    assert len(titoli) == 2
+    for modello in titoli:
+        assert _render(hass, modello, {"velocita": "Velocità 1"}) == titolo
+    messaggi = re.findall(r"\{% if (spia_free_(?:heating|cooling) == \"on\" and .+?) %\}RIPRISTINO SULLA VELOCITA'",
+                          scheda)
+    assert len(messaggi) == 4
+    for condizione in messaggi:
+        variabili = {"velocita": "Velocità 1", "spia_free_heating": "on", "spia_free_cooling": "on"}
+        assert _render(hass, "{{ " + condizione + " }}", variabili) is ripristino

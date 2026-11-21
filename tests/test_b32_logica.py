@@ -77,7 +77,9 @@ def test_scelta_durante_la_sospensione_free_con_umidita_annulla_la_ripresa() -> 
     """A3-2: con la Free sospesa e un'allerta Umidita' in corso (VMC a Velocita' 1, Nota 3) una velocita' scelta
     dall'utente e mantenuta 20 secondi annulla la ripresa in Free (Foglio A29), come senza Umidita'. Trigger,
     condizione e 2 copie del Countdown Attese."""
+    # b36: con [Set Velocità Umidità di Avvio] su Velocità 0 conta anche la Velocità 1 (l'Umidità non la dà mai)
     nuova = ("and (states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia') == 'off' or "
+             "states('input_select.vmc_master_speed_umidita') == 'Velocità 0' or "
              "states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 1')")
     assert _automazione().count(nuova) == 2
     assert (PKG / "vmc_master.yaml").read_text(encoding="utf-8").count(nuova) == 2
