@@ -16,6 +16,8 @@ PDR_ECC = ("SE IL PUNTO DI RUGIADA INTERNO O ESTERNO DIVENTA [NON CALCOLABILE] O
            "E LA VMC RIPRENDE COMUNQUE DOPO 16 SECONDI (12 CON INQUINANTI)")
 FREE_ECC = ("salvo la sospensione Free Cool./Heat.: l'Umidità parte comunque a Velocità 1 [Nota 3] e il suo "
             "interruttore non si spegne fino alla ripresa o all'annullamento della Free")
+# b36 (C4-4): con la Set Velocita' Umidita' di Avvio su Velocita' 0 vale il Set (la VMC resta ferma)
+SET0 = "con la [Set Velocità Umidità di Avvio] su Velocità 0 la VMC resta ferma"
 INQ_ECC = "(un'allerta Inquinanti già in corso prima del riavvio può riprendere prima)"
 # b35 (C2-3): anche le eccezioni del 3° gruppo (trigger 155/157 e umidita_velocita_0) sono scritte
 G3_ECC = ("(anche l'avvio a Velocità 1 per Inquinanti durante un'allerta Lim. Δ Punto di Rugiada già in corso prima "
@@ -169,16 +171,16 @@ def test_commenti_non_richiamato() -> None:
 def test_umidita_con_free_sospesa() -> None:
     """A3-4: descrizione dell'automazione, sezione 17 e Informazioni 7 dicono l'eccezione della sospensione Free."""
     descrizione = _piatto(hay.load_yaml(str(PKG / "vmc_master_automazione.txt"))["description"])
-    assert f"Free Cooling/Heating), finché quell'allerta non è finita ({FREE_ECC}). Esempio:" in descrizione
-    assert f"l'allerta Umidità non scatta e l'interruttore si spegne normalmente ({FREE_ECC});" in descrizione
+    assert f"Free Cooling/Heating), finché quell'allerta non è finita ({FREE_ECC}; {SET0}). Esempio:" in descrizione
+    assert f"l'allerta Umidità non scatta e l'interruttore si spegne normalmente ({FREE_ECC}; {SET0});" in descrizione
     scheda = _piatto(_scheda())
     # la sezione 17 della scheda ripete la descrizione
     assert scheda.count(FREE_ECC) == 4
-    assert f"Free Cooling/Heating), finché quell'allerta non è finita ({FREE_ECC}). Esempio:" in scheda
-    assert f"l'interruttore si spegne normalmente ({FREE_ECC});<br>" in scheda
+    assert f"Free Cooling/Heating), finché quell'allerta non è finita ({FREE_ECC}; {SET0}). Esempio:" in scheda
+    assert f"l'interruttore si spegne normalmente ({FREE_ECC}; {SET0});<br>" in scheda
     # Informazioni 7
-    assert f"su ON e senza altre allerte in corso ({FREE_ECC}), comandano l'avvio e l'arresto" in scheda
-    assert f"l'allerta Umidità non scatta e l'interruttore si spegne normalmente ({FREE_ECC})." in scheda
+    assert f"su ON e senza altre allerte in corso ({FREE_ECC}; {SET0}), comandano l'avvio e l'arresto" in scheda
+    assert f"l'allerta Umidità non scatta e l'interruttore si spegne normalmente ({FREE_ECC}; {SET0})." in scheda
 
 
 # ----------------------------------------------------------------------------------------------- A3-12

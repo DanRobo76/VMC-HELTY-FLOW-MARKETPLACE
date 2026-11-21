@@ -427,12 +427,13 @@ async def test_c4_1_pdr_con_ripresa_in_attesa_e_free_favorevole(hass: HomeAssist
 
 
 @pytest.mark.parametrize("tid", list(PDR_FREE))
-async def test_c4_1_pdr_free_sfavorevole_come_prima(hass: HomeAssistant, tid: str) -> None:
+@pytest.mark.parametrize(("letta", "atteso"), [("Velocità 0", True), ("Velocità 2", False)])  # b36 C4-3: solo a 0
+async def test_c4_1_pdr_free_sfavorevole_come_prima(hass: HomeAssistant, tid: str, letta: str, atteso: bool) -> None:
     tipo = PDR_FREE[tid]
     arrestato = ("Allerta Free Cooling Programmato (Riscaldamento Arrestato)" if tipo == "Cooling"
                  else "Allerta Free Heating Programmato (Raffrescamento Arrestato)")
-    _imposta(hass, _stati_pdr_free(tipo, **{FREE: arrestato, LETTURA: "Velocità 2"}))
-    assert _render(hass, _trigger(tid)["value_template"]) is True
+    _imposta(hass, _stati_pdr_free(tipo, **{FREE: arrestato, LETTURA: letta}))
+    assert _render(hass, _trigger(tid)["value_template"]) is atteso
 
 
 # ------------------------------------------------------------------------------------------------ C4-2
