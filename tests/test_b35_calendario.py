@@ -237,7 +237,9 @@ async def test_c1_1a_black_out_a_fine_fascia_al_ritorno_velocita_0(hass, ramo: s
     resta spento); al ritorno della corrente «Black-Out Off Vel. 0» rimanda la Velocita' 0."""
     dati = _automazione()
     trigger = {t["id"]: t for t in dati["triggers"] if isinstance(t.get("id"), str)}
-    rilevazione = [i for i in trigger if i.startswith("Black-Out") and not i.startswith("Black-Out Off")]
+    # b36: «Black-Out Scelta Vel. 1» (Velocita' 1 scelta prima del ripristino) non e' un trigger di rilevazione
+    rilevazione = [i for i in trigger if i.startswith("Black-Out")
+                   and not i.startswith(("Black-Out Off", "Black-Out Scelta"))]
     assert len(rilevazione) == 11
     sensore = next(b for blocco in _pacchetto()["template"] for b in blocco.get("binary_sensor", [])
                    if b.get("default_entity_id") == BO)
