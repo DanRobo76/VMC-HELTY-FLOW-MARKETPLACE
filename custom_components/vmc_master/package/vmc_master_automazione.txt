@@ -18353,6 +18353,89 @@ actions:
           - condition: trigger
             id: Black-Out Off Vel. 0
         sequence:
+          - alias: >-
+              Velocità scelta dall'utente dopo il ritorno della corrente e prima del ripristino (Telecomando, scheda o
+              App): la velocità letta è cambiata dopo la riaccensione della VMC (meno di 20 s prima del ritorno
+              ON-Line o dopo: l'ultima lettura prima del Black-Out è di almeno 32 s prima del ritorno ON-Line, la prima
+              lettura dopo la riaccensione al più circa 15 s prima) e non è la Velocità 1, con cui la VMC può ripartire
+              da sola dopo un Black-Out (la velocità di prima, con cui può ripartire da sola, non cambia la lettura) ->
+              la velocità scelta resta e il ripristino non avviene: si azzerano le memorie del Black-Out come dopo un
+              ripristino eseguito e le allerte in corso la trattano come una scelta fatta durante l'allerta
+              (Congelamento e Δ Temp. impongono comunque la loro velocità) [Foglio Logiche A23 e A27]
+            if:
+              - condition: template
+                value_template: >-
+                  {%- set vel = states.sensor.vmc_master_status_ventola_lettura_codice_interpretato -%}
+                  {%- set rete = states.sensor.vmc_master_status_ip_interfaccia -%}
+                  {{ vel is not none and rete is not none
+                     and vel.state not in ['Velocità 1', 'Non disponibile', 'unknown', 'unavailable', '']
+                     and as_timestamp(vel.last_changed) > as_timestamp(rete.last_changed) - 20 }}
+            then:
+              - alias: >-
+                  Inquinanti in corso: si azzerano le memorie della velocità degli Inquinanti, così all'avvio
+                  dell'allerta dopo lo spegnimento delle spie del Black-Out la velocità scelta non viene sostituita
+                  dalla memoria di prima del Black-Out e viene memorizzata con le regole degli Inquinanti, come una
+                  scelta fatta durante l'allerta (la Velocità 0 riparte a Velocità 1 con il ritorno a Velocità 0 alla
+                  fine dell'allerta) [Foglio Logiche A23]
+                if:
+                  - condition: template
+                    value_template: >-
+                      {{ is_state('input_boolean.vmc_master_spia_co2_o_voc', 'on')
+                         and (is_state('sensor.vmc_master_alert_monitoraggio_co2', 'Allerta')
+                              or is_state('sensor.vmc_master_alert_monitoraggio_voc', 'Allerta')) }}
+                then:
+                  - data: {}
+                    target:
+                      entity_id:
+                        - input_boolean.vmc_master_spia_velocita_0_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_1_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_2_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_3_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_4_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_notturna_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_iperventilazione_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_freecooling_co2_o_voc
+                    action: input_boolean.turn_off
+                  - alias: >-
+                      Velocità 0 scelta, PdR Off su tutte le Velocità e Free Heating/Cooling non programmato: memoria
+                      degli Inquinanti come per la Velocità 0 scelta durante l'allerta (Velocità 1 con il ritorno a
+                      Velocità 0 alla fine dell'allerta), così l'avvio dell'allerta comanda la Velocità 1 senza
+                      spegnere il ritorno a Velocità 0
+                    if:
+                      - condition: template
+                        value_template: >-
+                          {{ is_state('sensor.vmc_master_status_ventola_lettura_codice_interpretato', 'Velocità 0')
+                             and is_state('input_boolean.vmc_master_spia_velocita_0_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_1_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_2_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_3_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_4_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_notturna_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_iperventilazione_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating', 'off') }}
+                    then:
+                      - data: {}
+                        target:
+                          entity_id:
+                            - input_boolean.vmc_master_spia_velocita_1_co2_o_voc_pdr
+                            - input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0
+                            - input_boolean.vmc_master_spia_velocita_1_co2_o_voc
+                        action: input_boolean.turn_on
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_0
+                    - input_boolean.vmc_master_spia_velocita_1
+                    - input_boolean.vmc_master_spia_velocita_2
+                    - input_boolean.vmc_master_spia_velocita_3
+                    - input_boolean.vmc_master_spia_velocita_4
+                    - input_boolean.vmc_master_spia_velocita_notturna
+                    - input_boolean.vmc_master_spia_velocita_freecooling
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione
+                action: input_boolean.turn_off
+              - stop: Velocità scelta dall'utente dopo il ritorno della corrente mantenuta (nessun ripristino)
           - variables:
               vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
             alias: Memorizza la velocità letta alla riaccensione della VMC
@@ -18939,6 +19022,89 @@ actions:
           - condition: trigger
             id: Black-Out Off Vel. 1
         sequence:
+          - alias: >-
+              Velocità scelta dall'utente dopo il ritorno della corrente e prima del ripristino (Telecomando, scheda o
+              App): la velocità letta è cambiata dopo la riaccensione della VMC (meno di 20 s prima del ritorno
+              ON-Line o dopo: l'ultima lettura prima del Black-Out è di almeno 32 s prima del ritorno ON-Line, la prima
+              lettura dopo la riaccensione al più circa 15 s prima) e non è la Velocità 1, con cui la VMC può ripartire
+              da sola dopo un Black-Out (la velocità di prima, con cui può ripartire da sola, non cambia la lettura) ->
+              la velocità scelta resta e il ripristino non avviene: si azzerano le memorie del Black-Out come dopo un
+              ripristino eseguito e le allerte in corso la trattano come una scelta fatta durante l'allerta
+              (Congelamento e Δ Temp. impongono comunque la loro velocità) [Foglio Logiche A23 e A27]
+            if:
+              - condition: template
+                value_template: >-
+                  {%- set vel = states.sensor.vmc_master_status_ventola_lettura_codice_interpretato -%}
+                  {%- set rete = states.sensor.vmc_master_status_ip_interfaccia -%}
+                  {{ vel is not none and rete is not none
+                     and vel.state not in ['Velocità 1', 'Non disponibile', 'unknown', 'unavailable', '']
+                     and as_timestamp(vel.last_changed) > as_timestamp(rete.last_changed) - 20 }}
+            then:
+              - alias: >-
+                  Inquinanti in corso: si azzerano le memorie della velocità degli Inquinanti, così all'avvio
+                  dell'allerta dopo lo spegnimento delle spie del Black-Out la velocità scelta non viene sostituita
+                  dalla memoria di prima del Black-Out e viene memorizzata con le regole degli Inquinanti, come una
+                  scelta fatta durante l'allerta (la Velocità 0 riparte a Velocità 1 con il ritorno a Velocità 0 alla
+                  fine dell'allerta) [Foglio Logiche A23]
+                if:
+                  - condition: template
+                    value_template: >-
+                      {{ is_state('input_boolean.vmc_master_spia_co2_o_voc', 'on')
+                         and (is_state('sensor.vmc_master_alert_monitoraggio_co2', 'Allerta')
+                              or is_state('sensor.vmc_master_alert_monitoraggio_voc', 'Allerta')) }}
+                then:
+                  - data: {}
+                    target:
+                      entity_id:
+                        - input_boolean.vmc_master_spia_velocita_0_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_1_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_2_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_3_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_4_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_notturna_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_iperventilazione_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_freecooling_co2_o_voc
+                    action: input_boolean.turn_off
+                  - alias: >-
+                      Velocità 0 scelta, PdR Off su tutte le Velocità e Free Heating/Cooling non programmato: memoria
+                      degli Inquinanti come per la Velocità 0 scelta durante l'allerta (Velocità 1 con il ritorno a
+                      Velocità 0 alla fine dell'allerta), così l'avvio dell'allerta comanda la Velocità 1 senza
+                      spegnere il ritorno a Velocità 0
+                    if:
+                      - condition: template
+                        value_template: >-
+                          {{ is_state('sensor.vmc_master_status_ventola_lettura_codice_interpretato', 'Velocità 0')
+                             and is_state('input_boolean.vmc_master_spia_velocita_0_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_1_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_2_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_3_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_4_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_notturna_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_iperventilazione_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating', 'off') }}
+                    then:
+                      - data: {}
+                        target:
+                          entity_id:
+                            - input_boolean.vmc_master_spia_velocita_1_co2_o_voc_pdr
+                            - input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0
+                            - input_boolean.vmc_master_spia_velocita_1_co2_o_voc
+                        action: input_boolean.turn_on
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_0
+                    - input_boolean.vmc_master_spia_velocita_1
+                    - input_boolean.vmc_master_spia_velocita_2
+                    - input_boolean.vmc_master_spia_velocita_3
+                    - input_boolean.vmc_master_spia_velocita_4
+                    - input_boolean.vmc_master_spia_velocita_notturna
+                    - input_boolean.vmc_master_spia_velocita_freecooling
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione
+                action: input_boolean.turn_off
+              - stop: Velocità scelta dall'utente dopo il ritorno della corrente mantenuta (nessun ripristino)
           - variables:
               vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
             alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
@@ -19003,6 +19169,89 @@ actions:
           - condition: trigger
             id: Black-Out Off Vel. 2
         sequence:
+          - alias: >-
+              Velocità scelta dall'utente dopo il ritorno della corrente e prima del ripristino (Telecomando, scheda o
+              App): la velocità letta è cambiata dopo la riaccensione della VMC (meno di 20 s prima del ritorno
+              ON-Line o dopo: l'ultima lettura prima del Black-Out è di almeno 32 s prima del ritorno ON-Line, la prima
+              lettura dopo la riaccensione al più circa 15 s prima) e non è la Velocità 1, con cui la VMC può ripartire
+              da sola dopo un Black-Out (la velocità di prima, con cui può ripartire da sola, non cambia la lettura) ->
+              la velocità scelta resta e il ripristino non avviene: si azzerano le memorie del Black-Out come dopo un
+              ripristino eseguito e le allerte in corso la trattano come una scelta fatta durante l'allerta
+              (Congelamento e Δ Temp. impongono comunque la loro velocità) [Foglio Logiche A23 e A27]
+            if:
+              - condition: template
+                value_template: >-
+                  {%- set vel = states.sensor.vmc_master_status_ventola_lettura_codice_interpretato -%}
+                  {%- set rete = states.sensor.vmc_master_status_ip_interfaccia -%}
+                  {{ vel is not none and rete is not none
+                     and vel.state not in ['Velocità 1', 'Non disponibile', 'unknown', 'unavailable', '']
+                     and as_timestamp(vel.last_changed) > as_timestamp(rete.last_changed) - 20 }}
+            then:
+              - alias: >-
+                  Inquinanti in corso: si azzerano le memorie della velocità degli Inquinanti, così all'avvio
+                  dell'allerta dopo lo spegnimento delle spie del Black-Out la velocità scelta non viene sostituita
+                  dalla memoria di prima del Black-Out e viene memorizzata con le regole degli Inquinanti, come una
+                  scelta fatta durante l'allerta (la Velocità 0 riparte a Velocità 1 con il ritorno a Velocità 0 alla
+                  fine dell'allerta) [Foglio Logiche A23]
+                if:
+                  - condition: template
+                    value_template: >-
+                      {{ is_state('input_boolean.vmc_master_spia_co2_o_voc', 'on')
+                         and (is_state('sensor.vmc_master_alert_monitoraggio_co2', 'Allerta')
+                              or is_state('sensor.vmc_master_alert_monitoraggio_voc', 'Allerta')) }}
+                then:
+                  - data: {}
+                    target:
+                      entity_id:
+                        - input_boolean.vmc_master_spia_velocita_0_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_1_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_2_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_3_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_4_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_notturna_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_iperventilazione_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_freecooling_co2_o_voc
+                    action: input_boolean.turn_off
+                  - alias: >-
+                      Velocità 0 scelta, PdR Off su tutte le Velocità e Free Heating/Cooling non programmato: memoria
+                      degli Inquinanti come per la Velocità 0 scelta durante l'allerta (Velocità 1 con il ritorno a
+                      Velocità 0 alla fine dell'allerta), così l'avvio dell'allerta comanda la Velocità 1 senza
+                      spegnere il ritorno a Velocità 0
+                    if:
+                      - condition: template
+                        value_template: >-
+                          {{ is_state('sensor.vmc_master_status_ventola_lettura_codice_interpretato', 'Velocità 0')
+                             and is_state('input_boolean.vmc_master_spia_velocita_0_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_1_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_2_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_3_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_4_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_notturna_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_iperventilazione_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating', 'off') }}
+                    then:
+                      - data: {}
+                        target:
+                          entity_id:
+                            - input_boolean.vmc_master_spia_velocita_1_co2_o_voc_pdr
+                            - input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0
+                            - input_boolean.vmc_master_spia_velocita_1_co2_o_voc
+                        action: input_boolean.turn_on
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_0
+                    - input_boolean.vmc_master_spia_velocita_1
+                    - input_boolean.vmc_master_spia_velocita_2
+                    - input_boolean.vmc_master_spia_velocita_3
+                    - input_boolean.vmc_master_spia_velocita_4
+                    - input_boolean.vmc_master_spia_velocita_notturna
+                    - input_boolean.vmc_master_spia_velocita_freecooling
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione
+                action: input_boolean.turn_off
+              - stop: Velocità scelta dall'utente dopo il ritorno della corrente mantenuta (nessun ripristino)
           - variables:
               vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
             alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
@@ -19067,6 +19316,89 @@ actions:
           - condition: trigger
             id: Black-Out Off Vel. 3
         sequence:
+          - alias: >-
+              Velocità scelta dall'utente dopo il ritorno della corrente e prima del ripristino (Telecomando, scheda o
+              App): la velocità letta è cambiata dopo la riaccensione della VMC (meno di 20 s prima del ritorno
+              ON-Line o dopo: l'ultima lettura prima del Black-Out è di almeno 32 s prima del ritorno ON-Line, la prima
+              lettura dopo la riaccensione al più circa 15 s prima) e non è la Velocità 1, con cui la VMC può ripartire
+              da sola dopo un Black-Out (la velocità di prima, con cui può ripartire da sola, non cambia la lettura) ->
+              la velocità scelta resta e il ripristino non avviene: si azzerano le memorie del Black-Out come dopo un
+              ripristino eseguito e le allerte in corso la trattano come una scelta fatta durante l'allerta
+              (Congelamento e Δ Temp. impongono comunque la loro velocità) [Foglio Logiche A23 e A27]
+            if:
+              - condition: template
+                value_template: >-
+                  {%- set vel = states.sensor.vmc_master_status_ventola_lettura_codice_interpretato -%}
+                  {%- set rete = states.sensor.vmc_master_status_ip_interfaccia -%}
+                  {{ vel is not none and rete is not none
+                     and vel.state not in ['Velocità 1', 'Non disponibile', 'unknown', 'unavailable', '']
+                     and as_timestamp(vel.last_changed) > as_timestamp(rete.last_changed) - 20 }}
+            then:
+              - alias: >-
+                  Inquinanti in corso: si azzerano le memorie della velocità degli Inquinanti, così all'avvio
+                  dell'allerta dopo lo spegnimento delle spie del Black-Out la velocità scelta non viene sostituita
+                  dalla memoria di prima del Black-Out e viene memorizzata con le regole degli Inquinanti, come una
+                  scelta fatta durante l'allerta (la Velocità 0 riparte a Velocità 1 con il ritorno a Velocità 0 alla
+                  fine dell'allerta) [Foglio Logiche A23]
+                if:
+                  - condition: template
+                    value_template: >-
+                      {{ is_state('input_boolean.vmc_master_spia_co2_o_voc', 'on')
+                         and (is_state('sensor.vmc_master_alert_monitoraggio_co2', 'Allerta')
+                              or is_state('sensor.vmc_master_alert_monitoraggio_voc', 'Allerta')) }}
+                then:
+                  - data: {}
+                    target:
+                      entity_id:
+                        - input_boolean.vmc_master_spia_velocita_0_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_1_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_2_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_3_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_4_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_notturna_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_iperventilazione_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_freecooling_co2_o_voc
+                    action: input_boolean.turn_off
+                  - alias: >-
+                      Velocità 0 scelta, PdR Off su tutte le Velocità e Free Heating/Cooling non programmato: memoria
+                      degli Inquinanti come per la Velocità 0 scelta durante l'allerta (Velocità 1 con il ritorno a
+                      Velocità 0 alla fine dell'allerta), così l'avvio dell'allerta comanda la Velocità 1 senza
+                      spegnere il ritorno a Velocità 0
+                    if:
+                      - condition: template
+                        value_template: >-
+                          {{ is_state('sensor.vmc_master_status_ventola_lettura_codice_interpretato', 'Velocità 0')
+                             and is_state('input_boolean.vmc_master_spia_velocita_0_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_1_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_2_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_3_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_4_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_notturna_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_iperventilazione_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating', 'off') }}
+                    then:
+                      - data: {}
+                        target:
+                          entity_id:
+                            - input_boolean.vmc_master_spia_velocita_1_co2_o_voc_pdr
+                            - input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0
+                            - input_boolean.vmc_master_spia_velocita_1_co2_o_voc
+                        action: input_boolean.turn_on
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_0
+                    - input_boolean.vmc_master_spia_velocita_1
+                    - input_boolean.vmc_master_spia_velocita_2
+                    - input_boolean.vmc_master_spia_velocita_3
+                    - input_boolean.vmc_master_spia_velocita_4
+                    - input_boolean.vmc_master_spia_velocita_notturna
+                    - input_boolean.vmc_master_spia_velocita_freecooling
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione
+                action: input_boolean.turn_off
+              - stop: Velocità scelta dall'utente dopo il ritorno della corrente mantenuta (nessun ripristino)
           - variables:
               vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
             alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
@@ -19131,6 +19463,89 @@ actions:
           - condition: trigger
             id: Black-Out Off Vel. 4
         sequence:
+          - alias: >-
+              Velocità scelta dall'utente dopo il ritorno della corrente e prima del ripristino (Telecomando, scheda o
+              App): la velocità letta è cambiata dopo la riaccensione della VMC (meno di 20 s prima del ritorno
+              ON-Line o dopo: l'ultima lettura prima del Black-Out è di almeno 32 s prima del ritorno ON-Line, la prima
+              lettura dopo la riaccensione al più circa 15 s prima) e non è la Velocità 1, con cui la VMC può ripartire
+              da sola dopo un Black-Out (la velocità di prima, con cui può ripartire da sola, non cambia la lettura) ->
+              la velocità scelta resta e il ripristino non avviene: si azzerano le memorie del Black-Out come dopo un
+              ripristino eseguito e le allerte in corso la trattano come una scelta fatta durante l'allerta
+              (Congelamento e Δ Temp. impongono comunque la loro velocità) [Foglio Logiche A23 e A27]
+            if:
+              - condition: template
+                value_template: >-
+                  {%- set vel = states.sensor.vmc_master_status_ventola_lettura_codice_interpretato -%}
+                  {%- set rete = states.sensor.vmc_master_status_ip_interfaccia -%}
+                  {{ vel is not none and rete is not none
+                     and vel.state not in ['Velocità 1', 'Non disponibile', 'unknown', 'unavailable', '']
+                     and as_timestamp(vel.last_changed) > as_timestamp(rete.last_changed) - 20 }}
+            then:
+              - alias: >-
+                  Inquinanti in corso: si azzerano le memorie della velocità degli Inquinanti, così all'avvio
+                  dell'allerta dopo lo spegnimento delle spie del Black-Out la velocità scelta non viene sostituita
+                  dalla memoria di prima del Black-Out e viene memorizzata con le regole degli Inquinanti, come una
+                  scelta fatta durante l'allerta (la Velocità 0 riparte a Velocità 1 con il ritorno a Velocità 0 alla
+                  fine dell'allerta) [Foglio Logiche A23]
+                if:
+                  - condition: template
+                    value_template: >-
+                      {{ is_state('input_boolean.vmc_master_spia_co2_o_voc', 'on')
+                         and (is_state('sensor.vmc_master_alert_monitoraggio_co2', 'Allerta')
+                              or is_state('sensor.vmc_master_alert_monitoraggio_voc', 'Allerta')) }}
+                then:
+                  - data: {}
+                    target:
+                      entity_id:
+                        - input_boolean.vmc_master_spia_velocita_0_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_1_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_2_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_3_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_4_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_notturna_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_iperventilazione_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_freecooling_co2_o_voc
+                    action: input_boolean.turn_off
+                  - alias: >-
+                      Velocità 0 scelta, PdR Off su tutte le Velocità e Free Heating/Cooling non programmato: memoria
+                      degli Inquinanti come per la Velocità 0 scelta durante l'allerta (Velocità 1 con il ritorno a
+                      Velocità 0 alla fine dell'allerta), così l'avvio dell'allerta comanda la Velocità 1 senza
+                      spegnere il ritorno a Velocità 0
+                    if:
+                      - condition: template
+                        value_template: >-
+                          {{ is_state('sensor.vmc_master_status_ventola_lettura_codice_interpretato', 'Velocità 0')
+                             and is_state('input_boolean.vmc_master_spia_velocita_0_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_1_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_2_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_3_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_4_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_notturna_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_iperventilazione_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating', 'off') }}
+                    then:
+                      - data: {}
+                        target:
+                          entity_id:
+                            - input_boolean.vmc_master_spia_velocita_1_co2_o_voc_pdr
+                            - input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0
+                            - input_boolean.vmc_master_spia_velocita_1_co2_o_voc
+                        action: input_boolean.turn_on
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_0
+                    - input_boolean.vmc_master_spia_velocita_1
+                    - input_boolean.vmc_master_spia_velocita_2
+                    - input_boolean.vmc_master_spia_velocita_3
+                    - input_boolean.vmc_master_spia_velocita_4
+                    - input_boolean.vmc_master_spia_velocita_notturna
+                    - input_boolean.vmc_master_spia_velocita_freecooling
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione
+                action: input_boolean.turn_off
+              - stop: Velocità scelta dall'utente dopo il ritorno della corrente mantenuta (nessun ripristino)
           - variables:
               vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
             alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
@@ -19195,6 +19610,89 @@ actions:
           - condition: trigger
             id: Black-Out Off Notturna
         sequence:
+          - alias: >-
+              Velocità scelta dall'utente dopo il ritorno della corrente e prima del ripristino (Telecomando, scheda o
+              App): la velocità letta è cambiata dopo la riaccensione della VMC (meno di 20 s prima del ritorno
+              ON-Line o dopo: l'ultima lettura prima del Black-Out è di almeno 32 s prima del ritorno ON-Line, la prima
+              lettura dopo la riaccensione al più circa 15 s prima) e non è la Velocità 1, con cui la VMC può ripartire
+              da sola dopo un Black-Out (la velocità di prima, con cui può ripartire da sola, non cambia la lettura) ->
+              la velocità scelta resta e il ripristino non avviene: si azzerano le memorie del Black-Out come dopo un
+              ripristino eseguito e le allerte in corso la trattano come una scelta fatta durante l'allerta
+              (Congelamento e Δ Temp. impongono comunque la loro velocità) [Foglio Logiche A23 e A27]
+            if:
+              - condition: template
+                value_template: >-
+                  {%- set vel = states.sensor.vmc_master_status_ventola_lettura_codice_interpretato -%}
+                  {%- set rete = states.sensor.vmc_master_status_ip_interfaccia -%}
+                  {{ vel is not none and rete is not none
+                     and vel.state not in ['Velocità 1', 'Non disponibile', 'unknown', 'unavailable', '']
+                     and as_timestamp(vel.last_changed) > as_timestamp(rete.last_changed) - 20 }}
+            then:
+              - alias: >-
+                  Inquinanti in corso: si azzerano le memorie della velocità degli Inquinanti, così all'avvio
+                  dell'allerta dopo lo spegnimento delle spie del Black-Out la velocità scelta non viene sostituita
+                  dalla memoria di prima del Black-Out e viene memorizzata con le regole degli Inquinanti, come una
+                  scelta fatta durante l'allerta (la Velocità 0 riparte a Velocità 1 con il ritorno a Velocità 0 alla
+                  fine dell'allerta) [Foglio Logiche A23]
+                if:
+                  - condition: template
+                    value_template: >-
+                      {{ is_state('input_boolean.vmc_master_spia_co2_o_voc', 'on')
+                         and (is_state('sensor.vmc_master_alert_monitoraggio_co2', 'Allerta')
+                              or is_state('sensor.vmc_master_alert_monitoraggio_voc', 'Allerta')) }}
+                then:
+                  - data: {}
+                    target:
+                      entity_id:
+                        - input_boolean.vmc_master_spia_velocita_0_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_1_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_2_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_3_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_4_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_notturna_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_iperventilazione_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_freecooling_co2_o_voc
+                    action: input_boolean.turn_off
+                  - alias: >-
+                      Velocità 0 scelta, PdR Off su tutte le Velocità e Free Heating/Cooling non programmato: memoria
+                      degli Inquinanti come per la Velocità 0 scelta durante l'allerta (Velocità 1 con il ritorno a
+                      Velocità 0 alla fine dell'allerta), così l'avvio dell'allerta comanda la Velocità 1 senza
+                      spegnere il ritorno a Velocità 0
+                    if:
+                      - condition: template
+                        value_template: >-
+                          {{ is_state('sensor.vmc_master_status_ventola_lettura_codice_interpretato', 'Velocità 0')
+                             and is_state('input_boolean.vmc_master_spia_velocita_0_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_1_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_2_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_3_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_4_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_notturna_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_iperventilazione_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating', 'off') }}
+                    then:
+                      - data: {}
+                        target:
+                          entity_id:
+                            - input_boolean.vmc_master_spia_velocita_1_co2_o_voc_pdr
+                            - input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0
+                            - input_boolean.vmc_master_spia_velocita_1_co2_o_voc
+                        action: input_boolean.turn_on
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_0
+                    - input_boolean.vmc_master_spia_velocita_1
+                    - input_boolean.vmc_master_spia_velocita_2
+                    - input_boolean.vmc_master_spia_velocita_3
+                    - input_boolean.vmc_master_spia_velocita_4
+                    - input_boolean.vmc_master_spia_velocita_notturna
+                    - input_boolean.vmc_master_spia_velocita_freecooling
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione
+                action: input_boolean.turn_off
+              - stop: Velocità scelta dall'utente dopo il ritorno della corrente mantenuta (nessun ripristino)
           - variables:
               vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
             alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
@@ -19259,6 +19757,89 @@ actions:
           - condition: trigger
             id: Black-Out Off Iperventilazione
         sequence:
+          - alias: >-
+              Velocità scelta dall'utente dopo il ritorno della corrente e prima del ripristino (Telecomando, scheda o
+              App): la velocità letta è cambiata dopo la riaccensione della VMC (meno di 20 s prima del ritorno
+              ON-Line o dopo: l'ultima lettura prima del Black-Out è di almeno 32 s prima del ritorno ON-Line, la prima
+              lettura dopo la riaccensione al più circa 15 s prima) e non è la Velocità 1, con cui la VMC può ripartire
+              da sola dopo un Black-Out (la velocità di prima, con cui può ripartire da sola, non cambia la lettura) ->
+              la velocità scelta resta e il ripristino non avviene: si azzerano le memorie del Black-Out come dopo un
+              ripristino eseguito e le allerte in corso la trattano come una scelta fatta durante l'allerta
+              (Congelamento e Δ Temp. impongono comunque la loro velocità) [Foglio Logiche A23 e A27]
+            if:
+              - condition: template
+                value_template: >-
+                  {%- set vel = states.sensor.vmc_master_status_ventola_lettura_codice_interpretato -%}
+                  {%- set rete = states.sensor.vmc_master_status_ip_interfaccia -%}
+                  {{ vel is not none and rete is not none
+                     and vel.state not in ['Velocità 1', 'Non disponibile', 'unknown', 'unavailable', '']
+                     and as_timestamp(vel.last_changed) > as_timestamp(rete.last_changed) - 20 }}
+            then:
+              - alias: >-
+                  Inquinanti in corso: si azzerano le memorie della velocità degli Inquinanti, così all'avvio
+                  dell'allerta dopo lo spegnimento delle spie del Black-Out la velocità scelta non viene sostituita
+                  dalla memoria di prima del Black-Out e viene memorizzata con le regole degli Inquinanti, come una
+                  scelta fatta durante l'allerta (la Velocità 0 riparte a Velocità 1 con il ritorno a Velocità 0 alla
+                  fine dell'allerta) [Foglio Logiche A23]
+                if:
+                  - condition: template
+                    value_template: >-
+                      {{ is_state('input_boolean.vmc_master_spia_co2_o_voc', 'on')
+                         and (is_state('sensor.vmc_master_alert_monitoraggio_co2', 'Allerta')
+                              or is_state('sensor.vmc_master_alert_monitoraggio_voc', 'Allerta')) }}
+                then:
+                  - data: {}
+                    target:
+                      entity_id:
+                        - input_boolean.vmc_master_spia_velocita_0_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_1_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_2_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_3_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_4_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_notturna_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_iperventilazione_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_freecooling_co2_o_voc
+                    action: input_boolean.turn_off
+                  - alias: >-
+                      Velocità 0 scelta, PdR Off su tutte le Velocità e Free Heating/Cooling non programmato: memoria
+                      degli Inquinanti come per la Velocità 0 scelta durante l'allerta (Velocità 1 con il ritorno a
+                      Velocità 0 alla fine dell'allerta), così l'avvio dell'allerta comanda la Velocità 1 senza
+                      spegnere il ritorno a Velocità 0
+                    if:
+                      - condition: template
+                        value_template: >-
+                          {{ is_state('sensor.vmc_master_status_ventola_lettura_codice_interpretato', 'Velocità 0')
+                             and is_state('input_boolean.vmc_master_spia_velocita_0_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_1_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_2_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_3_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_4_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_notturna_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_iperventilazione_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating', 'off') }}
+                    then:
+                      - data: {}
+                        target:
+                          entity_id:
+                            - input_boolean.vmc_master_spia_velocita_1_co2_o_voc_pdr
+                            - input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0
+                            - input_boolean.vmc_master_spia_velocita_1_co2_o_voc
+                        action: input_boolean.turn_on
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_0
+                    - input_boolean.vmc_master_spia_velocita_1
+                    - input_boolean.vmc_master_spia_velocita_2
+                    - input_boolean.vmc_master_spia_velocita_3
+                    - input_boolean.vmc_master_spia_velocita_4
+                    - input_boolean.vmc_master_spia_velocita_notturna
+                    - input_boolean.vmc_master_spia_velocita_freecooling
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione
+                action: input_boolean.turn_off
+              - stop: Velocità scelta dall'utente dopo il ritorno della corrente mantenuta (nessun ripristino)
           - variables:
               vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
             alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
@@ -19322,6 +19903,89 @@ actions:
           - condition: trigger
             id: Black-Out Off Free Cool./Heat.
         sequence:
+          - alias: >-
+              Velocità scelta dall'utente dopo il ritorno della corrente e prima del ripristino (Telecomando, scheda o
+              App): la velocità letta è cambiata dopo la riaccensione della VMC (meno di 20 s prima del ritorno
+              ON-Line o dopo: l'ultima lettura prima del Black-Out è di almeno 32 s prima del ritorno ON-Line, la prima
+              lettura dopo la riaccensione al più circa 15 s prima) e non è la Velocità 1, con cui la VMC può ripartire
+              da sola dopo un Black-Out (la velocità di prima, con cui può ripartire da sola, non cambia la lettura) ->
+              la velocità scelta resta e il ripristino non avviene: si azzerano le memorie del Black-Out come dopo un
+              ripristino eseguito e le allerte in corso la trattano come una scelta fatta durante l'allerta
+              (Congelamento e Δ Temp. impongono comunque la loro velocità) [Foglio Logiche A23 e A27]
+            if:
+              - condition: template
+                value_template: >-
+                  {%- set vel = states.sensor.vmc_master_status_ventola_lettura_codice_interpretato -%}
+                  {%- set rete = states.sensor.vmc_master_status_ip_interfaccia -%}
+                  {{ vel is not none and rete is not none
+                     and vel.state not in ['Velocità 1', 'Non disponibile', 'unknown', 'unavailable', '']
+                     and as_timestamp(vel.last_changed) > as_timestamp(rete.last_changed) - 20 }}
+            then:
+              - alias: >-
+                  Inquinanti in corso: si azzerano le memorie della velocità degli Inquinanti, così all'avvio
+                  dell'allerta dopo lo spegnimento delle spie del Black-Out la velocità scelta non viene sostituita
+                  dalla memoria di prima del Black-Out e viene memorizzata con le regole degli Inquinanti, come una
+                  scelta fatta durante l'allerta (la Velocità 0 riparte a Velocità 1 con il ritorno a Velocità 0 alla
+                  fine dell'allerta) [Foglio Logiche A23]
+                if:
+                  - condition: template
+                    value_template: >-
+                      {{ is_state('input_boolean.vmc_master_spia_co2_o_voc', 'on')
+                         and (is_state('sensor.vmc_master_alert_monitoraggio_co2', 'Allerta')
+                              or is_state('sensor.vmc_master_alert_monitoraggio_voc', 'Allerta')) }}
+                then:
+                  - data: {}
+                    target:
+                      entity_id:
+                        - input_boolean.vmc_master_spia_velocita_0_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_1_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_2_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_3_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_4_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_notturna_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_iperventilazione_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_freecooling_co2_o_voc
+                    action: input_boolean.turn_off
+                  - alias: >-
+                      Velocità 0 scelta, PdR Off su tutte le Velocità e Free Heating/Cooling non programmato: memoria
+                      degli Inquinanti come per la Velocità 0 scelta durante l'allerta (Velocità 1 con il ritorno a
+                      Velocità 0 alla fine dell'allerta), così l'avvio dell'allerta comanda la Velocità 1 senza
+                      spegnere il ritorno a Velocità 0
+                    if:
+                      - condition: template
+                        value_template: >-
+                          {{ is_state('sensor.vmc_master_status_ventola_lettura_codice_interpretato', 'Velocità 0')
+                             and is_state('input_boolean.vmc_master_spia_velocita_0_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_1_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_2_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_3_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_4_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_notturna_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_iperventilazione_un_solo_avvio', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling', 'off')
+                             and is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating', 'off') }}
+                    then:
+                      - data: {}
+                        target:
+                          entity_id:
+                            - input_boolean.vmc_master_spia_velocita_1_co2_o_voc_pdr
+                            - input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0
+                            - input_boolean.vmc_master_spia_velocita_1_co2_o_voc
+                        action: input_boolean.turn_on
+              - data: {}
+                target:
+                  entity_id:
+                    - input_boolean.vmc_master_spia_velocita_0
+                    - input_boolean.vmc_master_spia_velocita_1
+                    - input_boolean.vmc_master_spia_velocita_2
+                    - input_boolean.vmc_master_spia_velocita_3
+                    - input_boolean.vmc_master_spia_velocita_4
+                    - input_boolean.vmc_master_spia_velocita_notturna
+                    - input_boolean.vmc_master_spia_velocita_freecooling
+                    - input_boolean.vmc_master_spia_velocita_iperventilazione
+                action: input_boolean.turn_off
+              - stop: Velocità scelta dall'utente dopo il ritorno della corrente mantenuta (nessun ripristino)
           - variables:
               vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
             alias: Memorizza la velocità letta alla riaccensione della VMC
