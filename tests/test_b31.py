@@ -93,10 +93,10 @@ def test_righe_nuove_sotto_il_ripristino() -> None:
     ]
     assert righe[-1]["row"]["label"].startswith("La VMC risponde in rete ma la sua velocità non si legge: ")
     assert "Velocità 0 di fine fascia" in righe[-1]["row"]["label"]
-    # b36 (C1-3): con Congelamento/Δ in corso la velocita' della fascia riparte alla fine dell'allerta
+    # b36 (C1-3): con Congelamento/Δ in corso il comando riparte alla fine dell'allerta
     assert righe[-1]["row"]["label"].endswith("salvo se nel frattempo la velocità è cambiata; con un'allerta Congelamento "
-                                              "o Δ Temp. in corso la velocità della fascia riparte alla fine dell'allerta, "
-                                              "gli altri comandi non vengono ripetuti. Non serve fare nulla.")
+                                              "o Δ Temp. in corso il comando riparte alla fine dell'allerta, al posto "
+                                              "della velocità memorizzata dall'allerta. Non serve fare nulla.")
 
 
 def test_testi_brevi_e_senza_entita() -> None:

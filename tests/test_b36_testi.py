@@ -168,16 +168,27 @@ FRASI_17 = [
      "è Free Cool./Heat., che ha la sua ripresa, o con un'allerta Congelamento o Δ Temp. in corso);", 1),
     ("e PdR superato); anche una Velocità scelta durante gli 8 Secondi di attesa dopo il rientro resta (salvo se la "
      "Velocità memorizzata è Free Cool./Heat. o con un'allerta Congelamento o Δ Temp. in corso)", 1),
-    # C1-2: i 32 s si contano da quando la velocità torna leggibile (Black-Out x2, Calendario x1)
-    ("32 Secondi dopo che la sua velocità torna leggibile", 3),
-    ("la VMC riparte con la Velocità della Fascia in corso 32 Secondi dopo che la sua velocità torna leggibile (+5 "
-     "Secondi dello script della Fascia)", 2),
+    # C1-2: i 32 s si contano da quando la VMC è ON-Line con la velocità di nuovo leggibile (Black-Out e Calendario);
+    # durante il riallineamento al riavvio dal ritorno ON-Line, o dalla lettura valida se la velocità non si legge
+    ("la VMC riparte con la Velocità della Fascia in corso 32 Secondi dopo che è di nuovo ON-Line con la velocità "
+     "leggibile (+5 Secondi dello script della Fascia)", 2),
+    ("dopo almeno 32 Secondi OFF-Line, la VMC riparte 32 Secondi dopo il ritorno ON-Line anche se il Black-Out non è "
+     "stato ancora memorizzato (se in quel momento la sua velocità non si legge ancora, riparte 32 Secondi dopo che "
+     "torna leggibile, non prima dell'ultima fase del riallineamento);", 1),
     # C1-3 e C1-5: attesa della fine di Congelamento/Δ e comando dello spegnimento del Calendario
-    ("la Fascia riparte (con un'allerta Congelamento o Δ Temp. in corso aspetta la fine dell'allerta e poi riparte con "
-     "la sua Velocità), salvo se nel frattempo la Velocità è cambiata (per esempio con il Telecomando); lo stesso vale "
+    ("la Fascia riparte, salvo se nel frattempo la Velocità è cambiata (per esempio con il Telecomando); lo stesso vale "
      "per la Velocità 0 di fine Fascia e per il comando dato spegnendo l'interruttore del Calendario durante una Fascia "
-     "(Velocità 0, o Velocità 1 con Inquinanti): appena la velocità torna leggibile il comando viene ripetuto, salvo "
-     "se nel frattempo la Velocità è cambiata o è in corso un'allerta Congelamento o Δ Temp.;", 1),
+     "(Velocità 0, o Velocità 1 con Inquinanti): appena la velocità torna leggibile il comando viene ripetuto, anche "
+     "con l'interruttore del Calendario spento, salvo se nel frattempo la Velocità è cambiata; con un'allerta "
+     "Congelamento o Δ Temp. in corso il comando del Calendario aspetta la fine dell'allerta: a fine allerta, appena la "
+     "velocità è leggibile, la Fascia riparte con la sua Velocità (o si ripete la Velocità 0, o 1, in sospeso) al posto "
+     "della Velocità memorizzata dall'allerta, salvo se si sceglie un'altra Velocità dopo la fine dell'allerta; se "
+     "invece la corrente manca proprio mentre la Fascia finisce o mentre si spegne l'interruttore del Calendario, al "
+     "ritorno della corrente la VMC si arresta dopo 32 Secondi (o va a Velocità 1, se l'interruttore è stato spento "
+     "con Inquinanti presenti);", 1),
+    ("si ferma: passa a Velocità 1 e si ferma quando gli Inquinanti rientrano; il comando dato spegnendo "
+     "l'interruttore del Calendario viene ripetuto finché la VMC non lo esegue, anche se nel frattempo la sua velocità "
+     "non si legge o la VMC va OFF-Line (vedere Black-Out);", 1),
     # C4-3: velocità scelta poco prima del PdR con la ripresa Free in attesa
     ("anche al posto della ripresa in Free Cool./Heat. (lo stesso vale per una Velocità scelta poco prima "
      "dell'allerta, con la ripresa in attesa);", 1),
@@ -201,11 +212,14 @@ def test_frasi_nuove_nella_descrizione_e_nella_voce_17(frase: str, volte: int) -
 
 
 def test_vecchie_frasi_sostituite() -> None:
-    """Le frasi della b35 che dicevano i 32 s dal ritorno ON-Line o la Free sospesa senza il Set a Velocità 0."""
+    """Le frasi della b35 che dicevano i 32 s dal ping, la Free sospesa senza il Set a Velocità 0 e i comandi del
+    Calendario non ripetuti con Congelamento o Δ Temp. in corso."""
     for testo in (_descrizione(), _voce_17()):
         assert "la VMC riparte con la Velocità della Fascia in corso dopo 32 Secondi" not in testo
         assert "la VMC riparte 32 Secondi dopo il ritorno anche se" not in testo
+        assert "32 Secondi dopo che la sua velocità torna leggibile" not in testo
         assert f"({FREE_ECC})" not in testo
+        assert "salvo se nel frattempo la Velocità è cambiata o è in corso un'allerta Congelamento o Δ Temp." not in testo
     assert "la Velocità della Fascia in corso (se nel frattempo la Fascia è finita, si arresta);" in _descrizione()
 
 
@@ -266,8 +280,8 @@ def test_voce_14_free() -> None:
 
 
 def test_voce_15_ripristino_dopo_black_out() -> None:
-    assert ("con il countdown «Ripristino dopo Black-Out» (32 secondi, contati da quando la velocità della VMC torna "
-            "leggibile): dopo altri 5 secondi la VMC riparte con la velocità della fascia") in _voce(15)
+    assert ("con il countdown «Ripristino dopo Black-Out» (32 secondi, contati da quando la VMC è di nuovo ON-Line con "
+            "la velocità leggibile): dopo altri 5 secondi la VMC riparte con la velocità della fascia") in _voce(15)
 
 
 # ------------------------------------------------------------------------------- Riquadro Avvisi e scheda Umidità
@@ -275,8 +289,8 @@ def test_riquadro_avvisi_comando_non_eseguito() -> None:
     riga = ('label: "La VMC risponde in rete ma la sua velocità non si legge: il comando del Calendario (velocità della '
             "fascia, Velocità 0 di fine fascia o comando dato spegnendo l'interruttore del Calendario durante la fascia) "
             "non è confermato. Appena la velocità torna leggibile il comando riparte, salvo se nel frattempo la velocità "
-            "è cambiata; con un'allerta Congelamento o Δ Temp. in corso la velocità della fascia riparte alla fine "
-            "dell'allerta, gli altri comandi non vengono ripetuti. Non serve fare nulla.\"")
+            "è cambiata; con un'allerta Congelamento o Δ Temp. in corso il comando riparte alla fine dell'allerta, al "
+            "posto della velocità memorizzata dall'allerta. Non serve fare nulla.\"")
     assert _scheda().count(riga) == 1
 
 
@@ -314,13 +328,16 @@ def test_descrizioni_degli_script_di_fascia() -> None:
     assert uno.replace("1° Fascia", "2° Fascia") == due
     # C1-2 e C1-3
     assert ("al ritorno della corrente dopo un Black-Out (VMC OFF-Line almeno 32 s; lo script parte 32 s dopo che la "
-            "velocità della VMC torna leggibile) e quando la VMC torna a rispondere dopo un comando non eseguito (con "
-            "un'allerta Congelamento o Δ Temp. in corso, alla fine dell'allerta).") in uno
+            "VMC è di nuovo ON-Line con la velocità leggibile) e quando la VMC torna a rispondere dopo un comando non "
+            "eseguito (con un'allerta Congelamento o Δ Temp. in corso, alla fine dell'allerta, al posto della velocità "
+            "memorizzata dall'allerta).") in uno
+    assert ("la Velocità 0 viene ripetuta, salvo se nel frattempo la velocità è cambiata (con un'allerta Congelamento o "
+            "Δ Temp. in corso, alla fine dell'allerta); se invece la VMC va OFF-Line prima di confermarla") in uno
     # C1-5
-    assert ("Anche il comando che l'Automazione manda quando si spegne l'interruttore del Calendario durante la Fascia "
-            "(Velocità 0, o Velocità 1 con gli Inquinanti) smette di essere ripetuto se la velocità non si legge e "
-            "viene ripetuto appena la VMC torna a rispondere, salvo se nel frattempo la velocità è cambiata o è in "
-            "corso un'allerta Congelamento o Δ Temp.") in uno
+    assert ("rimandata al ritorno della corrente. Lo stesso vale per il comando che l'Automazione manda quando si spegne "
+            "l'interruttore del Calendario durante la Fascia (Velocità 0, o Velocità 1 con gli Inquinanti), che viene "
+            "ripetuto anche con l'interruttore spento.") in uno
+    assert "o è in corso un'allerta Congelamento o Δ Temp." not in uno
     for vietata in VIETATE:
         assert vietata not in uno
 
@@ -328,8 +345,8 @@ def test_descrizioni_degli_script_di_fascia() -> None:
 def test_descrizione_del_countdown_attese() -> None:
     (countdown,) = (a for a in _pacchetto()["automation"] if a["id"] == "vmc_master_countdown_attese_automazione")
     testo = _norm(countdown["description"])
-    assert ("per il ritorno della corrente durante una Fascia del Calendario il timer parte quando la velocità della VMC "
-            "torna leggibile e solo se valgono anche le condizioni del ramo dell'automazione") in testo
+    assert ("per il ritorno della corrente durante una Fascia del Calendario il timer parte quando la VMC è di nuovo "
+            "ON-Line con la velocità leggibile e solo se valgono anche le condizioni del ramo dell'automazione") in testo
     assert "vmc_master" not in testo and " master" not in testo
 
 

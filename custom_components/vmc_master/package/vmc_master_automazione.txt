@@ -213,26 +213,32 @@ description: >-
   - Black-Out: 32 Secondi per il Rilevamento e per il Ripristino; durante una
   Fascia del Calendario la rilevazione del Black-Out non è attiva: al ritorno
   della corrente (VMC OFF-Line almeno 32 Secondi) la VMC riparte con la Velocità
-  della Fascia in corso 32 Secondi dopo che la sua velocità torna leggibile (+5
-  Secondi dello script della Fascia); il Black-Out resta memorizzato nella Spia
-  Black-Out del Calendario, così la VMC riparte anche dopo un riavvio di Home
-  Assistant o se la corrente torna a Home Assistant spento: in questo caso
-  riparte dall'ultima fase del riallineamento (140 Secondi dall'avvio) più i 32
-  Secondi; se la corrente torna durante il riallineamento al riavvio (fasi 1-3)
-  dopo almeno 32 Secondi OFF-Line, la VMC riparte 32 Secondi dopo che la sua
-  velocità torna leggibile anche se il Black-Out non è stato ancora memorizzato;
-  se invece la VMC risponde al ping ma la sua velocità non si legge (porta
-  5001), dopo 32 Secondi la Fascia smette di ripetere il comando e, appena la
-  velocità torna leggibile, la Fascia riparte (con un'allerta Congelamento o Δ
-  Temp. in corso aspetta la fine dell'allerta e poi riparte con la sua
-  Velocità), salvo se nel frattempo la Velocità è cambiata (per esempio con il
-  Telecomando); lo stesso vale per la Velocità 0 di fine Fascia e per il comando
-  dato spegnendo l'interruttore del Calendario durante una Fascia (Velocità 0, o
-  Velocità 1 con Inquinanti): appena la velocità torna leggibile il comando
-  viene ripetuto, salvo se nel frattempo la Velocità è cambiata o è in corso
-  un'allerta Congelamento o Δ Temp.; se invece la corrente manca proprio mentre
-  la Fascia finisce, al ritorno della corrente la VMC si arresta dopo 32
-  Secondi;
+  della Fascia in corso 32 Secondi dopo che è di nuovo ON-Line con la velocità
+  leggibile (+5 Secondi dello script della Fascia); il Black-Out resta
+  memorizzato nella Spia Black-Out del Calendario, così la VMC riparte anche
+  dopo un riavvio di Home Assistant o se la corrente torna a Home Assistant
+  spento: in questo caso riparte dall'ultima fase del riallineamento (140
+  Secondi dall'avvio) più i 32 Secondi; se la corrente torna durante il
+  riallineamento al riavvio (fasi 1-3) dopo almeno 32 Secondi OFF-Line, la VMC
+  riparte 32 Secondi dopo il ritorno ON-Line anche se il Black-Out non è stato
+  ancora memorizzato (se in quel momento la sua velocità non si legge ancora,
+  riparte 32 Secondi dopo che torna leggibile, non prima dell'ultima fase del
+  riallineamento); se invece la VMC risponde al ping ma la sua velocità non si
+  legge (porta 5001), dopo 32 Secondi la Fascia smette di ripetere il comando e,
+  appena la velocità torna leggibile, la Fascia riparte, salvo se nel frattempo
+  la Velocità è cambiata (per esempio con il Telecomando); lo stesso vale per la
+  Velocità 0 di fine Fascia e per il comando dato spegnendo l'interruttore del
+  Calendario durante una Fascia (Velocità 0, o Velocità 1 con Inquinanti):
+  appena la velocità torna leggibile il comando viene ripetuto, anche con
+  l'interruttore del Calendario spento, salvo se nel frattempo la Velocità è
+  cambiata; con un'allerta Congelamento o Δ Temp. in corso il comando del
+  Calendario aspetta la fine dell'allerta: a fine allerta, appena la velocità è
+  leggibile, la Fascia riparte con la sua Velocità (o si ripete la Velocità 0, o
+  1, in sospeso) al posto della Velocità memorizzata dall'allerta, salvo se si
+  sceglie un'altra Velocità dopo la fine dell'allerta; se invece la corrente
+  manca proprio mentre la Fascia finisce o mentre si spegne l'interruttore del
+  Calendario, al ritorno della corrente la VMC si arresta dopo 32 Secondi (o va
+  a Velocità 1, se l'interruttore è stato spento con Inquinanti presenti);
 
   - Avvisi (riquadro degli Avvisi e avviso di aggiornamento del Package):
   5 Secondi.
@@ -318,16 +324,16 @@ description: >-
   Inquinanti, Lim. Δ Punto di Rugiada e Free Cooling / Free Heating; l'Umidità
   non ha effetto e la rilevazione del Black-Out non è attiva: al ritorno della
   corrente (VMC OFF-Line almeno 32 Secondi) la VMC riparte con la Velocità della
-  Fascia in corso 32 Secondi dopo che la sua velocità torna leggibile (+5
-  Secondi dello script della Fascia). All'uscita dalla Fascia la VMC si arresta:
-  con Inquinanti presenti la logica Inquinanti riparte dalla VMC ferma (Velocità
-  1 fino al rientro, poi Velocità 0); se la 2° Fascia dello stesso giorno è già
-  in corso, la fine della 1° Fascia non ferma la VMC (la comanda la 2° Fascia).
-  Le Fasce non possono attraversare la mezzanotte (lo Spegnimento deve seguire
-  l'Accensione nello stesso giorno); la 1° Fascia deve precedere la 2° (almeno 1
-  minuto tra il 1° Spegnimento e la 2° Accensione) e tutti gli orari devono
-  essere diversi: se una regola non è rispettata il giorno risulta
-  «Disabilitata» e nessuna delle due Fasce parte.
+  Fascia in corso 32 Secondi dopo che è di nuovo ON-Line con la velocità
+  leggibile (+5 Secondi dello script della Fascia). All'uscita dalla Fascia la
+  VMC si arresta: con Inquinanti presenti la logica Inquinanti riparte dalla VMC
+  ferma (Velocità 1 fino al rientro, poi Velocità 0); se la 2° Fascia dello
+  stesso giorno è già in corso, la fine della 1° Fascia non ferma la VMC (la
+  comanda la 2° Fascia). Le Fasce non possono attraversare la mezzanotte (lo
+  Spegnimento deve seguire l'Accensione nello stesso giorno); la 1° Fascia deve
+  precedere la 2° (almeno 1 minuto tra il 1° Spegnimento e la 2° Accensione) e
+  tutti gli orari devono essere diversi: se una regola non è rispettata il
+  giorno risulta «Disabilitata» e nessuna delle due Fasce parte.
 
 
   COSA SUCCEDE SE SI SPEGNE UN INTERRUTTORE (CO₂/VOC, Punto di Rugiada, Free
@@ -370,7 +376,10 @@ description: >-
   - gli interruttori del Calendario (spento durante una fascia), del Punto di
   Rugiada, del Free Cooling e del Free Heating fermano la VMC; se però sono
   presenti Inquinanti e l'interruttore degli Inquinanti è acceso, la VMC non si
-  ferma: passa a Velocità 1 e si ferma quando gli Inquinanti rientrano;
+  ferma: passa a Velocità 1 e si ferma quando gli Inquinanti rientrano; il
+  comando dato spegnendo l'interruttore del Calendario viene ripetuto finché la
+  VMC non lo esegue, anche se nel frattempo la sua velocità non si legge o la
+  VMC va OFF-Line (vedere Black-Out);
 
   - se la VMC è OFF-Line o la sua velocità non è disponibile, l'interruttore del
   Punto di Rugiada o dell'Umidità spento durante l'allerta resta spento e si
