@@ -253,17 +253,22 @@ description: >-
   dall'Umidità). Fanno eccezione Congelamento e Δ Temp., che impongono comunque la
   loro Velocità, gli Inquinanti ancora presenti, che riavviano la VMC fermata a
   Velocità 0, e l'Umidità che ha avviato la VMC da Velocità 0, che la riporta alla
-  velocità di avvio.
+  velocità di avvio. Durante una Fascia la ripetizione si ferma anche se la VMC
+  resta OFF-Line o la sua velocità non si legge per 32 Secondi, anche spegnendo
+  l'interruttore del Calendario (vedere Black-Out).
 
 
   CAMBIO DI VELOCITÀ DURANTE UN'ALLERTA (comportamento misurato):
 
-  - Congelamento: si sceglie un'altra Velocità → viene riportata subito a Velocità
-  0; a fine allerta va alla Velocità scelta; si sceglie Velocità 0 → la VMC è già
-  ferma: nessun effetto; a fine allerta torna alla Velocità di prima;
+  - Congelamento (con un comando del Calendario in sospeso a fine allerta riparte
+  quel comando, vedere Black-Out): si sceglie un'altra Velocità → viene riportata
+  subito a Velocità 0; a fine allerta va alla Velocità scelta; si sceglie Velocità
+  0 → la VMC è già ferma: nessun effetto; a fine allerta torna alla Velocità di
+  prima;
 
-  - Δ Temp. > 23 °C: si sceglie un'altra Velocità → viene riportata a Velocità
-  1; la Velocità scelta viene memorizzata dopo 4 Secondi e impostata a fine
+  - Δ Temp. > 23 °C (con un comando del Calendario in sospeso a fine allerta
+  riparte quel comando, vedere Black-Out): si sceglie un'altra Velocità → viene
+  riportata a Velocità 1; la Velocità scelta viene memorizzata dopo 4 Secondi e impostata a fine
   allerta (se l'allerta finisce prima che sia memorizzata, resta la Velocità
   scelta); scegliere Velocità 1 non cambia la memoria; si sceglie Velocità 0 →
   viene riportata a Velocità 1; a fine allerta resta a Velocità 0;
