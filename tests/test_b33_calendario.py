@@ -129,8 +129,11 @@ def test_uscita_dalla_fascia_velocita_0_nel_ciclo_di_conferma() -> None:
         assert passi[i + 1]["action"] == "script.vmc_master_calendario_fascia_1_o_2_off"
         memoria = passi[i + 2]
         assert memoria["alias"].startswith("Black-Out prima della conferma -> memorizza la Velocità 0")
+        # b35 (C1-1): la memoria si accende anche con la VMC gia' OFF-Line e la lettura persa (Black-Out non ancora
+        # rilevato quando il ciclo esce per la lettura persa)
         assert memoria["if"][0]["value_template"] == (
-            f"{{{{ {BLACK_OUT} and states('{LETTURA}') != 'Velocità 0' }}}}")
+            f"{{{{ ({BLACK_OUT} or (is_state('sensor.vmc_master_status_ip_interfaccia', 'OFF-Line') and {LETTURA_PERSA})) "
+            f"and states('{LETTURA}') != 'Velocità 0' }}}}")
         assert memoria["then"][0]["target"]["entity_id"] == "input_boolean.vmc_master_spia_velocita_0"
         assert memoria["then"][0]["action"] == "input_boolean.turn_on"
         assert len(memoria["then"][1]["target"]["entity_id"]) == 7
@@ -160,5 +163,9 @@ def test_tutti_i_cicli_dell_automazione_restano_uguali() -> None:
     la lettura della velocita' persa c'e' solo nei 14 rami «Off» del Calendario."""
     testo = (PKG / "vmc_master_automazione.txt").read_text(encoding="utf-8")
     assert OFF_LINE not in testo
-    assert testo.count(LETTURA_PERSA) == 14
-    assert testo.count(UTENTE) == 176 + 14 + 17  # 176 nella b32, piu' i 14 rami «Off», piu' i 17 cicli della b34 (B1-2)
+    # b35 (C1-1): anche nella memoria Velocita' 0 e nella Spia Comando non eseguito dei 14 rami «Off», e nel ciclo, nella
+    # memoria e nella spia della fine della Fascia nel ramo del ritorno della VMC (14 + 14 + 14 + 3)
+    assert testo.count(LETTURA_PERSA) == 45
+    # 176 nella b32, piu' i 14 rami «Off», piu' i 17 cicli della b34 (B1-2), piu' il ciclo della b35 (C1-1, ramo del
+    # ritorno della VMC)
+    assert testo.count(UTENTE) == 176 + 14 + 17 + 1

@@ -85,12 +85,16 @@ def test_righe_nuove_sotto_il_ripristino() -> None:
     assert righe[-2]["conditions"] == [OFF, {"condition": "state", "entity": CAL, "state": "on"}]
     assert righe[-2]["row"]["label"].startswith("Black-Out durante la fascia del Calendario: ")
 
-    # 5) b34: comando della fascia non eseguito (VMC ON-Line ma senza risposta ai comandi)
+    # 5) b34: comando della fascia non eseguito (VMC ON-Line ma velocità illeggibile); b35 (C5-1, C1-1): la causa vera e
+    # anche la Velocità 0 di fine fascia
     assert righe[-1]["conditions"] == [
         {"condition": "state", "entity": "sensor.vmc_master_status_ip_interfaccia", "state": "ON-Line"},
         {"condition": "state", "entity": "input_boolean.vmc_master_spia_calendario_comando_non_eseguito", "state": "on"},
     ]
-    assert righe[-1]["row"]["label"].endswith("riparte con la velocità della fascia. Non serve fare nulla.")
+    assert righe[-1]["row"]["label"].startswith("La VMC risponde in rete ma la sua velocità non si legge: ")
+    assert "Velocità 0 di fine fascia" in righe[-1]["row"]["label"]
+    assert righe[-1]["row"]["label"].endswith("salvo se nel frattempo la velocità è cambiata o è in corso un'allerta "
+                                              "Congelamento o Δ Temp. Non serve fare nulla.")
 
 
 def test_testi_brevi_e_senza_entita() -> None:

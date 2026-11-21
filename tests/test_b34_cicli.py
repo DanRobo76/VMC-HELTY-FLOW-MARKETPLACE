@@ -105,7 +105,7 @@ def test_comandi_di_velocita_fuori_ciclo_solo_quelli_voluti() -> None:
     ribadisce soltanto (con un ciclo uscirebbe al primo giro)."""
     dati = _automazione()
     tutti = list(_comandi(dati["actions"]))
-    assert len(tutti) == 218
+    assert len(tutti) == 219  # b35 (C1-1): +1, Velocita' 0 di fine Fascia ripetuta nel ramo del ritorno della VMC
     fuori = [azione for azione, dentro in tutti if not dentro]
     assert fuori == ["shell_command.vmc_master_velocita_1"] * 4
     ramo = _rami(dati)["spia_velocita_1_inquinanti_co2_voc"]
