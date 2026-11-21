@@ -468,12 +468,15 @@ async def test_c1_4_fascia_di_un_altro_giorno_ancora_accesa(hass, freezer, ora, 
 
 
 # ------------------------------------------------------------------------------------------------ C5-1
+# b36 (C1-3, C1-5): l'attesa della fine di Congelamento/Δ e il comando dello spegnimento del Calendario
 FRASE = ("se invece la VMC risponde al ping ma la sua velocità non si legge (porta 5001), dopo 32 Secondi la Fascia "
-         "smette di ripetere il comando e, appena la velocità torna leggibile, la Fascia riparte, salvo se nel frattempo "
-         "la Velocità è cambiata (per esempio con il Telecomando); lo stesso vale per la Velocità 0 di fine Fascia: "
-         "appena la velocità torna leggibile la Velocità 0 viene ripetuta, salvo se nel frattempo la Velocità è cambiata "
-         "o è in corso un'allerta Congelamento o Δ Temp.; se invece la corrente manca proprio mentre la Fascia finisce, "
-         "al ritorno della corrente la VMC si arresta dopo 32 Secondi;")
+         "smette di ripetere il comando e, appena la velocità torna leggibile, la Fascia riparte (con un'allerta "
+         "Congelamento o Δ Temp. in corso aspetta la fine dell'allerta e poi riparte con la sua Velocità), salvo se nel "
+         "frattempo la Velocità è cambiata (per esempio con il Telecomando); lo stesso vale per la Velocità 0 di fine "
+         "Fascia e per il comando dato spegnendo l'interruttore del Calendario durante una Fascia (Velocità 0, o "
+         "Velocità 1 con Inquinanti): appena la velocità torna leggibile il comando viene ripetuto, salvo se nel "
+         "frattempo la Velocità è cambiata o è in corso un'allerta Congelamento o Δ Temp.; se invece la corrente manca "
+         "proprio mentre la Fascia finisce, al ritorno della corrente la VMC si arresta dopo 32 Secondi;")
 
 
 def test_c5_1_descrizione_e_voce_17() -> None:
@@ -488,10 +491,12 @@ def test_c5_1_descrizione_e_voce_17() -> None:
 
 def test_c5_1_riquadro_avvisi() -> None:
     scheda = _testo("vmc_master_scheda_manuale_interfaccia.txt")
+    # b36 (C1-3, C1-5): il comando dello spegnimento del Calendario e l'attesa della fine di Congelamento/Δ
     riga = ('label: "La VMC risponde in rete ma la sua velocità non si legge: il comando del Calendario (velocità della '
-            "fascia o Velocità 0 di fine fascia) non è confermato. Appena la velocità torna leggibile il comando riparte, "
-            "salvo se nel frattempo la velocità è cambiata o è in corso un'allerta Congelamento o Δ Temp. Non serve fare "
-            'nulla."')
+            "fascia, Velocità 0 di fine fascia o comando dato spegnendo l'interruttore del Calendario durante la fascia) "
+            "non è confermato. Appena la velocità torna leggibile il comando riparte, salvo se nel frattempo la velocità "
+            "è cambiata; con un'allerta Congelamento o Δ Temp. in corso la velocità della fascia riparte alla fine "
+            "dell'allerta, gli altri comandi non vengono ripetuti. Non serve fare nulla.\"")
     assert scheda.count(riga) == 1
     blocco = scheda[scheda.rindex("- type: conditional", 0, scheda.index(riga)): scheda.index(riga)]
     assert SPIA_CNE in blocco and "state: ON-Line" in blocco

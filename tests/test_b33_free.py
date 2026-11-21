@@ -159,7 +159,10 @@ def test_scheda_msg_15_ripristino_solo_con_umidita() -> None:
             f"\"Velocità 1\" %}}RIPRISTINO SULLA VELOCITA' FREE {tipo}") == 2
     piatta = _norm(scheda)
     assert "<b>Cambio del mese programmato.</b>" in piatta
-    assert "anche con le condizioni già tornate favorevoli (ripresa in attesa)</td>" in piatta
+    # b36 (C5-4): la riga prosegue con le due frasi del Foglio (Inquinanti e Free scelta con condizioni sfavorevoli)
+    assert ("anche con le condizioni già tornate favorevoli (ripresa in attesa); con Inquinanti la Velocità scelta viene "
+            "memorizzata dall'allerta Inquinanti dopo 8 Secondi; scegliendo Free Cool./Heat. con le condizioni ancora "
+            "sfavorevoli la VMC torna a Velocità 0 dopo 24 Secondi</td>") in piatta
 
 
 def test_descrizione_e_voce_17_uguali() -> None:

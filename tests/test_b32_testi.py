@@ -45,8 +45,10 @@ def test_black_out_velocita_salvata_e_fascia() -> None:
     assert "riparte con la velocità della fascia (se nel frattempo la fascia è finita, si arresta). Non serve" in scheda
     piatto = _piatto(scheda)
     assert "che la VMC riprende al ritorno della corrente (o la velocità memorizzata dall'allerta in corso)." in piatto
-    assert ("compare invece subito la scheda completa, con il countdown «Ripristino dopo Black-Out» (32 secondi): dopo "
-            "altri 5 secondi la VMC riparte con la velocità della fascia") in piatto
+    # b36 (C1-2): i 32 secondi si contano da quando la velocita' della VMC torna leggibile
+    assert ("compare invece subito la scheda completa, con il countdown «Ripristino dopo Black-Out» (32 secondi, contati "
+            "da quando la velocità della VMC torna leggibile): dopo altri 5 secondi la VMC riparte con la velocità della "
+            "fascia") in piatto
     assert 'name: "Ripristino dopo Black-Out"' in scheda
 
 

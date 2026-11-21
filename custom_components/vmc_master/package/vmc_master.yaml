@@ -16858,8 +16858,9 @@ script:
     icon: mdi:fingerprint-off
     description: >
       Richiamato dall'Automazione VMC Master all'inizio della 1° Fascia del Calendario e, durante la
-      Fascia, al ritorno della corrente dopo un Black-Out (VMC OFF-Line almeno 32 s) e quando la VMC torna a
-      rispondere dopo un comando non eseguito. All'avvio spegne
+      Fascia, al ritorno della corrente dopo un Black-Out (VMC OFF-Line almeno 32 s; lo script parte 32 s dopo
+      che la velocità della VMC torna leggibile) e quando la VMC torna a rispondere dopo un comando non
+      eseguito (con un'allerta Congelamento o Δ Temp. in corso, alla fine dell'allerta). All'avvio spegne
       sempre le spie di velocità del Black-Out (la Fascia prevale sul ripristino di un Black-Out rilevato
       prima della Fascia). Dopo 5 s, con un'allerta Congelamento o Δ Temp. in corso non manda nessun
       comando; altrimenti spegne le memorie di Inquinanti e Punto di Rugiada e comanda la velocità scelta
@@ -16889,6 +16890,10 @@ script:
       viene ripetuta, salvo se nel frattempo la velocità è cambiata o è in corso un'allerta Congelamento o
       Δ Temp.; se invece la VMC va OFF-Line prima di confermarla, la Velocità 0 viene memorizzata e
       rimandata al ritorno della corrente.
+      Anche il comando che l'Automazione manda quando si spegne l'interruttore del Calendario durante la
+      Fascia (Velocità 0, o Velocità 1 con gli Inquinanti) smette di essere ripetuto se la velocità non si
+      legge e viene ripetuto appena la VMC torna a rispondere, salvo se nel frattempo la velocità è cambiata
+      o è in corso un'allerta Congelamento o Δ Temp.
       Se Home Assistant si riavvia durante lo script (attesa di 5 s o ripetizione del comando), lo script
       non riprende: la spia della Fascia resta accesa e la VMC resta alla velocità in cui si trova (salvo
       le allerte) finché non si sceglie un'altra Velocità o non finisce la Fascia; al riavvio la Fascia non
@@ -25134,8 +25139,9 @@ script:
     icon: mdi:fingerprint-off
     description: >
       Richiamato dall'Automazione VMC Master all'inizio della 2° Fascia del Calendario e, durante la
-      Fascia, al ritorno della corrente dopo un Black-Out (VMC OFF-Line almeno 32 s) e quando la VMC torna a
-      rispondere dopo un comando non eseguito. All'avvio spegne
+      Fascia, al ritorno della corrente dopo un Black-Out (VMC OFF-Line almeno 32 s; lo script parte 32 s dopo
+      che la velocità della VMC torna leggibile) e quando la VMC torna a rispondere dopo un comando non
+      eseguito (con un'allerta Congelamento o Δ Temp. in corso, alla fine dell'allerta). All'avvio spegne
       sempre le spie di velocità del Black-Out (la Fascia prevale sul ripristino di un Black-Out rilevato
       prima della Fascia). Dopo 5 s, con un'allerta Congelamento o Δ Temp. in corso non manda nessun
       comando; altrimenti spegne le memorie di Inquinanti e Punto di Rugiada e comanda la velocità scelta
@@ -25165,6 +25171,10 @@ script:
       viene ripetuta, salvo se nel frattempo la velocità è cambiata o è in corso un'allerta Congelamento o
       Δ Temp.; se invece la VMC va OFF-Line prima di confermarla, la Velocità 0 viene memorizzata e
       rimandata al ritorno della corrente.
+      Anche il comando che l'Automazione manda quando si spegne l'interruttore del Calendario durante la
+      Fascia (Velocità 0, o Velocità 1 con gli Inquinanti) smette di essere ripetuto se la velocità non si
+      legge e viene ripetuto appena la VMC torna a rispondere, salvo se nel frattempo la velocità è cambiata
+      o è in corso un'allerta Congelamento o Δ Temp.
       Se Home Assistant si riavvia durante lo script (attesa di 5 s o ripetizione del comando), lo script
       non riprende: la spia della Fascia resta accesa e la VMC resta alla velocità in cui si trova (salvo
       le allerte) finché non si sceglie un'altra Velocità o non finisce la Fascia; al riavvio la Fascia non
@@ -27064,7 +27074,8 @@ automation:
       solo se l'ha avviato quel trigger (ogni trigger della stessa famiglia scrive un testo diverso: un trigger che
       diventa falso non ferma il countdown appena avviato da un altro trigger della stessa famiglia).
       Copre tutti i 133 trigger con attesa dell'automazione; per il ritorno della corrente durante una Fascia del
-      Calendario il timer parte solo se valgono anche le condizioni del ramo dell'automazione (interruttore del
+      Calendario il timer parte quando la velocità della VMC torna leggibile e solo se valgono anche le
+      condizioni del ramo dell'automazione (interruttore del
       Calendario acceso, spia di una Fascia accesa; per il ritorno durante il riallineamento al riavvio anche
       fase 1-3 e VMC rimasta OFF-Line almeno per il tempo di rilevazione del Black-Out).
     mode: parallel

@@ -232,11 +232,14 @@ def test_descrizioni_e_scheda() -> None:
         for vietata in ("vmc_master", "master", "input_", "sensor.", "999.999"):
             assert vietata not in testo
     # b35 (C5-1): la causa vera (la velocita' non si legge) e il caso della fine della Fascia (C1-1)
+    # b36 (C1-3, C1-5): l'attesa della fine di Congelamento/Δ e il comando dello spegnimento del Calendario
     frase = ("se invece la VMC risponde al ping ma la sua velocità non si legge (porta 5001), dopo 32 Secondi la Fascia "
-             "smette di ripetere il comando e, appena la velocità torna leggibile, la Fascia riparte, salvo se nel "
+             "smette di ripetere il comando e, appena la velocità torna leggibile, la Fascia riparte (con un'allerta "
+             "Congelamento o Δ Temp. in corso aspetta la fine dell'allerta e poi riparte con la sua Velocità), salvo se nel "
              "frattempo la Velocità è cambiata (per esempio con il Telecomando); lo stesso vale per la Velocità 0 di fine "
-             "Fascia: appena la velocità torna leggibile la Velocità 0 viene ripetuta, salvo se nel frattempo la Velocità "
-             "è cambiata o è in corso un'allerta Congelamento o Δ Temp.; se invece la corrente manca proprio mentre la "
-             "Fascia finisce, al ritorno della corrente la VMC si arresta dopo 32 Secondi;")
+             "Fascia e per il comando dato spegnendo l'interruttore del Calendario durante una Fascia (Velocità 0, o "
+             "Velocità 1 con Inquinanti): appena la velocità torna leggibile il comando viene ripetuto, salvo se nel "
+             "frattempo la Velocità è cambiata o è in corso un'allerta Congelamento o Δ Temp.; se invece la corrente manca "
+             "proprio mentre la Fascia finisce, al ritorno della corrente la VMC si arresta dopo 32 Secondi;")
     assert frase in " ".join(_automazione()["description"].split())
     assert frase + "<br>" in " ".join(_testo("vmc_master_scheda_manuale_interfaccia.txt").split())
