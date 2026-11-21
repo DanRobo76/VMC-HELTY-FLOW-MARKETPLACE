@@ -217,8 +217,9 @@ description: >-
 
   - Black-Out: 32 Secondi per il Rilevamento e per il Ripristino; una Velocità
   scelta dopo il ritorno della corrente e prima del ripristino (Telecomando,
-  scheda o App) resta e il ripristino non avviene (la Velocità 1 no: non si
-  distingue da quella con cui la VMC riparte da sola dopo un Black-Out); le
+  scheda o App) resta e il ripristino non avviene (la Velocità 1 no:
+  l'automazione non la distingue dalla ripartenza della VMC, che dopo un
+  Black-Out può riaccendersi da sola a Velocità 1); le
   allerte in corso la trattano come una scelta fatta durante l'allerta
   (Congelamento e Δ Temp. impongono comunque la loro Velocità); durante una
   Fascia del Calendario la rilevazione del Black-Out non è attiva: al ritorno
