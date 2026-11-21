@@ -19509,12 +19509,13 @@ actions:
                       and states.sensor.vmc_master_status_ventola_lettura_codice_interpretato is not none
                       and as_timestamp(states.sensor.vmc_master_status_ventola_lettura_codice_interpretato.last_changed, 0) <= comando_non_eseguito_dalle | float(0) }}
                   - alias: >-
-                      Nessuna memoria Inquinanti della partenza da Velocità 0 (con la memoria accesa si ripete la Velocità 1,
-                      opzione seguente)
+                      Non è il caso della Velocità 1 degli Inquinanti (opzione seguente): Spia Inquinanti spenta, oppure accesa
+                      con la memoria della partenza da Velocità 0 spenta e l'interruttore del Calendario acceso
                     condition: template
                     value_template: >-
                       {{ not (states('input_boolean.vmc_master_spia_co2_o_voc') == 'on'
-                      and states('input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0') == 'on') }}
+                      and (states('input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0') == 'on'
+                      or states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_calendario') == 'off')) }}
                 sequence:
                   - variables:
                       vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
@@ -19577,10 +19578,12 @@ actions:
                         target:
                           entity_id: input_boolean.vmc_master_spia_calendario_comando_non_eseguito
               - alias: >-
-                  Nessuna Spia del Calendario accesa con la memoria Inquinanti della partenza da Velocità 0 (Calendario spento
-                  durante la Fascia con gli Inquinanti presenti e Velocità 1 non confermata) -> ripete la Velocità 1 con lo stesso
-                  ciclo dello spegnimento del Calendario, salvo se nel frattempo la velocità della VMC è cambiata; al rientro
-                  degli Inquinanti la VMC torna a Velocità 0
+                  Nessuna Spia del Calendario accesa con la Spia Inquinanti accesa e la memoria della partenza da Velocità 0
+                  accesa o l'interruttore del Calendario spento (Calendario spento durante la Fascia con gli Inquinanti presenti
+                  e Velocità 1 non confermata) -> rimette le memorie Inquinanti come le lascia lo spegnimento del Calendario
+                  (anche se nel frattempo gli Inquinanti hanno memorizzato la velocità letta prima, ancora quella della Fascia)
+                  e ripete la Velocità 1 con lo stesso ciclo, salvo se nel frattempo la velocità della VMC è cambiata; al
+                  rientro degli Inquinanti la VMC torna a Velocità 0
                 conditions:
                   - alias: Nessuna Spia del Calendario accesa (Fascia finita o Calendario spento durante la Fascia)
                     condition: template
@@ -19620,12 +19623,41 @@ actions:
                       {{ lettura | length > 1 and codici.get(lettura[1], 'Non disponibile') == states('sensor.vmc_master_status_ventola_lettura_codice_interpretato')
                       and states.sensor.vmc_master_status_ventola_lettura_codice_interpretato is not none
                       and as_timestamp(states.sensor.vmc_master_status_ventola_lettura_codice_interpretato.last_changed, 0) <= comando_non_eseguito_dalle | float(0) }}
-                  - alias: Memoria Inquinanti della partenza da Velocità 0 accesa (Velocità 1 fino al rientro degli Inquinanti)
+                  - alias: >-
+                      Spia Inquinanti accesa con la memoria della partenza da Velocità 0 accesa oppure con l'interruttore del
+                      Calendario spento (Velocità 1 fino al rientro degli Inquinanti)
                     condition: template
                     value_template: >-
                       {{ states('input_boolean.vmc_master_spia_co2_o_voc') == 'on'
-                      and states('input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0') == 'on' }}
+                      and (states('input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0') == 'on'
+                      or states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_calendario') == 'off') }}
                 sequence:
+                  - alias: >-
+                      Memorie di velocità degli Inquinanti OFF (una velocità memorizzata sulla lettura vecchia, mentre la
+                      velocità non si leggeva, non vale) come nello spegnimento del Calendario
+                    data: {}
+                    target:
+                      entity_id:
+                        - input_boolean.vmc_master_spia_velocita_0_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_2_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_3_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_4_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_iperventilazione_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_notturna_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_freecooling_co2_o_voc
+                    action: input_boolean.turn_off
+                  - alias: >-
+                      Spia Inquinanti, memoria della partenza da Velocità 0 e memorie Velocità 1 Inquinanti e PdR ON
+                      come nello spegnimento del Calendario: a fine Inquinanti la VMC torna a Velocità 0
+                    data: {}
+                    target:
+                      entity_id:
+                        - input_boolean.vmc_master_spia_velocita_1_co2_o_voc_pdr
+                        - >-
+                          input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0
+                        - input_boolean.vmc_master_spia_co2_o_voc
+                        - input_boolean.vmc_master_spia_velocita_1_co2_o_voc
+                    action: input_boolean.turn_on
                   - variables:
                       vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
                     alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)

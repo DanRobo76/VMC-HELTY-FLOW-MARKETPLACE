@@ -12,8 +12,11 @@ riavvio (trigger di stato) con la velocita' ancora illeggibile si riaccende la S
 riparte con il trigger del ritorno.
 C1-5: i 2 rami dello spegnimento di «VMC ON/OFF in Funzione del Calendario» durante una Fascia escono come i 14 rami
 «Off» (lettura persa per il tempo di rilevazione del Black-Out) con la stessa memoria (Black-Out) e la stessa Spia
-Comando non eseguito; il ritorno della VMC ripete la Velocita' 0 (o la Velocita' 1 con gli Inquinanti) anche con
-l'interruttore del Calendario spento, salvo velocita' cambiata nel frattempo. Nessun tempo nuovo.
+Comando non eseguito; il ritorno della VMC ripete la Velocita' 0 anche con l'interruttore del Calendario spento, salvo
+velocita' cambiata nel frattempo; con la Spia Inquinanti accesa e la memoria della partenza da Velocita' 0 accesa o
+l'interruttore spento ripete la Velocita' 1, dopo aver rimesso le memorie Inquinanti come le lascia lo spegnimento (anche
+se intanto gli Inquinanti hanno memorizzato la velocita' letta prima), cosi' a fine Inquinanti la VMC torna a Velocita' 0.
+Nessun tempo nuovo.
 
 Le prove dinamiche usano il piccolo esecutore di tests/test_b35_calendario.py (condizioni rese da Home Assistant,
 spie scritte negli stati, cicli registrati)."""
@@ -64,6 +67,11 @@ FASCIA_1 = "script.vmc_master_calendario_fascia_1_on"
 ALLERTE = {"Congelamento OFF": (GELO, "input_boolean.vmc_master_spia_velocita_2_congelamento"),
            "delta_temp_OFF": (DELTA, "input_boolean.vmc_master_spia_velocita_2_delta_temp_verifica_soglia_valore")}
 SPEGNIMENTO = {"Velocità 1": "Calendario Off tra Fascie e Spia Inquinanti ON", "Velocità 0": "Calendario Off tra Fascie"}
+V1_CO2 = "input_boolean.vmc_master_spia_velocita_1_co2_o_voc"
+V1_PDR = "input_boolean.vmc_master_spia_velocita_1_co2_o_voc_pdr"
+V2_CO2 = "input_boolean.vmc_master_spia_velocita_2_co2_o_voc"
+MEMORIE_CO2 = [f"input_boolean.vmc_master_spia_velocita_{v}_co2_o_voc"
+               for v in ("0", "2", "3", "4", "iperventilazione", "notturna", "freecooling")]
 MEMORIA_V1 = MEMORIA.replace("'Velocità 0'", "'Velocità 1'")
 SPIA_V1_CNE = SPIA.replace("'Velocità 0'", "'Velocità 1'")
 
@@ -356,12 +364,24 @@ def test_c1_5_ramo_del_ritorno_ripete_la_velocita_1_con_lo_stesso_ciclo() -> Non
     terza, quarta = scelta[2], scelta[3]
     assert [_norm(c["value_template"]) for c in terza["conditions"][:3]] == [
         _norm(c["value_template"]) for c in quarta["conditions"][:3]]
-    memoria = (f"states('{SPIA_CO2}') == 'on' and states('{PARTENZA}') == 'on'")
-    assert _norm(terza["conditions"][3]["value_template"]) == f"{{{{ not ({memoria}) }}}}"
-    assert _norm(quarta["conditions"][3]["value_template"]) == f"{{{{ {memoria} }}}}"
+    # Velocita' 1 con la Spia Inquinanti accesa e la memoria della partenza da Velocita' 0 accesa o l'interruttore
+    # spento; la terza opzione esclude esattamente lo stesso caso
+    caso = (f"states('{SPIA_CO2}') == 'on' and (states('{PARTENZA}') == 'on' or states('{INTERRUTTORE}') == 'off')")
+    assert len(terza["conditions"]) == len(quarta["conditions"]) == 4
+    assert _norm(terza["conditions"][3]["value_template"]) == f"{{{{ not ({caso}) }}}}"
+    assert _norm(quarta["conditions"][3]["value_template"]) == f"{{{{ {caso} }}}}"
     passi_74 = _rami(dati)[SPEGNIMENTO["Velocità 1"]]["sequence"][0]["choose"][0]["sequence"]
     k = next(n for n, p in enumerate(passi_74) if "repeat" in p)
-    assert quarta["sequence"] == passi_74[k - 1:]
+    # prima del ciclo le memorie Inquinanti come le lascia lo spegnimento: memorie di velocita' spente (stesso elenco e
+    # stesso ordine dello spegnimento) e stessa accensione di spia, partenza da Velocita' 0 e Velocita' 1 e PdR
+    spente, accese = quarta["sequence"][:2]
+    assert spente["action"] == "input_boolean.turn_off"
+    assert spente["target"]["entity_id"] == [e for e in passi_74[0]["target"]["entity_id"] if e in MEMORIE_CO2]
+    assert spente["target"]["entity_id"] == MEMORIE_CO2
+    assert passi_74[k - 2]["action"] == "input_boolean.turn_on" and "alias" not in passi_74[k - 2]
+    assert {c: v for c, v in accese.items() if c != "alias"} == passi_74[k - 2]
+    assert set(accese["target"]["entity_id"]) == {V1_PDR, PARTENZA, SPIA_CO2, V1_CO2}
+    assert quarta["sequence"][2:] == passi_74[k - 1:]
     assert "script." not in str(quarta)
     # l'interruttore del Calendario solo nelle opzioni della Fascia
     condizione = _ramo_ritorno()["sequence"][2]["value_template"]
@@ -369,7 +389,7 @@ def test_c1_5_ramo_del_ritorno_ripete_la_velocita_1_con_lo_stesso_ciclo() -> Non
     for opzione in scelta[:2]:
         assert {"condition": "state", "entity_id": INTERRUTTORE, "state": "on"}.items() <= opzione["conditions"][1].items()
     for opzione in scelta[2:]:
-        assert INTERRUTTORE not in str(opzione["conditions"])
+        assert INTERRUTTORE not in str(opzione["conditions"][:3])
 
 
 # ------------------------------------------------------------------------------------------------ C1-5 (dinamica)
@@ -440,6 +460,67 @@ async def test_c1_5_ritorno_della_vmc_ripete_il_comando_dello_spegnimento(hass, 
     assert hass.states.get(SPIA_CNE).state == "off"
 
 
+def _memoria_velocita_2_inquinanti(hass) -> None:
+    """Mentre la velocita' non si legge gli Inquinanti memorizzano la Velocita' 2 letta prima (ramo «Spia Velocita' 2
+    CO2 e/o VOC»): memoria Velocita' 2 accesa, memoria della partenza da Velocita' 0 e memorie Velocita' 1 spente."""
+    hass.states.async_set(V2_CO2, "on")
+    for entita in (PARTENZA, V1_CO2, V1_PDR):
+        hass.states.async_set(entita, "off")
+
+
+def _memorie_dello_spegnimento(hass) -> None:
+    assert all(hass.states.get(e) is None or hass.states.get(e).state == "off" for e in MEMORIE_CO2)
+    assert all(hass.states.get(e).state == "on" for e in (SPIA_CO2, PARTENZA, V1_CO2, V1_PDR))
+
+
+@pytest.mark.parametrize("memoria_v2", [False, True])
+async def test_c1_5_ritorno_con_gli_inquinanti_rimette_le_memorie_dello_spegnimento(hass, memoria_v2) -> None:
+    """Caso del simulatore: 1° Fascia a Velocita' 2, allerta CO2, velocita' illeggibile, Calendario spento; lo
+    spegnimento esce con la Spia Comando non eseguito e intanto gli Inquinanti memorizzano la Velocita' 2 letta prima.
+    Al ritorno della lettura (VMC ancora a Velocita' 2) si ripete la Velocita' 1 con le memorie Inquinanti dello
+    spegnimento: a fine Inquinanti la VMC torna a Velocita' 0 (prima: Velocita' 0 subito, poi di nuovo la Velocita' 1
+    degli Inquinanti)."""
+    _spegnimento(hass, "Velocità 1", "ON-Line")
+    _memorie_dello_spegnimento(hass)
+    if memoria_v2:
+        _memoria_velocita_2_inquinanti(hass)
+    ora = time.time()
+    hass.states.async_set(SPIA_CNE, "off", timestamp=ora - 31)  # spia accesa dallo spegnimento 30 s fa
+    hass.states.async_set(SPIA_CNE, "on", timestamp=ora - 30)
+    hass.states.async_set(TCP, "VMGO,00002")
+    assert _render(hass, _trigger("calendario_ritorno_comando")["value_template"]) == "True"
+    esito = _nuovo_esito()
+
+    def vmc_esegue() -> None:
+        hass.states.async_set(TCP, "VMGO,00001")
+        hass.states.async_set(LETTURA, "Velocità 1")
+
+    _esegui(hass, _ramo_ritorno()["sequence"], {}, esito, al_ciclo=vmc_esegue)
+    assert esito["comandi"] == ["velocita_1"] and esito["uscita"] == [True] and esito["altro"] == []
+    _memorie_dello_spegnimento(hass)
+    assert hass.states.get(SPIA_CNE).state == "off"
+
+
+@pytest.mark.parametrize(("interruttore", "partenza", "comando"), [
+    ("off", "off", "velocita_1"),  # Calendario spento con gli Inquinanti: Velocita' 1 anche senza la memoria
+    ("on", "on", "velocita_1"),  # memoria della partenza da Velocita' 0 accesa (come la b36 prima)
+    ("on", "off", "velocita_0"),  # Fascia finita con gli Inquinanti: Velocita' 0 (Foglio A25)
+])
+async def test_c1_5_ritorno_con_gli_inquinanti_quale_velocita(hass, interruttore, partenza, comando) -> None:
+    _stato_base(hass)
+    hass.states.async_set(INTERRUTTORE, interruttore)
+    hass.states.async_set(SPIA_CNE, "on", timestamp=time.time() - 60)
+    hass.states.async_set(SPIA_CO2, "on")
+    _memoria_velocita_2_inquinanti(hass)
+    hass.states.async_set(PARTENZA, partenza)
+    hass.states.async_set(TCP, "VMGO,00002", timestamp=time.time() - 600)
+    hass.states.async_set(LETTURA, "Velocità 2", timestamp=time.time() - 600)
+    esito = _nuovo_esito()
+    _esegui(hass, _ramo_ritorno()["sequence"], {}, esito)
+    assert esito["comandi"] == [comando]
+    assert hass.states.get(V2_CO2).state == ("off" if comando == "velocita_1" else "on")
+
+
 async def test_c1_5_fine_fascia_con_inquinanti_resta_la_velocita_0(hass) -> None:
     """Dopo la fine della Fascia con gli Inquinanti la memoria della partenza da Velocita' 0 e' spenta: si ripete la
     Velocita' 0 e poi la logica Inquinanti riparte dalla VMC ferma (Foglio A25)."""
@@ -491,3 +572,22 @@ async def test_c1_3_fine_allerta_con_il_motore_di_home_assistant(hass) -> None:
     assert _render(hass, _trigger("calendario_ritorno_comando")["value_template"]) == "True"
     comandi = await _esegui_ha(hass, _ramo_ritorno()["sequence"], {}, attesa=0.5)
     assert comandi[:1] == ["vmc_master_velocita_0"]
+
+
+async def test_c1_5_ritorno_con_gli_inquinanti_con_il_motore_di_home_assistant(hass) -> None:
+    """Caso del simulatore eseguito dal motore degli script di Home Assistant: Calendario spento, Inquinanti presenti
+    con la Velocita' 2 memorizzata sulla lettura vecchia; il ritorno della VMC rimette le memorie dello spegnimento e
+    invia la Velocita' 1."""
+    from tests.test_b35_allerte import _esegui as _esegui_ha
+
+    _stato_base(hass)
+    hass.states.async_set(INTERRUTTORE, "off")
+    hass.states.async_set(SPIA_CO2, "on")
+    _memoria_velocita_2_inquinanti(hass)
+    hass.states.async_set(SPIA_CNE, "on", timestamp=time.time() - 30)
+    hass.states.async_set(TCP, "VMGO,00002", timestamp=time.time() - 600)
+    hass.states.async_set(LETTURA, "Velocità 2", timestamp=time.time() - 600)
+    assert _render(hass, _trigger("calendario_ritorno_comando")["value_template"]) == "True"
+    comandi = await _esegui_ha(hass, _ramo_ritorno()["sequence"], {}, attesa=0.5)
+    assert comandi[:1] == ["vmc_master_velocita_1"]
+    _memorie_dello_spegnimento(hass)
