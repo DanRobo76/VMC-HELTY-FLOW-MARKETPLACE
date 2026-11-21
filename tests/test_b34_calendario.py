@@ -350,7 +350,8 @@ def test_b1_4_nessuna_ripresa_della_fascia_al_riavvio() -> None:
     Verifica che nulla la riprenda: gli script di Fascia sono chiamati solo dai 14 rami «On» (il loro trigger vuole la
     spia della Fascia spenta, che invece resta accesa dopo il riavvio), dai 2 rami del ritorno della corrente (spia
     Black-Out del Calendario accesa, oppure VMC tornata ON-Line dopo almeno 32 s OFF-Line) e dal ramo del ritorno della
-    VMC dopo un comando non eseguito (la sua spia si spegne al riavvio: initial false); nel package nessuno li chiama
+    VMC dopo un comando non eseguito (dalla b36 la sua spia resta accesa dopo il riavvio, ma il ramo riparte solo
+    con un comando in sospeso e a velocita' non cambiata); nel package nessuno li chiama
     (solo elenchi) e il riallineamento al riavvio non li rilancia."""
     automazione = _automazione()
     trigger = {t["id"]: t for t in automazione["triggers"] if isinstance(t.get("id"), str)}

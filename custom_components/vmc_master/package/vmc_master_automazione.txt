@@ -3829,7 +3829,7 @@ triggers:
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
-      )
+      ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4)
       }}
     id: Spia Avvisi On
     for:
@@ -8952,7 +8952,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
-      )
+      ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4)
       }}
       {%- elif trigger.id == 'Spia Avvisi Off' -%}
       {{

@@ -4803,7 +4803,7 @@ input_number:
     icon: mdi:knob
 
 ################### Inizio Creazione Fase di Riallineamento delle Allerte al Riavvio di Home Assistant ###################
-  vmc_master_fase_riallineamento_al_riavvio:                                    # [CONFIGURAZIONE, 525 RICHIAMI] [INTERFACCIA, 18 RICHIAMI] [AUTOMAZIONE, 583 RICHIAMI] FASE DEL RIALLINEAMENTO DELLE ALLERTE FINITE A HOME ASSISTANT SPENTO (0 = FUNZIONAMENTO NORMALE)
+  vmc_master_fase_riallineamento_al_riavvio:                                    # [CONFIGURAZIONE, 529 RICHIAMI] [INTERFACCIA, 18 RICHIAMI] [AUTOMAZIONE, 587 RICHIAMI] FASE DEL RIALLINEAMENTO DELLE ALLERTE FINITE A HOME ASSISTANT SPENTO (0 = FUNZIONAMENTO NORMALE)
     name: "Fase Riallineamento Allerte al Riavvio"
     min: 0
     max: 4
@@ -5254,9 +5254,8 @@ input_boolean:
     name: "Spia Black-Out all'interno del Calendario"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_comando_non_eseguito:                              # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 5 RICHIAMI] [AUTOMAZIONE, 33 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO IL COMANDO DI UNA FASCIA DEL CALENDARIO (O LA VELOCITA' 0 DI FINE FASCIA) NON VIENE ESEGUITO PERCHE' LA VMC RISPONDE AL PING MA LA SUA VELOCITA' NON SI LEGGE (APPENA LA VELOCITA' TORNA LEGGIBILE IL COMANDO VIENE RIPETUTO; SI SPEGNE AL RIAVVIO DI HOME ASSISTANT)
+  vmc_master_spia_calendario_comando_non_eseguito:                              # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 5 RICHIAMI] [AUTOMAZIONE, 33 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO IL COMANDO DI UNA FASCIA DEL CALENDARIO (O LA VELOCITA' 0 DI FINE FASCIA) NON VIENE ESEGUITO PERCHE' LA VMC RISPONDE AL PING MA LA SUA VELOCITA' NON SI LEGGE (APPENA LA VELOCITA' TORNA LEGGIBILE IL COMANDO VIENE RIPETUTO; RESTA ACCESA ANCHE DOPO UN RIAVVIO DI HOME ASSISTANT E IL COMANDO VIENE RIPETUTO APPENA LA VELOCITA' TORNA LEGGIBILE, A RIALLINEAMENTO FINITO)
     name: "Spia Comando non eseguito all'interno del Calendario"
-    initial: false
     icon: mdi:memory
 
   vmc_master_spia_velocita_0_un_solo_avvio:                                     # [CONFIGURAZIONE, 51 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 255 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' 0, IN CASO SUPERAMENTO del Lim. Δ P. di Rugiada
@@ -31023,7 +31022,7 @@ automation:
             and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
             and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
             and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
-          )
+          ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4)
           }}
       - trigger: template
         id: "OFF|avvisi|avvisi|Spia Avvisi On"
@@ -31042,7 +31041,7 @@ automation:
             and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
             and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
             and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
-          )
+          ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4)
           }}
           {%- endset -%}
           {%- set vmc_master_esito = vmc_master_esito | trim | lower -%}
