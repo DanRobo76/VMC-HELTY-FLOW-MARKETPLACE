@@ -250,9 +250,9 @@ D6_ECCEZIONI = {
 # lista; se invece il comportamento e' voluto, la voce passa in D6_ECCEZIONI con il riferimento al Foglio.
 # «Rip. Vel. 0 No PdR» e «Rip. Free Cool./Heat. No PdR se Spia Inquinanti ON» sono stati corretti nella b36 (A2-1).
 # spia_umidita_off: la correzione e' in un altro ramo di lavoro; all'unione si toglie questa voce.
-D6_DA_DECIDERE = {
-    "spia_umidita_off": "fine Umidita' (28 s) con memorizzazione della scelta a 4 s: nessun controllo come C3-1/C3-2",
-}
+# b36: vuoto. «spia_umidita_off» (fine Umidita' 28 s, memorizzazione della scelta a 4 s) ha ora la protezione in tutti
+# gli 8 casi (Foglio A21, tests/test_b36_umidita_scelta.py). Un ramo nuovo della classe fa fallire la prova.
+D6_DA_DECIDERE: dict[str, str] = {}
 
 
 def _protezione(passo: dict[str, Any]) -> str | None:

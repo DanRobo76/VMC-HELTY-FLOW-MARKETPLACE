@@ -612,7 +612,8 @@ CLASSE_A = {
     "su Velocità 1»": 5,
     "[opzioni annidate] automazione «Congelamento ON» (+8 trigger): «Velocità 0»": 41,
     "[opzioni annidate] automazione «Congelamento OFF»: «Spia Velocità 0 per Congelamento»": 3,
-    "[opzioni annidate] automazione «spia_umidita_off»: «Velocità 0»": 7,
+    # b36 (b36-umi): 7 -> 11, protezione della scelta con esclusioni proprie nei casi Velocità 0, 1 e Free Cooling
+    "[opzioni annidate] automazione «spia_umidita_off»: «Velocità 0»": 11,
     "[opzioni annidate] automazione «delta_temp_ON» (+8 trigger): «Velocità 0»": 6,
     "[opzioni annidate] automazione «delta_temp_OFF»: «Spia Velocità 0 per Δ Temp. > 23 [°C]»": 3,
     "[opzioni annidate] script vmc_master_calendario_fascia_1_on: «opzione 0»": 7,
@@ -624,6 +625,9 @@ CLASSE_A = {
 # accesa nello stesso giro del ciclo, nessun effetto pratico; da decidere se allineare).
 CLASSE_B = {
     "[ramo d'azione] TeVsTi Free-X e Spia Inquinanti ON": (1, 1),
+    # b36 (b36-umi, Foglio A21): nella protezione della scelta a fine Umidita' ogni velocita' memorizzata (2, 3, 4,
+    # Notturna, Iperventilazione) esclude solo se stessa (la Velocita' 1 era gia' in classe A): differenza voluta
+    "[opzioni annidate] automazione «spia_umidita_off»: «Velocità 0»": (5, 5),
     "[opzioni annidate] script vmc_master_calendario_fascia_1_on: «Programmato Mese Free Heating»": (7, 61),
     "[opzioni annidate] script vmc_master_calendario_fascia_2_on: «Programmato Mese Free Heating»": (7, 61),
 }
@@ -638,7 +642,8 @@ def test_rami_gemelli_per_velocita_uguali_a_meno_delle_eccezioni() -> None:
     classe_b = {n: (c[2], c[3]) for n, c in misurati.items() if c[2]}
     assert classe_b == CLASSE_B, f"classe B misurata: {classe_b}"
     assert classe_a == CLASSE_A, f"classe A misurata: {classe_a}"
-    assert sum(1 for c in misurati.values() if any(c)) == len(CLASSE_A) + len(CLASSE_B)
+    # una famiglia puo' stare in tutte e due le classi (b36: «spia_umidita_off»)
+    assert sum(1 for c in misurati.values() if any(c)) == len(set(CLASSE_A) | set(CLASSE_B))
 
 
 def test_fine_congelamento_e_fine_delta_stessi_conteggi_per_velocita() -> None:
