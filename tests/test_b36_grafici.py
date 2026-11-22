@@ -2,18 +2,21 @@
 
 Segnalazione: sensor.vmc_master_co2_status_grafico e sensor.vmc_master_co2_status_senza_offset_grafico «Unavailable»
 con sensor.vmc_master_co2_status e sensor.vmc_master_co2_status_senza_offset a «-». Causa: la VMC non ha la sonda
-CO₂/VOC (campi 4 e 11 della risposta VMGI sempre 00000), quindi i 4 grafici di CO₂ e VOC non sono disponibili apposta.
+CO₂/VOC (campi 4 e 11 della risposta VMGI sempre 00000), quindi con l'Offset a 0 i 4 grafici di CO₂ e VOC non sono
+disponibili apposta.
 
 - Voluto (passa prima e dopo): «-» viene dall'ultima lettura valida dei Sensori Ambientali (VMGI?) con la CO₂ ≤ 0;
   il «_grafico» non e' disponibile quando la sorgente non e' un numero (buco nel grafico e non 0). Durante il Black-Out
   i sensori restano sull'ultima lettura valida (nessun buco); dopo il ritorno della corrente la prima lettura arriva
   con la lettura programmata (scan_interval 1227 s) o con Agg. Sensori e, se la VMC indica la CO₂ a 0, «-» resta fino
   alla lettura successiva. Nessuna entita' «_grafico» e' nascosta dal Package o dall'integrazione.
-- Errore corretto (fallisce prima, passa dopo): con un Offset CO₂ o VOC positivo una lettura della VMC ≤ 0 («-» del
-  sensore senza Offset, sonda assente) diventava il valore dell'Offset (per esempio 50 ppm), il grafico mostrava una
-  linea finta invece del buco e con un Offset oltre le soglie (CO₂ > 800 ppm, VOC > 300 ppb) partiva un'allerta
-  Inquinanti finta. Ora resta «-» anche con l'Offset (un Offset negativo dava gia' «-»). Temperature e umidita' non
-  hanno lo stesso schema: 0 °C e' un valore vero e l'umidita' della VMC a 0 e' gia' «[Non Calcolabile]».
+- Offset con la sonda assente (b37, regola del proprietario): la b36 faceva restare «-» una lettura della VMC ≤ 0
+  («-» del sensore senza Offset, sonda assente) anche con un Offset CO₂ o VOC positivo, e l'Offset non funzionava piu'
+  con la sonda della VMC scelta. La sonda della VMC senza Offset si usa solo quando va in down un'entita' scelta
+  diversa dalla VMC; altrimenti l'Offset si somma sempre al valore letto, come fino alla b35: con la sonda assente e un
+  Offset positivo CO₂ e VOC mostrano il valore dell'Offset (per esempio 50 ppm) e il loro grafico lo segue, con un
+  Offset oltre le soglie (CO₂ > 800 ppm, VOC > 300 ppb) parte l'allerta Inquinanti; con l'Offset 0 o negativo resta
+  «-». I grafici delle sonde senza Offset restano vuoti. Prove di tutti i sensori con Offset in test_b37_offset.py.
 
 Rese con il motore di Home Assistant: i blocchi template veri del Package (sensore memorizzato a trigger, sensori CO₂ e
 VOC, sensori «_grafico») caricati con l'integrazione template."""
@@ -92,17 +95,18 @@ def _stati(hass: HomeAssistant, *entita: str) -> list[str]:
     return [hass.states.get(e).state for e in entita]
 
 
-# ------------------------------------------------------------------------------------- errore corretto: Offset
-async def test_lettura_a_zero_resta_trattino_con_offset_positivo(hass: HomeAssistant) -> None:
-    """Offset CO₂ +50 e VOC +20: una lettura della VMC con CO₂ e VOC a 0 mostra «-» (non 50 e 20) e i 4 grafici di
-    CO₂ e VOC non sono disponibili (buco, non una linea a 50 o 20). Con una lettura valida l'Offset si somma."""
+# ------------------------------------------------------------------------- Offset con la sonda assente (b37)
+async def test_lettura_a_zero_con_offset_positivo_mostra_l_offset(hass: HomeAssistant) -> None:
+    """Offset CO₂ +50 e VOC +20 con la sonda della VMC scelta: con una lettura valida l'Offset si somma; con una
+    lettura della VMC con CO₂ e VOC a 0 (sonda assente) CO₂ e VOC mostrano 50 e 20 e i loro grafici li seguono (b37,
+    come fino alla b35), mentre le sonde senza Offset restano «-» con i grafici non disponibili (buco)."""
     await _avvia(hass, offset_co2=50, offset_voc=20)
     await _lettura(hass, _vmgi(co2=600, voc=50))
     assert _stati(hass, CO2, CO2_SO, VOC, VOC_SO) == ["650", "600", "70", "50"]
     assert _stati(hass, *GRAFICI_INQUINANTI) == ["650", "600", "70", "50"]
     await _lettura(hass, _vmgi(co2=0, voc=0))
-    assert _stati(hass, CO2, CO2_SO, VOC, VOC_SO) == ["-", "-", "-", "-"]
-    assert _stati(hass, *GRAFICI_INQUINANTI) == ["unavailable"] * 4
+    assert _stati(hass, CO2, CO2_SO, VOC, VOC_SO) == ["50", "-", "20", "-"]
+    assert _stati(hass, *GRAFICI_INQUINANTI) == ["50", "unavailable", "20", "unavailable"]
 
 
 async def test_offset_negativo_e_sonda_scelta_non_disponibile(hass: HomeAssistant) -> None:
@@ -124,20 +128,27 @@ async def test_offset_negativo_e_sonda_scelta_non_disponibile(hass: HomeAssistan
 
 async def test_vmc_senza_sonda_co2_voc(hass: HomeAssistant) -> None:
     """VMC senza sonda CO₂/VOC (campi 4 e 11 sempre 00000), la causa della segnalazione. Offset 0: CO₂ e VOC «-», i 4
-    grafici di CO₂ e VOC «unavailable» (voluto), livelli «-» e nessuna allerta. Offset +900 ppm e +400 ppb: prima
-    dava 900 e 400, «Moderata Concentrazione» e due allerte Inquinanti finte; ora resta tutto «-» e «Nessuna
-    Allerta». Offset negativi: «-» come prima."""
+    grafici di CO₂ e VOC «unavailable» (voluto), livelli «-» e nessuna allerta. Con la sonda della VMC scelta l'Offset
+    si somma sempre (b37, come fino alla b35): +50 ppm e +20 ppb -> 50 e 20, «Bassa Concentrazione»; +900 ppm e +400
+    ppb -> 900 e 400, «Moderata Concentrazione» e le due allerte Inquinanti; i grafici con Offset seguono, quelli delle
+    sonde senza Offset restano «unavailable». Offset negativi: «-»."""
     await _avvia(hass)
     await _lettura(hass, _vmgi(co2=0, voc=0))
     assert _stati(hass, CO2, CO2_SO, VOC, VOC_SO) == ["-", "-", "-", "-"]
     assert _stati(hass, *GRAFICI_INQUINANTI) == ["unavailable"] * 4
     assert _stati(hass, *ALLERTE) == ["-", "-", "Nessuna Allerta", "Nessuna Allerta"]
-    for co2, voc in ((50, 20), (900, 400), (-50, -20)):
+    bassa, moderata = "Bassa Concentrazione", "Moderata Concentrazione"
+    for co2, voc, valori, allerte in (
+            (50, 20, ["50", "20", "50", "unavailable", "20", "unavailable"],
+             [bassa, bassa, "Nessuna Allerta", "Nessuna Allerta"]),
+            (900, 400, ["900", "400", "900", "unavailable", "400", "unavailable"],
+             [moderata, moderata, "Allerta", "Allerta"]),
+            (-50, -20, ["-", "-"] + ["unavailable"] * 4, ["-", "-", "Nessuna Allerta", "Nessuna Allerta"])):
         hass.states.async_set("input_number.vmc_master_offset_co2", str(co2))
         hass.states.async_set("input_number.vmc_master_offset_voc", str(voc))
         await hass.async_block_till_done()
-        assert _stati(hass, CO2, VOC, *GRAFICI_INQUINANTI) == ["-", "-"] + ["unavailable"] * 4, (co2, voc)
-        assert _stati(hass, *ALLERTE) == ["-", "-", "Nessuna Allerta", "Nessuna Allerta"], (co2, voc)
+        assert _stati(hass, CO2, VOC, *GRAFICI_INQUINANTI) == valori, (co2, voc)
+        assert _stati(hass, *ALLERTE) == allerte, (co2, voc)
 
 
 # ------------------------------------------------------------------------------- voluto: Black-Out e lettura a 0
@@ -189,20 +200,19 @@ def test_nessuna_rilettura_dei_sensori_ambientali_dopo_il_black_out() -> None:
 
 
 def test_testi_aggiornati() -> None:
-    """Scheda: voci 10 e 11 (Offset CO₂ e VOC: una lettura ≤ 0 resta «-» anche con l'Offset) e Nota Grafici dei
-    Sensori (VMC senza sonda CO₂/VOC: 4 grafici vuoti; Black-Out: ultima lettura valida, prima lettura dopo il
-    ritorno entro 1227 s o con Agg. Sensori)."""
+    """Nota Grafici dei Sensori della scheda: VMC senza sonda CO₂/VOC (sensori senza Offset a «-», due grafici vuoti)
+    e Black-Out (ultima lettura valida, prima lettura dopo il ritorno entro 1227 s o con Agg. Sensori). Dalla b37
+    l'Offset si somma sempre al valore letto: la frase della b36 «resta «-» anche con l'Offset» non c'è più nel
+    Package (i testi nuovi delle voci 10 e 11 e della Nota sono in tests/test_b37_testi.py)."""
     scheda = _piatto(_testo("vmc_master_scheda_manuale_interfaccia.txt"))
-    for sonda, unita in (("CO₂ Int.] da −1500 a +1500 ppm (passo 1 ppm)", "CO₂"),
-                         ("VOC Int.] da −1000 a +1000 ppb (passo 1 ppb)", "VOC")):
-        assert (f"{sonda}, si somma al valore letto; un valore letto ≤ 0 (sensore non presente o valore non "
-                f"valido) resta «-» anche con l'Offset.") in scheda, unita
-    assert ("Sulle VMC senza sonda CO₂/VOC la risposta Sensori Ambientali ha la CO₂ e i VOC a 00000: CO₂ e VOC "
-            "restano sempre «-», anche con un Offset, e i loro quattro grafici (con e senza Offset) restano vuoti; "
-            "in Home Assistant questi sensori «_grafico» risultano non disponibili. Non è un guasto.") in scheda
+    assert ("Sulle VMC senza sonda CO₂/VOC la risposta Sensori Ambientali ha la CO₂ e i VOC a 00000. CO₂ e VOC della "
+            "scheda «Sensori VMC Interni» (senza Offset) restano sempre «-» e i loro due grafici sono vuoti: in Home "
+            "Assistant questi sensori «_grafico» risultano non disponibili. Non è un guasto.") in scheda
     assert ("Durante un Black-Out (VMC OFF-Line) i sensori della VMC e i loro grafici restano sull'ultima lettura "
             "valida, senza buchi.") in scheda
     assert ("la prima lettura dei Sensori Ambientali arriva con la lettura programmata (ogni 1227 secondi, cioè "
             "entro circa 20 minuti) oppure subito con «Agg. Sensori»") in scheda
-    pacchetto = _testo("vmc_master.yaml")
-    assert pacchetto.count("resta «-» anche con l'Offset") == 2
+    for nome in ("vmc_master.yaml", "vmc_master_scheda_manuale_interfaccia.txt", "vmc_master_automazione.txt"):
+        testo = _piatto(_testo(nome))
+        for vecchia in ("resta «-» anche con l'Offset", "anche con un Offset", "un valore letto ≤ 0"):
+            assert vecchia not in testo, (nome, vecchia)

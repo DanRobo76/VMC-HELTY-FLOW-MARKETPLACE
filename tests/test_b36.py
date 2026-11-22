@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 PKG = Path(__file__).resolve().parents[1] / "custom_components" / "vmc_master" / "package"
@@ -13,11 +14,15 @@ def _testo(nome: str) -> str:
 
 
 def test_versioni_b36() -> None:
-    assert "SCHEDA MANUALE INTERFACCIA VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b36]" in _testo(
-        "vmc_master_scheda_manuale_interfaccia.txt")[:2000]
-    assert "AUTOMAZIONE VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b36]" in _testo("vmc_master_automazione.txt")[:1000]
+    """Scheda, automazione e manifest sono cambiati nella b36: la loro versione e' almeno 9.0.0b36."""
+    scheda = re.search(r"SCHEDA MANUALE INTERFACCIA VMC HELTY FLOW PLUS RELEASE \[VER\. 9\.0\.0b(\d+)\]",
+                       _testo("vmc_master_scheda_manuale_interfaccia.txt")[:2000])
+    assert scheda and int(scheda.group(1)) >= 36
+    automazione = re.search(r"AUTOMAZIONE VMC HELTY FLOW PLUS RELEASE \[VER\. 9\.0\.0b(\d+)\]",
+                            _testo("vmc_master_automazione.txt")[:1000])
+    assert automazione and int(automazione.group(1)) >= 36
     manifest = json.loads((PKG.parent / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["version"] == "9.0.0b36"
+    assert re.fullmatch(r"9\.0\.0b(\d+)", manifest["version"]) and int(manifest["version"].split("b")[1]) >= 36
 
 
 def test_script_non_cambiati() -> None:
