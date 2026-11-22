@@ -7,7 +7,8 @@
   in Free (5 s -> 1 s + rilettura + 4 s, come gli altri cicli dell'Umidita');
 - B4-3: Inquinanti ON, opzione Iperventilazione: il ciclo delle spie sta prima del ciclo di comando, come nelle 4
   opzioni gemelle.
-Nessun tempo cambia: il ciclo standard dura 4 s a giro, l'attesa di 12 s dopo il ripristino resta dov'era."""
+Nessun tempo cambia: il ciclo standard dura 4 s a giro, l'attesa di 12 s dopo il ripristino resta dov'era.
+b39: il ciclo standard ha anche l'uscita «velocita' non leggibile da 32 s con una Fascia in corso» (tests/test_b39.py)."""
 
 from __future__ import annotations
 
@@ -39,10 +40,19 @@ RILETTURA = {
 UTENTE = (f"(vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and "
           f"states('{LETTURA}') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', ''])")
 BLACK_OUT = "is_state('binary_sensor.vmc_master_black_out_rilevato', 'on')"
+# b39: uscita «velocita' non leggibile da 32 s con una Fascia del Calendario in corso» (durante una Fascia il Black-Out
+# rilevato non si accende mai); fuori Fascia la condizione e' falsa e il ciclo resta quello della b34
+FASCIA = " or ".join(f"is_state('input_boolean.vmc_master_spia_calendario_{g}_{n}', 'on')"
+                     for g in ("lunedi", "martedi", "mercoledi", "giovedi", "venerdi", "sabato", "domenica")
+                     for n in (1, 2))
+LETTURA_PERSA_IN_FASCIA = (
+    "(is_state('sensor.vmc_master_status_ventola', 'unavailable') and (now() - "
+    "states.sensor.vmc_master_status_ventola.last_changed).total_seconds() >= "
+    "states('input_number.vmc_master_attesa_blackout_rilevazione') | int(32) and (" + FASCIA + "))")
 
 
 def _fine(etichetta: str) -> str:
-    return f"{{{{ states('{LETTURA}') == '{etichetta}' or {UTENTE} or {BLACK_OUT} }}}}"
+    return f"{{{{ states('{LETTURA}') == '{etichetta}' or {UTENTE} or {BLACK_OUT} or {LETTURA_PERSA_IN_FASCIA} }}}}"
 
 
 def _automazione() -> dict[str, Any]:
