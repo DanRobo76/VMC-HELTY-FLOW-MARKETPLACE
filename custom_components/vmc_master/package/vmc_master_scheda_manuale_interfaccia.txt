@@ -11418,6 +11418,7 @@ cards:
                           'automation.vmc_master_inizializza_tempi_di_attesa',
                           'automation.vmc_master_registro_comandi_e_scelte',
                           'automation.vmc_master_rimando_della_scelta',
+                          'automation.vmc_master_letture_ravvicinate',
                           'binary_sensor.vmc_master_tasto_velocita_0',
                           'binary_sensor.vmc_master_tasto_velocita_1',
                           'binary_sensor.vmc_master_tasto_velocita_2',
@@ -14502,7 +14503,7 @@ cards:
                     viene riletta e, se l'ultimo comando mandato alla VMC (tasto della scheda o del Telecomando, o comando dell'automazione)
                     non è ancora stato eseguito, si aspetta che la VMC lo esegua (al massimo 12 Secondi). Una Velocità scelta mentre un comando dell'automazione con un'altra velocità è ancora in viaggio verso la VMC
                     (una VMC lenta può metterci circa 6 Secondi a eseguirlo) non viene cancellata da quel comando: quando è arrivato, la
-                    scelta viene rimandata alla VMC. I tempi delle attese non cambiano.<br>
+                    scelta viene rimandata alla VMC. I tempi delle attese non cambiano. Dopo ogni comando dell'automazione la velocità si legge ogni Secondo per 7 Secondi: così anche una Velocità scelta dall'App Air Guard o dal telecomando della VMC, che Home Assistant non vede, viene letta e rimandata. Va persa solo se dura meno di un Secondo o se si sceglie la velocità che la VMC ha ancora (es. 0 con la VMC ancora a 0 in attesa del comando): in quei momenti usare i tasti della scheda o della finestra Telecomando, che Home Assistant vede subito.<br>
                     </td></tr></table>
                     <table width="100%">
                     <tr><th colspan="3" style="padding: 4px 8px; border: 1px solid #c3c2b7;">CAMBIO DI VELOCITÀ DURANTE UN'ALLERTA (comportamento misurato)</th></tr>

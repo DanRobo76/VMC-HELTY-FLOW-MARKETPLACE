@@ -278,7 +278,13 @@ description: >-
   dell'automazione con un'altra velocità è ancora in viaggio verso la VMC (una
   VMC lenta può metterci circa 6 Secondi a eseguirlo) non viene cancellata da
   quel comando: quando è arrivato, la scelta viene rimandata alla VMC. I tempi
-  delle attese non cambiano.
+  delle attese non cambiano. Dopo ogni comando dell'automazione la velocità si
+  legge ogni Secondo per 7 Secondi: così anche una Velocità scelta dall'App Air
+  Guard o dal telecomando della VMC, che Home Assistant non vede, viene letta e
+  rimandata. Va persa solo se dura meno di un Secondo o se si sceglie la
+  velocità che la VMC ha ancora (es. 0 con la VMC ancora a 0 in attesa del
+  comando): in quei momenti usare i tasti della scheda o della finestra
+  Telecomando, che Home Assistant vede subito.
 
 
   CAMBIO DI VELOCITÀ DURANTE UN'ALLERTA (comportamento misurato):

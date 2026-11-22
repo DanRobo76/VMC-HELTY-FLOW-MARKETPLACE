@@ -156,6 +156,8 @@ homeassistant:
       icon: mdi:hvac
     automation.vmc_master_rimando_della_scelta:
       icon: mdi:hvac
+    automation.vmc_master_letture_ravvicinate:
+      icon: mdi:hvac
     automation.automazione_vmc_master:
       icon: mdi:hvac
 ################### Fine Icone delle Automazioni ###################
@@ -227,7 +229,7 @@ command_line:
 ################### Inizio Creazione Sensori Principali della VMC  ########################################################################################################################################################
 sensor:
   - platform: tcp
-    name: vmc_master_status_ventola                                             # [CONFIGURAZIONE, 1100 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 333 RICHIAMI] CREAZIONE DEL SENSORE LETTURA STATI DI VENTILAZIONE; N.b non tutti i valori sono identificabili
+    name: vmc_master_status_ventola                                             # [CONFIGURAZIONE, 1101 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 333 RICHIAMI] CREAZIONE DEL SENSORE LETTURA STATI DI VENTILAZIONE; N.b non tutti i valori sono identificabili
     host: 999.999.999.999                        # INDIRIZZO IP DELLA VMC MASTER
     port: 5001                                 # PORTA 5001 DELLA VMC IMPOSTAZIONE DI DEFAULT
     timeout: 3
@@ -620,7 +622,7 @@ template:
         icon: mdi:ip
 
   - sensor:
-      - default_entity_id: sensor.vmc_master_status_ip_interfaccia              # [CONFIGURAZIONE, 1051 RICHIAMI] [INTERFACCIA, 123 RICHIAMI] [AUTOMAZIONE, 375 RICHIAMI] SENSORE IMPIEGATO PER LA VISUALIZZAZIONE NELL'INTERFACCIA SE LA VMC E' IN RETE O MENO
+      - default_entity_id: sensor.vmc_master_status_ip_interfaccia              # [CONFIGURAZIONE, 1053 RICHIAMI] [INTERFACCIA, 123 RICHIAMI] [AUTOMAZIONE, 375 RICHIAMI] SENSORE IMPIEGATO PER LA VISUALIZZAZIONE NELL'INTERFACCIA SE LA VMC E' IN RETE O MENO
         name: "Status VMC"
         unique_id: vmc_master_status_ip_interfaccia
         state: >
@@ -4029,6 +4031,7 @@ recorder:
       - automation.vmc_master_esclusivita_finestre_opzioni
       - automation.vmc_master_registro_comandi_e_scelte
       - automation.vmc_master_rimando_della_scelta
+      - automation.vmc_master_letture_ravvicinate
       - input_boolean.vmc_master_opzione_finestra_prossime_letture
       - timer.vmc_master_lettura_ping
       - timer.vmc_master_lettura_ventilazione
@@ -7444,6 +7447,7 @@ script:
             - automation.vmc_master_esclusivita_finestre_opzioni
             - automation.vmc_master_registro_comandi_e_scelte
             - automation.vmc_master_rimando_della_scelta
+            - automation.vmc_master_letture_ravvicinate
             - input_boolean.vmc_master_opzione_finestra_prossime_letture
             - timer.vmc_master_lettura_ping
             - timer.vmc_master_lettura_ventilazione
@@ -35184,6 +35188,79 @@ automation:
                 or not is_state('sensor.vmc_master_status_ip_interfaccia', 'ON-Line')
                 or ns.nuovo or repeat.index >= 5 }}
 ################### Fine Creazione Automazione Rimando della Scelta (9.0.0b38) ###################
+
+################### Inizio Creazione Automazione Letture Ravvicinate dopo un Comando (9.0.0b38) ###################
+  - id: "vmc_master_letture_ravvicinate"                                        # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 0 RICHIAMI]
+    alias: "VMC Master - Letture Ravvicinate"
+    description: >
+      Dopo ogni comando di velocità dell'automazione (Automazione VMC Master, Calendario, Rimando della Scelta) legge la
+      velocità della VMC ogni secondo per 7 secondi, oltre alla lettura normale ogni 5 secondi. Una VMC lenta può
+      metterci circa 6 secondi a eseguire un comando: una velocità scelta in quei secondi dall'App Air Guard o dal
+      telecomando della VMC, che Home Assistant non vede, viene così letta prima che il comando in viaggio la cancelli e
+      il Rimando della Scelta la può rimandare. Un nuovo comando fa ripartire i 7 secondi; con la VMC OFF-Line le letture
+      si fermano. I tasti della scheda e del Telecomando non servono: Home Assistant li vede subito. I tempi
+      dell'automazione non cambiano.
+    mode: restart
+    triggers:
+      - trigger: event
+        event_type: call_service
+        event_data:
+          domain: shell_command
+          service: vmc_master_velocita_0
+      - trigger: event
+        event_type: call_service
+        event_data:
+          domain: shell_command
+          service: vmc_master_velocita_1
+      - trigger: event
+        event_type: call_service
+        event_data:
+          domain: shell_command
+          service: vmc_master_velocita_2
+      - trigger: event
+        event_type: call_service
+        event_data:
+          domain: shell_command
+          service: vmc_master_velocita_3
+      - trigger: event
+        event_type: call_service
+        event_data:
+          domain: shell_command
+          service: vmc_master_velocita_4
+      - trigger: event
+        event_type: call_service
+        event_data:
+          domain: shell_command
+          service: vmc_master_iperventilazione
+      - trigger: event
+        event_type: call_service
+        event_data:
+          domain: shell_command
+          service: vmc_master_notturna
+      - trigger: event
+        event_type: call_service
+        event_data:
+          domain: shell_command
+          service: vmc_master_freecooling
+    conditions:
+      - alias: Comando dell'automazione (senza utente) con la VMC ON-Line
+        condition: template
+        value_template: >-
+          {{ trigger.event.context.user_id is none and states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line' }}
+    actions:
+      - alias: Lettura della velocità ogni secondo per 7 secondi
+        repeat:
+          while:
+            - condition: template
+              value_template: "{{ repeat.index <= 7 and states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line' }}"
+          sequence:
+            - delay:
+                seconds: 1
+            - action: homeassistant.update_entity
+              target:
+                entity_id: sensor.vmc_master_status_ventola
+              continue_on_error: true
+################### Fine Creazione Automazione Letture Ravvicinate dopo un Comando (9.0.0b38) ###################
 
 ################### Inizio Creazione Automazione Esclusivita' delle Finestre Timer Lettura Dati VMC e Tempi di Attesa ###################
   - id: "vmc_master_esclusivita_finestre_opzioni"                               # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 0 RICHIAMI]

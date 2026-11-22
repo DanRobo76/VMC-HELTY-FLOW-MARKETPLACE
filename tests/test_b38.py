@@ -9,7 +9,9 @@ vecchia. Correzioni:
   lo esegue (al massimo 12 Secondi dall'invio);
 - B: «VMC Master - Registro Comandi e Scelte» annota le scelte dell'utente, l'ora dei comandi dell'automazione e l'ora
   in cui la lettura passa a ogni velocità;
-- C: «VMC Master - Rimando della Scelta» rimanda la scelta cancellata da un comando dell'automazione in viaggio.
+- C: «VMC Master - Rimando della Scelta» rimanda la scelta cancellata da un comando dell'automazione in viaggio;
+- D: «VMC Master - Letture Ravvicinate» dopo ogni comando dell'automazione legge la velocità ogni secondo per 7 Secondi,
+  così una scelta dall'App Air Guard o dal telecomando della VMC che dura pochi secondi viene vista e rimandata.
 La verifica dinamica (HA vero, VMC simulata veloce e lenta) è nel simulatore (famiglia R e famiglie W/V)."""
 
 from __future__ import annotations
@@ -31,6 +33,7 @@ COMANDI = "input_text.vmc_master_ultimi_comandi_automazione"
 LETTURE = "input_text.vmc_master_ultime_letture_velocita"
 REGISTRO = "automation.vmc_master_registro_comandi_e_scelte"
 RIMANDO = "automation.vmc_master_rimando_della_scelta"
+LETTURE_RAVVICINATE = "automation.vmc_master_letture_ravvicinate"
 CODICI = ["00000", "00001", "00002", "00003", "00004", "00005", "00006", "00007"]
 
 
@@ -150,21 +153,45 @@ def test_nuove_entita_nelle_copie_gemelle() -> None:
     da_pulire = pulizia["sequence"][0]["data"]["entity_id"]
     elenco = scheda[scheda.index("{%- set elenco = [") :]
     elenco = elenco[: elenco.index("] -%}")]
-    for entita in (SCELTA, COMANDI, LETTURE, REGISTRO, RIMANDO):
+    for entita in (SCELTA, COMANDI, LETTURE, REGISTRO, RIMANDO, LETTURE_RAVVICINATE):
         assert entita in escluse and entita in da_pulire and f"'{entita}'" in elenco, entita
     for nome in ("vmc_master_ultima_scelta_utente", "vmc_master_ultimi_comandi_automazione",
                  "vmc_master_ultime_letture_velocita"):
         helper = pkg["input_text"][nome]
         assert helper["initial"] == "" and helper["max"] == 255
-    for entita in (REGISTRO, RIMANDO):
+    for entita in (REGISTRO, RIMANDO, LETTURE_RAVVICINATE):
         assert pkg["homeassistant"]["customize"][entita]["icon"] == "mdi:hvac"
-    for alias in ("VMC Master - Registro Comandi e Scelte", "VMC Master - Rimando della Scelta"):
+    for alias in ("VMC Master - Registro Comandi e Scelte", "VMC Master - Rimando della Scelta",
+                  "VMC Master - Letture Ravvicinate"):
         descrizione = _auto(alias)["description"]
         assert not re.search(r"\b[a-z_]+\.vmc_[a-z0-9_]+", descrizione), alias
         assert "vmc_master_clona_" not in descrizione and not re.search(r"\d+\.\d+\.\d+\.\d+", descrizione)
         assert not re.search(r"\bmaster\b", descrizione), alias
     assert testo.count('alias: "VMC Master - Registro Comandi e Scelte"') == 1
     assert testo.count('alias: "VMC Master - Rimando della Scelta"') == 1
+    assert testo.count('alias: "VMC Master - Letture Ravvicinate"') == 1
+
+
+# ------------------------------------------------------------------ D: letture ravvicinate dopo un comando
+def test_letture_ravvicinate_dopo_ogni_comando_dell_automazione() -> None:
+    """Un trigger per OGNI shell_command di velocità; solo i comandi senza utente (dell'automazione) con la VMC ON-Line;
+    7 letture, una al secondo, interrotte se la VMC va OFF-Line; un nuovo comando fa ripartire le letture (restart)."""
+    letture = _auto("VMC Master - Letture Ravvicinate")
+    assert letture["mode"] == "restart"
+    eventi = letture["triggers"]
+    assert sorted(t["event_data"]["service"] for t in eventi) == sorted(_servizi_velocita())
+    assert all(t["trigger"] == "event" and t["event_type"] == "call_service"
+               and t["event_data"]["domain"] == "shell_command" for t in eventi)
+    condizione = letture["conditions"][0]["value_template"]
+    assert "trigger.event.context.user_id is none" in condizione and "ON-Line" in condizione
+    (azione,) = letture["actions"]
+    ciclo = azione["repeat"]
+    assert "repeat.index <= 7" in ciclo["while"][0]["value_template"]
+    assert "ON-Line" in ciclo["while"][0]["value_template"]
+    assert ciclo["sequence"][0]["delay"]["seconds"] == 1
+    lettura = ciclo["sequence"][1]
+    assert lettura["action"] == "homeassistant.update_entity" and lettura["target"]["entity_id"] == GREZZA
+    assert lettura["continue_on_error"] is True
 
 
 # ------------------------------------------------------------------ B e C: le regole dei template
