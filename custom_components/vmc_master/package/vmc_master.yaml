@@ -229,7 +229,7 @@ command_line:
 ################### Inizio Creazione Sensori Principali della VMC  ########################################################################################################################################################
 sensor:
   - platform: tcp
-    name: vmc_master_status_ventola                                             # [CONFIGURAZIONE, 1101 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 606 RICHIAMI] CREAZIONE DEL SENSORE LETTURA STATI DI VENTILAZIONE; N.b non tutti i valori sono identificabili
+    name: vmc_master_status_ventola                                             # [CONFIGURAZIONE, 1101 RICHIAMI] [INTERFACCIA, 8 RICHIAMI] [AUTOMAZIONE, 606 RICHIAMI] CREAZIONE DEL SENSORE LETTURA STATI DI VENTILAZIONE; N.b non tutti i valori sono identificabili
     host: 999.999.999.999                        # INDIRIZZO IP DELLA VMC MASTER
     port: 5001                                 # PORTA 5001 DELLA VMC IMPOSTAZIONE DI DEFAULT
     timeout: 3
@@ -622,7 +622,7 @@ template:
         icon: mdi:ip
 
   - sensor:
-      - default_entity_id: sensor.vmc_master_status_ip_interfaccia              # [CONFIGURAZIONE, 1053 RICHIAMI] [INTERFACCIA, 124 RICHIAMI] [AUTOMAZIONE, 378 RICHIAMI] SENSORE IMPIEGATO PER LA VISUALIZZAZIONE NELL'INTERFACCIA SE LA VMC E' IN RETE O MENO
+      - default_entity_id: sensor.vmc_master_status_ip_interfaccia              # [CONFIGURAZIONE, 1053 RICHIAMI] [INTERFACCIA, 125 RICHIAMI] [AUTOMAZIONE, 378 RICHIAMI] SENSORE IMPIEGATO PER LA VISUALIZZAZIONE NELL'INTERFACCIA SE LA VMC E' IN RETE O MENO
         name: "Status VMC"
         unique_id: vmc_master_status_ip_interfaccia
         state: >
@@ -3995,7 +3995,7 @@ input_text:
     icon: mdi:clipboard-text-clock
 ################### Fine Creazione Registro dei Comandi e delle Scelte di Velocità (9.0.0b38) ###################
 ################### Inizio Creazione Comando non Eseguito durante una Fascia (9.0.0b39) ###################
-  vmc_master_comando_non_eseguito:                               # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 4 RICHIAMI] [AUTOMAZIONE, 139 RICHIAMI] COMANDO DI UN'ALLERTA (O DEL SUO RIPRISTINO) NON ESEGUITO DURANTE UNA FASCIA DEL CALENDARIO: «VELOCITA' DA RAGGIUNGERE|ORA», SCRITTO DALL'AUTOMAZIONE VMC MASTER QUANDO LA VMC RISPONDE AL PING MA LA SUA VELOCITA' NON SI LEGGE DA 32 SECONDI; APPENA LA VELOCITA' TORNA LEGGIBILE IL COMANDO SI RIPETE, SALVO SE NEL FRATTEMPO E' CAMBIATA
+  vmc_master_comando_non_eseguito:                               # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 4 RICHIAMI] [AUTOMAZIONE, 274 RICHIAMI] COMANDO DI UN'ALLERTA (O DEL SUO RIPRISTINO) NON ESEGUITO DURANTE UNA FASCIA DEL CALENDARIO: «VELOCITA' DA RAGGIUNGERE|ORA», SCRITTO DALL'AUTOMAZIONE VMC MASTER QUANDO LA VMC RISPONDE AL PING MA LA SUA VELOCITA' NON SI LEGGE DA 32 SECONDI; APPENA LA VELOCITA' TORNA LEGGIBILE IL COMANDO SI RIPETE, SALVO SE NEL FRATTEMPO E' CAMBIATA
     name: "Comando non Eseguito durante una Fascia"
     initial: ""
     max: 255
@@ -5231,59 +5231,59 @@ input_boolean:
     name: "Spia Velocità Free Cool./Heat."
     icon: mdi:memory    
 
-  vmc_master_spia_calendario_lunedi_1:                                          # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 219 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL LUNEDì 1° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_lunedi_1:                                          # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 221 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL LUNEDì 1° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Lunedì 1°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_lunedi_2:                                          # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 219 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL LUNEDì 2° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_lunedi_2:                                          # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 221 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL LUNEDì 2° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Lunedì 2°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_martedi_1:                                         # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 219 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL MARTEDì 1° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_martedi_1:                                         # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 221 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL MARTEDì 1° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Martedì 1°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_martedi_2:                                         # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 219 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL MARTEDì 2° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_martedi_2:                                         # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 221 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL MARTEDì 2° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Martedì 2°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_mercoledi_1:                                       # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 219 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL MERCOLEDì 1° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_mercoledi_1:                                       # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 221 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL MERCOLEDì 1° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Mercoledì 1°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_mercoledi_2:                                       # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 219 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL MERCOLEDì 2° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_mercoledi_2:                                       # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 221 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL MERCOLEDì 2° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Mercoledì 2°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_giovedi_1:                                         # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 219 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL GIOVEDì 1° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_giovedi_1:                                         # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 221 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL GIOVEDì 1° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Giovedì 1°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_giovedi_2:                                         # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 219 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL GIOVEDì 2° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_giovedi_2:                                         # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 221 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL GIOVEDì 2° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Giovedì 2°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_venerdi_1:                                         # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 219 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL VENERDì 1° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_venerdi_1:                                         # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 221 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL VENERDì 1° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Venerdì 1°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_venerdi_2:                                         # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 219 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL VENERDì 2° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_venerdi_2:                                         # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 221 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL VENERDì 2° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Venerdì 2°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_sabato_1:                                          # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 219 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL SABATO 1° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_sabato_1:                                          # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 221 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL SABATO 1° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Sabato 1°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_sabato_2:                                          # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 219 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL SABATO 2° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_sabato_2:                                          # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 221 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL SABATO 2° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Sabato 2°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_domenica_1:                                        # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 219 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL DOMENICA 1° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_domenica_1:                                        # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 221 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL DOMENICA 1° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Domenica 1°"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_domenica_2:                                        # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 219 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL DOMENICA 2° FASCIA DEL CALENDARIO
+  vmc_master_spia_calendario_domenica_2:                                        # [CONFIGURAZIONE, 81 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 221 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO SI E' ALL'INTERNO DEL DOMENICA 2° FASCIA DEL CALENDARIO
     name: "Spia all'interno del Calendario Domenica 2°"
     icon: mdi:memory
 
@@ -5291,7 +5291,7 @@ input_boolean:
     name: "Spia Black-Out all'interno del Calendario"
     icon: mdi:memory
 
-  vmc_master_spia_calendario_comando_non_eseguito:                              # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 5 RICHIAMI] [AUTOMAZIONE, 169 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO IL COMANDO DI UNA FASCIA DEL CALENDARIO (O LA VELOCITA' 0 DI FINE FASCIA) NON VIENE ESEGUITO PERCHE' LA VMC RISPONDE AL PING MA LA SUA VELOCITA' NON SI LEGGE (APPENA LA VELOCITA' TORNA LEGGIBILE IL COMANDO VIENE RIPETUTO; RESTA ACCESA ANCHE DOPO UN RIAVVIO DI HOME ASSISTANT E IL COMANDO VIENE RIPETUTO APPENA LA VELOCITA' TORNA LEGGIBILE, A RIALLINEAMENTO FINITO)
+  vmc_master_spia_calendario_comando_non_eseguito:                              # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 6 RICHIAMI] [AUTOMAZIONE, 37 RICHIAMI] SENSORE TRACCIAMENTO, QUANDO IL COMANDO DI UNA FASCIA DEL CALENDARIO (O LA VELOCITA' 0 DI FINE FASCIA) NON VIENE ESEGUITO PERCHE' LA VMC RISPONDE AL PING MA LA SUA VELOCITA' NON SI LEGGE (APPENA LA VELOCITA' TORNA LEGGIBILE IL COMANDO VIENE RIPETUTO; RESTA ACCESA ANCHE DOPO UN RIAVVIO DI HOME ASSISTANT E IL COMANDO VIENE RIPETUTO APPENA LA VELOCITA' TORNA LEGGIBILE, A RIALLINEAMENTO FINITO)
     name: "Spia Comando non eseguito all'interno del Calendario"
     icon: mdi:memory
 
@@ -5422,7 +5422,7 @@ input_boolean:
 
 ################### Inizio Creazione Switch Booleani impiegati nell'Automazione, per valutare CONGELAMENTO ############################
 
-  vmc_master_congelamento_verifica_soglia_valore_spia:                          # [CONFIGURAZIONE, 197 RICHIAMI] [INTERFACCIA, 13 RICHIAMI] [AUTOMAZIONE, 236 RICHIAMI] SENSORE TRACCIAMENTO CONGELAMENTO
+  vmc_master_congelamento_verifica_soglia_valore_spia:                          # [CONFIGURAZIONE, 197 RICHIAMI] [INTERFACCIA, 14 RICHIAMI] [AUTOMAZIONE, 240 RICHIAMI] SENSORE TRACCIAMENTO CONGELAMENTO
     name: "Spia VMC Congelamento ≤ -18 [°C] Temp. Esterna ?"
     icon: mdi:memory
 
@@ -5470,7 +5470,7 @@ input_boolean:
 
 ################### Inizio Creazione Switch Booleani impiegati nell'Automazione, per valutare DIFFERENZA DI TEMPERATURA ############################
 
-  vmc_master_delta_temp_verifica_soglia_valore_spia:                            # [CONFIGURAZIONE, 215 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 244 RICHIAMI] SENSORE TRACCIAMENTO DIFFERENZA DI TEMPERATURA > 23 °C
+  vmc_master_delta_temp_verifica_soglia_valore_spia:                            # [CONFIGURAZIONE, 215 RICHIAMI] [INTERFACCIA, 13 RICHIAMI] [AUTOMAZIONE, 248 RICHIAMI] SENSORE TRACCIAMENTO DIFFERENZA DI TEMPERATURA > 23 °C
     name: "Spia VMC Sensori Int. Δ Temp. > 23 [°C] ?"
     icon: mdi:memory
 

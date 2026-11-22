@@ -12,12 +12,17 @@ girare in una Fascia. La b39:
   girano; i cicli del Calendario hanno già la loro uscita (b34-b36).
 - M (porta 5001 muta, VMC che risponde al ping): dopo ognuno dei 134 cicli, se è finito senza velocità raggiunta, senza
   scelta dell'utente e senza Black-Out, il comando si memorizza (Comando non eseguito, «velocità|ora») e si ripete appena
-  la velocità torna leggibile con la VMC ON-Line, salvo se nel frattempo la velocità è cambiata, se c'è un Black-Out del
-  Calendario o se il Calendario ha un comando non eseguito più recente (vale l'ultimo comando).
+  la velocità torna leggibile con la VMC ON-Line, salvo se nel frattempo la velocità è cambiata o se c'è un Black-Out del
+  Calendario; con un comando del Calendario non eseguito prima riparte la Fascia (il trigger aspetta la sua Spia spenta),
+  salvo con un'allerta Congelamento o Δ Temp. in corso, che ha la precedenza; un ciclo finito normalmente (velocità
+  raggiunta, scelta dell'utente, Black-Out) annulla il Comando non eseguito più vecchio (vale l'ultimo comando).
 - P (corrente mancata durante una Fascia): i trigger delle allerte chiedono anche la Spia Black-Out del Calendario spenta,
   gemella delle 8 spie del Black-Out fuori Fascia: al ritorno della corrente prima riparte la Fascia (32 s), poi le allerte
   ripartono dalla sua velocità (prima un'allerta comandava la VMC prima del ritorno della Fascia, il ritorno lo prendeva
   per una scelta dell'utente e a fine allerta la VMC andava alla velocità di riaccensione invece che a quella della Fascia).
+  Con un'allerta Congelamento o Δ Temp. in corso al ritorno della corrente la Fascia non può ripartire (Foglio A25: aspetta
+  la fine dell'allerta): i due rami del ritorno accendono la Spia Comando non eseguito del Calendario, così a fine allerta
+  riparte la Fascia e non la Velocità 1 di riaccensione memorizzata dalla riapplicazione del Congelamento.
 La verifica dinamica (HA vero, VMC simulata con corrente, rete o porta 5001 interrotte) è nel simulatore (famiglia OF)."""
 
 from __future__ import annotations
@@ -250,14 +255,16 @@ def _passo_dopo(sequenza: list[Any], k: int) -> dict[str, Any]:
 def test_dopo_ogni_ciclo_in_fascia_il_comando_non_eseguito() -> None:
     """Classe intera: dopo ognuno dei 135 cicli in Fascia c'è il passo del Comando non eseguito, con la condizione
     «nessuna delle altre uscite» (velocità raggiunta, scelta dell'utente, Black-Out) presa dal suo until, la velocità da
-    raggiungere del ciclo e l'annullamento del Comando non eseguito del Calendario più vecchio; i cicli del Calendario e
-    quelli fuori Fascia non lo hanno."""
+    raggiungere del ciclo; altrimenti (ciclo finito normalmente) l'annullamento del Comando non eseguito più vecchio. La
+    Spia Comando non eseguito del Calendario non si tocca (prima riparte la Fascia). I cicli del Calendario e quelli
+    fuori Fascia non hanno il passo."""
     classi = _classi()
     for ids, testo, sequenza, k in classi["fascia"]:
         passo = _passo_dopo(sequenza, k)
         interno = testo.strip()[2:-2].strip().replace(BLACK_OUT + " or " + LETTURA_PERSA_IN_FASCIA, BLACK_OUT)
         assert passo["if"] == [{"condition": "template", "value_template": "{{ not (" + interno + ") }}"}], ids
-        memoria, annulla = passo["then"]
+        (memoria,) = passo["then"]
+        (annulla,) = passo["else"]
         assert memoria["action"] == "input_text.set_value" and memoria["target"] == {"entity_id": NON_ESEGUITO}, ids
         velocita, ora = memoria["data"]["value"].split("|{{ as_timestamp", 1)
         assert ora == "(now()) | round(1) }}", ids
@@ -267,12 +274,14 @@ def test_dopo_ogni_ciclo_in_fascia_il_comando_non_eseguito() -> None:
             assert bersaglio.startswith(f"'{velocita}'"), ids  # velocità fissa del ciclo
         else:
             assert velocita == "{{ " + bersaglio + " }}", ids  # velocità calcolata come nell'until
-        assert annulla == {"action": "input_boolean.turn_off", "target": {"entity_id": CAL_NON_ESEGUITO}}, ids
+        assert {k: v for k, v in annulla.items() if k != "alias"} == {
+            "action": "input_text.set_value", "target": {"entity_id": NON_ESEGUITO}, "data": {"value": ""}}, ids
+        assert CAL_NON_ESEGUITO not in str(passo), ids
     for ids, _, sequenza, k in classi["calendario"] + classi["fuori"]:
         if k + 1 < len(sequenza):
             assert NON_ESEGUITO not in str(sequenza[k + 1]), ids
     testo = _testo("vmc_master_automazione.txt")
-    assert testo.count(f"entity_id: {NON_ESEGUITO}") == 135 + 1  # 135 passi + l'azzeramento nel ramo del ritorno
+    assert testo.count(f"entity_id: {NON_ESEGUITO}") == 2 * 135 + 1  # 135 passi (then + else) + l'azzeramento nel ramo
 
 
 def _ramo_ritorno() -> dict[str, Any]:
@@ -283,12 +292,18 @@ def _ramo_ritorno() -> dict[str, Any]:
 
 async def test_trigger_del_comando_non_eseguito(hass: HomeAssistant) -> None:
     """Il ritorno scatta con un Comando non eseguito memorizzato, la velocità di nuovo leggibile e la VMC ON-Line (non
-    durante le fasi 1-3 del riallineamento al riavvio)."""
+    durante le fasi 1-3 del riallineamento al riavvio); con la Spia Comando non eseguito del Calendario accesa aspetta la
+    Fascia, salvo con un'allerta Congelamento o Δ Temp. in corso (allora la Fascia aspetta la fine dell'allerta e il
+    comando dell'allerta va per primo)."""
     (trigger,) = [t for t in _automazione()["triggers"] if t.get("id") == "comando_non_eseguito_ritorno"]
     assert trigger["trigger"] == "template" and "for" not in trigger
     t = Template(trigger["value_template"], hass)
 
-    def stato(comando: str, lettura: str, rete: str, fase: str = "0") -> bool:
+    def stato(comando: str, lettura: str, rete: str, fase: str = "0", cal: str = "off", cong: str = "off",
+              delta: str = "off") -> bool:
+        hass.states.async_set(CAL_NON_ESEGUITO, cal)
+        hass.states.async_set("input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia", cong)
+        hass.states.async_set("input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia", delta)
         hass.states.async_set(NON_ESEGUITO, comando)
         hass.states.async_set("sensor.vmc_master_status_ventola", lettura)
         hass.states.async_set("sensor.vmc_master_status_ip_interfaccia", rete)
@@ -301,12 +316,21 @@ async def test_trigger_del_comando_non_eseguito(hass: HomeAssistant) -> None:
     assert stato("Velocità 0|100.0", "VMGH,00002,0", "OFF-Line") is False
     assert stato("Velocità 0|100.0", "VMGH,00002,0", "ON-Line", "2") is False
     assert stato("Velocità 0|100.0", "VMGH,00002,0", "ON-Line", "4") is True
+    assert stato("Velocità 0|100.0", "VMGH,00002,0", "ON-Line", cal="on") is False  # prima riparte la Fascia
+    assert stato("Velocità 0|100.0", "VMGH,00002,0", "ON-Line", cal="on", cong="on") is True
+    assert stato("Velocità 0|100.0", "VMGH,00002,0", "ON-Line", cal="on", delta="on") is True
+    assert stato("Velocità 0|100.0", "VMGH,00002,0", "ON-Line", cong="on") is True
+    # la copia nella condizione «Evento ancora valido» è uguale al trigger
+    testo = _testo("vmc_master_automazione.txt")
+    corpo = trigger["value_template"].strip()[3:-3].strip()
+    assert re.sub(r"\s+", " ", testo).count(re.sub(r"\s+", " ", corpo)) == 2
 
 
 async def test_ramo_del_comando_non_eseguito(hass: HomeAssistant, freezer) -> None:
     """Il ramo cancella il Comando non eseguito e lo ripete con il ciclo standard (uscita in Fascia compresa) solo se la
     VMC è ON-Line senza Black-Out del Calendario, la velocità è leggibile, diversa da quella del comando e non è
-    cambiata da quando il comando non è stato eseguito, e il Calendario non ha un comando non eseguito più recente."""
+    cambiata da quando il comando non è stato eseguito (anche per la Fascia ripartita prima: l'ordine lo decide il
+    trigger, la Spia Comando non eseguito del Calendario non conta qui)."""
     passi = _ramo_ritorno()["sequence"]
     variabili, azzera, condizione, memoria, ciclo, dopo = passi
     assert azzera["action"] == "input_text.set_value" and azzera["target"] == {"entity_id": NON_ESEGUITO}
@@ -349,14 +373,11 @@ async def test_ramo_del_comando_non_eseguito(hass: HomeAssistant, freezer) -> No
     hass.states.async_set("sensor.vmc_master_status_ip_interfaccia", "OFF-Line")
     assert valuta(f"Velocità 0|{dalle}") is False
     hass.states.async_set("sensor.vmc_master_status_ip_interfaccia", "ON-Line")
-    hass.states.async_set(CAL_NON_ESEGUITO, "on")  # comando del Calendario non eseguito prima di quello dell'allerta
+    hass.states.async_set(CAL_NON_ESEGUITO, "on")  # con Congelamento o Δ Temp. il trigger scatta anche così
+    assert valuta(f"Velocità 0|{dalle}") is True
     freezer.tick(timedelta(seconds=5))
-    dopo_cal = f"{dt_util.as_timestamp(dt_util.utcnow()):.1f}"
-    assert valuta(f"Velocità 0|{dopo_cal}") is True  # vale l'ultimo: quello dell'allerta
-    freezer.tick(timedelta(seconds=5))
-    hass.states.async_set(CAL_NON_ESEGUITO, "off")
-    hass.states.async_set(CAL_NON_ESEGUITO, "on")  # comando del Calendario più recente: vale quello
-    assert valuta(f"Velocità 0|{dopo_cal}") is False
+    hass.states.async_set(LETTURA, "Velocità 3")  # la Fascia è ripartita prima: la velocità è cambiata
+    assert valuta(f"Velocità 0|{dalle}") is False
 
 
 async def test_passo_memorizza_solo_con_la_lettura_persa(hass: HomeAssistant, freezer) -> None:
@@ -385,6 +406,7 @@ async def test_passo_memorizza_solo_con_la_lettura_persa(hass: HomeAssistant, fr
     assert memorizza("Velocità 2", "on") is False  # Black-Out
     v, ora = valore.async_render().split("|")
     assert v == "Velocità 0" and abs(float(ora) - dt_util.as_timestamp(dt_util.utcnow())) < 1
+    assert passo["else"][0]["data"] == {"value": ""}  # ciclo finito normalmente: il comando più vecchio si annulla
 
 
 def test_comando_non_eseguito_nelle_copie_gemelle() -> None:
@@ -437,3 +459,82 @@ async def test_guardia_ferma_il_trigger_durante_il_ritorno_della_fascia(hass: Ho
     assert result_as_boolean(t.async_render()) is True
     hass.states.async_set(CAL_BLACK_OUT, "on")
     assert result_as_boolean(t.async_render()) is False
+
+
+# ------------------------------------------------------------------ ritorno dopo un Black-Out in Fascia con Congelamento/Δ
+def _rami_ritorno_black_out() -> dict[str, list[Any]]:
+    return {r["conditions"][0]["id"]: r["sequence"] for b in _automazione()["actions"] if isinstance(b, dict)
+            for r in b.get("choose", []) if r["conditions"][0].get("id") in
+            ("calendario_ritorno_da_black_out", "calendario_ritorno_da_black_out_riallineamento")}
+
+
+def test_ritorno_dopo_black_out_con_congelamento_aspetta_la_fine_dell_allerta() -> None:
+    """Classe intera (i 2 rami che fanno ripartire la Fascia al ritorno della corrente): subito prima della scelta della
+    Fascia, con Congelamento o Δ Temp. in corso si accende la Spia Comando non eseguito del Calendario e il ramo si ferma
+    (lo script della Fascia la spegnerebbe e non comanderebbe: le sue opzioni chiedono Congelamento e Δ Temp. assenti)."""
+    rami = _rami_ritorno_black_out()
+    assert len(rami) == 2
+    for nome, passi in rami.items():
+        k = next(i for i, p in enumerate(passi) if "choose" in p)
+        passo = passi[k - 1]
+        assert passo["then"] == [{"data": {}, "target": {"entity_id": CAL_NON_ESEGUITO}, "action": "input_boolean.turn_on"},
+                                 {"stop": "Fascia rimandata alla fine dell'allerta Congelamento o Δ Temp."}], nome
+        assert sum("Fascia rimandata" in str(p) for p in passi) == 1, nome
+
+
+@pytest.mark.parametrize("ramo", ["calendario_ritorno_da_black_out", "calendario_ritorno_da_black_out_riallineamento"])
+async def test_condizione_del_rinvio_della_fascia(hass: HomeAssistant, ramo: str) -> None:
+    passi = _rami_ritorno_black_out()[ramo]
+    k = next(i for i, p in enumerate(passi) if "choose" in p)
+    cond = Template(passi[k - 1]["if"][0]["value_template"], hass)
+    CONG = "input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia"
+    DELTA = "input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia"
+
+    def rinvia(cong: str, delta: str, spia: str | None) -> bool:
+        hass.states.async_set(CONG, cong)
+        hass.states.async_set(DELTA, delta)
+        for s in SPIE_FASCIA:
+            hass.states.async_set(s, "on" if s == spia else "off")
+        return result_as_boolean(cond.async_render())
+
+    assert rinvia("off", "off", SPIE_FASCIA[0]) is False  # nessuna allerta: la Fascia riparte subito
+    for spia in SPIE_FASCIA:
+        assert rinvia("on", "off", spia) is True
+        assert rinvia("off", "on", spia) is True
+    assert rinvia("on", "on", None) is False  # nessuna Fascia: niente da rimandare
+
+
+@pytest.mark.parametrize(("cong", "delta", "fascia_riparte"), [
+    ("off", "off", True),  # nessuna allerta: la Fascia riparte subito (come nella b38)
+    ("on", "off", False),  # Congelamento in corso: Fascia rimandata alla fine dell'allerta
+    ("off", "on", False),  # Δ Temp. in corso: idem
+])
+async def test_ritorno_della_fascia_con_congelamento_o_delta(hass: HomeAssistant, cong: str, delta: str,
+                                                            fascia_riparte: bool) -> None:
+    """Il ramo vero eseguito da Home Assistant (stesso banco di prova del ritorno della Fascia della b36): con Congelamento
+    o Δ Temp. in corso lo script della Fascia non parte, la Spia Comando non eseguito del Calendario si accende (a fine
+    allerta il Congelamento OFF / Δ Temp. OFF fa ripartire la Fascia) e nessun comando va alla VMC."""
+    import time
+
+    from tests.test_b35_allerte import IP, LETTURA, _ramo, _spente
+    from tests.test_b36_allerte import CALENDARIO, _esegui, _stato
+    adesso = time.time()
+    chiamati: list[str] = []
+
+    async def _script(call: Any) -> None:
+        chiamati.append(call.service)
+
+    hass.services.async_register("script", "vmc_master_calendario_fascia_1_on", _script)
+    hass.services.async_register("script", "vmc_master_calendario_fascia_2_on", _script)
+    stati = {CAL_BLACK_OUT: "on", "input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_calendario": "on",
+             LETTURA + "_interfaccia": "Velocità 1", **_spente(CALENDARIO), CAL_NON_ESEGUITO: "off",
+             "input_boolean.vmc_master_spia_calendario_sabato_2": "on",
+             "input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia": cong,
+             "input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia": delta}
+    hass.states.async_set(IP, "ON-Line", timestamp=adesso - 32)
+    hass.states.async_set(LETTURA, "Velocità 1", timestamp=adesso - 10)
+    comandi = await _esegui(hass, _ramo("calendario_ritorno_da_black_out")["sequence"], stati, attesa=0.5)
+    assert comandi == []
+    assert chiamati == (["vmc_master_calendario_fascia_2_on"] if fascia_riparte else [])
+    assert _stato(hass, CAL_BLACK_OUT) == "off"
+    assert _stato(hass, CAL_NON_ESEGUITO) == ("off" if fascia_riparte else "on")

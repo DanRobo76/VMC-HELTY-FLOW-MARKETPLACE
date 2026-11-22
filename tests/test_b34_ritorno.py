@@ -253,7 +253,7 @@ def test_descrizioni_e_scheda() -> None:
              "lo stesso vale per il comando di un'allerta (o del suo ripristino) dato durante una Fascia: dopo 32 "
              "Secondi la ripetizione si ferma e, appena la velocità torna leggibile, il comando viene ripetuto, "
              "salvo se nel frattempo la Velocità è cambiata (se anche il comando del Calendario non è stato "
-             "eseguito, vale il più recente); "
+             "eseguito, prima riparte la Fascia); "
              "con un'allerta "
              "Congelamento o Δ Temp. in corso il comando del Calendario aspetta la fine dell'allerta: a fine allerta, "
              "appena la velocità è leggibile, la Fascia riparte con la sua Velocità (o si ripete la Velocità 0, o 1, in "

@@ -596,15 +596,17 @@ def _gemelli_velocita() -> dict[str, tuple[int, int, int, int]]:
 #   il Δ comanda la Velocità 1; fine Umidità (spia_umidita_off); script delle Fasce: Fascia a V0 con Inquinanti -> V1 e
 #   ritorno a 0 (A25, A28).
 CLASSE_A = {
-    # b39: +2/+2/+2/+9 nelle 4 famiglie qui sotto, il passo «Comando non eseguito» dopo i cicli che esistono solo nelle
-    # copie speciali (V0/V1/Free): tolti i 135 passi i conteggi tornano quelli della b38 (11, 16, 20, 59)
+    # b39: +2/+2/+2/+2/+9 nelle 5 famiglie qui sotto, il passo «Comando non eseguito» dopo i cicli che esistono solo nelle
+    # copie speciali (V0/V1/Free): tolti i 135 passi i conteggi tornano quelli della b38 (11, 16, 20, 21, 59), prova
+    # rifatta dopo l'«else» che annulla il comando più vecchio (prima il passo di «Rip. Vel. X No PdR se Spia Inquinanti
+    # ON» cadeva in un gruppo già contato)
     "[ramo d'azione] PdR Vel. X -> Imposta Velocità 0": 13,
     "[ramo d'azione] PdR Vel. X se Spia Inquinanti ON": 18,
     "[trigger] Rip. Vel. X No PdR": 2,
     "[ramo d'azione] Rip. Vel. X No PdR": 22,
     "[trigger] Rip. Vel. X No PdR se Spia Inquinanti ON": 2,
     # b36 (b36-pdr2): 18 -> 21, la protezione della scelta dell'utente nei 3 casi con comando del ramo Free (dentro il choose)
-    "[ramo d'azione] Rip. Vel. X No PdR se Spia Inquinanti ON": 21,
+    "[ramo d'azione] Rip. Vel. X No PdR se Spia Inquinanti ON": 23,
     "[trigger] Black-Out Velocità X [ON]": 1,
     "[ramo d'azione] Black-Out Velocità X [ON]": 2,
     "[ramo d'azione] Black-Out Velocità X [OFF, Ripristino]": 18,

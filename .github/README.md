@@ -81,7 +81,7 @@
   > <sub>**Nota:** per impostazione firmware, la priorità è assegnata al sensore interno della VMC rispetto al valore rilevato dal sensore esterno dell'entità selezionata.</sub>
 - <sub>Permette l'avvio automatico a Velocità 1 in funzione della Differenza Temperatura Interna - Temperatura Esterna se > 23 °C e successiva ripresa.</sub>
   > <sub>**Nota:** per impostazione firmware, la priorità è assegnata ai sensori interni della VMC rispetto ai valori rilevati dal sensore esterno dell'entità selezionata.</sub>
-- <sub>Ripristina la velocità in caso di Black-Out (se la VMC ha linea dedicata al quadro elettrico e/o è installato un relè domotico); durante una fascia del Calendario, al ritorno della corrente, la VMC riparte con la velocità della fascia in corso (se nel frattempo la fascia è finita, si arresta; una velocità scelta prima resta), poi ripartono le allerte in corso.</sub>
+- <sub>Ripristina la velocità in caso di Black-Out (se la VMC ha linea dedicata al quadro elettrico e/o è installato un relè domotico); durante una fascia del Calendario, al ritorno della corrente, la VMC riparte con la velocità della fascia in corso (se nel frattempo la fascia è finita, si arresta; una velocità scelta prima resta), poi ripartono le allerte in corso (con un'allerta Congelamento o Δ Temp. in corso la fascia riparte alla fine dell'allerta).</sub>
 - <sub>Calcola il tempo di ricambio d'aria in funzione della velocità.</sub>
 - <sub>Calcola la portata d'aria (m³/h) in funzione della velocità.</sub>
 - <sub>Calcola l'umidità assoluta esterna e interna (g/m³).</sub>
@@ -432,7 +432,7 @@ Ogni script chiede conferma con il popup «Vuoi Procedere?». Per i dettagli apr
   > <sub>**Note:** by firmware design, priority goes to the unit's internal sensor over the value read by the selected outdoor entity.</sub>
 - <sub>Automatic start at Speed 1 when indoor temperature minus outdoor temperature is > 23 °C, and later recovery.</sub>
   > <sub>**Note:** by firmware design, priority goes to the unit's internal sensors over the values read by the selected outdoor entity.</sub>
-- <sub>Restores the speed after a power failure (if the unit has a dedicated line in the electrical panel and/or a home automation relay is installed); during a Calendar slot, when the power comes back, the unit restarts at the speed of the current slot (if the slot has ended in the meantime, it stops; a speed picked before is kept), then the alerts in progress resume.</sub>
+- <sub>Restores the speed after a power failure (if the unit has a dedicated line in the electrical panel and/or a home automation relay is installed); during a Calendar slot, when the power comes back, the unit restarts at the speed of the current slot (if the slot has ended in the meantime, it stops; a speed picked before is kept), then the alerts in progress resume (with a freezing or Δ Temp. alert in progress the slot restarts when the alert ends).</sub>
 - <sub>Calculates the air change time based on the speed.</sub>
 - <sub>Calculates the airflow (m³/h) based on the speed.</sub>
 - <sub>Calculates outdoor and indoor absolute humidity (g/m³).</sub>

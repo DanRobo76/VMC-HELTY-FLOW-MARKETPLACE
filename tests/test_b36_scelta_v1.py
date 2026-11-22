@@ -232,7 +232,8 @@ async def test_velocita_1_nel_ritorno_della_fascia_spegne_la_spia(hass: HomeAssi
 def _blocco_fascia() -> dict[str, Any]:
     sequenza = _ramo("calendario_ritorno_da_black_out")["sequence"]
     (blocco,) = [p for p in sequenza if "if" in p and "then" in p and p["then"] == [{"stop": STOP_CAL}]]
-    assert sequenza.index(blocco) == 2 and "choose" in sequenza[3]
+    # b39: tra la scelta dell'utente e la scelta della Fascia il rinvio della Fascia con Congelamento/Δ (test_b39)
+    assert sequenza.index(blocco) == 2 and "Fascia rimandata" in str(sequenza[3]) and "choose" in sequenza[4]
     return blocco
 
 
