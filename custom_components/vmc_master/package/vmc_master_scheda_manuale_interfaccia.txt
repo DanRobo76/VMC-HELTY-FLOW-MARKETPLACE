@@ -1,6 +1,6 @@
 ###########################################################################################################################################################################################################################
 #                                                                                                                                                                                                                         #
-#                                                          SCHEDA MANUALE INTERFACCIA VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b38]                                                                                         #
+#                                                          SCHEDA MANUALE INTERFACCIA VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b39]                                                                                         #
 #                                                                                                                                                                                                                         #
 # SVILUPPATO DA ING. DANILO ROBOTTI, ALLE PRIME ARMI CON HOME ASSISTANT :)                                                                                                                                                #
 #                                                                                                                                                                                                                         #
@@ -11486,6 +11486,7 @@ cards:
                           'input_text.vmc_master_ultima_scelta_utente',
                           'input_text.vmc_master_ultimi_comandi_automazione',
                           'input_text.vmc_master_ultime_letture_velocita',
+                          'input_text.vmc_master_comando_non_eseguito',
                           'script.vmc_master_ripristina_tempi_attesa',
                           'sensor.vmc_master_velocita_registrata',
                           'timer.vmc_master_countdown_pdr_cambio',

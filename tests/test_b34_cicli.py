@@ -8,7 +8,9 @@
 - B4-3: Inquinanti ON, opzione Iperventilazione: il ciclo delle spie sta prima del ciclo di comando, come nelle 4
   opzioni gemelle.
 Nessun tempo cambia: il ciclo standard dura 4 s a giro, l'attesa di 12 s dopo il ripristino resta dov'era.
-b39: il ciclo standard ha anche l'uscita «velocita' non leggibile da 32 s con una Fascia in corso» (tests/test_b39.py)."""
+b39: il ciclo standard dei rami che possono girare anche in Fascia ha anche l'uscita «velocita' non leggibile da 32 s
+con una Fascia in corso» ed e' seguito dal passo del Comando non eseguito; quello del ripristino dopo il Black-Out (fuori
+Fascia) resta quello della b34 (tests/test_b39.py)."""
 
 from __future__ import annotations
 
@@ -51,8 +53,9 @@ LETTURA_PERSA_IN_FASCIA = (
     "states('input_number.vmc_master_attesa_blackout_rilevazione') | int(32) and (" + FASCIA + "))")
 
 
-def _fine(etichetta: str) -> str:
-    return f"{{{{ states('{LETTURA}') == '{etichetta}' or {UTENTE} or {BLACK_OUT} or {LETTURA_PERSA_IN_FASCIA} }}}}"
+def _fine(etichetta: str, fascia: bool = True) -> str:
+    persa = f" or {LETTURA_PERSA_IN_FASCIA}" if fascia else ""
+    return f"{{{{ states('{LETTURA}') == '{etichetta}' or {UTENTE} or {BLACK_OUT}{persa} }}}}"
 
 
 def _automazione() -> dict[str, Any]:
@@ -96,8 +99,9 @@ def _coppie(nodo: Any) -> Iterator[tuple[dict[str, Any], dict[str, Any]]]:
             yield from _coppie(valore)
 
 
-def _ciclo_standard(precedente: dict[str, Any], passo: dict[str, Any]) -> str:
-    """La forma esatta del ciclo standard; restituisce il nome del comando."""
+def _ciclo_standard(precedente: dict[str, Any], passo: dict[str, Any], fascia: bool = True) -> str:
+    """La forma esatta del ciclo standard (fascia: ramo che puo' girare anche in Fascia, b39); restituisce il nome del
+    comando."""
     assert precedente.get("variables") == MEMORIA
     ciclo = passo["repeat"]
     assert set(ciclo) == {"sequence", "until"}
@@ -105,7 +109,7 @@ def _ciclo_standard(precedente: dict[str, Any], passo: dict[str, Any]) -> str:
     assert set(comando) == {"data", "action"} and comando["data"] == {}
     nome = comando["action"].removeprefix("shell_command.vmc_master_")
     assert (uno, rilettura, tre) == (UNO, RILETTURA, TRE)
-    assert ciclo["until"] == [{"condition": "template", "value_template": _fine(ETICHETTA[nome])}]
+    assert ciclo["until"] == [{"condition": "template", "value_template": _fine(ETICHETTA[nome], fascia)}]
     return nome
 
 
@@ -116,8 +120,9 @@ def test_comandi_di_velocita_fuori_ciclo_solo_quelli_voluti() -> None:
     dati = _automazione()
     tutti = list(_comandi(dati["actions"]))
     # b35 (C1-1): +1, Velocita' 0 di fine Fascia ripetuta nel ramo del ritorno della VMC; b36 (C1-5): +1, Velocita' 1
-    # dello spegnimento del Calendario con gli Inquinanti ripetuta nel ramo del ritorno della VMC
-    assert len(tutti) == 220
+    # dello spegnimento del Calendario con gli Inquinanti ripetuta nel ramo del ritorno della VMC; b39: +1, ripetizione del
+    # Comando non eseguito durante una Fascia (comando con template, nel ciclo standard)
+    assert len(tutti) == 221
     fuori = [azione for azione, dentro in tutti if not dentro]
     assert fuori == ["shell_command.vmc_master_velocita_1"] * 4
     ramo = _rami(dati)["spia_velocita_1_inquinanti_co2_voc"]
@@ -136,7 +141,7 @@ def test_ripristino_dopo_il_black_out_ogni_comando_nel_ciclo_standard() -> None:
     for ident in ("Black-Out Off Vel. 1", "Black-Out Off Vel. 2", "Black-Out Off Vel. 3", "Black-Out Off Vel. 4",
                   "Black-Out Off Notturna", "Black-Out Off Iperventilazione"):
         ((precedente, passo),) = list(_coppie(rami[ident]["sequence"]))
-        _ciclo_standard(precedente, passo)
+        _ciclo_standard(precedente, passo, fascia=False)
         alias_modello.add(passo["alias"])
     (modello_alias,) = alias_modello
     attesi = {
@@ -149,7 +154,7 @@ def test_ripristino_dopo_il_black_out_ogni_comando_nel_ciclo_standard() -> None:
         ramo = rami[ident]
         assert all(dentro for _, dentro in _comandi(ramo)), ident
         coppie = list(_coppie(ramo["sequence"]))
-        assert [_ciclo_standard(p, c) for p, c in coppie] == nomi, ident
+        assert [_ciclo_standard(p, c, fascia=False) for p, c in coppie] == nomi, ident
         assert all(c["alias"] == modello_alias for _, c in coppie), ident
         attesa = [p for p in ramo["sequence"] if "wait_template" in p]
         assert len(attesa) == 1 and attesa[0]["timeout"] == "00:00:12", ident
@@ -221,7 +226,8 @@ def test_inquinanti_on_iperventilazione_ciclo_delle_spie_prima() -> None:
     assert set(opzioni) == {"1", "2", "3", "4", "Notturna", "Iperventilazione"}
     del opzioni["1"]  # la Velocita' 1 e' un caso a parte: non ha il ciclo delle spie
     for nome, opzione in opzioni.items():
-        spie, memoria, comando = opzione["sequence"]
+        spie, memoria, comando, non_eseguito = opzione["sequence"]  # b39: + passo del Comando non eseguito
+        assert non_eseguito["then"][0]["target"]["entity_id"] == "input_text.vmc_master_comando_non_eseguito", nome
         assert spie["alias"] == "Ripeti FInchè Le Spie rispettano Le Regole", nome
         assert not list(_comandi(spie)), nome
         attesi = "velocita_" + nome if nome.isdigit() else nome.lower()
