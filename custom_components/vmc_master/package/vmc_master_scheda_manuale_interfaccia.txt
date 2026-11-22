@@ -11484,6 +11484,7 @@ cards:
                           'input_text.vmc_master_countdown_avvisi',
                           'input_text.vmc_master_ultima_scelta_utente',
                           'input_text.vmc_master_ultimi_comandi_automazione',
+                          'input_text.vmc_master_ultime_letture_velocita',
                           'script.vmc_master_ripristina_tempi_attesa',
                           'sensor.vmc_master_velocita_registrata',
                           'timer.vmc_master_countdown_pdr_cambio',
@@ -14498,8 +14499,8 @@ cards:
                     si ferma anche se la VMC resta OFF-Line o la sua velocità non si legge per 32 Secondi, anche spegnendo l'interruttore
                     del Calendario (vedere Black-Out). Una Velocità scelta negli ultimi Secondi di un'attesa (es. i 16 Secondi del Lim. Δ PdR)
                     vale anche se Home Assistant non l'ha ancora letta (la VMC si legge ogni 5 Secondi): allo scadere dell'attesa la velocità
-                    viene riletta e, dopo un tasto della scheda o del Telecomando appena premuto, si aspetta che la VMC lo esegua (al massimo
-                    12 Secondi). Una Velocità scelta mentre un comando dell'automazione con un'altra velocità è ancora in viaggio verso la VMC
+                    viene riletta e, se l'ultimo comando mandato alla VMC (tasto della scheda o del Telecomando, o comando dell'automazione)
+                    non è ancora stato eseguito, si aspetta che la VMC lo esegua (al massimo 12 Secondi). Una Velocità scelta mentre un comando dell'automazione con un'altra velocità è ancora in viaggio verso la VMC
                     (una VMC lenta può metterci circa 6 Secondi a eseguirlo) non viene cancellata da quel comando: quando è arrivato, la
                     scelta viene rimandata alla VMC. I tempi delle attese non cambiano.<br>
                     </td></tr></table>

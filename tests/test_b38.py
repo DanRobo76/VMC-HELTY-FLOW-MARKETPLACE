@@ -4,9 +4,11 @@ Classe del difetto (segnalazione del 22-11-2026: Velocità 0 premuta negli ultim
 VMC ferma ma «Velocità Registrata» Velocità 2): Home Assistant legge la velocità ogni 5 Secondi, quindi allo scadere di
 un'attesa (trigger template con «for») la guardia «Evento ancora valido» poteva rivalutare il trigger con una lettura
 vecchia. Correzioni:
-- A: prima della guardia la velocità si rilegge; con un tasto della scheda o del Telecomando appena premuto e non ancora
-  eseguito dalla VMC si rilegge ogni 2 Secondi finché la VMC lo esegue (al massimo 12 Secondi dalla scelta);
-- B: «VMC Master - Registro Comandi e Scelte» annota le scelte dell'utente e l'ora dei comandi dell'automazione;
+- A: prima della guardia la velocità si rilegge; se l'ultimo comando mandato alla VMC (tasto della scheda o del
+  Telecomando, o comando dell'automazione) non è ancora stato letto dopo l'invio si rilegge ogni 2 Secondi finché la VMC
+  lo esegue (al massimo 12 Secondi dall'invio);
+- B: «VMC Master - Registro Comandi e Scelte» annota le scelte dell'utente, l'ora dei comandi dell'automazione e l'ora
+  in cui la lettura passa a ogni velocità;
 - C: «VMC Master - Rimando della Scelta» rimanda la scelta cancellata da un comando dell'automazione in viaggio.
 La verifica dinamica (HA vero, VMC simulata veloce e lenta) è nel simulatore (famiglia R e famiglie W/V)."""
 
@@ -19,12 +21,14 @@ from pathlib import Path
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.template import Template, result_as_boolean
+from homeassistant.util import dt as dt_util
 from homeassistant.util import yaml as hay
 
 PKG = Path(__file__).resolve().parents[1] / "custom_components" / "vmc_master" / "package"
 GREZZA = "sensor.vmc_master_status_ventola"
 SCELTA = "input_text.vmc_master_ultima_scelta_utente"
 COMANDI = "input_text.vmc_master_ultimi_comandi_automazione"
+LETTURE = "input_text.vmc_master_ultime_letture_velocita"
 REGISTRO = "automation.vmc_master_registro_comandi_e_scelte"
 RIMANDO = "automation.vmc_master_rimando_della_scelta"
 CODICI = ["00000", "00001", "00002", "00003", "00004", "00005", "00006", "00007"]
@@ -87,7 +91,8 @@ def test_rilettura_prima_della_guardia_per_tutte_le_attese() -> None:
     assert passi[0]["action"] == "homeassistant.update_entity" and passi[0]["target"]["entity_id"] == GREZZA
     ciclo = passi[1]["repeat"]
     attesa = ciclo["while"][0]["value_template"]
-    for pezzo in ("repeat.index <= 6", "scelta[2] == 'scheda'", "< 12", SCELTA, "scelta[0] != letta"):
+    for pezzo in ("repeat.index <= 6", "scelta[2] == 'scheda'", "< 12", SCELTA, COMANDI, LETTURE,
+                  "('0000' ~ ns.i) != letta", "r[ns.i] < ns.ts"):
         assert pezzo in attesa, pezzo
     assert ciclo["sequence"][0]["delay"]["seconds"] == 2
     assert ciclo["sequence"][1]["action"] == "homeassistant.update_entity"
@@ -145,9 +150,10 @@ def test_nuove_entita_nelle_copie_gemelle() -> None:
     da_pulire = pulizia["sequence"][0]["data"]["entity_id"]
     elenco = scheda[scheda.index("{%- set elenco = [") :]
     elenco = elenco[: elenco.index("] -%}")]
-    for entita in (SCELTA, COMANDI, REGISTRO, RIMANDO):
+    for entita in (SCELTA, COMANDI, LETTURE, REGISTRO, RIMANDO):
         assert entita in escluse and entita in da_pulire and f"'{entita}'" in elenco, entita
-    for nome in ("vmc_master_ultima_scelta_utente", "vmc_master_ultimi_comandi_automazione"):
+    for nome in ("vmc_master_ultima_scelta_utente", "vmc_master_ultimi_comandi_automazione",
+                 "vmc_master_ultime_letture_velocita"):
         helper = pkg["input_text"][nome]
         assert helper["initial"] == "" and helper["max"] == 255
     for entita in (REGISTRO, RIMANDO):
@@ -166,7 +172,7 @@ async def test_registro_scelta_dall_app(hass: HomeAssistant) -> None:
     """Una lettura che cambia è una scelta dall'App solo senza un comando dell'automazione con quella velocità negli
     ultimi 20 Secondi e senza un tasto della scheda con quella velocità negli ultimi 20 Secondi."""
     registro = _auto("VMC Master - Registro Comandi e Scelte")
-    condizione = Template(registro["actions"][0]["choose"][2]["conditions"][0]["value_template"], hass)
+    condizione = Template(registro["actions"][1]["choose"][2]["conditions"][0]["value_template"], hass)
 
     class Stato:
         def __init__(self, s: str) -> None:
@@ -214,3 +220,47 @@ async def test_rimando_comandi_in_viaggio(hass: HomeAssistant) -> None:
     assert in_viaggio(comandi, "00004|1000.0|lettura") == [2]  # App: fino a 13 s prima della lettura
     comandi[2] = 1001.0
     assert in_viaggio(comandi, "00004|1000.0|scheda") == []  # mandato dopo la scelta: decisione dell'automazione
+
+
+async def test_rilettura_aspetta_solo_un_comando_in_viaggio(hass: HomeAssistant) -> None:
+    """Si aspetta solo se l'ultimo comando (dell'automazione o un tasto della scheda) è diverso dalla lettura, mandato da
+    meno di 12 s e non ancora letto dopo l'invio; un comando già letto e poi cambiato dall'App non fa aspettare."""
+    attesa = Template(_automazione()["actions"][0]["then"][1]["repeat"]["while"][0]["value_template"], hass)
+    ora = dt_util.utcnow().timestamp()
+
+    def aspetta(lettura: str, comandi: dict[int, float], letture: dict[int, float], scelta: str = "") -> bool:
+        hass.states.async_set("sensor.vmc_master_status_ip_interfaccia", "ON-Line")
+        hass.states.async_set(GREZZA, f"VMGH,{lettura},0")
+        hass.states.async_set(COMANDI, "|".join(str(comandi.get(i, 0.0)) for i in range(8)))
+        hass.states.async_set(LETTURE, "|".join(str(letture.get(i, 0.0)) for i in range(8)))
+        hass.states.async_set(SCELTA, scelta)
+        return result_as_boolean(attesa.async_render({"repeat": {"index": 1}}))
+
+    assert aspetta("00002", {4: ora - 5}, {2: ora - 30, 4: ora - 60}) is True  # V4 in viaggio da 5 s
+    assert aspetta("00004", {4: ora - 5}, {4: ora - 1}) is False  # già eseguito
+    assert aspetta("00002", {4: ora - 5}, {4: ora - 4}) is False  # eseguito e poi cambiato dall'App
+    assert aspetta("00002", {4: ora - 13}, {}) is False  # oltre 12 s dall'invio
+    assert aspetta("00002", {}, {}, f"00000|{ora - 2}|scheda") is True  # tasto della scheda in viaggio
+    assert aspetta("00002", {}, {}, f"00000|{ora - 2}|lettura") is False  # scelta dall'App: già eseguita
+    assert aspetta("00002", {4: ora - 1}, {}, f"00000|{ora - 2}|scheda") is True  # l'ultimo è il comando V4
+    hass.states.async_set("sensor.vmc_master_status_ip_interfaccia", "OFF-Line")
+    assert result_as_boolean(attesa.async_render({"repeat": {"index": 1}})) is False
+
+
+async def test_registro_ora_delle_letture(hass: HomeAssistant) -> None:
+    """Ogni cambio della lettura annota l'ora per la nuova velocità."""
+    registro = _auto("VMC Master - Registro Comandi e Scelte")
+    passo = registro["actions"][0]
+    condizione = Template(passo["if"][0]["value_template"], hass)
+    valore = Template(passo["then"][0]["data"]["value"], hass)
+
+    class Stato:
+        def __init__(self, s: str) -> None:
+            self.state = s
+
+    trigger = {"id": "lettura", "from_state": Stato("VMGH,00002,0"), "to_state": Stato("VMGH,00004,0")}
+    assert result_as_boolean(condizione.async_render({"trigger": trigger})) is True
+    assert valore.async_render({"trigger": trigger, "ora": 1000.5, "letture": [1.0] * 8},
+                               parse_result=False) == "1.0|1.0|1.0|1.0|1000.5|1.0|1.0|1.0"
+    uguale = {"id": "lettura", "from_state": Stato("VMGH,00004,1"), "to_state": Stato("VMGH,00004,0")}
+    assert result_as_boolean(condizione.async_render({"trigger": uguale})) is False
