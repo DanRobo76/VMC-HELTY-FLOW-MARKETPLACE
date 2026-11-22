@@ -1,6 +1,6 @@
 ###########################################################################################################################################################################################################################
 #                                                                                                                                                                                                                         #
-#                                                          SCHEDA MANUALE INTERFACCIA VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b37]                                                                                         #
+#                                                          SCHEDA MANUALE INTERFACCIA VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b38]                                                                                         #
 #                                                                                                                                                                                                                         #
 # SVILUPPATO DA ING. DANILO ROBOTTI, ALLE PRIME ARMI CON HOME ASSISTANT :)                                                                                                                                                #
 #                                                                                                                                                                                                                         #
@@ -11416,6 +11416,8 @@ cards:
                           'automation.vmc_master_countdown_letture_vmc',
                           'automation.vmc_master_esclusivita_finestre_opzioni',
                           'automation.vmc_master_inizializza_tempi_di_attesa',
+                          'automation.vmc_master_registro_comandi_e_scelte',
+                          'automation.vmc_master_rimando_della_scelta',
                           'binary_sensor.vmc_master_tasto_velocita_0',
                           'binary_sensor.vmc_master_tasto_velocita_1',
                           'binary_sensor.vmc_master_tasto_velocita_2',
@@ -11480,6 +11482,8 @@ cards:
                           'input_text.vmc_master_countdown_calendario_inizio',
                           'input_text.vmc_master_countdown_calendario_fine',
                           'input_text.vmc_master_countdown_avvisi',
+                          'input_text.vmc_master_ultima_scelta_utente',
+                          'input_text.vmc_master_ultimi_comandi_automazione',
                           'script.vmc_master_ripristina_tempi_attesa',
                           'sensor.vmc_master_velocita_registrata',
                           'timer.vmc_master_countdown_pdr_cambio',

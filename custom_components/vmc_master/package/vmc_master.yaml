@@ -152,6 +152,10 @@ homeassistant:
       icon: mdi:hvac
     automation.vmc_master_esclusivita_finestre_opzioni:
       icon: mdi:hvac
+    automation.vmc_master_registro_comandi_e_scelte:
+      icon: mdi:hvac
+    automation.vmc_master_rimando_della_scelta:
+      icon: mdi:hvac
     automation.automazione_vmc_master:
       icon: mdi:hvac
 ################### Fine Icone delle Automazioni ###################
@@ -223,7 +227,7 @@ command_line:
 ################### Inizio Creazione Sensori Principali della VMC  ########################################################################################################################################################
 sensor:
   - platform: tcp
-    name: vmc_master_status_ventola                                             # [CONFIGURAZIONE, 1093 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 327 RICHIAMI] CREAZIONE DEL SENSORE LETTURA STATI DI VENTILAZIONE; N.b non tutti i valori sono identificabili
+    name: vmc_master_status_ventola                                             # [CONFIGURAZIONE, 1100 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 333 RICHIAMI] CREAZIONE DEL SENSORE LETTURA STATI DI VENTILAZIONE; N.b non tutti i valori sono identificabili
     host: 999.999.999.999                        # INDIRIZZO IP DELLA VMC MASTER
     port: 5001                                 # PORTA 5001 DELLA VMC IMPOSTAZIONE DI DEFAULT
     timeout: 3
@@ -354,7 +358,7 @@ template:
       - trigger: homeassistant
         event: start
     sensor:
-      - default_entity_id: sensor.vmc_master_status_ventola_memorizzata          # [CONFIGURAZIONE, 14 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 0 RICHIAMI] ULTIMA LETTURA VALIDA DELLO STATO VENTOLA (VMGH?)
+      - default_entity_id: sensor.vmc_master_status_ventola_memorizzata          # [CONFIGURAZIONE, 15 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 1 RICHIAMO] ULTIMA LETTURA VALIDA DELLO STATO VENTOLA (VMGH?)
         name: "Ultima Lettura Valida Stato Ventola"
         unique_id: vmc_master_status_ventola_memorizzata
         state: >
@@ -616,7 +620,7 @@ template:
         icon: mdi:ip
 
   - sensor:
-      - default_entity_id: sensor.vmc_master_status_ip_interfaccia              # [CONFIGURAZIONE, 1049 RICHIAMI] [INTERFACCIA, 123 RICHIAMI] [AUTOMAZIONE, 373 RICHIAMI] SENSORE IMPIEGATO PER LA VISUALIZZAZIONE NELL'INTERFACCIA SE LA VMC E' IN RETE O MENO
+      - default_entity_id: sensor.vmc_master_status_ip_interfaccia              # [CONFIGURAZIONE, 1051 RICHIAMI] [INTERFACCIA, 123 RICHIAMI] [AUTOMAZIONE, 375 RICHIAMI] SENSORE IMPIEGATO PER LA VISUALIZZAZIONE NELL'INTERFACCIA SE LA VMC E' IN RETE O MENO
         name: "Status VMC"
         unique_id: vmc_master_status_ip_interfaccia
         state: >
@@ -630,7 +634,7 @@ template:
           {% endif %}
 
   - binary_sensor:
-      - default_entity_id: binary_sensor.vmc_master_black_out_rilevato          # [CONFIGURAZIONE, 363 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 310 RICHIAMI] BLACK-OUT RILEVATO: ON QUANDO UNA DELLE CONDIZIONI DEI TRIGGER «BLACK-OUT» DELL'AUTOMAZIONE (STESSO TESTO, 1:1) E' VERA DA ALMENO «ATTESA BLACK-OUT RILEVAZIONE» SECONDI; CON L'AUTOMAZIONE IN MODALITA' QUEUED FA USCIRE I CICLI DI CONFERMA DELLA VELOCITA', COME FACEVA IL RIAVVIO DELLA MODALITA' RESTART
+      - default_entity_id: binary_sensor.vmc_master_black_out_rilevato          # [CONFIGURAZIONE, 365 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 310 RICHIAMI] BLACK-OUT RILEVATO: ON QUANDO UNA DELLE CONDIZIONI DEI TRIGGER «BLACK-OUT» DELL'AUTOMAZIONE (STESSO TESTO, 1:1) E' VERA DA ALMENO «ATTESA BLACK-OUT RILEVAZIONE» SECONDI; CON L'AUTOMAZIONE IN MODALITA' QUEUED FA USCIRE I CICLI DI CONFERMA DELLA VELOCITA', COME FACEVA IL RIAVVIO DELLA MODALITA' RESTART
         name: "Black-Out Rilevato"
         unique_id: vmc_master_black_out_rilevato
         state: >
@@ -3971,6 +3975,18 @@ input_text:
     max: 255
     icon: mdi:timer-sand
 ################### Fine Creazione Testi per il Countdown in Scheda delle Attese dell'Automazione ###################
+################### Inizio Creazione Registro dei Comandi e delle Scelte di Velocità (9.0.0b38) ###################
+  vmc_master_ultima_scelta_utente:                               # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 1 RICHIAMO] ULTIMA VELOCITA' SCELTA DALL'UTENTE: «CODICE|ORA|FONTE» (FONTE scheda = TASTO DELLA SCHEDA O DEL TELECOMANDO, lettura = APP AIR GUARD O TELECOMANDO DELLA VMC), SCRITTA DA vmc_master_registro_comandi_e_scelte
+    name: "Ultima Scelta di Velocità dell'Utente"
+    initial: ""
+    max: 255
+    icon: mdi:gesture-tap-button
+  vmc_master_ultimi_comandi_automazione:                         # [CONFIGURAZIONE, 8 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 0 RICHIAMI] ORA DELL'ULTIMO COMANDO DI OGNI VELOCITA' (0, 1, 2, 3, 4, IPERVENTILAZIONE, NOTTURNA, FREE COOLING) MANDATO DA UN'AUTOMAZIONE O DA UNO SCRIPT SENZA UTENTE, SCRITTA DA vmc_master_registro_comandi_e_scelte
+    name: "Ultimi Comandi di Velocità dell'Automazione"
+    initial: ""
+    max: 255
+    icon: mdi:history
+################### Fine Creazione Registro dei Comandi e delle Scelte di Velocità (9.0.0b38) ###################
 
 #################################################################################################################################
 # ESCLUSIONE ENTITA' DA RECORDER, HISTORY E LOGBOOK PER RIDURRE IL CARICO SUL DATABASE (ENTITA' AGGIORNATE DI FREQUENTE)       #
@@ -4006,6 +4022,8 @@ recorder:
       - automation.vmc_master_inizializza_tempi_di_attesa
       - automation.vmc_master_countdown_letture_vmc
       - automation.vmc_master_esclusivita_finestre_opzioni
+      - automation.vmc_master_registro_comandi_e_scelte
+      - automation.vmc_master_rimando_della_scelta
       - input_boolean.vmc_master_opzione_finestra_prossime_letture
       - timer.vmc_master_lettura_ping
       - timer.vmc_master_lettura_ventilazione
@@ -4082,6 +4100,8 @@ recorder:
       - input_text.vmc_master_countdown_calendario_inizio
       - input_text.vmc_master_countdown_calendario_fine
       - input_text.vmc_master_countdown_avvisi
+      - input_text.vmc_master_ultima_scelta_utente
+      - input_text.vmc_master_ultimi_comandi_automazione
       - input_number.vmc_master_attesa_pdr_cambio
       - input_number.vmc_master_attesa_pdr_cambio_inquinanti
       - input_number.vmc_master_attesa_pdr_ripristino
@@ -7416,6 +7436,8 @@ script:
             - automation.vmc_master_inizializza_tempi_di_attesa
             - automation.vmc_master_countdown_letture_vmc
             - automation.vmc_master_esclusivita_finestre_opzioni
+            - automation.vmc_master_registro_comandi_e_scelte
+            - automation.vmc_master_rimando_della_scelta
             - input_boolean.vmc_master_opzione_finestra_prossime_letture
             - timer.vmc_master_lettura_ping
             - timer.vmc_master_lettura_ventilazione
@@ -7492,6 +7514,8 @@ script:
             - input_text.vmc_master_countdown_calendario_inizio
             - input_text.vmc_master_countdown_calendario_fine
             - input_text.vmc_master_countdown_avvisi
+            - input_text.vmc_master_ultima_scelta_utente
+            - input_text.vmc_master_ultimi_comandi_automazione
             - input_number.vmc_master_attesa_pdr_cambio
             - input_number.vmc_master_attesa_pdr_cambio_inquinanti
             - input_number.vmc_master_attesa_pdr_ripristino
@@ -34876,6 +34900,263 @@ automation:
                     duration: "{{ '%02d:%02d:%02d' % (secondi // 3600, (secondi % 3600) // 60, secondi % 60) }}"
 ################### Fine Creazione Automazione Countdown delle Letture della VMC ###################
 
+################### Inizio Creazione Automazione Registro Comandi e Scelte (9.0.0b38) ###################
+  - id: "vmc_master_registro_comandi_e_scelte"                                  # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 0 RICHIAMI]
+    alias: "VMC Master - Registro Comandi e Scelte"
+    description: >
+      Annota i comandi di velocità mandati alla VMC. Un comando partito da un tasto della scheda o del Telecomando
+      (Home Assistant sa che lo ha premuto un utente) è una scelta dell'utente; un comando senza utente
+      (Automazione VMC Master, Calendario, Rimando della Scelta) è un comando dell'automazione e ne annota l'ora per
+      ogni velocità. Annota come scelta dell'utente anche una velocità letta che cambia senza un comando
+      dell'automazione con quella velocità negli ultimi 20 secondi (App Air Guard o telecomando della VMC). Serve
+      all'Automazione VMC Master, che allo scadere di un'attesa aspetta che la VMC esegua un tasto appena premuto, e al
+      Rimando della Scelta. È separata dall'Automazione VMC Master per non accodarle un evento (mode: queued) a ogni
+      comando.
+    mode: queued
+    max: 50
+    triggers:
+      - trigger: event
+        event_type: call_service
+        event_data:
+          domain: shell_command
+          service: vmc_master_velocita_0
+        id: comando
+      - trigger: event
+        event_type: call_service
+        event_data:
+          domain: shell_command
+          service: vmc_master_velocita_1
+        id: comando
+      - trigger: event
+        event_type: call_service
+        event_data:
+          domain: shell_command
+          service: vmc_master_velocita_2
+        id: comando
+      - trigger: event
+        event_type: call_service
+        event_data:
+          domain: shell_command
+          service: vmc_master_velocita_3
+        id: comando
+      - trigger: event
+        event_type: call_service
+        event_data:
+          domain: shell_command
+          service: vmc_master_velocita_4
+        id: comando
+      - trigger: event
+        event_type: call_service
+        event_data:
+          domain: shell_command
+          service: vmc_master_iperventilazione
+        id: comando
+      - trigger: event
+        event_type: call_service
+        event_data:
+          domain: shell_command
+          service: vmc_master_notturna
+        id: comando
+      - trigger: event
+        event_type: call_service
+        event_data:
+          domain: shell_command
+          service: vmc_master_freecooling
+        id: comando
+      - trigger: state
+        entity_id: sensor.vmc_master_status_ventola
+        not_from:
+          - unavailable
+          - unknown
+        not_to:
+          - unavailable
+          - unknown
+        id: lettura
+    variables:
+      codici: "{{ {'vmc_master_velocita_0': 0, 'vmc_master_velocita_1': 1, 'vmc_master_velocita_2': 2, 'vmc_master_velocita_3': 3, 'vmc_master_velocita_4': 4, 'vmc_master_iperventilazione': 5, 'vmc_master_notturna': 6, 'vmc_master_freecooling': 7} }}"
+      ora: "{{ as_timestamp(now()) | round(1) }}"
+      comandi: >-
+        {%- set c = states('input_text.vmc_master_ultimi_comandi_automazione').split('|') -%}
+        {{ (c if c | length == 8 else ['0', '0', '0', '0', '0', '0', '0', '0']) | map('float', 0) | list }}
+      scelta: "{{ (states('input_text.vmc_master_ultima_scelta_utente').split('|') + ['', '0', ''])[:3] }}"
+    actions:
+      - choose:
+          - alias: Tasto della scheda o del Telecomando premuto da un utente -> scelta dell'utente
+            conditions:
+              - condition: template
+                value_template: "{{ trigger.id == 'comando' and trigger.event.context.user_id is not none }}"
+            sequence:
+              - action: input_text.set_value
+                target:
+                  entity_id: input_text.vmc_master_ultima_scelta_utente
+                data:
+                  value: "0000{{ codici[trigger.event.data.service] }}|{{ ora }}|scheda"
+          - alias: Comando senza utente -> comando dell'automazione (ora annotata per la sua velocità)
+            conditions:
+              - condition: template
+                value_template: "{{ trigger.id == 'comando' }}"
+            sequence:
+              - action: input_text.set_value
+                target:
+                  entity_id: input_text.vmc_master_ultimi_comandi_automazione
+                data:
+                  value: >-
+                    {%- set i = codici[trigger.event.data.service] -%}
+                    {%- set ns = namespace(l=[]) -%}
+                    {%- for t in comandi -%}{%- set ns.l = ns.l + [(ora if loop.index0 == i else t) | string] -%}{%- endfor -%}
+                    {{ ns.l | join('|') }}
+          - alias: >-
+              Velocità letta cambiata senza un comando dell'automazione con quella velocità negli ultimi 20 secondi e
+              senza un tasto della scheda con quella velocità negli ultimi 20 secondi -> scelta dall'App Air Guard o dal
+              telecomando della VMC
+            conditions:
+              - condition: template
+                value_template: >-
+                  {%- set da = trigger.from_state.state.split(',') if trigger.id == 'lettura' and trigger.from_state is not none else [] -%}
+                  {%- set a = trigger.to_state.state.split(',') if trigger.id == 'lettura' and trigger.to_state is not none else [] -%}
+                  {%- if da | length > 1 and a | length > 1 and a[1] != da[1] and a[1] in ['00000', '00001', '00002', '00003', '00004', '00005', '00006', '00007'] -%}
+                    {{ ora - comandi[a[1] | int] >= 20 and not (scelta[0] == a[1] and scelta[2] == 'scheda' and ora - (scelta[1] | float(0)) < 20) }}
+                  {%- else -%}
+                    false
+                  {%- endif -%}
+            sequence:
+              - action: input_text.set_value
+                target:
+                  entity_id: input_text.vmc_master_ultima_scelta_utente
+                data:
+                  value: "{{ trigger.to_state.state.split(',')[1] }}|{{ ora }}|lettura"
+################### Fine Creazione Automazione Registro Comandi e Scelte (9.0.0b38) ###################
+
+################### Inizio Creazione Automazione Rimando della Scelta (9.0.0b38) ###################
+  - id: "vmc_master_rimando_della_scelta"                                       # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 0 RICHIAMI]
+    alias: "VMC Master - Rimando della Scelta"
+    description: >
+      Una velocità scelta dall'utente (tasto della scheda o del Telecomando, App Air Guard, telecomando della VMC)
+      mentre un comando dell'automazione con un'altra velocità è ancora in viaggio verso la VMC (mandato fino a 8
+      secondi prima della scelta, o fino a 13 secondi prima della lettura per una scelta dall'App) può essere
+      cancellata da quel comando, che arriva dopo: una VMC lenta può metterci circa 6 secondi a eseguirlo e il ciclo di
+      conferma lo ripete ogni 4 secondi. Questa automazione aspetta che il comando sia arrivato (8 secondi dall'ultimo
+      invio), rilegge la velocità e, se la VMC è tornata alla velocità di quel comando, rimanda la scelta con il ciclo di
+      conferma (al massimo 5 invii, uno ogni 4 secondi). Non rimanda se dopo la scelta l'automazione manda una velocità
+      nuova (è una sua decisione), con un Black-Out o con la VMC OFF-Line; una scelta più recente la fa ripartire da
+      quella. I tempi dell'automazione non cambiano.
+    mode: restart
+    triggers:
+      - trigger: state
+        entity_id: input_text.vmc_master_ultima_scelta_utente
+    conditions:
+      - alias: Nuova scelta dell'utente con una velocità valida
+        condition: template
+        value_template: >-
+          {{ trigger.to_state is not none and trigger.to_state.state.split('|') | length == 3
+          and trigger.to_state.state.split('|')[0] in ['00000', '00001', '00002', '00003', '00004', '00005', '00006', '00007'] }}
+    variables:
+      servizi: "{{ ['shell_command.vmc_master_velocita_0', 'shell_command.vmc_master_velocita_1', 'shell_command.vmc_master_velocita_2', 'shell_command.vmc_master_velocita_3', 'shell_command.vmc_master_velocita_4', 'shell_command.vmc_master_iperventilazione', 'shell_command.vmc_master_notturna', 'shell_command.vmc_master_freecooling'] }}"
+      codice: "{{ trigger.to_state.state.split('|')[0] }}"
+      indice: "{{ codice | int }}"
+      ts_scelta: "{{ trigger.to_state.state.split('|')[1] | float(0) }}"
+      in_viaggio: >-
+        {%- set c = states('input_text.vmc_master_ultimi_comandi_automazione').split('|') -%}
+        {%- set finestra = 8 if trigger.to_state.state.split('|')[2] == 'scheda' else 13 -%}
+        {%- set ns = namespace(l=[]) -%}
+        {%- for t in (c if c | length == 8 else []) -%}
+          {%- if loop.index0 != indice and ts_scelta - finestra <= (t | float(0)) <= ts_scelta -%}{%- set ns.l = ns.l + [loop.index0] -%}{%- endif -%}
+        {%- endfor -%}
+        {{ ns.l }}
+    actions:
+      - alias: Nessun comando dell'automazione con un'altra velocità in viaggio al momento della scelta -> niente da rimandare
+        condition: template
+        value_template: "{{ in_viaggio | length > 0 }}"
+      - alias: >-
+          Attesa dell'arrivo del comando in viaggio: 8 secondi dall'ultimo invio delle sue velocità (il ciclo di
+          conferma può ripeterlo), al massimo 30 secondi; si ferma se l'automazione manda una velocità nuova
+        repeat:
+          sequence:
+            - delay:
+                hours: 0
+                minutes: 0
+                seconds: 1
+                milliseconds: 0
+          until:
+            - condition: template
+              value_template: >-
+                {%- set c = states('input_text.vmc_master_ultimi_comandi_automazione').split('|') -%}
+                {%- set ns = namespace(ultimo=0, nuovo=false) -%}
+                {%- for t in (c if c | length == 8 else []) -%}
+                  {%- if loop.index0 in in_viaggio -%}{%- set ns.ultimo = [ns.ultimo, t | float(0)] | max -%}
+                  {%- elif loop.index0 != indice and (t | float(0)) > ts_scelta -%}{%- set ns.nuovo = true -%}{%- endif -%}
+                {%- endfor -%}
+                {{ ns.nuovo or as_timestamp(now()) - ns.ultimo >= 8 or repeat.index >= 30 }}
+      - alias: Comando in viaggio arrivato e nessuna velocità nuova mandata dall'automazione dopo la scelta
+        condition: template
+        value_template: >-
+          {%- set c = states('input_text.vmc_master_ultimi_comandi_automazione').split('|') -%}
+          {%- set ns = namespace(ultimo=0, nuovo=false) -%}
+          {%- for t in (c if c | length == 8 else []) -%}
+            {%- if loop.index0 in in_viaggio -%}{%- set ns.ultimo = [ns.ultimo, t | float(0)] | max -%}
+            {%- elif loop.index0 != indice and (t | float(0)) > ts_scelta -%}{%- set ns.nuovo = true -%}{%- endif -%}
+          {%- endfor -%}
+          {{ not ns.nuovo and as_timestamp(now()) - ns.ultimo >= 8 }}
+      - alias: Rilettura della velocità
+        action: homeassistant.update_entity
+        target:
+          entity_id: sensor.vmc_master_status_ventola
+        continue_on_error: true
+      - wait_template: >-
+          {{ states('sensor.vmc_master_status_ventola') in ['unavailable', 'unknown', '']
+          or states('sensor.vmc_master_status_ventola_memorizzata') == states('sensor.vmc_master_status_ventola') }}
+        timeout:
+          hours: 0
+          minutes: 0
+          seconds: 2
+          milliseconds: 0
+        continue_on_timeout: true
+      - alias: >-
+          La VMC è tornata alla velocità del comando in viaggio (la scelta è stata cancellata), è ON-Line e senza
+          Black-Out
+        condition: template
+        value_template: >-
+          {%- set letta = (states('sensor.vmc_master_status_ventola').split(',') + ['', ''])[1] -%}
+          {{ letta in ['00000', '00001', '00002', '00003', '00004', '00005', '00006', '00007'] and (letta | int) in in_viaggio
+          and is_state('sensor.vmc_master_status_ip_interfaccia', 'ON-Line')
+          and is_state('binary_sensor.vmc_master_black_out_rilevato', 'off')
+          and states('input_text.vmc_master_ultima_scelta_utente') == trigger.to_state.state }}
+      - variables:
+          inizio: "{{ as_timestamp(now()) | round(1) }}"
+      - alias: >-
+          Rimanda la scelta finché la VMC la esegue (al massimo 5 invii); si ferma con un Black-Out, con la VMC
+          OFF-Line o se l'automazione manda una velocità diversa dopo il primo rimando
+        repeat:
+          sequence:
+            - action: "{{ servizi[indice] }}"
+            - delay:
+                hours: 0
+                minutes: 0
+                seconds: 1
+                milliseconds: 0
+            - action: homeassistant.update_entity
+              target:
+                entity_id: sensor.vmc_master_status_ventola
+              continue_on_error: true
+            - delay:
+                hours: 0
+                minutes: 0
+                seconds: 3
+                milliseconds: 0
+          until:
+            - condition: template
+              value_template: >-
+                {%- set c = states('input_text.vmc_master_ultimi_comandi_automazione').split('|') -%}
+                {%- set ns = namespace(nuovo=false) -%}
+                {%- for t in (c if c | length == 8 else []) -%}
+                  {%- if loop.index0 != indice and (t | float(0)) > inizio -%}{%- set ns.nuovo = true -%}{%- endif -%}
+                {%- endfor -%}
+                {{ (states('sensor.vmc_master_status_ventola').split(',') + ['', ''])[1] == codice
+                or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on')
+                or not is_state('sensor.vmc_master_status_ip_interfaccia', 'ON-Line')
+                or ns.nuovo or repeat.index >= 5 }}
+################### Fine Creazione Automazione Rimando della Scelta (9.0.0b38) ###################
+
 ################### Inizio Creazione Automazione Esclusivita' delle Finestre Timer Lettura Dati VMC e Tempi di Attesa ###################
   - id: "vmc_master_esclusivita_finestre_opzioni"                               # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 0 RICHIAMI]
     alias: "VMC Master - Esclusività Finestre Opzioni"
@@ -36025,14 +36306,14 @@ shell_command:
   vmc_master_rimuovi_caratteri_di_ritorno: find /config/packages/vmc_helty_flow/master -type f -name "*.sh" -exec sed -i 's/\r$//' {} \; # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 0 RICHIAMI] [AUTOMAZIONE, 1 RICHIAMO] TROVA E RIMUOVE CARATTERI DI RITORNO IN TUTTI I FILES *.sh CONTENUTI NELLA CARTELLA
   vmc_master_aggiorna_indirizzo_ip:        bash /config/packages/vmc_helty_flow/master/vmc_master_script_cambio_ip.sh   {{ ip | default('') }} # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 0 RICHIAMI] [AUTOMAZIONE, 0 RICHIAMI] TROVA E SOSTITUISCE NEL FILE CORRENTE L'INDIRIZZO IP INSERITO NELL'INTERFACCIA; RICEVE DALL'AUTOMAZIONE CAMBIO IP L'INDIRIZZO GIA' CONTROLLATO (VARIABILE ip) E LO SCRIPT LO CONTROLLA DI NUOVO PER INTERO (LO SCRIPT NON HA UN INDIRIZZO DI DEFAULT)
   vmc_master_cambia_nome:                  bash /config/packages/vmc_helty_flow/master/vmc_master_script_cambio_nome.sh "{{ states('input_text.vmc_master_nome_da_inserire') | replace('"', '') | replace('\\', '') }}" # [CONFIGURAZIONE, 1 RICHIAMO] [INTERFACCIA, 0 RICHIAMI] [AUTOMAZIONE, 1 RICHIAMO] INVIO COMANDO PER CAMBIARE NOME ALLA VMC
-  vmc_master_freecooling:                  printf 'VMWH0000007\n' | timeout 5 nc -w 3 999.999.999.999 5001 # [CONFIGURAZIONE, 79 RICHIAMI] [INTERFACCIA, 6 RICHIAMI] [AUTOMAZIONE, 26 RICHIAMI] INVIO COMANDO Free Cool./Heat. ALLA VMC
-  vmc_master_notturna:                     printf 'VMWH0000006\n' | timeout 5 nc -w 3 999.999.999.999 5001 # [CONFIGURAZIONE, 27 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 14 RICHIAMI] INVIO COMANDO NOTTURNA ALLA VMC
-  vmc_master_iperventilazione:             printf 'VMWH0000005\n' | timeout 5 nc -w 3 999.999.999.999 5001 # [CONFIGURAZIONE, 27 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 14 RICHIAMI] INVIO COMANDO IPERVENTILAZIONE ALLA VMC
-  vmc_master_velocita_4:                   printf 'VMWH0000004\n' | timeout 5 nc -w 3 999.999.999.999 5001 # [CONFIGURAZIONE, 27 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 14 RICHIAMI] INVIO COMANDO VELOCITA' 4 ALLA VMC
-  vmc_master_velocita_3:                   printf 'VMWH0000003\n' | timeout 5 nc -w 3 999.999.999.999 5001 # [CONFIGURAZIONE, 27 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 14 RICHIAMI] INVIO COMANDO VELOCITA' 3 ALLA VMC
-  vmc_master_velocita_2:                   printf 'VMWH0000002\n' | timeout 5 nc -w 3 999.999.999.999 5001 # [CONFIGURAZIONE, 27 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 14 RICHIAMI] INVIO COMANDO VELOCITA' 2 ALLA VMC
-  vmc_master_velocita_1:                   printf 'VMWH0000001\n' | timeout 5 nc -w 3 999.999.999.999 5001 # [CONFIGURAZIONE, 47 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 69 RICHIAMI] INVIO COMANDO VELOCITA' 1 ALLA VMC
-  vmc_master_velocita_0:                   printf 'VMWH0000000\n' | timeout 5 nc -w 3 999.999.999.999 5001 # [CONFIGURAZIONE, 110 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 52 RICHIAMI] INVIO COMANDO VELOCITA' 0 ALLA VMC
+  vmc_master_freecooling:                  printf 'VMWH0000007\n' | timeout 5 nc -w 3 999.999.999.999 5001 # [CONFIGURAZIONE, 80 RICHIAMI] [INTERFACCIA, 6 RICHIAMI] [AUTOMAZIONE, 26 RICHIAMI] INVIO COMANDO Free Cool./Heat. ALLA VMC
+  vmc_master_notturna:                     printf 'VMWH0000006\n' | timeout 5 nc -w 3 999.999.999.999 5001 # [CONFIGURAZIONE, 28 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 14 RICHIAMI] INVIO COMANDO NOTTURNA ALLA VMC
+  vmc_master_iperventilazione:             printf 'VMWH0000005\n' | timeout 5 nc -w 3 999.999.999.999 5001 # [CONFIGURAZIONE, 28 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 14 RICHIAMI] INVIO COMANDO IPERVENTILAZIONE ALLA VMC
+  vmc_master_velocita_4:                   printf 'VMWH0000004\n' | timeout 5 nc -w 3 999.999.999.999 5001 # [CONFIGURAZIONE, 28 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 14 RICHIAMI] INVIO COMANDO VELOCITA' 4 ALLA VMC
+  vmc_master_velocita_3:                   printf 'VMWH0000003\n' | timeout 5 nc -w 3 999.999.999.999 5001 # [CONFIGURAZIONE, 28 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 14 RICHIAMI] INVIO COMANDO VELOCITA' 3 ALLA VMC
+  vmc_master_velocita_2:                   printf 'VMWH0000002\n' | timeout 5 nc -w 3 999.999.999.999 5001 # [CONFIGURAZIONE, 28 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 14 RICHIAMI] INVIO COMANDO VELOCITA' 2 ALLA VMC
+  vmc_master_velocita_1:                   printf 'VMWH0000001\n' | timeout 5 nc -w 3 999.999.999.999 5001 # [CONFIGURAZIONE, 48 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 69 RICHIAMI] INVIO COMANDO VELOCITA' 1 ALLA VMC
+  vmc_master_velocita_0:                   printf 'VMWH0000000\n' | timeout 5 nc -w 3 999.999.999.999 5001 # [CONFIGURAZIONE, 111 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 52 RICHIAMI] INVIO COMANDO VELOCITA' 0 ALLA VMC
   vmc_master_sensori_on:                   printf 'VMWH0300000\n' | timeout 5 nc -w 3 999.999.999.999 5001 # [CONFIGURAZIONE, 1 RICHIAMO] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 0 RICHIAMI] INVIO COMANDO SENSORI ON ALLA VMC PER ACCENDERE I SENSORI DELLA VMC; I valori rilevati dai sensori nella schermata INFO dell'App Mobile saranno disponibili e i relativi allarmi verrano segnalati
   vmc_master_sensori_off:                  printf 'VMWH0300002\n' | timeout 5 nc -w 3 999.999.999.999 5001 # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 0 RICHIAMI] INVIO COMANDO SENSORI OFF ALLA VMC PER DISATTIVARE I SENSORI DELLA VMC; I valori rilevati dai sensori nella schermata INFO dell'App Mobile NON saranno disponibili e i relativi allarmi NON verrano segnalati
   vmc_master_pannello_led_on:              printf 'VMWH0100010\n' | timeout 5 nc -w 3 999.999.999.999 5001 # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 0 RICHIAMI] INVIO COMANDO PANNELLO LED ON ALLA VMC PER ATTIVARE IL LED PANNELLO DEI COMANDI

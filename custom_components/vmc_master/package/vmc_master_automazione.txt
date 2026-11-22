@@ -1,6 +1,6 @@
 ###########################################################################################################################################################################################################################
 #                                                                                                                                                                                                                         #
-#                                                          AUTOMAZIONE VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b36]                                                                                                        #
+#                                                          AUTOMAZIONE VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b38]                                                                                                        #
 #                                                                                                                                                                                                                         #
 # SVILUPPATO DA ING. DANILO ROBOTTI, ALLE PRIME ARMI CON HOME ASSISTANT :)                                                                                                                                                #
 #                                                                                                                                                                                                                         #
@@ -7077,6 +7077,55 @@ triggers:
       seconds: "{{ states('input_number.vmc_master_attesa_delta_memoria') | int(4) }}"
 conditions: []
 actions:
+  - alias: >-
+      Rilettura della velocità allo scadere di un'attesa [b38: una velocità scelta negli ultimi secondi dell'attesa,
+      ancora non letta (la VMC si legge ogni 5 s) o non ancora eseguita dalla VMC, vale come scelta dell'utente: la
+      guardia qui sotto rivaluta il trigger con la lettura nuova e, se la velocità è cambiata, l'evento non parte e
+      decide il trigger della nuova velocità; i tempi non cambiano, si aggiunge solo la lettura]
+    if:
+      - condition: template
+        value_template: >-
+          {{ trigger.platform == 'template' and trigger.for is not none
+          and states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line'
+          and states('sensor.vmc_master_status_ventola') not in ['unavailable', 'unknown', ''] }}
+    then:
+      - alias: Rilettura immediata della velocità
+        action: homeassistant.update_entity
+        target:
+          entity_id: sensor.vmc_master_status_ventola
+        continue_on_error: true
+      - alias: >-
+          Velocità scelta dalla scheda o dal Telecomando e non ancora eseguita dalla VMC (VMC lenta): rilettura ogni 2 s
+          finché la VMC la esegue, al massimo 12 s dalla scelta
+        repeat:
+          while:
+            - condition: template
+              value_template: >-
+                {%- set scelta = (states('input_text.vmc_master_ultima_scelta_utente').split('|') + ['', '0', '', '0'])[:4] -%}
+                {%- set letta = (states('sensor.vmc_master_status_ventola').split(',') + ['', ''])[1] -%}
+                {{ repeat.index <= 6 and scelta[2] == 'scheda' and scelta[0] != letta
+                and (as_timestamp(now()) - (scelta[1] | float(0))) < 12
+                and states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line' }}
+          sequence:
+            - delay:
+                hours: 0
+                minutes: 0
+                seconds: 2
+                milliseconds: 0
+            - action: homeassistant.update_entity
+              target:
+                entity_id: sensor.vmc_master_status_ventola
+              continue_on_error: true
+      - alias: Lettura nuova arrivata all'Ultima Lettura Valida (da cui dipende lo Status Ventilazione)
+        wait_template: >-
+          {{ states('sensor.vmc_master_status_ventola') in ['unavailable', 'unknown', '']
+          or states('sensor.vmc_master_status_ventola_memorizzata') == states('sensor.vmc_master_status_ventola') }}
+        timeout:
+          hours: 0
+          minutes: 0
+          seconds: 2
+          milliseconds: 0
+        continue_on_timeout: true
   - alias: >-
       Evento ancora valido [MODALITA' QUEUED: GLI EVENTI SI ESEGUONO UNO ALLA VOLTA, IN ORDINE; UN TRIGGER TEMPLATE
       SI ESEGUE SOLO SE LA SUA CONDIZIONE E' ANCORA VERA QUANDO ARRIVA IL SUO TURNO, COME SE FOSSE APPENA SCATTATO]
