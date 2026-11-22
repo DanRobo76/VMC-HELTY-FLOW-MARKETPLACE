@@ -45,7 +45,9 @@ description: >-
 
   - Esegue gli eventi uno alla volta e nell'ordine in cui arrivano (modalità
   queued): nessun evento interrompe un comando già avviato; un evento si
-  esegue solo se la sua condizione è ancora vera quando arriva il suo turno;
+  esegue solo se la sua condizione è ancora vera quando arriva il suo turno,
+  rileggendo prima la velocità della VMC se l'evento arriva allo scadere di
+  un'attesa;
 
   - Se un Black-Out arriva mentre un'allerta sta finendo, al ripristino la VMC
   torna alla velocità di fine allerta (Priorità 7); con un'allerta ancora in
@@ -267,6 +269,15 @@ description: >-
   velocità di avvio. Durante una Fascia la ripetizione si ferma anche se la VMC
   resta OFF-Line o la sua velocità non si legge per 32 Secondi, anche spegnendo
   l'interruttore del Calendario (vedere Black-Out).
+  Una Velocità scelta negli ultimi Secondi di un'attesa (es. i 16 Secondi del
+  Lim. Δ PdR) vale anche se Home Assistant non l'ha ancora letta (la VMC si
+  legge ogni 5 Secondi): allo scadere dell'attesa la velocità viene riletta e,
+  dopo un tasto della scheda o del Telecomando appena premuto, si aspetta che la
+  VMC lo esegua (al massimo 12 Secondi). Una Velocità scelta mentre un comando
+  dell'automazione con un'altra velocità è ancora in viaggio verso la VMC (una
+  VMC lenta può metterci circa 6 Secondi a eseguirlo) non viene cancellata da
+  quel comando: quando è arrivato, la scelta viene rimandata alla VMC. I tempi
+  delle attese non cambiano.
 
 
   CAMBIO DI VELOCITÀ DURANTE UN'ALLERTA (comportamento misurato):

@@ -69,7 +69,7 @@ def _automazione() -> dict:
 
 
 def _opzioni() -> list[dict]:
-    return _automazione()["actions"][1]["choose"]
+    return next(b for b in _automazione()["actions"] if "choose" in b)["choose"]  # b38: prima la rilettura e la guardia
 
 
 def _ramo(id_: str) -> dict:

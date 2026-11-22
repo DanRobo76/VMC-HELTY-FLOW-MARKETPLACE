@@ -14496,7 +14496,12 @@ cards:
                     Δ Temp., che impongono comunque la loro Velocità, gli Inquinanti ancora presenti, che riavviano la VMC fermata a Velocità 0, e
                     l'Umidità che ha avviato la VMC da Velocità 0, che la riporta alla velocità di avvio. Durante una Fascia la ripetizione
                     si ferma anche se la VMC resta OFF-Line o la sua velocità non si legge per 32 Secondi, anche spegnendo l'interruttore
-                    del Calendario (vedere Black-Out).<br>
+                    del Calendario (vedere Black-Out). Una Velocità scelta negli ultimi Secondi di un'attesa (es. i 16 Secondi del Lim. Δ PdR)
+                    vale anche se Home Assistant non l'ha ancora letta (la VMC si legge ogni 5 Secondi): allo scadere dell'attesa la velocità
+                    viene riletta e, dopo un tasto della scheda o del Telecomando appena premuto, si aspetta che la VMC lo esegua (al massimo
+                    12 Secondi). Una Velocità scelta mentre un comando dell'automazione con un'altra velocità è ancora in viaggio verso la VMC
+                    (una VMC lenta può metterci circa 6 Secondi a eseguirlo) non viene cancellata da quel comando: quando è arrivato, la
+                    scelta viene rimandata alla VMC. I tempi delle attese non cambiano.<br>
                     </td></tr></table>
                     <table width="100%">
                     <tr><th colspan="3" style="padding: 4px 8px; border: 1px solid #c3c2b7;">CAMBIO DI VELOCITÀ DURANTE UN'ALLERTA (comportamento misurato)</th></tr>
