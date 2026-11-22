@@ -189,20 +189,19 @@ def test_nessuna_rilettura_dei_sensori_ambientali_dopo_il_black_out() -> None:
 
 
 def test_testi_aggiornati() -> None:
-    """Scheda: voci 10 e 11 (Offset CO₂ e VOC: una lettura ≤ 0 resta «-» anche con l'Offset) e Nota Grafici dei
-    Sensori (VMC senza sonda CO₂/VOC: 4 grafici vuoti; Black-Out: ultima lettura valida, prima lettura dopo il
-    ritorno entro 1227 s o con Agg. Sensori)."""
+    """Nota Grafici dei Sensori della scheda: VMC senza sonda CO₂/VOC (sensori senza Offset a «-», due grafici vuoti)
+    e Black-Out (ultima lettura valida, prima lettura dopo il ritorno entro 1227 s o con Agg. Sensori). Dalla b37
+    l'Offset si somma sempre al valore letto: la frase della b36 «resta «-» anche con l'Offset» non c'è più nel
+    Package (i testi nuovi delle voci 10 e 11 e della Nota sono in tests/test_b37_testi.py)."""
     scheda = _piatto(_testo("vmc_master_scheda_manuale_interfaccia.txt"))
-    for sonda, unita in (("CO₂ Int.] da −1500 a +1500 ppm (passo 1 ppm)", "CO₂"),
-                         ("VOC Int.] da −1000 a +1000 ppb (passo 1 ppb)", "VOC")):
-        assert (f"{sonda}, si somma al valore letto; un valore letto ≤ 0 (sensore non presente o valore non "
-                f"valido) resta «-» anche con l'Offset.") in scheda, unita
-    assert ("Sulle VMC senza sonda CO₂/VOC la risposta Sensori Ambientali ha la CO₂ e i VOC a 00000: CO₂ e VOC "
-            "restano sempre «-», anche con un Offset, e i loro quattro grafici (con e senza Offset) restano vuoti; "
-            "in Home Assistant questi sensori «_grafico» risultano non disponibili. Non è un guasto.") in scheda
+    assert ("Sulle VMC senza sonda CO₂/VOC la risposta Sensori Ambientali ha la CO₂ e i VOC a 00000. CO₂ e VOC della "
+            "scheda «Sensori VMC Interni» (senza Offset) restano sempre «-» e i loro due grafici sono vuoti: in Home "
+            "Assistant questi sensori «_grafico» risultano non disponibili. Non è un guasto.") in scheda
     assert ("Durante un Black-Out (VMC OFF-Line) i sensori della VMC e i loro grafici restano sull'ultima lettura "
             "valida, senza buchi.") in scheda
     assert ("la prima lettura dei Sensori Ambientali arriva con la lettura programmata (ogni 1227 secondi, cioè "
             "entro circa 20 minuti) oppure subito con «Agg. Sensori»") in scheda
-    pacchetto = _testo("vmc_master.yaml")
-    assert pacchetto.count("resta «-» anche con l'Offset") == 2
+    for nome in ("vmc_master.yaml", "vmc_master_scheda_manuale_interfaccia.txt", "vmc_master_automazione.txt"):
+        testo = _piatto(_testo(nome))
+        for vecchia in ("resta «-» anche con l'Offset", "anche con un Offset", "un valore letto ≤ 0"):
+            assert vecchia not in testo, (nome, vecchia)
