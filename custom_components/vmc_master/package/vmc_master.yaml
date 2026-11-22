@@ -3978,7 +3978,7 @@ input_text:
     icon: mdi:timer-sand
 ################### Fine Creazione Testi per il Countdown in Scheda delle Attese dell'Automazione ###################
 ################### Inizio Creazione Registro dei Comandi e delle Scelte di Velocità (9.0.0b38) ###################
-  vmc_master_ultima_scelta_utente:                               # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 1 RICHIAMO] ULTIMA VELOCITA' SCELTA DALL'UTENTE: «CODICE|ORA|FONTE» (FONTE scheda = TASTO DELLA SCHEDA O DEL TELECOMANDO, lettura = APP AIR GUARD O TELECOMANDO DELLA VMC), SCRITTA DA vmc_master_registro_comandi_e_scelte
+  vmc_master_ultima_scelta_utente:                               # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 1 RICHIAMO] ULTIMA VELOCITA' SCELTA DALL'UTENTE: «CODICE|ORA|FONTE» (FONTE scheda = TASTO DELLA FINESTRA TELECOMANDO, lettura = APP AIR GUARD O TELECOMANDO DELLA VMC), SCRITTA DA vmc_master_registro_comandi_e_scelte
     name: "Ultima Scelta di Velocità dell'Utente"
     initial: ""
     max: 255
@@ -34915,7 +34915,7 @@ automation:
   - id: "vmc_master_registro_comandi_e_scelte"                                  # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 0 RICHIAMI]
     alias: "VMC Master - Registro Comandi e Scelte"
     description: >
-      Annota i comandi di velocità mandati alla VMC. Un comando partito da un tasto della scheda o del Telecomando
+      Annota i comandi di velocità mandati alla VMC. Un comando partito da un tasto della finestra Telecomando
       (Home Assistant sa che lo ha premuto un utente) è una scelta dell'utente; un comando senza utente
       (Automazione VMC Master, Calendario, Rimando della Scelta) è un comando dell'automazione e ne annota l'ora per
       ogni velocità. Annota l'ora in cui la lettura passa a ogni velocità (un comando non ancora letto dopo l'invio è
@@ -35013,7 +35013,7 @@ automation:
                 {%- for t in letture -%}{%- set ns.l = ns.l + [(ora if loop.index0 == i else t) | string] -%}{%- endfor -%}
                 {{ ns.l | join('|') }}
       - choose:
-          - alias: Tasto della scheda o del Telecomando premuto da un utente -> scelta dell'utente
+          - alias: Tasto della finestra Telecomando premuto da un utente -> scelta dell'utente
             conditions:
               - condition: template
                 value_template: "{{ trigger.id == 'comando' and trigger.event.context.user_id is not none }}"
@@ -35039,7 +35039,7 @@ automation:
                     {{ ns.l | join('|') }}
           - alias: >-
               Velocità letta cambiata senza un comando dell'automazione con quella velocità negli ultimi 20 secondi e
-              senza un tasto della scheda con quella velocità negli ultimi 20 secondi -> scelta dall'App Air Guard o dal
+              senza un tasto della finestra Telecomando con quella velocità negli ultimi 20 secondi -> scelta dall'App Air Guard o dal
               telecomando della VMC
             conditions:
               - condition: template
@@ -35063,7 +35063,7 @@ automation:
   - id: "vmc_master_rimando_della_scelta"                                       # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 0 RICHIAMI]
     alias: "VMC Master - Rimando della Scelta"
     description: >
-      Una velocità scelta dall'utente (tasto della scheda o del Telecomando, App Air Guard, telecomando della VMC)
+      Una velocità scelta dall'utente (tasto della finestra Telecomando, App Air Guard, telecomando della VMC)
       mentre un comando dell'automazione con un'altra velocità è ancora in viaggio verso la VMC (mandato fino a 8
       secondi prima della scelta, o fino a 13 secondi prima della lettura per una scelta dall'App) può essere
       cancellata da quel comando, che arriva dopo: una VMC lenta può metterci circa 6 secondi a eseguirlo e il ciclo di
@@ -35198,7 +35198,7 @@ automation:
       metterci circa 6 secondi a eseguire un comando: una velocità scelta in quei secondi dall'App Air Guard o dal
       telecomando della VMC, che Home Assistant non vede, viene così letta prima che il comando in viaggio la cancelli e
       il Rimando della Scelta la può rimandare. Un nuovo comando fa ripartire i 7 secondi; con la VMC OFF-Line le letture
-      si fermano. I tasti della scheda e del Telecomando non servono: Home Assistant li vede subito. I tempi
+      si fermano. I tasti della finestra Telecomando non servono: Home Assistant li vede subito. I tempi
       dell'automazione non cambiano.
     mode: restart
     triggers:

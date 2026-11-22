@@ -272,7 +272,7 @@ description: >-
   Una Velocità scelta negli ultimi Secondi di un'attesa (es. i 16 Secondi del
   Lim. Δ PdR) vale anche se Home Assistant non l'ha ancora letta (la VMC si
   legge ogni 5 Secondi): allo scadere dell'attesa la velocità viene riletta e,
-  se l'ultimo comando mandato alla VMC (tasto della scheda o del Telecomando, o
+  se l'ultimo comando mandato alla VMC (tasto della finestra Telecomando o
   comando dell'automazione) non è ancora stato eseguito, si aspetta che la VMC
   lo esegua (al massimo 12 Secondi). Una Velocità scelta mentre un comando
   dell'automazione con un'altra velocità è ancora in viaggio verso la VMC (una
@@ -283,8 +283,8 @@ description: >-
   Guard o dal telecomando della VMC, che Home Assistant non vede, viene letta e
   rimandata. Va persa solo se dura meno di un Secondo o se si sceglie la
   velocità che la VMC ha ancora (es. 0 con la VMC ancora a 0 in attesa del
-  comando): in quei momenti usare i tasti della scheda o della finestra
-  Telecomando, che Home Assistant vede subito.
+  comando): in quei momenti usare la finestra Telecomando, che Home Assistant
+  vede subito.
 
 
   CAMBIO DI VELOCITÀ DURANTE UN'ALLERTA (comportamento misurato):
@@ -7098,7 +7098,7 @@ actions:
   - alias: >-
       Rilettura della velocità allo scadere di un'attesa [b38: la VMC si legge ogni 5 s e una VMC lenta può metterci circa
       6 s a eseguire un comando: allo scadere di un'attesa la velocità si rilegge e, se l'ultimo comando mandato alla VMC
-      (tasto della scheda o del Telecomando, o comando dell'automazione) non è ancora stato letto, si rilegge ogni 2 s finché
+      (tasto della finestra Telecomando o comando dell'automazione) non è ancora stato letto, si rilegge ogni 2 s finché
       la VMC lo esegue, al massimo 12 s dall'invio; poi la guardia qui sotto rivaluta il trigger con la lettura nuova: se la
       velocità è cambiata l'evento non parte e decide il trigger della nuova velocità. I tempi delle attese non cambiano]
     if:
@@ -7114,7 +7114,7 @@ actions:
           entity_id: sensor.vmc_master_status_ventola
         continue_on_error: true
       - alias: >-
-          Ultimo comando mandato alla VMC (tasto della scheda o del Telecomando, o comando dell'automazione) diverso dalla
+          Ultimo comando mandato alla VMC (tasto della finestra Telecomando o comando dell'automazione) diverso dalla
           velocità letta e non ancora letto dopo l'invio (in viaggio verso una VMC lenta): rilettura ogni 2 s finché la VMC
           lo esegue, al massimo 12 s dall'invio
         repeat:

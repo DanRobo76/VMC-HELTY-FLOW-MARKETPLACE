@@ -4,8 +4,7 @@ Classe del difetto (segnalazione del 22-11-2026: Velocità 0 premuta negli ultim
 VMC ferma ma «Velocità Registrata» Velocità 2): Home Assistant legge la velocità ogni 5 Secondi, quindi allo scadere di
 un'attesa (trigger template con «for») la guardia «Evento ancora valido» poteva rivalutare il trigger con una lettura
 vecchia. Correzioni:
-- A: prima della guardia la velocità si rilegge; se l'ultimo comando mandato alla VMC (tasto della scheda o del
-  Telecomando, o comando dell'automazione) non è ancora stato letto dopo l'invio si rilegge ogni 2 Secondi finché la VMC
+- A: prima della guardia la velocità si rilegge; se l'ultimo comando mandato alla VMC (tasto della finestra Telecomando o comando dell'automazione) non è ancora stato letto dopo l'invio si rilegge ogni 2 Secondi finché la VMC
   lo esegue (al massimo 12 Secondi dall'invio);
 - B: «VMC Master - Registro Comandi e Scelte» annota le scelte dell'utente, l'ora dei comandi dell'automazione e l'ora
   in cui la lettura passa a ogni velocità;
@@ -197,7 +196,7 @@ def test_letture_ravvicinate_dopo_ogni_comando_dell_automazione() -> None:
 # ------------------------------------------------------------------ B e C: le regole dei template
 async def test_registro_scelta_dall_app(hass: HomeAssistant) -> None:
     """Una lettura che cambia è una scelta dall'App solo senza un comando dell'automazione con quella velocità negli
-    ultimi 20 Secondi e senza un tasto della scheda con quella velocità negli ultimi 20 Secondi."""
+    ultimi 20 Secondi e senza un tasto della finestra Telecomando con quella velocità negli ultimi 20 Secondi."""
     registro = _auto("VMC Master - Registro Comandi e Scelte")
     condizione = Template(registro["actions"][1]["choose"][2]["conditions"][0]["value_template"], hass)
 
@@ -218,7 +217,7 @@ async def test_registro_scelta_dall_app(hass: HomeAssistant) -> None:
     assert scelta_app("00002", "00004", comandi, ["", "0", ""]) is False
     comandi[4] = 980.0  # 20 s prima: non è più il suo
     assert scelta_app("00002", "00004", comandi, ["", "0", ""]) is True
-    assert scelta_app("00002", "00004", zero, ["00004", "990.0", "scheda"]) is False  # tasto della scheda già annotato
+    assert scelta_app("00002", "00004", zero, ["00004", "990.0", "scheda"]) is False  # tasto della finestra Telecomando già annotato
     assert scelta_app("00002", "00004", zero, ["00004", "990.0", "lettura"]) is True
 
 
@@ -250,7 +249,7 @@ async def test_rimando_comandi_in_viaggio(hass: HomeAssistant) -> None:
 
 
 async def test_rilettura_aspetta_solo_un_comando_in_viaggio(hass: HomeAssistant) -> None:
-    """Si aspetta solo se l'ultimo comando (dell'automazione o un tasto della scheda) è diverso dalla lettura, mandato da
+    """Si aspetta solo se l'ultimo comando (dell'automazione o un tasto della finestra Telecomando) è diverso dalla lettura, mandato da
     meno di 12 s e non ancora letto dopo l'invio; un comando già letto e poi cambiato dall'App non fa aspettare."""
     attesa = Template(_automazione()["actions"][0]["then"][1]["repeat"]["while"][0]["value_template"], hass)
     ora = dt_util.utcnow().timestamp()
@@ -267,7 +266,7 @@ async def test_rilettura_aspetta_solo_un_comando_in_viaggio(hass: HomeAssistant)
     assert aspetta("00004", {4: ora - 5}, {4: ora - 1}) is False  # già eseguito
     assert aspetta("00002", {4: ora - 5}, {4: ora - 4}) is False  # eseguito e poi cambiato dall'App
     assert aspetta("00002", {4: ora - 13}, {}) is False  # oltre 12 s dall'invio
-    assert aspetta("00002", {}, {}, f"00000|{ora - 2}|scheda") is True  # tasto della scheda in viaggio
+    assert aspetta("00002", {}, {}, f"00000|{ora - 2}|scheda") is True  # tasto della finestra Telecomando in viaggio
     assert aspetta("00002", {}, {}, f"00000|{ora - 2}|lettura") is False  # scelta dall'App: già eseguita
     assert aspetta("00002", {4: ora - 1}, {}, f"00000|{ora - 2}|scheda") is True  # l'ultimo è il comando V4
     hass.states.async_set("sensor.vmc_master_status_ip_interfaccia", "OFF-Line")
