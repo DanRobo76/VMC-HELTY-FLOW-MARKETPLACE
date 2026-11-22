@@ -39,23 +39,32 @@ class VmcTcp:
         self._server.settimeout(0.05)
         self.porta = self._server.getsockname()[1]
         self._thread = threading.Thread(target=self._accetta, daemon=True)
+        self._servizi: list[threading.Thread] = []
 
     def __enter__(self):
         self._thread.start()
         return self
 
     def __exit__(self, *_args):
+        # prima di leggere self.richieste: accettate le connessioni ancora in coda e finito di servirle (senza
+        # questa attesa la prova poteva leggere la richiesta prima che il thread della VMC finta la registrasse)
         self._fine.set()
         self._thread.join(2)
+        for servizio in self._servizi:
+            servizio.join(2)
         self._server.close()
 
     def _accetta(self):
-        while not self._fine.is_set():
+        while True:
             try:
                 conn, _ = self._server.accept()
             except (socket.timeout, OSError):
+                if self._fine.is_set():
+                    break
                 continue
-            threading.Thread(target=self._servi, args=(conn,), daemon=True).start()
+            servizio = threading.Thread(target=self._servi, args=(conn,), daemon=True)
+            self._servizi.append(servizio)
+            servizio.start()
 
     def _servi(self, conn):
         with conn:

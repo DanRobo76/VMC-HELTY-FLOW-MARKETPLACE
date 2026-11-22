@@ -1,6 +1,6 @@
 ###########################################################################################################################################################################################################################
 #                                                                                                                                                                                                                         #
-#                                                          AUTOMAZIONE VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b36]                                                                                                        #
+#                                                          AUTOMAZIONE VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b38]                                                                                                        #
 #                                                                                                                                                                                                                         #
 # SVILUPPATO DA ING. DANILO ROBOTTI, ALLE PRIME ARMI CON HOME ASSISTANT :)                                                                                                                                                #
 #                                                                                                                                                                                                                         #
@@ -45,7 +45,9 @@ description: >-
 
   - Esegue gli eventi uno alla volta e nell'ordine in cui arrivano (modalità
   queued): nessun evento interrompe un comando già avviato; un evento si
-  esegue solo se la sua condizione è ancora vera quando arriva il suo turno;
+  esegue solo se la sua condizione è ancora vera quando arriva il suo turno,
+  rileggendo prima la velocità della VMC se l'evento arriva allo scadere di
+  un'attesa;
 
   - Se un Black-Out arriva mentre un'allerta sta finendo, al ripristino la VMC
   torna alla velocità di fine allerta (Priorità 7); con un'allerta ancora in
@@ -267,6 +269,22 @@ description: >-
   velocità di avvio. Durante una Fascia la ripetizione si ferma anche se la VMC
   resta OFF-Line o la sua velocità non si legge per 32 Secondi, anche spegnendo
   l'interruttore del Calendario (vedere Black-Out).
+  Una Velocità scelta negli ultimi Secondi di un'attesa (es. i 16 Secondi del
+  Lim. Δ PdR) vale anche se Home Assistant non l'ha ancora letta (la VMC si
+  legge ogni 5 Secondi): allo scadere dell'attesa la velocità viene riletta e,
+  se l'ultimo comando mandato alla VMC (tasto della finestra Telecomando o
+  comando dell'automazione) non è ancora stato eseguito, si aspetta che la VMC
+  lo esegua (al massimo 12 Secondi). Una Velocità scelta mentre un comando
+  dell'automazione con un'altra velocità è ancora in viaggio verso la VMC (una
+  VMC lenta può metterci circa 6 Secondi a eseguirlo) non viene cancellata da
+  quel comando: quando è arrivato, la scelta viene rimandata alla VMC. I tempi
+  delle attese non cambiano. Dopo ogni comando dell'automazione la velocità si
+  legge ogni Secondo per 7 Secondi: così anche una Velocità scelta dall'App Air
+  Guard o dal telecomando della VMC, che Home Assistant non vede, viene letta e
+  rimandata. Va persa solo se dura meno di un Secondo o se si sceglie la
+  velocità che la VMC ha ancora (es. 0 con la VMC ancora a 0 in attesa del
+  comando): in quei momenti usare la finestra Telecomando, che Home Assistant
+  vede subito.
 
 
   CAMBIO DI VELOCITÀ DURANTE UN'ALLERTA (comportamento misurato):
@@ -7077,6 +7095,67 @@ triggers:
       seconds: "{{ states('input_number.vmc_master_attesa_delta_memoria') | int(4) }}"
 conditions: []
 actions:
+  - alias: >-
+      Rilettura della velocità allo scadere di un'attesa [b38: la VMC si legge ogni 5 s e una VMC lenta può metterci circa
+      6 s a eseguire un comando: allo scadere di un'attesa la velocità si rilegge e, se l'ultimo comando mandato alla VMC
+      (tasto della finestra Telecomando o comando dell'automazione) non è ancora stato letto, si rilegge ogni 2 s finché
+      la VMC lo esegue, al massimo 12 s dall'invio; poi la guardia qui sotto rivaluta il trigger con la lettura nuova: se la
+      velocità è cambiata l'evento non parte e decide il trigger della nuova velocità. I tempi delle attese non cambiano]
+    if:
+      - condition: template
+        value_template: >-
+          {{ trigger.platform == 'template' and trigger.for is not none
+          and states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line'
+          and states('sensor.vmc_master_status_ventola') not in ['unavailable', 'unknown', ''] }}
+    then:
+      - alias: Rilettura immediata della velocità
+        action: homeassistant.update_entity
+        target:
+          entity_id: sensor.vmc_master_status_ventola
+        continue_on_error: true
+      - alias: >-
+          Ultimo comando mandato alla VMC (tasto della finestra Telecomando o comando dell'automazione) diverso dalla
+          velocità letta e non ancora letto dopo l'invio (in viaggio verso una VMC lenta): rilettura ogni 2 s finché la VMC
+          lo esegue, al massimo 12 s dall'invio
+        repeat:
+          while:
+            - condition: template
+              value_template: >-
+                {%- set scelta = (states('input_text.vmc_master_ultima_scelta_utente').split('|') + ['', '0', ''])[:3] -%}
+                {%- set c = states('input_text.vmc_master_ultimi_comandi_automazione').split('|') -%}
+                {%- set c = (c if c | length == 8 else ['0', '0', '0', '0', '0', '0', '0', '0']) | map('float', 0) | list -%}
+                {%- set r = states('input_text.vmc_master_ultime_letture_velocita').split('|') -%}
+                {%- set r = (r if r | length == 8 else ['0', '0', '0', '0', '0', '0', '0', '0']) | map('float', 0) | list -%}
+                {%- set ns = namespace(i=-1, ts=0) -%}
+                {%- for t in c -%}{%- if t > ns.ts -%}{%- set ns.i = loop.index0 -%}{%- set ns.ts = t -%}{%- endif -%}{%- endfor -%}
+                {%- if scelta[2] == 'scheda' and scelta[0] in ['00000', '00001', '00002', '00003', '00004', '00005', '00006', '00007']
+                      and (scelta[1] | float(0)) > ns.ts -%}
+                  {%- set ns.i = scelta[0] | int -%}{%- set ns.ts = scelta[1] | float(0) -%}
+                {%- endif -%}
+                {%- set letta = (states('sensor.vmc_master_status_ventola').split(',') + ['', ''])[1] -%}
+                {{ repeat.index <= 6 and ns.i >= 0 and ('0000' ~ ns.i) != letta and r[ns.i] < ns.ts
+                and (as_timestamp(now()) - ns.ts) < 12
+                and states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line' }}
+          sequence:
+            - delay:
+                hours: 0
+                minutes: 0
+                seconds: 2
+                milliseconds: 0
+            - action: homeassistant.update_entity
+              target:
+                entity_id: sensor.vmc_master_status_ventola
+              continue_on_error: true
+      - alias: Lettura nuova arrivata all'Ultima Lettura Valida (da cui dipende lo Status Ventilazione)
+        wait_template: >-
+          {{ states('sensor.vmc_master_status_ventola') in ['unavailable', 'unknown', '']
+          or states('sensor.vmc_master_status_ventola_memorizzata') == states('sensor.vmc_master_status_ventola') }}
+        timeout:
+          hours: 0
+          minutes: 0
+          seconds: 2
+          milliseconds: 0
+        continue_on_timeout: true
   - alias: >-
       Evento ancora valido [MODALITA' QUEUED: GLI EVENTI SI ESEGUONO UNO ALLA VOLTA, IN ORDINE; UN TRIGGER TEMPLATE
       SI ESEGUE SOLO SE LA SUA CONDIZIONE E' ANCORA VERA QUANDO ARRIVA IL SUO TURNO, COME SE FOSSE APPENA SCATTATO]

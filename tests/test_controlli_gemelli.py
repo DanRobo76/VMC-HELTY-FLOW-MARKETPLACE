@@ -439,7 +439,7 @@ def ids_opzione(opz: Any) -> list[str]:
 
 
 def _opzioni_principali(aut: Fonte) -> list[Any]:
-    return lista(mappa(lista(mappa(aut.radice)["actions"])[1])["choose"])
+    return lista(next(mappa(b) for b in lista(mappa(aut.radice)["actions"]) if "choose" in mappa(b))["choose"])
 
 
 def famiglie_esplicite(aut: Fonte, pkg: Fonte) -> list[tuple[str, list[Membro], Dimensione]]:
@@ -499,7 +499,8 @@ def famiglie_annidate(aut: Fonte, pkg: Fonte) -> list[tuple[str, list[Membro], D
     """Opzioni dello stesso choose con le stesse condizioni a meno della velocità (o di Heating/Cooling). Il nome della
     famiglia non usa le righe (cambiano a ogni modifica): blocco che la contiene (id dei trigger dell'opzione principale,
     script o automazione del package) e alias della prima copia."""
-    fonti: list[tuple[Fonte, Any, str]] = [(aut, lista(mappa(aut.radice)["actions"])[0], "automazione, guardia")]
+    guardia = next(b for b in lista(mappa(aut.radice)["actions"]) if str(getattr(mappa(b).get("alias"), "value", "")).startswith("Evento ancora valido"))
+    fonti: list[tuple[Fonte, Any, str]] = [(aut, guardia, "automazione, guardia")]
     for o in _opzioni_principali(aut):
         ids = [i.strip() for i in _ids_profondi(mappa(o)["conditions"])]
         fonti.append((aut, o, f"automazione «{ids[0]}»" + (f" (+{len(ids) - 1} trigger)" if len(ids) > 1 else "")))

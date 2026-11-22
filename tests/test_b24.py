@@ -145,7 +145,7 @@ def test_verifica_entita_ripetuta_con_vmc_di_nuovo_on_line():
         )
         ids_aggiuntivi.append("VMC Master Elenco Entità con Invio Notifica acceso")
     ramo = next(
-        r for r in automazione["actions"][1]["choose"]
+        r for r in next(b for b in automazione["actions"] if "choose" in b)["choose"]
         if any("VMC Master Elenco Entità Temperatura e Umidità installate in H.A." in str(c.get("id")) for c in r["conditions"])
     )
     assert all(i in ramo["conditions"][0]["id"] for i in ids_aggiuntivi)

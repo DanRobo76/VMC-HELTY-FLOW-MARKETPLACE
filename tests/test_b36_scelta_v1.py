@@ -76,7 +76,7 @@ def test_due_trigger_senza_tempi() -> None:
     assert cambio["trigger"] == "state" and cambio["entity_id"] == GREZZA
     assert cambio["not_from"] == ["unavailable", "unknown"] and cambio["not_to"] == ["unavailable", "unknown"]
     assert all("for" not in t for t in trigger)
-    guardia = _automazione()["actions"][0]
+    guardia = next(b for b in _automazione()["actions"] if str(b.get("alias", "")).startswith("Evento ancora valido"))
     assert guardia["value_template"].startswith("{%- if trigger.platform != 'template' -%}\ntrue")
 
 
