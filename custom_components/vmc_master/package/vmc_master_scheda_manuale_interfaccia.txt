@@ -1,6 +1,6 @@
 ###########################################################################################################################################################################################################################
 #                                                                                                                                                                                                                         #
-#                                                          SCHEDA MANUALE INTERFACCIA VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b35]                                                                                         #
+#                                                          SCHEDA MANUALE INTERFACCIA VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b36]                                                                                         #
 #                                                                                                                                                                                                                         #
 # SVILUPPATO DA ING. DANILO ROBOTTI, ALLE PRIME ARMI CON HOME ASSISTANT :)                                                                                                                                                #
 #                                                                                                                                                                                                                         #
@@ -467,7 +467,7 @@ cards:
               state: 'on'
           row:
             type: section
-            label: "La VMC risponde in rete ma la sua velocità non si legge: il comando del Calendario (velocità della fascia o Velocità 0 di fine fascia) non è confermato. Appena la velocità torna leggibile il comando riparte, salvo se nel frattempo la velocità è cambiata o è in corso un'allerta Congelamento o Δ Temp. Non serve fare nulla."
+            label: "La VMC risponde in rete ma la sua velocità non si legge: il comando del Calendario (velocità della fascia, Velocità 0 di fine fascia o comando dato spegnendo l'interruttore del Calendario durante la fascia) non è confermato. Appena la velocità torna leggibile il comando riparte, salvo se nel frattempo la velocità è cambiata; con un'allerta Congelamento o Δ Temp. in corso il comando riparte alla fine dell'allerta, al posto della velocità memorizzata dall'allerta. Non serve fare nulla."
         - type: button
           entity: script.vmc_master_upgrade_sensors
           action_name: Esegui
@@ -1274,6 +1274,9 @@ cards:
         {% set cal_on = is_state('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_calendario', 'on') %}
         {% set cal_uscita = (cal_sp1 and not cal_in1) or (cal_sp2 and not cal_in2) %}
         {% set cal_ingresso = cal_on and ((states('sensor.vmc_master_status_accensione_vmc_tramite_calendario') == cal_G and cal_in1 and not cal_sp1) or (states('sensor.vmc_master_status_accensione_vmc_tramite_calendario_2') == cal_G and cal_in2 and not cal_sp2)) %}
+        {#- Comando del Calendario in sospeso (Spia Comando non eseguito accesa) senza fascia iniziata o finita durante l'allerta: a fine allerta riparte quel comando (velocità della fascia, o Velocità 0/1 in sospeso), non la velocità memorizzata dall'allerta -#}
+        {% set cal_cne = is_state('input_boolean.vmc_master_spia_calendario_comando_non_eseguito', 'on') %}
+        {% set cal_cne_vel = "VELOCITÀ DELLA FASCIA DEL CALENDARIO" if cal_sp1 or cal_sp2 else ("VELOCITÀ 1 (INQUINANTI PRESENTI)" if is_state('input_boolean.vmc_master_spia_co2_o_voc', 'on') and (is_state('input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0', 'on') or not cal_on) else "VELOCITÀ 0") %}
         {% set ti_vmc_ripresa = states('sensor.vmc_master_temp_interna_status_senza_offset') | float(0) %}
         {% set freeheating_cooling =
         states('sensor.vmc_master_status_mese_corrente_freeheating_o_freecooling')
@@ -1336,7 +1339,7 @@ cards:
         VMC settata a Velocità 0, si consiglia di non avviare la VMC
 
 
-        {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC RESTERÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA), NON APPENA:{% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI), NON APPENA:{% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
+        {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC RESTERÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA), NON APPENA:{% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI), NON APPENA:{% elif cal_cne %}AL TERMINE DELL'ALLERTA RIPARTIRÀ IL COMANDO DEL CALENDARIO IN SOSPESO, NON LA VELOCITÀ MEMORIZZATA DALL'ALLERTA: LA VMC ANDRÀ ALLA <strong>{{ cal_cne_vel }}</strong>, NON APPENA:{% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
         <strong>VELOCITA' 0</strong> , NON APPENA:{% elif spia_velocita_1=="on"
         %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITA' 1</strong>, NON
         APPENA:{% elif spia_velocita_2=="on" %}RIPRESA AUTOMATICA DELLA VMC
@@ -1382,7 +1385,7 @@ cards:
 
           - Temperatura Esterna: {{congelamento}} °C
 
-        {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC RESTERÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA), NON APPENA:{% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI), NON APPENA:{% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
+        {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC RESTERÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA), NON APPENA:{% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI), NON APPENA:{% elif cal_cne %}AL TERMINE DELL'ALLERTA RIPARTIRÀ IL COMANDO DEL CALENDARIO IN SOSPESO, NON LA VELOCITÀ MEMORIZZATA DALL'ALLERTA: LA VMC ANDRÀ ALLA <strong>{{ cal_cne_vel }}</strong>, NON APPENA:{% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
         <strong>VELOCITA' 0</strong> , NON APPENA:{% elif spia_velocita_1=="on"
         %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITA' 1</strong>, NON
         APPENA:{% elif spia_velocita_2=="on" %}RIPRESA AUTOMATICA DELLA VMC
@@ -1433,7 +1436,7 @@ cards:
         VMC settata a Velocità 0, si consiglia di non avviare la VMC
 
 
-        {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC RESTERÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA), NON APPENA:{% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI), NON APPENA:{% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
+        {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC RESTERÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA), NON APPENA:{% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI), NON APPENA:{% elif cal_cne %}AL TERMINE DELL'ALLERTA RIPARTIRÀ IL COMANDO DEL CALENDARIO IN SOSPESO, NON LA VELOCITÀ MEMORIZZATA DALL'ALLERTA: LA VMC ANDRÀ ALLA <strong>{{ cal_cne_vel }}</strong>, NON APPENA:{% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
         <strong>VELOCITA' 0</strong> , NON APPENA:{% elif spia_velocita_1=="on"
         %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITA' 1</strong>, NON
         APPENA:{% elif spia_velocita_2=="on" %}RIPRESA AUTOMATICA DELLA VMC
@@ -1479,7 +1482,7 @@ cards:
         VMC settata a Velocità 0, si consiglia di non avviare la VMC
 
 
-        {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC RESTERÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA), NON APPENA:{% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI), NON APPENA:{% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
+        {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC RESTERÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA), NON APPENA:{% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI), NON APPENA:{% elif cal_cne %}AL TERMINE DELL'ALLERTA RIPARTIRÀ IL COMANDO DEL CALENDARIO IN SOSPESO, NON LA VELOCITÀ MEMORIZZATA DALL'ALLERTA: LA VMC ANDRÀ ALLA <strong>{{ cal_cne_vel }}</strong>, NON APPENA:{% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
         <strong>VELOCITA' 0</strong> , NON APPENA:{% elif spia_velocita_1=="on"
         %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITA' 1</strong>, NON
         APPENA:{% elif spia_velocita_2=="on" %}RIPRESA AUTOMATICA DELLA VMC
@@ -1524,7 +1527,7 @@ cards:
         VMC settata a Velocità 0, si consiglia di non avviare la VMC
 
 
-        {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC RESTERÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA), NON APPENA:{% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI), NON APPENA:{% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
+        {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC RESTERÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA), NON APPENA:{% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI), NON APPENA:{% elif cal_cne %}AL TERMINE DELL'ALLERTA RIPARTIRÀ IL COMANDO DEL CALENDARIO IN SOSPESO, NON LA VELOCITÀ MEMORIZZATA DALL'ALLERTA: LA VMC ANDRÀ ALLA <strong>{{ cal_cne_vel }}</strong>, NON APPENA:{% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
         <strong>VELOCITA' 0</strong> , NON APPENA:{% elif spia_velocita_1=="on"
         %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITA' 1</strong>, NON
         APPENA:{% elif spia_velocita_2=="on" %}RIPRESA AUTOMATICA DELLA VMC
@@ -1582,7 +1585,7 @@ cards:
         Avvio VMC a Velocità 0, Attendere..
 
 
-        {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC RESTERÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA), NON APPENA:{% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI), NON APPENA:{% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
+        {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC RESTERÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA), NON APPENA:{% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI), NON APPENA:{% elif cal_cne %}AL TERMINE DELL'ALLERTA RIPARTIRÀ IL COMANDO DEL CALENDARIO IN SOSPESO, NON LA VELOCITÀ MEMORIZZATA DALL'ALLERTA: LA VMC ANDRÀ ALLA <strong>{{ cal_cne_vel }}</strong>, NON APPENA:{% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
         <strong>VELOCITA' 0</strong> , NON APPENA:{% elif spia_velocita_1=="on"
         %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITA' 1</strong>, NON
         APPENA:{% elif spia_velocita_2=="on" %}RIPRESA AUTOMATICA DELLA VMC
@@ -1627,7 +1630,7 @@ cards:
         Avvio VMC a Velocità 0, Attendere..
 
 
-        {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC RESTERÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA), NON APPENA:{% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI), NON APPENA:{% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
+        {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC RESTERÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA), NON APPENA:{% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI), NON APPENA:{% elif cal_cne %}AL TERMINE DELL'ALLERTA RIPARTIRÀ IL COMANDO DEL CALENDARIO IN SOSPESO, NON LA VELOCITÀ MEMORIZZATA DALL'ALLERTA: LA VMC ANDRÀ ALLA <strong>{{ cal_cne_vel }}</strong>, NON APPENA:{% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
         <strong>VELOCITA' 0</strong> , NON APPENA:{% elif spia_velocita_1=="on"
         %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITA' 1</strong>, NON
         APPENA:{% elif spia_velocita_2=="on" %}RIPRESA AUTOMATICA DELLA VMC
@@ -1677,7 +1680,7 @@ cards:
         Avvio VMC a Velocità 0, Attendere..
 
 
-        {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC RESTERÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA), NON APPENA:{% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI), NON APPENA:{% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
+        {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC RESTERÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA), NON APPENA:{% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI), NON APPENA:{% elif cal_cne %}AL TERMINE DELL'ALLERTA RIPARTIRÀ IL COMANDO DEL CALENDARIO IN SOSPESO, NON LA VELOCITÀ MEMORIZZATA DALL'ALLERTA: LA VMC ANDRÀ ALLA <strong>{{ cal_cne_vel }}</strong>, NON APPENA:{% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
         <strong>VELOCITA' 0</strong> , NON APPENA:{% elif spia_velocita_1=="on"
         %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITA' 1</strong>, NON
         APPENA:{% elif spia_velocita_2=="on" %}RIPRESA AUTOMATICA DELLA VMC
@@ -1722,7 +1725,7 @@ cards:
         Avvio VMC a Velocità 0, Attendere..
 
 
-        {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC RESTERÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA), NON APPENA:{% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI), NON APPENA:{% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
+        {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC RESTERÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA), NON APPENA:{% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI), NON APPENA:{% elif cal_cne %}AL TERMINE DELL'ALLERTA RIPARTIRÀ IL COMANDO DEL CALENDARIO IN SOSPESO, NON LA VELOCITÀ MEMORIZZATA DALL'ALLERTA: LA VMC ANDRÀ ALLA <strong>{{ cal_cne_vel }}</strong>, NON APPENA:{% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
         <strong>VELOCITA' 0</strong> , NON APPENA:{% elif spia_velocita_1=="on"
         %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITA' 1</strong>, NON
         APPENA:{% elif spia_velocita_2=="on" %}RIPRESA AUTOMATICA DELLA VMC
@@ -1773,7 +1776,7 @@ cards:
         Avvio VMC a Velocità 0, Attendere..
 
 
-        {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC RESTERÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA), NON APPENA:{% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI), NON APPENA:{% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
+        {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC RESTERÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA), NON APPENA:{% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI), NON APPENA:{% elif cal_cne %}AL TERMINE DELL'ALLERTA RIPARTIRÀ IL COMANDO DEL CALENDARIO IN SOSPESO, NON LA VELOCITÀ MEMORIZZATA DALL'ALLERTA: LA VMC ANDRÀ ALLA <strong>{{ cal_cne_vel }}</strong>, NON APPENA:{% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
         <strong>VELOCITA' 0</strong> , NON APPENA:{% elif spia_velocita_1=="on"
         %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITA' 1</strong>, NON
         APPENA:{% elif spia_velocita_2=="on" %}RIPRESA AUTOMATICA DELLA VMC
@@ -1910,7 +1913,7 @@ cards:
         (congelamento_vmc > -15 and congelamento > -15) %}
          <font color="rgb(128, 0, 128)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-off-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> NESSUNA ALLERTA CONGELAMENTO NELLA SONDA DELLA VMC{{ e_entita }} </strong></font>
 
-        {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC RESTERÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA){% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI){% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
+        {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC RESTERÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA){% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI){% elif cal_cne %}AL TERMINE DELL'ALLERTA RIPARTIRÀ IL COMANDO DEL CALENDARIO IN SOSPESO, NON LA VELOCITÀ MEMORIZZATA DALL'ALLERTA: LA VMC ANDRÀ ALLA <strong>{{ cal_cne_vel }}</strong>{% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
         <strong>VELOCITA' 0</strong>{% elif spia_velocita_1=="on" %}RIPRESA
         AUTOMATICA DELLA VMC SULLA <strong>VELOCITA' 1</strong>{% elif
         spia_velocita_2=="on" %}RIPRESA AUTOMATICA DELLA VMC SULLA
@@ -2046,6 +2049,9 @@ cards:
         {% set cal_on = is_state('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_calendario', 'on') %}
         {% set cal_uscita = (cal_sp1 and not cal_in1) or (cal_sp2 and not cal_in2) %}
         {% set cal_ingresso = cal_on and ((states('sensor.vmc_master_status_accensione_vmc_tramite_calendario') == cal_G and cal_in1 and not cal_sp1) or (states('sensor.vmc_master_status_accensione_vmc_tramite_calendario_2') == cal_G and cal_in2 and not cal_sp2)) %}
+        {#- Comando del Calendario in sospeso (Spia Comando non eseguito accesa) senza fascia iniziata o finita durante l'allerta: a fine allerta riparte quel comando (velocità della fascia, o Velocità 0/1 in sospeso), non la velocità memorizzata dall'allerta -#}
+        {% set cal_cne = is_state('input_boolean.vmc_master_spia_calendario_comando_non_eseguito', 'on') %}
+        {% set cal_cne_vel = "VELOCITÀ DELLA FASCIA DEL CALENDARIO" if cal_sp1 or cal_sp2 else ("VELOCITÀ 1 (INQUINANTI PRESENTI)" if is_state('input_boolean.vmc_master_spia_co2_o_voc', 'on') and (is_state('input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0', 'on') or not cal_on) else "VELOCITÀ 0") %}
         {% set ti_vmc_ripresa = states('sensor.vmc_master_temp_interna_status_senza_offset') | float(0) %}
         {% set freeheating_cooling =
         states('sensor.vmc_master_status_mese_corrente_freeheating_o_freecooling')
@@ -2125,7 +2131,7 @@ cards:
         PRIORITA' ALLERTA CONGELAMENTO {{ dove_congelamento }}
 
 
-        {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC RESTERÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA){% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI){% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
+        {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC RESTERÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA){% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI){% elif cal_cne %}AL TERMINE DELL'ALLERTA RIPARTIRÀ IL COMANDO DEL CALENDARIO IN SOSPESO, NON LA VELOCITÀ MEMORIZZATA DALL'ALLERTA: LA VMC ANDRÀ ALLA <strong>{{ cal_cne_vel }}</strong>{% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
         <strong>VELOCITA' 0</strong>{% elif spia_velocita_1=="on" %}RIPRESA
         AUTOMATICA DELLA VMC SULLA <strong>VELOCITA' 1</strong>{% elif
         spia_velocita_2=="on" %}RIPRESA AUTOMATICA DELLA VMC SULLA
@@ -2294,7 +2300,7 @@ cards:
         VMC settata a Velocità 1
 
 
-        {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC SARÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA), NON APPENA:{% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI), NON APPENA:{% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
+        {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC SARÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA), NON APPENA:{% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI), NON APPENA:{% elif cal_cne %}AL TERMINE DELL'ALLERTA RIPARTIRÀ IL COMANDO DEL CALENDARIO IN SOSPESO, NON LA VELOCITÀ MEMORIZZATA DALL'ALLERTA: LA VMC ANDRÀ ALLA <strong>{{ cal_cne_vel }}</strong>, NON APPENA:{% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
         <strong>VELOCITA' 0</strong> , NON APPENA:{% elif spia_velocita_1=="on"
         %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITA' 1</strong>, NON
         APPENA:{% elif spia_velocita_2=="on" %}RIPRESA AUTOMATICA DELLA VMC
@@ -2338,7 +2344,7 @@ cards:
         VMC settata a Velocità 1
 
 
-        {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC SARÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA), NON APPENA:{% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI), NON APPENA:{% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
+        {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC SARÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA), NON APPENA:{% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI), NON APPENA:{% elif cal_cne %}AL TERMINE DELL'ALLERTA RIPARTIRÀ IL COMANDO DEL CALENDARIO IN SOSPESO, NON LA VELOCITÀ MEMORIZZATA DALL'ALLERTA: LA VMC ANDRÀ ALLA <strong>{{ cal_cne_vel }}</strong>, NON APPENA:{% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
         <strong>VELOCITA' 0</strong> , NON APPENA:{% elif spia_velocita_1=="on"
         %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITA' 1</strong>, NON
         APPENA:{% elif spia_velocita_2=="on" %}RIPRESA AUTOMATICA DELLA VMC
@@ -2392,7 +2398,7 @@ cards:
         VMC settata a Velocità 1
 
 
-        {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC SARÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA), NON APPENA:{% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI), NON APPENA:{% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
+        {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC SARÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA), NON APPENA:{% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI), NON APPENA:{% elif cal_cne %}AL TERMINE DELL'ALLERTA RIPARTIRÀ IL COMANDO DEL CALENDARIO IN SOSPESO, NON LA VELOCITÀ MEMORIZZATA DALL'ALLERTA: LA VMC ANDRÀ ALLA <strong>{{ cal_cne_vel }}</strong>, NON APPENA:{% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
         <strong>VELOCITA' 0</strong> , NON APPENA:{% elif spia_velocita_1=="on"
         %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITA' 1</strong>, NON
         APPENA:{% elif spia_velocita_2=="on" %}RIPRESA AUTOMATICA DELLA VMC
@@ -2436,7 +2442,7 @@ cards:
         VMC settata a Velocità 1
 
 
-        {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC SARÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA), NON APPENA:{% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI), NON APPENA:{% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
+        {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC SARÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA), NON APPENA:{% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI), NON APPENA:{% elif cal_cne %}AL TERMINE DELL'ALLERTA RIPARTIRÀ IL COMANDO DEL CALENDARIO IN SOSPESO, NON LA VELOCITÀ MEMORIZZATA DALL'ALLERTA: LA VMC ANDRÀ ALLA <strong>{{ cal_cne_vel }}</strong>, NON APPENA:{% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
         <strong>VELOCITA' 0</strong> , NON APPENA:{% elif spia_velocita_1=="on"
         %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITA' 1</strong>, NON
         APPENA:{% elif spia_velocita_2=="on" %}RIPRESA AUTOMATICA DELLA VMC
@@ -2493,7 +2499,7 @@ cards:
         VMC settata a Velocità 1
 
 
-        {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC SARÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA), NON APPENA:{% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI), NON APPENA:{% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
+        {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC SARÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA), NON APPENA:{% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI), NON APPENA:{% elif cal_cne %}AL TERMINE DELL'ALLERTA RIPARTIRÀ IL COMANDO DEL CALENDARIO IN SOSPESO, NON LA VELOCITÀ MEMORIZZATA DALL'ALLERTA: LA VMC ANDRÀ ALLA <strong>{{ cal_cne_vel }}</strong>, NON APPENA:{% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
         <strong>VELOCITA' 0</strong> , NON APPENA:{% elif spia_velocita_1=="on"
         %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITA' 1</strong>, NON
         APPENA:{% elif spia_velocita_2=="on" %}RIPRESA AUTOMATICA DELLA VMC
@@ -2619,7 +2625,7 @@ cards:
         (delta_vmc < 20 and delta < 20) %}
          <font color="rgb(128, 0, 128)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-off-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> NESSUNA ALLERTA DIFF. TEMP. (INT-EST) > 23 [°C] NELLA SONDA DELLA VMC{{ e_entita }} </strong></font>
 
-        {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC SARÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA){% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI){% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
+        {% if cal_uscita %}AL TERMINE DELL'ALLERTA LA VMC SARÀ A <strong>VELOCITÀ 0</strong> (FASCIA DEL CALENDARIO TERMINATA DURANTE L'ALLERTA){% elif cal_ingresso %}RIPRESA AUTOMATICA DELLA VMC SULLA <strong>VELOCITÀ DELLA FASCIA DEL CALENDARIO</strong> (DOPO CIRCA 8 SECONDI){% elif cal_cne %}AL TERMINE DELL'ALLERTA RIPARTIRÀ IL COMANDO DEL CALENDARIO IN SOSPESO, NON LA VELOCITÀ MEMORIZZATA DALL'ALLERTA: LA VMC ANDRÀ ALLA <strong>{{ cal_cne_vel }}</strong>{% elif spia_velocita_0=="on"%}RIPRESA AUTOMATICA DELLA VMC SULLA
         <strong>VELOCITA' 0</strong>{% elif spia_velocita_1=="on" %}RIPRESA
         AUTOMATICA DELLA VMC SULLA <strong>VELOCITA' 1</strong>{% elif
         spia_velocita_2=="on" %}RIPRESA AUTOMATICA DELLA VMC SULLA
@@ -5699,14 +5705,14 @@ cards:
         temp_interna > temp_esterna | float(0) and spia_free_heating=="on" and
         ((co2 !="Allerta") and (voc !="Allerta")) and avviso_da_mostrare=="OK")
         %}
-         <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA FREE HEATING PROGRAMMATO (VELOCITÀ {{ "1 PER L'ALLERTA UMIDITÀ" if is_state('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia', 'on') and velocita == "Velocità 1" else "SCELTA DALL'UTENTE" }})</strong></font></br>
+         <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA FREE HEATING PROGRAMMATO (VELOCITÀ {{ "1 PER L'ALLERTA UMIDITÀ" if is_state('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia', 'on') and not is_state('input_select.vmc_master_speed_umidita', 'Velocità 0') and velocita == "Velocità 1" else "SCELTA DALL'UTENTE" }})</strong></font></br>
         LA TEMPERATURA ESTERNA {{
         states('sensor.vmc_master_temp_esterna_status')}} [°C] È MINORE DELLA
         TEMPERATURA INTERNA {{ states('sensor.vmc_master_temp_interna_status')}}
         [°C]
 
 
-        {% if is_state('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia', 'on') and velocita == "Velocità 1" %}
+        {% if is_state('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia', 'on') and not is_state('input_select.vmc_master_speed_umidita', 'Velocità 0') and velocita == "Velocità 1" %}
         <strong>VELOCITÀ 1 PER L'ALLERTA UMIDITÀ [NOTA 3]: LA RIPRESA AUTOMATICA DELLA VMC SULLA VELOCITÀ FREE HEATING (RISCALDAMENTO)
         AVVERRÀ QUANDO LA TEMPERATURA ESTERNA SARÀ MAGGIORE DELLA TEMPERATURA INTERNA.</strong>
         {% else %}
@@ -6166,14 +6172,14 @@ cards:
         temp_esterna > temp_interna | float(0) and spia_free_cooling=="on" and
         ((co2 !="Allerta") and (voc !="Allerta")) and avviso_da_mostrare=="OK")
         %}
-         <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA FREE COOLING PROGRAMMATO (VELOCITÀ {{ "1 PER L'ALLERTA UMIDITÀ" if is_state('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia', 'on') and velocita == "Velocità 1" else "SCELTA DALL'UTENTE" }})</strong></font></br>
+         <font color="rgb(100, 100, 100)"><font size="+1"><strong><ha-icon icon="mdi:alarm-light-outline"></ha-icon></strong></font><span style="padding-right: 10px;"></span><font size="+1"><strong> ALLERTA FREE COOLING PROGRAMMATO (VELOCITÀ {{ "1 PER L'ALLERTA UMIDITÀ" if is_state('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia', 'on') and not is_state('input_select.vmc_master_speed_umidita', 'Velocità 0') and velocita == "Velocità 1" else "SCELTA DALL'UTENTE" }})</strong></font></br>
         LA TEMPERATURA ESTERNA, {{
         states('sensor.vmc_master_temp_esterna_status')}} [°C] ATTUALMENTE È
         MAGGIORE DELLA TEMPERATURA INTERNA, {{
         states('sensor.vmc_master_temp_interna_status')}} [°C]
 
 
-        {% if is_state('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia', 'on') and velocita == "Velocità 1" %}
+        {% if is_state('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia', 'on') and not is_state('input_select.vmc_master_speed_umidita', 'Velocità 0') and velocita == "Velocità 1" %}
         <strong>VELOCITÀ 1 PER L'ALLERTA UMIDITÀ [NOTA 3]: LA RIPRESA AUTOMATICA DELLA VMC SULLA VELOCITÀ FREE COOLING (RAFFRESCAMENTO)
         AVVERRÀ QUANDO LA TEMPERATURA ESTERNA SARÀ MINORE DELLA TEMPERATURA INTERNA.</strong>
         {% else %}
@@ -6798,7 +6804,7 @@ cards:
         [°C]
 
 
-        {% if spia_free_heating == "on" and is_state('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia', 'on') and velocita == "Velocità 1" %}RIPRISTINO SULLA VELOCITA' FREE HEATING, {{ attendere }}{% elif spia_free_heating == "on" %}È STATA SCELTA LA {{ velocita | upper }}: SE MANTENUTA PER 20 SECONDI, LA RIPRESA IN FREE HEATING VERRÀ ANNULLATA{% endif %}
+        {% if spia_free_heating == "on" and is_state('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia', 'on') and not is_state('input_select.vmc_master_speed_umidita', 'Velocità 0') and velocita == "Velocità 1" %}RIPRISTINO SULLA VELOCITA' FREE HEATING, {{ attendere }}{% elif spia_free_heating == "on" %}È STATA SCELTA LA {{ velocita | upper }}: SE MANTENUTA PER 20 SECONDI, LA RIPRESA IN FREE HEATING VERRÀ ANNULLATA{% endif %}
 
 
         Msg. 15 Free Heating
@@ -6823,7 +6829,7 @@ cards:
         [°C]
 
 
-        {% if spia_free_heating == "on" and is_state('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia', 'on') and velocita == "Velocità 1" %}RIPRISTINO SULLA VELOCITA' FREE HEATING, {{ attendere }}{% elif spia_free_heating == "on" %}È STATA SCELTA LA {{ velocita | upper }}: SE MANTENUTA PER 20 SECONDI, LA RIPRESA IN FREE HEATING VERRÀ ANNULLATA{% endif %}
+        {% if spia_free_heating == "on" and is_state('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia', 'on') and not is_state('input_select.vmc_master_speed_umidita', 'Velocità 0') and velocita == "Velocità 1" %}RIPRISTINO SULLA VELOCITA' FREE HEATING, {{ attendere }}{% elif spia_free_heating == "on" %}È STATA SCELTA LA {{ velocita | upper }}: SE MANTENUTA PER 20 SECONDI, LA RIPRESA IN FREE HEATING VERRÀ ANNULLATA{% endif %}
 
 
         Msg. 15.1 Free Heating
@@ -7083,7 +7089,7 @@ cards:
         [°C]
 
 
-        {% if spia_free_cooling == "on" and is_state('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia', 'on') and velocita == "Velocità 1" %}RIPRISTINO SULLA VELOCITA' FREE COOLING, {{ attendere }}{% elif spia_free_cooling == "on" %}È STATA SCELTA LA {{ velocita | upper }}: SE MANTENUTA PER 20 SECONDI, LA RIPRESA IN FREE COOLING VERRÀ ANNULLATA{% endif %}
+        {% if spia_free_cooling == "on" and is_state('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia', 'on') and not is_state('input_select.vmc_master_speed_umidita', 'Velocità 0') and velocita == "Velocità 1" %}RIPRISTINO SULLA VELOCITA' FREE COOLING, {{ attendere }}{% elif spia_free_cooling == "on" %}È STATA SCELTA LA {{ velocita | upper }}: SE MANTENUTA PER 20 SECONDI, LA RIPRESA IN FREE COOLING VERRÀ ANNULLATA{% endif %}
 
 
         Msg. 15 Free Cooling
@@ -7108,7 +7114,7 @@ cards:
         [°C]
 
 
-        {% if spia_free_cooling == "on" and is_state('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia', 'on') and velocita == "Velocità 1" %}RIPRISTINO SULLA VELOCITA' FREE COOLING, {{ attendere }}{% elif spia_free_cooling == "on" %}È STATA SCELTA LA {{ velocita | upper }}: SE MANTENUTA PER 20 SECONDI, LA RIPRESA IN FREE COOLING VERRÀ ANNULLATA{% endif %}
+        {% if spia_free_cooling == "on" and is_state('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia', 'on') and not is_state('input_select.vmc_master_speed_umidita', 'Velocità 0') and velocita == "Velocità 1" %}RIPRISTINO SULLA VELOCITA' FREE COOLING, {{ attendere }}{% elif spia_free_cooling == "on" %}È STATA SCELTA LA {{ velocita | upper }}: SE MANTENUTA PER 20 SECONDI, LA RIPRESA IN FREE COOLING VERRÀ ANNULLATA{% endif %}
 
 
         Msg. 15.1 Free Cooling
@@ -7734,7 +7740,8 @@ cards:
 
           {{states('sensor.vmc_master_umidita_interna_status_verifica_soglia_valore')}}
 
-              {% set velocita_1_per_free = is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling', 'on') or is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating', 'on') or (states('input_select.vmc_master_speed_umidita') == 'Free Cool./Heat.' and
+              {% set set_umidita = states('input_select.vmc_master_speed_umidita') %}
+              {% set velocita_1_per_free = set_umidita != 'Velocità 0' and (is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling', 'on') or is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating', 'on') or (set_umidita == 'Free Cool./Heat.' and
               (states('sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi') in [
                 "Allerta Free Heating Programmato (Raffrescamento in atto)",
                 "Allerta Free Heating Programmato (Raffrescamento in atto, Presenza di Inquinanti)",
@@ -7752,7 +7759,7 @@ cards:
                 "Non Avviare in Velocità Free Cooling Programmato (Allerta Riscaldamento)",
                 "Non Avviare in Velocità Free Cooling Programmato (Allerta Riscaldamento, Presenza di Inquinanti)"
               ]
-              )) %}{% if velocita_1_per_free %}
+              ))) %}{% if velocita_1_per_free %}
           AVVIO AUTOMATICO DELLA VMC SU <strong>Velocità 1</strong> IMPOSTATA PER ALLERTA FREE COOLING O FREE HEATING
           
           {{ attendere }}
@@ -9976,10 +9983,15 @@ cards:
                   hold_action:
                     action: none
                   visibility:
-                  - condition: state
-                    entity: sensor.vmc_master_alert_avvio_interfaccia
-                    state_not:
-                    - Alert
+                  - condition: or
+                    conditions:
+                    - condition: state
+                      entity: sensor.vmc_master_alert_avvio_interfaccia
+                      state_not:
+                      - Alert
+                    - condition: state
+                      entity: binary_sensor.vmc_master_tasto_velocita_1
+                      state: 'on'
                 - show_name: true
                   show_icon: true
                   type: button
@@ -9998,6 +10010,9 @@ cards:
                     entity: sensor.vmc_master_alert_avvio_interfaccia
                     state:
                     - Alert
+                  - condition: state
+                    entity: binary_sensor.vmc_master_tasto_velocita_1
+                    state_not: 'on'
                 - show_name: true
                   entity: binary_sensor.vmc_master_tasto_velocita_2
                   state_color: true
@@ -10012,11 +10027,16 @@ cards:
                   hold_action:
                     action: none
                   visibility:
-                  - condition: state
-                    entity: sensor.vmc_master_alert_avvio_interfaccia
-                    state_not:
-                    - Alert
-                    - Alert Δ Temp.
+                  - condition: or
+                    conditions:
+                    - condition: state
+                      entity: sensor.vmc_master_alert_avvio_interfaccia
+                      state_not:
+                      - Alert
+                      - Alert Δ Temp.
+                    - condition: state
+                      entity: binary_sensor.vmc_master_tasto_velocita_2
+                      state: 'on'
                 - show_name: true
                   show_icon: true
                   type: button
@@ -10036,6 +10056,9 @@ cards:
                     state:
                     - Alert
                     - Alert Δ Temp.
+                  - condition: state
+                    entity: binary_sensor.vmc_master_tasto_velocita_2
+                    state_not: 'on'
                 - show_name: true
                   entity: binary_sensor.vmc_master_tasto_velocita_3
                   state_color: true
@@ -10050,11 +10073,16 @@ cards:
                   hold_action:
                     action: none
                   visibility:
-                  - condition: state
-                    entity: sensor.vmc_master_alert_avvio_interfaccia
-                    state_not:
-                    - Alert
-                    - Alert Δ Temp.
+                  - condition: or
+                    conditions:
+                    - condition: state
+                      entity: sensor.vmc_master_alert_avvio_interfaccia
+                      state_not:
+                      - Alert
+                      - Alert Δ Temp.
+                    - condition: state
+                      entity: binary_sensor.vmc_master_tasto_velocita_3
+                      state: 'on'
                 - show_name: true
                   show_icon: true
                   type: button
@@ -10074,6 +10102,9 @@ cards:
                     state:
                     - Alert
                     - Alert Δ Temp.
+                  - condition: state
+                    entity: binary_sensor.vmc_master_tasto_velocita_3
+                    state_not: 'on'
                 - show_name: true
                   entity: binary_sensor.vmc_master_tasto_velocita_4
                   state_color: true
@@ -10088,11 +10119,16 @@ cards:
                   hold_action:
                     action: none
                   visibility:
-                  - condition: state
-                    entity: sensor.vmc_master_alert_avvio_interfaccia
-                    state_not:
-                    - Alert
-                    - Alert Δ Temp.
+                  - condition: or
+                    conditions:
+                    - condition: state
+                      entity: sensor.vmc_master_alert_avvio_interfaccia
+                      state_not:
+                      - Alert
+                      - Alert Δ Temp.
+                    - condition: state
+                      entity: binary_sensor.vmc_master_tasto_velocita_4
+                      state: 'on'
                 - show_name: true
                   show_icon: true
                   type: button
@@ -10112,6 +10148,9 @@ cards:
                     state:
                     - Alert
                     - Alert Δ Temp.
+                  - condition: state
+                    entity: binary_sensor.vmc_master_tasto_velocita_4
+                    state_not: 'on'
                 - show_name: true
                   entity: binary_sensor.vmc_master_tasto_notturna
                   state_color: true
@@ -10126,11 +10165,16 @@ cards:
                   hold_action:
                     action: none
                   visibility:
-                  - condition: state
-                    entity: sensor.vmc_master_alert_avvio_interfaccia
-                    state_not:
-                    - Alert
-                    - Alert Δ Temp.
+                  - condition: or
+                    conditions:
+                    - condition: state
+                      entity: sensor.vmc_master_alert_avvio_interfaccia
+                      state_not:
+                      - Alert
+                      - Alert Δ Temp.
+                    - condition: state
+                      entity: binary_sensor.vmc_master_tasto_notturna
+                      state: 'on'
                 - show_name: true
                   show_icon: true
                   type: button
@@ -10150,6 +10194,9 @@ cards:
                     state:
                     - Alert
                     - Alert Δ Temp.
+                  - condition: state
+                    entity: binary_sensor.vmc_master_tasto_notturna
+                    state_not: 'on'
                 - show_name: true
                   entity: binary_sensor.vmc_master_tasto_iperventilazione
                   state_color: true
@@ -10164,11 +10211,16 @@ cards:
                   hold_action:
                     action: none
                   visibility:
-                  - condition: state
-                    entity: sensor.vmc_master_alert_avvio_interfaccia
-                    state_not:
-                    - Alert
-                    - Alert Δ Temp.
+                  - condition: or
+                    conditions:
+                    - condition: state
+                      entity: sensor.vmc_master_alert_avvio_interfaccia
+                      state_not:
+                      - Alert
+                      - Alert Δ Temp.
+                    - condition: state
+                      entity: binary_sensor.vmc_master_tasto_iperventilazione
+                      state: 'on'
                 - show_name: true
                   show_icon: true
                   type: button
@@ -10188,6 +10240,9 @@ cards:
                     state:
                     - Alert
                     - Alert Δ Temp.
+                  - condition: state
+                    entity: binary_sensor.vmc_master_tasto_iperventilazione
+                    state_not: 'on'
                 - show_name: true
                   entity: binary_sensor.vmc_master_tasto_free_heating
                   state_color: true
@@ -10201,24 +10256,23 @@ cards:
                   hold_action:
                     action: none
                   visibility:
-                  - condition: and
+                  - condition: state
+                    entity: sensor.vmc_master_status_mese_corrente_freeheating_o_freecooling
+                    state: Free Heating
+                  - condition: state
+                    entity: sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling
+                    state_not: '[Non Calcolabile]'
+                  - condition: or
                     conditions:
                     - condition: state
-                      entity: sensor.vmc_master_status_mese_corrente_freeheating_o_freecooling
-                      state: Free Heating
-                    - condition: or
-                      conditions:
-                      - condition: state
-                        entity: sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi
-                        state: Nessuna Allerta Free Heating Programmato
-                      - condition: state
-                        entity: sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi
-                        state: Nessuna Allerta Free Heating Programmato, Presenza di Inquinanti
-                  - condition: state
-                    entity: sensor.vmc_master_alert_avvio_interfaccia
-                    state_not:
-                    - Alert
-                    - Alert Δ Temp.
+                      entity: sensor.vmc_master_alert_avvio_interfaccia
+                      state_not:
+                      - Alert
+                      - Alert Δ Temp.
+                      - Alert Free
+                    - condition: state
+                      entity: binary_sensor.vmc_master_tasto_free_heating
+                      state: 'on'
                 - show_name: true
                   show_icon: true
                   type: button
@@ -10236,11 +10290,17 @@ cards:
                     entity: sensor.vmc_master_status_mese_corrente_freeheating_o_freecooling
                     state: Free Heating
                   - condition: state
+                    entity: sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling
+                    state_not: '[Non Calcolabile]'
+                  - condition: state
                     entity: sensor.vmc_master_alert_avvio_interfaccia
                     state:
                     - Alert
                     - Alert Δ Temp.
                     - Alert Free
+                  - condition: state
+                    entity: binary_sensor.vmc_master_tasto_free_heating
+                    state_not: 'on'
                 - type: button
                   entity: binary_sensor.vmc_master_tasto_free_cooling
                   state_color: true
@@ -10254,24 +10314,23 @@ cards:
                   hold_action:
                     action: none
                   visibility:
-                  - condition: and
+                  - condition: state
+                    entity: sensor.vmc_master_status_mese_corrente_freeheating_o_freecooling
+                    state: Free Cooling
+                  - condition: state
+                    entity: sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling
+                    state_not: '[Non Calcolabile]'
+                  - condition: or
                     conditions:
                     - condition: state
-                      entity: sensor.vmc_master_status_mese_corrente_freeheating_o_freecooling
-                      state: Free Cooling
-                    - condition: or
-                      conditions:
-                      - condition: state
-                        entity: sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi
-                        state: Nessuna Allerta Free Cooling Programmato
-                      - condition: state
-                        entity: sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi
-                        state: Nessuna Allerta Free Cooling Programmato, Presenza di Inquinanti
-                  - condition: state
-                    entity: sensor.vmc_master_alert_avvio_interfaccia
-                    state_not:
-                    - Alert
-                    - Alert Δ Temp.
+                      entity: sensor.vmc_master_alert_avvio_interfaccia
+                      state_not:
+                      - Alert
+                      - Alert Δ Temp.
+                      - Alert Free
+                    - condition: state
+                      entity: binary_sensor.vmc_master_tasto_free_cooling
+                      state: 'on'
                 - show_name: true
                   show_icon: true
                   type: button
@@ -10289,11 +10348,17 @@ cards:
                     entity: sensor.vmc_master_status_mese_corrente_freeheating_o_freecooling
                     state: Free Cooling
                   - condition: state
+                    entity: sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling
+                    state_not: '[Non Calcolabile]'
+                  - condition: state
                     entity: sensor.vmc_master_alert_avvio_interfaccia
                     state:
                     - Alert
                     - Alert Δ Temp.
                     - Alert Free
+                  - condition: state
+                    entity: binary_sensor.vmc_master_tasto_free_cooling
+                    state_not: 'on'
                 - type: button
                   entity: binary_sensor.vmc_master_tasto_free_cool_heat
                   state_color: true
@@ -10311,27 +10376,22 @@ cards:
                     conditions:
                     - condition: state
                       entity: sensor.vmc_master_status_mese_corrente_freeheating_o_freecooling
-                      state: Disabilitata
+                      state_not:
+                      - Free Heating
+                      - Free Cooling
                     - condition: state
-                      entity: sensor.vmc_master_status_mese_corrente_freeheating_o_freecooling
-                      state: Non disponibile
+                      entity: sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling
+                      state: '[Non Calcolabile]'
+                  - condition: or
+                    conditions:
                     - condition: state
-                      entity: sensor.vmc_master_temp_esterna_status
-                      state: unavailable
+                      entity: sensor.vmc_master_alert_avvio_interfaccia
+                      state_not:
+                      - Alert
+                      - Alert Δ Temp.
                     - condition: state
-                      entity: sensor.vmc_master_temp_interna_status
-                      state: unavailable
-                    - condition: state
-                      entity: sensor.vmc_master_temp_interna_status
-                      state: Non disponibile
-                    - condition: state
-                      entity: sensor.vmc_master_temp_esterna_status
-                      state: Non disponibile
-                  - condition: state
-                    entity: sensor.vmc_master_alert_avvio_interfaccia
-                    state_not:
-                    - Alert
-                    - Alert Δ Temp.
+                      entity: binary_sensor.vmc_master_tasto_free_cool_heat
+                      state: 'on'
                 - type: button
                   tap_action:
                     action: perform-action
@@ -10349,27 +10409,20 @@ cards:
                     conditions:
                     - condition: state
                       entity: sensor.vmc_master_status_mese_corrente_freeheating_o_freecooling
-                      state: Disabilitata
+                      state_not:
+                      - Free Heating
+                      - Free Cooling
                     - condition: state
-                      entity: sensor.vmc_master_status_mese_corrente_freeheating_o_freecooling
-                      state: Non disponibile
-                    - condition: state
-                      entity: sensor.vmc_master_temp_esterna_status
-                      state: unavailable
-                    - condition: state
-                      entity: sensor.vmc_master_temp_interna_status
-                      state: unavailable
-                    - condition: state
-                      entity: sensor.vmc_master_temp_interna_status
-                      state: Non disponibile
-                    - condition: state
-                      entity: sensor.vmc_master_temp_esterna_status
-                      state: Non disponibile
+                      entity: sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling
+                      state: '[Non Calcolabile]'
                   - condition: state
                     entity: sensor.vmc_master_alert_avvio_interfaccia
                     state:
                     - Alert
                     - Alert Δ Temp.
+                  - condition: state
+                    entity: binary_sensor.vmc_master_tasto_free_cool_heat
+                    state_not: 'on'
                 columns: 4
               - type: horizontal-stack
                 cards:
@@ -12746,7 +12799,8 @@ cards:
                   avvisi Pop-Up e, con l'interruttore [VMC ON/OFF, in Funzione dell'Umidità Interna] su ON e senza
                   altre allerte in corso (salvo la sospensione Free Cool./Heat.: l'Umidità parte comunque a
                   Velocità 1 [Nota 3] e il suo interruttore non si spegne fino alla ripresa o all'annullamento
-                  della Free), comandano l'avvio e l'arresto automatico della VMC.
+                  della Free; con la [Set Velocità Umidità di Avvio] su Velocità 0 la VMC resta ferma), comandano l'avvio
+                  e l'arresto automatico della VMC.
                   </td></tr></table>
                   <table width="100%">
                   <tr><th style="padding: 4px 8px; border: 1px solid #c3c2b7;">Umidità interna U</th><th style="padding: 4px 8px; border: 1px solid #c3c2b7;">Fascia</th><th style="padding: 4px 8px; border: 1px solid #c3c2b7;">Avviso</th><th style="padding: 4px 8px; border: 1px solid #c3c2b7;">VMC (interruttore ON)</th></tr>
@@ -12758,7 +12812,11 @@ cards:
                   </table>
                   <table><tr><td align="justify">
                   Limite = [Avvio VMC per Umidità ≥], ora impostato a {{ (states('input_number.vmc_master_umidita_avvio') | float(0)) | round(1) | string | replace('.', ',') }} %. All'avvio la VMC va alla
-                  [Set Velocità Umidità di Avvio]; all'arresto torna alla velocità memorizzata.
+                  [Set Velocità Umidità di Avvio]; all'arresto torna alla velocità memorizzata. L'avvio e l'arresto avvengono
+                  dopo 28 secondi. Con la [Set Velocità Umidità di Avvio] su Velocità 0 l'allerta Umidità si accende ma la
+                  VMC resta ferma, anche con la Free Cool./Heat. sospesa (all'avvio dell'Umidità, all'arresto per
+                  condizioni sfavorevoli e a fine Inquinanti, dove con un'altra velocità di avvio la VMC va a Velocità 1
+                  [Nota 3]).
                   </td></tr></table>
                   <a href="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/Informazioni/07_umidita_avvio_arresto.png?v=20261107" target="_blank"><img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/Informazioni/07_umidita_avvio_arresto.png?v=20261107" alt="Avvio e arresto in funzione dell'umidità" width="100%"></a>
                   <table><tr><td align="justify">
@@ -12777,13 +12835,22 @@ cards:
                   Velocità 0 l'ha decisa la logica dell'Umidità, che prevale. Per fermare la VMC durante l'allerta
                   si spegne l'interruttore [VMC ON/OFF, in Funzione dell'Umidità Interna]. Se invece la VMC era già
                   in moto all'inizio dell'allerta, oppure durante l'allerta si è scelta prima una velocità diversa
-                  da quella di avvio, la Velocità 0 scelta viene memorizzata e mantenuta anche a fine Umidità.
+                  da quella di avvio, la Velocità 0 scelta viene memorizzata e mantenuta anche a fine Umidità. Con la Free
+                  Cool./Heat. sospesa (Umidità partita a Velocità 1 [Nota 3]) nessun cambio: la VMC resta a Velocità 0.
+                  <br><br>
+                  • Se l'Umidità ha avviato la VMC da Velocità 0, la VMC è ancora alla [Set Velocità Umidità di Avvio] e a
+                  fine Umidità sono ancora presenti gli Inquinanti, la VMC scende a Velocità 1 dopo 28 secondi e torna a
+                  Velocità 0 al rientro degli Inquinanti (se si è scelta un'altra velocità, quella resta).
                   <br><br>
                   • Se è programmata la velocità Free Cool./Heat., la mantiene in assenza di allerte;
                   diversamente viene impostata la Velocità 1.
                   <br><br>
-                  • Se l'interruttore viene spento durante un'allerta Umidità, la VMC si arresta. Durante
-                  un'allerta Umidità l'interruttore non si può spegnere se è in corso un'altra allerta (fino al
+                  • Se l'interruttore viene spento durante un'allerta Umidità, la VMC si arresta; con la VMC OFF-Line,
+                  con la sua velocità non disponibile o durante il ripristino dopo un Black-Out l'interruttore resta
+                  spento e si azzerano solo l'allerta e le
+                  memorie dell'Umidità, senza comandi alla VMC: al ritorno la VMC resta alla velocità letta (o a quella
+                  ripristinata dopo il Black-Out). Durante un'allerta Umidità l'interruttore non si può spegnere se è in corso
+                  un'altra allerta (fino al
                   suo termine) oppure se è iniziata una Fascia del Calendario (fino alla fine della Fascia,
                   anche se l'umidità è rientrata).
                   <br><br>
@@ -12796,7 +12863,8 @@ cards:
                   • Se si entra prima nel Calendario, oppure è già in corso un'altra allerta, e poi sale
                   l'umidità, l'allerta Umidità non scatta e l'interruttore si spegne normalmente (salvo la
                   sospensione Free Cool./Heat.: l'Umidità parte comunque a Velocità 1 [Nota 3] e il suo
-                  interruttore non si spegne fino alla ripresa o all'annullamento della Free).
+                  interruttore non si spegne fino alla ripresa o all'annullamento della Free; con la [Set Velocità Umidità
+                  di Avvio] su Velocità 0 la VMC resta ferma).
                   </td></tr></table>
                   <table><tr><td align="justify">
                   <b>Valori impostabili.</b>
@@ -12946,7 +13014,10 @@ cards:
                   <table><tr><td align="justify">
                   Si può impiegare = [Nessuna Allerta]; Se ne sconsiglia l'impiego = [Allerta]. Se l'impostazione
                   [VMC ON/OFF, in Funzione del Lim. Δ P. di Rugiada] è attiva e il Δ raggiunge o supera il
-                  [Set Lim. Δ P. di Rugiada], la VMC si arresta e riparte non appena le condizioni lo permettono.
+                  [Set Lim. Δ P. di Rugiada], la VMC si arresta e riparte non appena le condizioni lo permettono. Se il
+                  Punto di Rugiada non è calcolabile (per esempio con l'Umidità Esterna non disponibile) l'allerta non
+                  parte e, se è in corso, termina: la VMC riprende la velocità memorizzata dopo 16 secondi (12 con
+                  Inquinanti).
                   </td></tr></table>
 
 
@@ -13019,16 +13090,20 @@ cards:
                   <br><br>
                   <b>Con l'interruttore [VMC ON/OFF, in Funzione del Lim. CO₂ e/o VOC] su ON:</b> a Velocità 0
                   la VMC viene avviata a Velocità 1 dopo circa 8 secondi; se è già in funzione mantiene la
-                  velocità in uso, che viene memorizzata. A fine allerta (CO₂ e VOC entrambi rientrati) la VMC
-                  torna alla velocità precedente, Velocità 0 se era ferma. Spegnendo l'interruttore durante
-                  l'allerta la VMC si arresta.
+                  velocità in uso, che viene memorizzata. Una velocità scelta durante l'allerta viene memorizzata dopo 8
+                  secondi e mantenuta anche a fine allerta (con la Velocità 0 la VMC riparte invece a Velocità 1 dopo
+                  circa 8 secondi). A fine allerta (CO₂ e VOC entrambi rientrati) la VMC torna dopo 8 secondi alla
+                  velocità precedente, Velocità 0 se era ferma; una velocità scelta durante questi 8 secondi resta (salvo
+                  se la velocità da ripristinare è Free Cool./Heat. o è in corso un'allerta Congelamento o Δ Temp.).
+                  Spegnendo l'interruttore durante l'allerta, anche nei primi 8 secondi, la VMC si arresta subito.
                   <br><br>
                   <b>Con l'interruttore su OFF:</b> la VMC non cambia velocità e il riquadro consiglia di
                   accendere l'interruttore o di scegliere una velocità adatta.
                   </td></tr></table>
                   <table><tr><td align="justify">
                   <b>Valori impostabili.</b> [Offset CO₂ Int.] da −1500 a +1500 ppm (passo 1 ppm), si somma
-                  al valore letto. Le fasce di concentrazione sono fisse.
+                  al valore letto; un valore letto ≤ 0 (sensore non presente o valore non valido) resta «-»
+                  anche con l'Offset. Le fasce di concentrazione sono fisse.
                   </td></tr></table>
                   </details>
 
@@ -13062,7 +13137,8 @@ cards:
                   </td></tr></table>
                   <table><tr><td align="justify">
                   <b>Valori impostabili.</b> [Offset VOC Int.] da −1000 a +1000 ppb (passo 1 ppb), si somma
-                  al valore letto. Le fasce di concentrazione sono fisse.
+                  al valore letto; un valore letto ≤ 0 (sensore non presente o valore non valido) resta «-»
+                  anche con l'Offset. Le fasce di concentrazione sono fisse.
                   </td></tr></table>
                   </details>
 
@@ -13080,7 +13156,18 @@ cards:
                   <br><br>
                   <b>Come interviene.</b> L'ingresso e l'uscita dalla Fascia avvengono dopo 3 secondi;
                   all'ingresso il comando alla VMC parte dopo ulteriori 5 secondi (attesa dello script della
-                  Fascia); all'uscita la VMC si arresta.
+                  Fascia); all'uscita la VMC si arresta. L'ingresso e l'uscita aspettano la fine di un'allerta Congelamento o
+                  Δ Temp. e il ritorno ON-Line della VMC; dopo un riavvio di Home Assistant aspettano il 3° gruppo (140
+                  secondi dall'avvio, voce 15, Nota Avvio di Home Assistant). All'uscita, con Inquinanti presenti, la
+                  logica Inquinanti riparte dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0); se la 2° Fascia
+                  dello stesso giorno è già in corso, la fine della 1° non ferma la VMC (la comanda la 2° Fascia). Se la VMC
+                  risponde in rete ma la sua velocità non si legge per 32 secondi, il comando della Fascia si interrompe e si
+                  accende la Spia Comando non eseguito del Calendario: appena la velocità torna leggibile la Fascia riparte,
+                  salvo se nel frattempo si è scelta un'altra velocità; lo stesso vale per la Velocità 0 di uscita (voce 17).
+                  <br><br>
+                  <b>Giorno non valido.</b> Le Fasce non possono attraversare la mezzanotte e devono rispettare le
+                  regole qui sotto: se una regola non è rispettata il giorno risulta «Disabilitata» e nessuna delle due
+                  Fasce parte.
                   </td></tr></table>
                   <a href="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/Informazioni/13_calendario.png?v=20261107" target="_blank"><img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/Informazioni/13_calendario.png?v=20261107" alt="Esempio di programmazione del Calendario" width="100%"></a>
                   <pre style="font-size: smaller;">
@@ -13235,16 +13322,22 @@ cards:
                   <table><tr><td align="justify">
                   <b>Come interviene.</b> Nei mesi programmati, se la condizione non è favorevole la VMC si
                   arresta (Velocità 0) dopo 24 secondi, mostrando un avviso, e riparte in Free Cool./Heat. quando
-                  la condizione torna favorevole (dopo 24 secondi; 20 con Inquinanti). Con un'allerta Lim. Δ PdR in corso la ripresa attende il termine dell'allerta. Se sono presenti Inquinanti (allerta CO₂ e/o VOC) la
+                  la condizione torna favorevole (dopo 24 secondi; 20 con Inquinanti). Con un'allerta Lim. Δ PdR in corso la ripresa attende il termine dell'allerta. Se però all'inizio
+                  dell'allerta Lim. Δ PdR la VMC è a una velocità scelta dall'utente, a fine allerta torna quella velocità, al
+                  posto della ripresa. Se sono presenti Inquinanti (allerta CO₂ e/o VOC) la
                   VMC passa invece a Velocità 1 dopo 20 secondi. Anche con un'allerta Umidità in corso la VMC,
-                  invece di arrestarsi, passa a Velocità 1 (dopo 24 secondi).
+                  invece di arrestarsi, passa a Velocità 1 (dopo 24 secondi), salvo con la [Set Velocità Umidità di
+                  Avvio] su Velocità 0: in questo caso si arresta.
                   <br><br>
                   <b>Cambio di velocità durante l'avviso.</b> Se, con la VMC arrestata dall'avviso, si sceglie
                   un'altra velocità (ad esempio Velocità 1) e la si mantiene per 20 secondi, la ripresa automatica in Free Cool./Heat. viene
                   annullata: la VMC resta sulla velocità scelta, con lo scambiatore attivo, e non torna da sola
                   in Free quando la condizione ritorna favorevole. Per riattivarla premere il tasto Free Heating
                   / Free Cooling. Vale anche se la condizione è già tornata favorevole e la ripresa è in attesa:
-                  la velocità scelta ha la precedenza.
+                  la velocità scelta ha la precedenza. Con Inquinanti la velocità scelta viene memorizzata dall'allerta
+                  Inquinanti dopo 8 secondi. Se si sceglie Velocità 0 non cambia nulla (la VMC è già ferma) e quando la
+                  condizione torna favorevole la VMC riprende in Free Cool./Heat.; scegliendo Free Cool./Heat. con la
+                  condizione ancora sfavorevole la VMC torna a Velocità 0 dopo 24 secondi.
                   <br><br>
                   <b>Cambio del mese programmato.</b> Se durante l'avviso il mese corrente esce dalla Fascia, la
                   ripresa in Free Cool./Heat. viene annullata e la VMC resta a Velocità 0 (Velocità 1 con
@@ -13451,6 +13544,26 @@ cards:
                   parte dal primo avvio di Home Assistant con i sensori dei
                   grafici (sensor.vmc_master_..._grafico).
 
+                  Sulle VMC senza sonda CO₂/VOC la risposta Sensori Ambientali
+                  ha la CO₂ e i VOC a 00000: CO₂ e VOC restano sempre «-», anche
+                  con un Offset, e i loro quattro grafici (con e senza Offset)
+                  restano vuoti; in Home Assistant questi sensori «_grafico»
+                  risultano non disponibili. Non è un guasto.
+
+                  Durante un Black-Out (VMC OFF-Line) i sensori della VMC e i
+                  loro grafici restano sull'ultima lettura valida, senza buchi.
+                  Dopo il ritorno della corrente la prima lettura dei Sensori
+                  Ambientali arriva con la lettura programmata (ogni 1227
+                  secondi, cioè entro circa 20 minuti) oppure subito con
+                  «Agg. Sensori»: fino ad allora restano i valori di prima del
+                  Black-Out. Se in quella lettura la VMC indica un valore ≤ 0
+                  (per esempio la CO₂), il sensore mostra «-» e il suo grafico
+                  resta vuoto fino alla lettura successiva, anche con un
+                  Offset: in quel tempo il sensore «_grafico» risulta non
+                  disponibile. Il valore letto si vede nella voce 1 (Info
+                  Lettura Dati nella VMC, Sensori Ambientali: dopo VMGI la CO₂
+                  è il quarto numero, i VOC l'undicesimo).
+
                   <br>
 
                   <strong>Nota Conferma degli Script</strong>
@@ -13507,9 +13620,10 @@ cards:
                   in corso», poi la scheda completa. Se il Black-Out è
                   avvenuto durante una Fascia del Calendario compare invece
                   subito la scheda completa, con il countdown «Ripristino
-                  dopo Black-Out» (32 secondi): dopo altri 5 secondi la VMC
-                  riparte con la velocità della fascia, o si arresta se nel
-                  frattempo la fascia è finita.
+                  dopo Black-Out» (32 secondi, contati da quando la VMC è di
+                  nuovo ON-Line con la velocità leggibile): dopo altri 5
+                  secondi la VMC riparte con la velocità della fascia, o si
+                  arresta se nel frattempo la fascia è finita.
 
                   <br>
 
@@ -14350,51 +14464,55 @@ cards:
                     originali. Mentre l'automazione
                     aspetta, sotto il pannello VMC compare il riquadro con il «Tempo Mancante» dell'azione in attesa (es. «Annullamento
                     Memoria Free Heating», «Cambio Velocità per Lim. Δ PdR») e la «Velocità Registrata», cioè la velocità che verrà
-                    ripristinata a fine allerta. Nella finestra Telecomando il tasto della velocità attiva è illuminato, quello della
-                    velocità da ripristinare è illuminato con l'icona ↺; i tasti Sensori e Led Pannello illuminano lo stato attuale
-                    (On oppure Off) e con «Verificare Filtro» il tasto «Led Pannello On» mostra l'icona del filtro.</i><br><br>
+                    ripristinata a fine allerta o, dopo un Black-Out, al ripristino. Nella finestra Telecomando il tasto della velocità attiva è illuminato, quello della
+                    velocità da ripristinare è illuminato con l'icona ↺, anche durante un'allerta (la scritta Alert compare solo
+                    sotto i tasti spenti); i tasti Sensori e Led Pannello illuminano lo stato attuale (On oppure Off) e con
+                    «Verificare Filtro» il tasto «Led Pannello On» mostra l'icona del filtro.</i><br><br>
                     - Congelamento ≤ -18 [°C] Temp. Ext.: 0 Secondi. Durante il Congelamento la VMC resta ferma: se si prova a cambiarle Velocità viene riportata subito a Velocità 0 e, se non si ferma, il comando di arresto viene ripetuto finché non si ferma (circa ogni 4 Secondi);<br>
-                    - VMC Sensori Int. Δ Temp. > 23 [°C]: 4 Secondi; se durante l'allerta si cambia Velocità, la VMC viene riportata a Velocità 1 e la Velocità scelta viene memorizzata dopo 4 Secondi e impostata a fine allerta (se l'allerta finisce prima che sia memorizzata, la Velocità scelta resta);<br>
-                    - Inquinanti (CO₂ e VOC): 8 Secondi. Se la VMC è partita da Velocità 0 resta a Velocità 1 fino al rientro degli Inquinanti, poi torna a Velocità 0; se nel frattempo l'utente sceglie un'altra Velocità diversa da 0 (anche durante il Congelamento o il Δ Temp.) questa viene mantenuta, anche dopo il rientro; se invece sceglie Velocità 0 con gli Inquinanti ancora presenti, dopo circa 8 Secondi la VMC riparte a Velocità 1 e al rientro degli Inquinanti torna a Velocità 0, anche se prima dell'allerta era a un'altra Velocità; se un'allerta Lim. Δ PdR è iniziata con la VMC a Velocità 0, all'arrivo degli Inquinanti la sua memoria di Velocità 0 si azzera e la VMC parte a Velocità 1 dopo 4 Secondi;<br>
+                    - VMC Sensori Int. Δ Temp. > 23 [°C]: 4 Secondi; se durante l'allerta si cambia Velocità, la VMC viene riportata a Velocità 1 e la Velocità scelta viene memorizzata dopo 4 Secondi e impostata a fine allerta (se l'allerta finisce prima che sia memorizzata, la Velocità scelta resta); scegliere Velocità 1 non cambia la memoria;<br>
+                    - Inquinanti (CO₂ e VOC): 8 Secondi. Se la VMC è partita da Velocità 0 resta a Velocità 1 fino al rientro degli Inquinanti, poi torna a Velocità 0; se nel frattempo l'utente sceglie un'altra Velocità diversa da 0 (anche durante il Congelamento o il Δ Temp.) questa viene memorizzata dopo 8 Secondi e mantenuta, anche dopo il rientro; se invece sceglie Velocità 0 con gli Inquinanti ancora presenti, dopo circa 8 Secondi la VMC riparte a Velocità 1 e al rientro degli Inquinanti torna a Velocità 0, anche se prima dell'allerta era a un'altra Velocità; una Velocità scelta durante gli 8 Secondi di attesa dopo il rientro degli Inquinanti resta e la Velocità memorizzata non viene ripristinata (salvo se la Free Cool./Heat. è sospesa da un'allerta, che ha la sua ripresa, o con un'allerta Congelamento o Δ Temp. in corso); se un'allerta Lim. Δ PdR è iniziata con la VMC a Velocità 0, all'arrivo degli Inquinanti la sua memoria di Velocità 0 si azzera e la VMC parte a Velocità 1 dopo 4 Secondi;<br>
                     - Sup. Lim. Δ PdR con Inquinanti: 12 Secondi;<br>
-                    - Sup. Lim. Δ PdR: 16 Secondi. Se l'allerta inizia con la VMC a Velocità 0, l'Umidità non la avvia fino al termine dell'allerta e un'eventuale ripresa in Free Cool./Heat. in attesa riparte solo al termine dell'allerta; se durante l'allerta si cambia Velocità, la VMC viene riportata a Velocità 0 e la nuova Velocità viene memorizzata e ripristinata al termine dell'allerta, anche al posto della ripresa in Free Cool./Heat.;<br>
+                    - Sup. Lim. Δ PdR: 16 Secondi. Se l'allerta inizia con la VMC a Velocità 0, l'Umidità non la avvia fino al termine dell'allerta e un'eventuale ripresa in Free Cool./Heat. in attesa riparte solo al termine dell'allerta; se durante l'allerta si cambia Velocità, la VMC viene riportata a Velocità 0 e la nuova Velocità viene memorizzata e ripristinata al termine dell'allerta, anche al posto della ripresa in Free Cool./Heat. (lo stesso vale per una Velocità scelta poco prima dell'allerta, con la ripresa in attesa); se l'Umidità aveva avviato la VMC da Velocità 0 ed è finita durante l'allerta, al termine dell'allerta la VMC resta a Velocità 0; se il Punto di Rugiada non è calcolabile (per esempio con l'Umidità Esterna non disponibile) l'allerta non parte e, se è in corso, termina: la VMC riprende la Velocità memorizzata dopo 16 Secondi (12 con Inquinanti);<br>
                     - Free Cool./Heat. con Inquinanti: 20 Secondi;<br>
-                    - Free Cool./Heat.: 24 Secondi. Se durante l'avviso si sceglie un'altra Velocità e la si mantiene per 20 Secondi, la ripresa automatica in Free Cool./Heat. viene annullata e la VMC resta sulla Velocità scelta, anche se le condizioni sono già tornate favorevoli; se durante l'avviso il mese corrente esce dalla Fascia, la ripresa viene annullata e la VMC resta a Velocità 0 (Velocità 1 con Inquinanti), ma con un'allerta Umidità in corso va alla [Set Velocità Umidità di Avvio] e a fine Umidità torna a Velocità 0;<br>
-                    - Umidità: 28 Secondi (la logica Umidità memorizza subito la Velocità in uso); se durante l'allerta si cambia Velocità, la nuova Velocità viene memorizzata dopo 4 Secondi e mantenuta a fine Umidità; se però l'Umidità ha avviato la VMC da Velocità 0 e la VMC risulta ancora, o di nuovo, a Velocità 0, dopo 4 Secondi viene riportata alla [Set Velocità Umidità di Avvio] e a fine Umidità torna a Velocità 0 (per fermarla si spegne l'interruttore dell'Umidità); se invece prima si sceglie una Velocità diversa da quella di avvio e la si tiene almeno 4 Secondi, la Velocità 0 scelta dopo viene memorizzata e la VMC resta ferma anche a fine Umidità; se l'Umidità ha avviato la VMC da Velocità 0, la VMC è ancora alla [Set Velocità Umidità di Avvio] e a fine Umidità sono ancora presenti gli Inquinanti, la VMC scende a Velocità 1 e torna a Velocità 0 al rientro degli Inquinanti;<br>
-                    - Black-Out: 32 Secondi per il Rilevamento e per il Ripristino; durante una Fascia del Calendario la rilevazione del Black-Out non è attiva: al ritorno della corrente (VMC OFF-Line almeno 32 Secondi) la VMC riparte con la Velocità della Fascia in corso dopo 32 Secondi (+5 Secondi dello script della Fascia); il Black-Out resta memorizzato nella Spia Black-Out del Calendario, così la VMC riparte anche dopo un riavvio di Home Assistant o se la corrente torna a Home Assistant spento: in questo caso riparte dall'ultima fase del riallineamento (140 Secondi dall'avvio) più i 32 Secondi; se la corrente torna durante il riallineamento al riavvio (fasi 1-3) dopo almeno 32 Secondi OFF-Line, la VMC riparte 32 Secondi dopo il ritorno anche se il Black-Out non è stato ancora memorizzato; se invece la VMC risponde al ping ma la sua velocità non si legge (porta 5001), dopo 32 Secondi la Fascia smette di ripetere il comando e, appena la velocità torna leggibile, la Fascia riparte, salvo se nel frattempo la Velocità è cambiata (per esempio con il Telecomando); lo stesso vale per la Velocità 0 di fine Fascia: appena la velocità torna leggibile la Velocità 0 viene ripetuta, salvo se nel frattempo la Velocità è cambiata o è in corso un'allerta Congelamento o Δ Temp.; se invece la corrente manca proprio mentre la Fascia finisce, al ritorno della corrente la VMC si arresta dopo 32 Secondi;<br>
+                    - Free Cool./Heat.: 24 Secondi. Se durante l'avviso si sceglie un'altra Velocità e la si mantiene per 20 Secondi, la ripresa automatica in Free Cool./Heat. viene annullata e la VMC resta sulla Velocità scelta, anche se le condizioni sono già tornate favorevoli (con Inquinanti la Velocità scelta viene memorizzata dall'allerta Inquinanti dopo 8 Secondi); scegliendo Free Cool./Heat. con le condizioni ancora sfavorevoli la VMC torna a Velocità 0 dopo 24 Secondi; se durante l'avviso il mese corrente esce dalla Fascia, la ripresa viene annullata e la VMC resta a Velocità 0 (Velocità 1 con Inquinanti), ma con un'allerta Umidità in corso va alla [Set Velocità Umidità di Avvio] e a fine Umidità torna a Velocità 0;<br>
+                    - Umidità: 28 Secondi (la logica Umidità memorizza subito la Velocità in uso); con la [Set Velocità Umidità di Avvio] su Velocità 0 l'allerta Umidità si accende ma la VMC resta ferma, anche con la Free Cool./Heat. sospesa (all'avvio dell'Umidità, all'arresto per condizioni sfavorevoli e a fine Inquinanti, dove con un'altra Velocità di avvio la VMC va a Velocità 1 [Nota 3]); se durante l'allerta si cambia Velocità, la nuova Velocità viene memorizzata dopo 4 Secondi e mantenuta a fine Umidità (se l'Umidità finisce prima che sia memorizzata, la Velocità scelta resta); se però l'Umidità ha avviato la VMC da Velocità 0 e la VMC risulta ancora, o di nuovo, a Velocità 0, dopo 4 Secondi viene riportata alla [Set Velocità Umidità di Avvio] e a fine Umidità torna a Velocità 0 (per fermarla si spegne l'interruttore dell'Umidità; con la Free Cool./Heat. sospesa nessun cambio: la VMC resta a Velocità 0); se invece prima si sceglie una Velocità diversa da quella di avvio e la si tiene almeno 4 Secondi, la Velocità 0 scelta dopo viene memorizzata e la VMC resta ferma anche a fine Umidità; se l'Umidità ha avviato la VMC da Velocità 0, la VMC è ancora alla [Set Velocità Umidità di Avvio] e a fine Umidità sono ancora presenti gli Inquinanti, la VMC scende a Velocità 1 dopo 28 Secondi e torna a Velocità 0 al rientro degli Inquinanti (se l'utente ha scelto un'altra Velocità, quella resta);<br>
+                    - Black-Out: 32 Secondi per il Rilevamento e per il Ripristino; una Velocità scelta dopo il ritorno della corrente e prima del ripristino (Telecomando, scheda o App) resta e il ripristino non avviene (la Velocità 1 scelta dall'App con la VMC già a Velocità 1 no: l'automazione non la distingue dalla ripartenza della VMC, che dopo un Black-Out può riaccendersi da sola a Velocità 1); le allerte in corso la trattano come una scelta fatta durante l'allerta (Congelamento e Δ Temp. impongono comunque la loro Velocità); durante una Fascia del Calendario la rilevazione del Black-Out non è attiva: al ritorno della corrente (VMC OFF-Line almeno 32 Secondi) la VMC riparte con la Velocità della Fascia in corso 32 Secondi dopo che è di nuovo ON-Line con la velocità leggibile (+5 Secondi dello script della Fascia) (una Velocità scelta nel frattempo resta e la Fascia non riparte); il Black-Out resta memorizzato nella Spia Black-Out del Calendario, così la VMC riparte anche dopo un riavvio di Home Assistant o se la corrente torna a Home Assistant spento: in questo caso riparte dall'ultima fase del riallineamento (140 Secondi dall'avvio) più i 32 Secondi; se la corrente torna durante il riallineamento al riavvio (fasi 1-3) dopo almeno 32 Secondi OFF-Line, la VMC riparte 32 Secondi dopo il ritorno ON-Line anche se il Black-Out non è stato ancora memorizzato (se in quel momento la sua velocità non si legge ancora, riparte 32 Secondi dopo che torna leggibile, non prima dell'ultima fase del riallineamento); se invece la VMC risponde al ping ma la sua velocità non si legge (porta 5001), dopo 32 Secondi la Fascia smette di ripetere il comando e, appena la velocità torna leggibile, la Fascia riparte, salvo se nel frattempo la Velocità è cambiata (per esempio con il Telecomando); lo stesso vale per la Velocità 0 di fine Fascia e per il comando dato spegnendo l'interruttore del Calendario durante una Fascia (Velocità 0, o Velocità 1 con Inquinanti): appena la velocità torna leggibile il comando viene ripetuto, anche con l'interruttore del Calendario spento, salvo se nel frattempo la Velocità è cambiata; con un'allerta Congelamento o Δ Temp. in corso il comando del Calendario aspetta la fine dell'allerta: a fine allerta, appena la velocità è leggibile, la Fascia riparte con la sua Velocità (o si ripete la Velocità 0, o 1, in sospeso) al posto della Velocità memorizzata dall'allerta, salvo se si sceglie un'altra Velocità dopo la fine dell'allerta; se invece la corrente manca proprio mentre la Fascia finisce o mentre si spegne l'interruttore del Calendario, al ritorno della corrente la VMC si arresta dopo 32 Secondi (o va a Velocità 1, se l'interruttore è stato spento con Inquinanti presenti);<br>
                     - Avvisi (riquadro degli Avvisi e avviso di aggiornamento del Package): 5 Secondi.<br>
                     <br>
                     <b>CAMBIO MANUALE DELLA VELOCITÀ:</b> ogni comando dell'automazione viene ripetuto ogni 4-5 Secondi finché la VMC non
                     lo esegue; se nel frattempo si sceglie un'altra Velocità (Telecomando, scheda o App), la ripetizione si interrompe e la scelta
                     viene rispettata e gestita dalle regole sopra (es. memorizzata dal Lim. Δ PdR o dall'Umidità). Fanno eccezione Congelamento e
                     Δ Temp., che impongono comunque la loro Velocità, gli Inquinanti ancora presenti, che riavviano la VMC fermata a Velocità 0, e
-                    l'Umidità che ha avviato la VMC da Velocità 0, che la riporta alla velocità di avvio.<br>
+                    l'Umidità che ha avviato la VMC da Velocità 0, che la riporta alla velocità di avvio. Durante una Fascia la ripetizione
+                    si ferma anche se la VMC resta OFF-Line o la sua velocità non si legge per 32 Secondi, anche spegnendo l'interruttore
+                    del Calendario (vedere Black-Out).<br>
                     </td></tr></table>
                     <table width="100%">
                     <tr><th colspan="3" style="padding: 4px 8px; border: 1px solid #c3c2b7;">CAMBIO DI VELOCITÀ DURANTE UN'ALLERTA (comportamento misurato)</th></tr>
                     <tr><th style="padding: 4px 8px; border: 1px solid #c3c2b7;">Allerta in corso</th><th style="padding: 4px 8px; border: 1px solid #c3c2b7;">Si sceglie un'altra Velocità</th><th style="padding: 4px 8px; border: 1px solid #c3c2b7;">Si sceglie Velocità 0</th></tr>
-                    <tr><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Congelamento</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Viene riportata subito a Velocità 0; a fine allerta va alla Velocità scelta</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">La VMC è già ferma: nessun effetto; a fine allerta torna alla Velocità di prima</td></tr>
-                    <tr><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Δ Temp. &gt; 23 °C</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Viene riportata a Velocità 1; la Velocità scelta viene memorizzata dopo 4 Secondi e impostata a fine allerta (se l'allerta finisce prima che sia memorizzata, resta la Velocità scelta)</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Viene riportata a Velocità 1; a fine allerta resta a Velocità 0</td></tr>
-                    <tr><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Inquinanti (CO₂ e VOC)</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Viene mantenuta, anche dopo il rientro degli Inquinanti (anche la Velocità 1 scelta con la VMC in Free Cool./Heat. e PdR superato)</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Dopo circa 8 Secondi riparte a Velocità 1; al rientro degli Inquinanti torna a Velocità 0</td></tr>
-                    <tr><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Lim. Δ Punto di Rugiada</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Viene riportata a Velocità 0; la Velocità scelta viene memorizzata e ripristinata a fine allerta</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">La VMC è già ferma: nessun effetto; a fine allerta torna alla Velocità di prima</td></tr>
-                    <tr><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Free Cool./Heat. sfavorevole (VMC ferma in attesa)</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">La VMC va alla Velocità scelta e la ripresa automatica in Free Cool./Heat. viene annullata dopo 20 Secondi, anche con le condizioni già tornate favorevoli (ripresa in attesa)</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">La VMC è già ferma: nessun effetto; quando le condizioni tornano favorevoli riprende in Free Cool./Heat.</td></tr>
-                    <tr><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Umidità, con la VMC già in moto all'inizio</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Memorizzata dopo 4 Secondi e mantenuta a fine Umidità</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">La VMC si ferma e resta a Velocità 0, anche a fine Umidità</td></tr>
-                    <tr><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Umidità, con la VMC avviata da Velocità 0</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Una Velocità diversa da quella di avvio viene memorizzata dopo 4 Secondi e mantenuta a fine Umidità; la stessa Velocità di avvio non cambia nulla</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Dopo 4 Secondi riparte alla [Set Velocità Umidità di Avvio]; a fine Umidità torna a Velocità 0. Per fermarla si spegne l'interruttore dell'Umidità. Se invece prima si è scelta una Velocità diversa da quella di avvio e la si è tenuta almeno 4 Secondi, la Velocità 0 viene memorizzata e la VMC resta ferma anche a fine Umidità</td></tr>
+                    <tr><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Congelamento (con un comando del Calendario in sospeso a fine allerta riparte quel comando, vedere Black-Out)</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Viene riportata subito a Velocità 0; a fine allerta va alla Velocità scelta</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">La VMC è già ferma: nessun effetto; a fine allerta torna alla Velocità di prima</td></tr>
+                    <tr><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Δ Temp. &gt; 23 °C (con un comando del Calendario in sospeso a fine allerta riparte quel comando, vedere Black-Out)</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Viene riportata a Velocità 1; la Velocità scelta viene memorizzata dopo 4 Secondi e impostata a fine allerta (se l'allerta finisce prima che sia memorizzata, resta la Velocità scelta); scegliere Velocità 1 non cambia la memoria</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Viene riportata a Velocità 1; a fine allerta resta a Velocità 0</td></tr>
+                    <tr><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Inquinanti (CO₂ e VOC)</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Viene memorizzata dopo 8 Secondi e mantenuta, anche dopo il rientro degli Inquinanti (anche la Velocità 1 scelta con la VMC in Free Cool./Heat. e PdR superato); anche una Velocità scelta durante gli 8 Secondi di attesa dopo il rientro resta (salvo se la Free Cool./Heat. è sospesa da un'allerta o con un'allerta Congelamento o Δ Temp. in corso)</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Dopo circa 8 Secondi riparte a Velocità 1; al rientro degli Inquinanti torna a Velocità 0</td></tr>
+                    <tr><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Lim. Δ Punto di Rugiada</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Viene riportata a Velocità 0; la Velocità scelta viene memorizzata e ripristinata a fine allerta (se l'allerta finisce prima che sia memorizzata, resta la Velocità scelta)</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">La VMC è già ferma: nessun effetto; a fine allerta torna alla Velocità di prima</td></tr>
+                    <tr><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Free Cool./Heat. sfavorevole (VMC ferma in attesa)</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">La VMC va alla Velocità scelta e la ripresa automatica in Free Cool./Heat. viene annullata dopo 20 Secondi, anche con le condizioni già tornate favorevoli (ripresa in attesa); con Inquinanti la Velocità scelta viene memorizzata dall'allerta Inquinanti dopo 8 Secondi; scegliendo Free Cool./Heat. con le condizioni ancora sfavorevoli la VMC torna a Velocità 0 dopo 24 Secondi</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">La VMC è già ferma: nessun effetto; quando le condizioni tornano favorevoli riprende in Free Cool./Heat.</td></tr>
+                    <tr><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Umidità, con la VMC già in moto all'inizio</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Memorizzata dopo 4 Secondi e mantenuta a fine Umidità (se l'Umidità finisce prima che sia memorizzata, resta la Velocità scelta)</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">La VMC si ferma e resta a Velocità 0, anche a fine Umidità</td></tr>
+                    <tr><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Umidità, con la VMC avviata da Velocità 0</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Una Velocità diversa da quella di avvio viene memorizzata dopo 4 Secondi e mantenuta a fine Umidità (se l'Umidità finisce prima che sia memorizzata, resta la Velocità scelta); la stessa Velocità di avvio non cambia nulla</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Dopo 4 Secondi riparte alla [Set Velocità Umidità di Avvio]; a fine Umidità torna a Velocità 0. Per fermarla si spegne l'interruttore dell'Umidità. Se invece prima si è scelta una Velocità diversa da quella di avvio e la si è tenuta almeno 4 Secondi, la Velocità 0 viene memorizzata e la VMC resta ferma anche a fine Umidità. Con la Free Cool./Heat. sospesa nessun cambio: la VMC resta a Velocità 0</td></tr>
                     </table>
                     <table><tr><td align="justify">
                     Esempio: la VMC è a Velocità 2 e la CO₂ sale; si sceglie Velocità 0: dopo circa 8 Secondi la VMC riparte a Velocità 1 e, quando la CO₂ rientra, torna a Velocità 0. Se la CO₂ rientra subito dopo la scelta, alla fine la VMC resta a Velocità 0.<br>
                     Esempio: la VMC è a Velocità 0 e l'Umidità la avvia in Notturna; si sceglie Velocità 0: dopo 4 Secondi la VMC torna in Notturna e, quando l'umidità rientra, torna a Velocità 0.<br>
                     Esempio: la VMC è a Velocità 0, l'Umidità la avvia a Velocità 2 e poi sale la CO₂; quando l'umidità rientra la VMC scende a Velocità 1 e, quando rientra anche la CO₂, torna a Velocità 0.<br>
                     <br>
-                    <b>CALENDARIO:</b> 3 Secondi per l'Ingresso e per l'Uscita dalla Fascia oraria; all'Ingresso il comando alla VMC parte dopo ulteriori 5 Secondi (attesa dello script della Fascia).<br>
-                    All'interno della Fascia, a VMC avviata, hanno effetto Congelamento, Δ Temp., Inquinanti, Lim. Δ Punto di Rugiada e Free Cooling / Free Heating; l'Umidità non ha effetto e la rilevazione del Black-Out non è attiva: al ritorno della corrente (VMC OFF-Line almeno 32 Secondi) la VMC riparte con la Velocità della Fascia in corso dopo 32 Secondi (+5 Secondi dello script della Fascia). All'uscita dalla Fascia la VMC si arresta.<br>
+                    <b>CALENDARIO:</b> 3 Secondi per l'Ingresso e per l'Uscita dalla Fascia oraria; all'Ingresso il comando alla VMC parte dopo ulteriori 5 Secondi (attesa dello script della Fascia). L'Ingresso e l'Uscita aspettano la fine di un'allerta Congelamento o Δ Temp. e il ritorno ON-Line della VMC; dopo un riavvio di Home Assistant aspettano il 3° gruppo del riallineamento (140 Secondi dall'avvio).<br>
+                    All'interno della Fascia, a VMC avviata, hanno effetto Congelamento, Δ Temp., Inquinanti, Lim. Δ Punto di Rugiada e Free Cooling / Free Heating; l'Umidità non ha effetto e la rilevazione del Black-Out non è attiva: al ritorno della corrente (VMC OFF-Line almeno 32 Secondi) la VMC riparte con la Velocità della Fascia in corso 32 Secondi dopo che è di nuovo ON-Line con la velocità leggibile (+5 Secondi dello script della Fascia) (una Velocità scelta nel frattempo resta e la Fascia non riparte). All'uscita dalla Fascia la VMC si arresta: con Inquinanti presenti la logica Inquinanti riparte dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0); se la 2° Fascia dello stesso giorno è già in corso, la fine della 1° Fascia non ferma la VMC (la comanda la 2° Fascia). Le Fasce non possono attraversare la mezzanotte (lo Spegnimento deve seguire l'Accensione nello stesso giorno); la 1° Fascia deve precedere la 2° (almeno 1 minuto tra il 1° Spegnimento e la 2° Accensione) e tutti gli orari devono essere diversi: se una regola non è rispettata il giorno risulta «Disabilitata» e nessuna delle due Fasce parte.<br>
                     <br>
                     <b>COSA SUCCEDE SE SI SPEGNE UN INTERRUTTORE (CO₂/VOC, Punto di Rugiada, Free Cooling, Free Heating, Umidità, Calendario):</b><br>
-                    - se in quel momento la sua funzione sta comandando la VMC, la VMC si ferma subito (Velocità 0, in 0 Secondi), anche durante una fascia del Calendario. Esempio: durante una fascia del Calendario sale la CO₂; spegnendo l'interruttore degli Inquinanti la VMC si ferma;<br>
+                    - se in quel momento la sua funzione sta comandando la VMC (allerta in corso, anche appena iniziata, o Velocità impostata da quell'allerta), la VMC si ferma subito (Velocità 0, in 0 Secondi), anche durante una fascia del Calendario. Esempio: durante una fascia del Calendario sale la CO₂; spegnendo l'interruttore degli Inquinanti la VMC si ferma;<br>
                     - se però c'è anche un'allerta Congelamento o Δ Temp., l'interruttore non si può spegnere finché quell'allerta non è finita. Esempio: il Punto di Rugiada ha fermato la VMC e poi arriva l'allerta Δ Temp.; finché dura il Δ Temp., l'interruttore del Punto di Rugiada non si può spegnere;<br>
-                    - l'interruttore dell'Umidità, mentre è in corso un'allerta Umidità, non si può spegnere se c'è anche un'altra allerta qualsiasi (Congelamento, Δ Temp., Inquinanti, Punto di Rugiada, Free Cooling/Heating), finché quell'allerta non è finita (salvo la sospensione Free Cool./Heat.: l'Umidità parte comunque a Velocità 1 [Nota 3] e il suo interruttore non si spegne fino alla ripresa o all'annullamento della Free). Esempio: l'Umidità ha avviato la VMC e poi sale la CO₂; finché dura l'allerta CO₂, l'interruttore dell'Umidità non si può spegnere;<br>
-                    - se, con l'allerta Umidità in corso, inizia una fascia del Calendario, l'interruttore dell'Umidità non si può spegnere fino alla fine della fascia, anche se nel frattempo l'umidità è rientrata: durante la fascia la VMC funziona alla velocità della fascia; alla fine della fascia si arresta, le spie si azzerano e, se l'umidità è ancora fuori soglia, dopo 28 secondi l'allerta Umidità riparte con la [Set Velocità Umidità di Avvio], altrimenti la VMC resta a Velocità 0. Se invece si entra prima nel Calendario, oppure è già in corso un'altra allerta, e poi sale l'umidità, l'allerta Umidità non scatta e l'interruttore si spegne normalmente (salvo la sospensione Free Cool./Heat.: l'Umidità parte comunque a Velocità 1 [Nota 3] e il suo interruttore non si spegne fino alla ripresa o all'annullamento della Free);<br>
-                    - gli interruttori del Calendario (spento durante una fascia), del Punto di Rugiada, del Free Cooling e del Free Heating fermano la VMC; se però sono presenti Inquinanti e l'interruttore degli Inquinanti è acceso, la VMC non si ferma: passa a Velocità 1 e si ferma quando gli Inquinanti rientrano;<br>
+                    - l'interruttore dell'Umidità, mentre è in corso un'allerta Umidità, non si può spegnere se c'è anche un'altra allerta qualsiasi (Congelamento, Δ Temp., Inquinanti, Punto di Rugiada, Free Cooling/Heating), finché quell'allerta non è finita (salvo la sospensione Free Cool./Heat.: l'Umidità parte comunque a Velocità 1 [Nota 3] e il suo interruttore non si spegne fino alla ripresa o all'annullamento della Free; con la [Set Velocità Umidità di Avvio] su Velocità 0 la VMC resta ferma). Esempio: l'Umidità ha avviato la VMC e poi sale la CO₂; finché dura l'allerta CO₂, l'interruttore dell'Umidità non si può spegnere;<br>
+                    - se, con l'allerta Umidità in corso, inizia una fascia del Calendario, l'interruttore dell'Umidità non si può spegnere fino alla fine della fascia, anche se nel frattempo l'umidità è rientrata: durante la fascia la VMC funziona alla velocità della fascia; alla fine della fascia si arresta, le spie si azzerano e, se l'umidità è ancora fuori soglia, dopo 28 secondi l'allerta Umidità riparte con la [Set Velocità Umidità di Avvio], altrimenti la VMC resta a Velocità 0. Se invece si entra prima nel Calendario, oppure è già in corso un'altra allerta, e poi sale l'umidità, l'allerta Umidità non scatta e l'interruttore si spegne normalmente (salvo la sospensione Free Cool./Heat.: l'Umidità parte comunque a Velocità 1 [Nota 3] e il suo interruttore non si spegne fino alla ripresa o all'annullamento della Free; con la [Set Velocità Umidità di Avvio] su Velocità 0 la VMC resta ferma);<br>
+                    - gli interruttori del Calendario (spento durante una fascia), del Punto di Rugiada, del Free Cooling e del Free Heating fermano la VMC; se però sono presenti Inquinanti e l'interruttore degli Inquinanti è acceso, la VMC non si ferma: passa a Velocità 1 e si ferma quando gli Inquinanti rientrano; il comando dato spegnendo l'interruttore del Calendario viene ripetuto finché la VMC non lo esegue, anche se nel frattempo la sua velocità non si legge o la VMC va OFF-Line (vedere Black-Out);<br>
+                    - se la VMC è OFF-Line, la sua velocità non è disponibile o è in corso il ripristino dopo un Black-Out, l'interruttore del Punto di Rugiada o dell'Umidità spento durante l'allerta resta spento (salvo, per l'Umidità, i casi qui sopra in cui il suo interruttore non si può spegnere) e si azzerano solo le memorie della sua allerta, senza comandi alla VMC: al ritorno la VMC resta alla velocità letta (o a quella ripristinata dopo il Black-Out);<br>
                     - se invece la sua funzione non sta comandando la VMC, spegnendo l'interruttore la VMC non cambia Velocità: la funzione semplicemente non interverrà più finché l'interruttore resta spento. Esempio: la VMC gira a Velocità 2 scelta dall'utente e il Punto di Rugiada non è intervenuto; spegnendo il suo interruttore la VMC resta a Velocità 2.<br>
                     </td></tr></table>
                     <a href="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/Informazioni/18_priorita_allarmi.png?v=20261107" target="_blank"><img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/immagini/Informazioni/18_priorita_allarmi.png?v=20261107" alt="Priorità degli allarmi" width="100%"></a>
@@ -14793,13 +14911,14 @@ cards:
                   <table><tr><td align="justify">
                   <b>Scritte Alert sotto i tasti.</b> Sotto un tasto di velocità compare la scritta Alert quando, premendolo,
                   la VMC viene subito bloccata o ridotta da un'allerta già presente. Il tasto Velocità 0 non mostra mai
-                  Alert, perché arresta la VMC.
+                  Alert, perché arresta la VMC. Il tasto della velocità attiva e quello della velocità da ripristinare
+                  (icona ↺) restano illuminati anche durante l'allerta: la scritta compare solo sotto i tasti spenti.
                   </td></tr></table>
                   <table>
                   <tr><th style="padding: 4px 8px; border: 1px solid #c3c2b7;">Scritta</th><th style="padding: 4px 8px; border: 1px solid #c3c2b7;">Tasti</th><th style="padding: 4px 8px; border: 1px solid #c3c2b7;">Allerta</th><th style="padding: 4px 8px; border: 1px solid #c3c2b7;">Premendo il tasto</th></tr>
                   <tr><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Alert</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Velocità 1, 2, 3, 4, Notturna, Iperventilazione, Free</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Punto di Rugiada sfavorevole (interruttore PdR su ON) o Congelamento</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">La VMC viene arrestata (Velocità 0). Con Punto di Rugiada sfavorevole e Inquinanti presenti la VMC mantiene la velocità scelta</td></tr>
                   <tr><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Alert Δ Temp.</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Velocità 2, 3, 4, Notturna, Iperventilazione, Free</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Diff. Temp. > 23 °C</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">La VMC viene portata a Velocità 1</td></tr>
-                  <tr><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Alert Free</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Free</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Mese programmato Free Heating / Free Cooling in condizioni sfavorevoli (voce 14)</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">La VMC viene arrestata (Velocità 0); con Inquinanti presenti o allarme Umidità in corso viene portata a Velocità 1</td></tr>
+                  <tr><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Alert Free</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Free</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">Mese programmato Free Heating / Free Cooling in condizioni sfavorevoli (voce 14)</td><td style="padding: 4px 8px; border: 1px solid #c3c2b7;">La VMC viene arrestata (Velocità 0); con Inquinanti presenti o allarme Umidità in corso viene portata a Velocità 1 (con la sola Umidità e la [Set Velocità Umidità di Avvio] su Velocità 0 resta ferma)</td></tr>
                   </table>
                   <table><tr><td align="justify">
                   <b>Come funziona.</b> Colore e scritte sono calcolati dai sensori [Stato LED Interfaccia] e [Alert Avvio

@@ -105,7 +105,9 @@ def test_comandi_di_velocita_fuori_ciclo_solo_quelli_voluti() -> None:
     ribadisce soltanto (con un ciclo uscirebbe al primo giro)."""
     dati = _automazione()
     tutti = list(_comandi(dati["actions"]))
-    assert len(tutti) == 219  # b35 (C1-1): +1, Velocita' 0 di fine Fascia ripetuta nel ramo del ritorno della VMC
+    # b35 (C1-1): +1, Velocita' 0 di fine Fascia ripetuta nel ramo del ritorno della VMC; b36 (C1-5): +1, Velocita' 1
+    # dello spegnimento del Calendario con gli Inquinanti ripetuta nel ramo del ritorno della VMC
+    assert len(tutti) == 220
     fuori = [azione for azione, dentro in tutti if not dentro]
     assert fuori == ["shell_command.vmc_master_velocita_1"] * 4
     ramo = _rami(dati)["spia_velocita_1_inquinanti_co2_voc"]
@@ -143,7 +145,8 @@ def test_ripristino_dopo_il_black_out_ogni_comando_nel_ciclo_standard() -> None:
         assert len(attesa) == 1 and attesa[0]["timeout"] == "00:00:12", ident
         assert attesa[0]["wait_template"] == (
             f"{{{{ states('{LETTURA}') != vel_prima_del_comando or {BLACK_OUT} }}}}"), ident
-        assert ramo["sequence"][0]["variables"] == MEMORIA, ident
+        # b36 (scelta): il primo passo e' la velocita' scelta dall'utente prima del ripristino (test_b36_scelta)
+        assert ramo["sequence"][1]["variables"] == MEMORIA, ident
     # Inquinanti -> Velocita' 1: la memoria della Velocita' 0 si spegne dopo il ciclo, come prima dopo il comando
     scelta = next(p for p in rami["Black-Out Off Vel. 0"]["sequence"] if "choose" in p)
     inquinanti = next(o for o in scelta["choose"] if o["alias"] == "Inquinanti ON, Partenza Vel.0 -> Vel. 1")

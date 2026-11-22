@@ -77,8 +77,10 @@ def test_b1_1_tutti_i_cicli_del_calendario_escono_con_la_lettura_persa() -> None
     automazione = (PKG / "vmc_master_automazione.txt").read_text(encoding="utf-8")
     assert pacchetto.count(LETTURA_PERSA) == 360 + 2
     # b35 (C1-1): nell'automazione la stessa condizione c'e' anche nella memoria Velocita' 0 e nella Spia Comando non
-    # eseguito dei 14 rami «Off» e nel ciclo, nella memoria e nella spia della fine della Fascia del ramo del ritorno
-    assert automazione.count(LETTURA_PERSA) == 14 + 14 + 14 + 3
+    # eseguito dei 14 rami «Off» e nel ciclo, nella memoria e nella spia della fine della Fascia del ramo del ritorno;
+    # b36 (C1-5): anche nei 2 rami dello spegnimento del Calendario durante la Fascia e nella Velocita' 1 ripetuta nel
+    # ramo del ritorno (ciclo, memoria e spia: 3 + 3 + 3)
+    assert automazione.count(LETTURA_PERSA) == 14 + 14 + 14 + 3 + 9
 
 
 def test_b1_1_il_sensore_letto_e_quello_tcp() -> None:
@@ -348,7 +350,8 @@ def test_b1_4_nessuna_ripresa_della_fascia_al_riavvio() -> None:
     Verifica che nulla la riprenda: gli script di Fascia sono chiamati solo dai 14 rami «On» (il loro trigger vuole la
     spia della Fascia spenta, che invece resta accesa dopo il riavvio), dai 2 rami del ritorno della corrente (spia
     Black-Out del Calendario accesa, oppure VMC tornata ON-Line dopo almeno 32 s OFF-Line) e dal ramo del ritorno della
-    VMC dopo un comando non eseguito (la sua spia si spegne al riavvio: initial false); nel package nessuno li chiama
+    VMC dopo un comando non eseguito (dalla b36 la sua spia resta accesa dopo il riavvio, ma il ramo riparte solo
+    con un comando in sospeso e a velocita' non cambiata); nel package nessuno li chiama
     (solo elenchi) e il riallineamento al riavvio non li rilancia."""
     automazione = _automazione()
     trigger = {t["id"]: t for t in automazione["triggers"] if isinstance(t.get("id"), str)}

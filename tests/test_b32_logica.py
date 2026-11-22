@@ -31,8 +31,11 @@ def test_delta_temp_non_cancella_il_ritorno_a_velocita_0_degli_inquinanti() -> N
     condizione = testo[i : testo.index("then:", i)]
     assert "not is_state('input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0', 'on')" in condizione
     assert "not is_state('input_boolean.vmc_master_spia_velocita_1_co2_o_voc_pdr', 'on')" in condizione
-    # le altre 13 regole (Congelamento e Δ con memorie 0, 2, 3, 4, Notturna, Iperventilazione) restano come prima
-    assert testo.count("(regola 03-11-2026)") == 13
+    # b36: stessa esclusione nel gemello di fine Congelamento (Velocità 1); le altre 12 regole (Congelamento e Δ con
+    # memorie 2, 3, 4, Notturna, Iperventilazione e Free Cool./Heat.) restano come prima
+    i = testo.index("durante Congelamento -> diventa la memoria degli Inquinanti (regola 03-11-2026; non se la Velocità 1")
+    assert testo[i : testo.index("then:", i)].replace("Congelamento", "Δ Temp.") == condizione
+    assert testo.count("(regola 03-11-2026)") == 12
 
 
 def test_fine_umidita_con_inquinanti_anche_con_avvio_free() -> None:
@@ -77,7 +80,9 @@ def test_scelta_durante_la_sospensione_free_con_umidita_annulla_la_ripresa() -> 
     """A3-2: con la Free sospesa e un'allerta Umidita' in corso (VMC a Velocita' 1, Nota 3) una velocita' scelta
     dall'utente e mantenuta 20 secondi annulla la ripresa in Free (Foglio A29), come senza Umidita'. Trigger,
     condizione e 2 copie del Countdown Attese."""
+    # b36: con [Set Velocità Umidità di Avvio] su Velocità 0 conta anche la Velocità 1 (l'Umidità non la dà mai)
     nuova = ("and (states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia') == 'off' or "
+             "states('input_select.vmc_master_speed_umidita') == 'Velocità 0' or "
              "states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') != 'Velocità 1')")
     assert _automazione().count(nuova) == 2
     assert (PKG / "vmc_master.yaml").read_text(encoding="utf-8").count(nuova) == 2
@@ -86,22 +91,32 @@ def test_scelta_durante_la_sospensione_free_con_umidita_annulla_la_ripresa() -> 
 def test_velocita_scelta_negli_ultimi_secondi_del_pdr_resta() -> None:
     """A2-1: una velocita' scelta durante l'allerta PdR e non ancora memorizzata (allerta finita prima dei 16 s, 12 s
     con Inquinanti) resta a fine allerta (Foglio F6): 8 rami senza Inquinanti (memoria 0, 1, 2, 3, 4, Notturna,
-    Iperventilazione, Free) e 5 con Inquinanti (2, 3, 4, Notturna, Iperventilazione; il ramo 1 non invia comandi)."""
+    Iperventilazione, Free) e 5 con Inquinanti (2, 3, 4, Notturna, Iperventilazione; il ramo 1 non invia comandi).
+    b36 (stessa classe, controllo d6): anche «Rip. Free Cool./Heat. No PdR se Spia Inquinanti ON», nei 3 casi che
+    mandano il comando Free Cooling (Free non sospesa, «Nessuna Allerta Free Cooling Programmato», «Nessuna Allerta Free
+    Heating Programmato»; i 2 casi con la Free sospesa non mandano comandi), e «Rip. Vel. 0 No PdR» (fine PdR con la
+    memoria Velocita' 1 Inquinanti/PdR, Velocita' 1 esclusa perche' e' quella degli Inquinanti): 17 controlli in 15
+    rami."""
     testo = _automazione()
-    assert testo.count("- stop: Velocità scelta dall'utente durante l'allerta PdR mantenuta") == 13
-    rami = {}
+    assert testo.count("- stop: Velocità scelta dall'utente durante l'allerta PdR mantenuta") == 17
+    rami: dict[str, list[str]] = {}
     righe = testo.split("\n")
     for i, riga in enumerate(righe):
         if "- stop: Velocità scelta dall'utente durante l'allerta PdR mantenuta" in riga:
             j = max(k for k in range(i) if "vel_prima_del_comando not in [" in righe[k])
             escluse = righe[j].split("not in [", 1)[1].split("]", 1)[0]
             k = max(k for k in range(j) if " Rip. " in righe[k] and ("id: " in righe[k] or righe[k].strip().startswith("- Rip.")))
-            rami[righe[k].split("Rip. ", 1)[1].strip()] = escluse
-    assert len(rami) == 13
-    assert rami["Vel. 0 No PdR -> Spia PdR Velocità 0 OFF"].startswith("'Velocità 0', 'Non disponibile'")
-    assert rami["Vel. 2 No PdR"].startswith("'Velocità 0', 'Velocità 2', 'Non disponibile'")
-    assert rami["Free Cool./Heat. No PdR"].startswith("'Velocità 0', 'Free Cooling', 'Non disponibile'")
-    assert rami["Vel. 3 No PdR  se Spia Inquinanti ON"].startswith("'Velocità 0', 'Velocità 1', 'Velocità 3', 'Non")
+            rami.setdefault(righe[k].split("Rip. ", 1)[1].strip(), []).append(escluse)
+    assert len(rami) == 15
+    assert rami["Vel. 0 No PdR -> Spia PdR Velocità 0 OFF"][0].startswith("'Velocità 0', 'Non disponibile'")
+    assert rami["Vel. 2 No PdR"][0].startswith("'Velocità 0', 'Velocità 2', 'Non disponibile'")
+    assert rami["Free Cool./Heat. No PdR"][0].startswith("'Velocità 0', 'Free Cooling', 'Non disponibile'")
+    assert rami["Vel. 3 No PdR  se Spia Inquinanti ON"][0].startswith("'Velocità 0', 'Velocità 1', 'Velocità 3', 'Non")
+    # b36: la Free Heating si legge «Free Cooling» (codice 00007 del sensore della lettura)
+    assert rami["Free Cool./Heat. No PdR se Spia Inquinanti ON"] == [
+        "'Velocità 0', 'Velocità 1', 'Free Cooling', 'Non disponibile', 'unknown', 'unavailable', ''"] * 3
+    assert rami["Vel. 0 No PdR"] == ["'Velocità 0', 'Velocità 1', 'Non disponibile', 'unknown', 'unavailable', ''"]
+    assert sum(len(v) for v in rami.values()) == 17
 
 
 def test_ripristino_free_dopo_black_out_manda_sempre_un_comando() -> None:

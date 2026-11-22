@@ -12,11 +12,14 @@ from homeassistant.util import yaml as hay
 PKG = Path(__file__).parent.parent / "custom_components" / "vmc_master" / "package"
 LETTURA = "states('sensor.vmc_master_status_ventola_lettura_codice_interpretato')"
 SPIA_UMIDITA = "states('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia')"
+SET_UMIDITA = "states('input_select.vmc_master_speed_umidita')"
+# b36: con [Set Velocità Umidità di Avvio] su Velocità 0 la Velocità 1 con l'Umidità accesa è una scelta dell'utente
 RIPRESA_SENZA_INQUINANTI = (
-    f"and ({LETTURA} in ['Velocità 0', 'Free Cooling'] or ({SPIA_UMIDITA} == 'on' and {LETTURA} == 'Velocità 1'))"
+    f"and ({LETTURA} in ['Velocità 0', 'Free Cooling'] or ({SPIA_UMIDITA} == 'on' and {SET_UMIDITA} != 'Velocità 0' "
+    f"and {LETTURA} == 'Velocità 1'))"
 )
 RIPRESA_CON_INQUINANTI = f"and {LETTURA} in ['Velocità 0', 'Velocità 1', 'Free Cooling']"
-ANNULLAMENTO_A3_2 = f"and ({SPIA_UMIDITA} == 'off' or {LETTURA} != 'Velocità 1')"
+ANNULLAMENTO_A3_2 = f"and ({SPIA_UMIDITA} == 'off' or {SET_UMIDITA} == 'Velocità 0' or {LETTURA} != 'Velocità 1')"
 RIPRESE = {
     "Rip. Free Heating No TeVsTi ": RIPRESA_SENZA_INQUINANTI,
     "Rip. Free Cooling No TeVsTi ": RIPRESA_SENZA_INQUINANTI,
@@ -81,9 +84,10 @@ def test_ripresa_free_solo_senza_velocita_scelta() -> None:
     anche quando le condizioni sono gia' tornate favorevoli. Trigger, copia trigger.id e 2 copie del Countdown."""
     automazione = _testo("vmc_master_automazione.txt")
     pacchetto = _testo("vmc_master.yaml")
-    for nuova in (RIPRESA_SENZA_INQUINANTI, RIPRESA_CON_INQUINANTI):
-        assert automazione.count(nuova) == 4
-        assert pacchetto.count(nuova) == 4
+    # b36 (C4-3): +2 copie della condizione senza Inquinanti nel trigger PdR 154 (trigger e guardia, ON e OFF)
+    for nuova, copie in ((RIPRESA_SENZA_INQUINANTI, 6), (RIPRESA_CON_INQUINANTI, 4)):
+        assert automazione.count(nuova) == copie
+        assert pacchetto.count(nuova) == copie
     for id_, nuova in RIPRESE.items():
         trigger = _trigger(id_)
         assert nuova in trigger["value_template"], id_
@@ -99,9 +103,12 @@ def test_ripresa_e_annullamento_complementari() -> None:
     for lettura in ("Velocità 0", "Velocità 1", "Velocità 2", "Velocità 3", "Velocità 4", "Notturna",
                     "Iperventilazione", "Free Cooling"):
         for umidita in ("on", "off"):
-            ripresa = lettura in ("Velocità 0", "Free Cooling") or (umidita == "on" and lettura == "Velocità 1")
-            annullamento = lettura not in ("Velocità 0", "Free Cooling") and (umidita == "off" or lettura != "Velocità 1")
-            assert ripresa != annullamento, (lettura, umidita)
+            for set_0 in (True, False):
+                ripresa = lettura in ("Velocità 0", "Free Cooling") or (
+                    umidita == "on" and not set_0 and lettura == "Velocità 1")
+                annullamento = lettura not in ("Velocità 0", "Free Cooling") and (
+                    umidita == "off" or set_0 or lettura != "Velocità 1")
+                assert ripresa != annullamento, (lettura, umidita, set_0)
 
 
 def test_copie_trigger_id_uguali_ai_trigger() -> None:
@@ -155,11 +162,15 @@ def test_scheda_msg_15_ripristino_solo_con_umidita() -> None:
             f"È STATA SCELTA LA {{{{ velocita | upper }}}}: SE MANTENUTA PER 20 SECONDI, LA RIPRESA IN FREE {tipo} "
             "VERRÀ ANNULLATA{% endif %}") == 2
         assert scheda.count(
-            "and is_state('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia', 'on') and velocita == "
+            "and is_state('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia', 'on') and not "
+            "is_state('input_select.vmc_master_speed_umidita', 'Velocità 0') and velocita == "
             f"\"Velocità 1\" %}}RIPRISTINO SULLA VELOCITA' FREE {tipo}") == 2
     piatta = _norm(scheda)
     assert "<b>Cambio del mese programmato.</b>" in piatta
-    assert "anche con le condizioni già tornate favorevoli (ripresa in attesa)</td>" in piatta
+    # b36 (C5-4): la riga prosegue con le due frasi del Foglio (Inquinanti e Free scelta con condizioni sfavorevoli)
+    assert ("anche con le condizioni già tornate favorevoli (ripresa in attesa); con Inquinanti la Velocità scelta viene "
+            "memorizzata dall'allerta Inquinanti dopo 8 Secondi; scegliendo Free Cool./Heat. con le condizioni ancora "
+            "sfavorevoli la VMC torna a Velocità 0 dopo 24 Secondi</td>") in piatta
 
 
 def test_descrizione_e_voce_17_uguali() -> None:

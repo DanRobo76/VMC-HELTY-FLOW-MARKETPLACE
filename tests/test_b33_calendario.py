@@ -164,8 +164,10 @@ def test_tutti_i_cicli_dell_automazione_restano_uguali() -> None:
     testo = (PKG / "vmc_master_automazione.txt").read_text(encoding="utf-8")
     assert OFF_LINE not in testo
     # b35 (C1-1): anche nella memoria Velocita' 0 e nella Spia Comando non eseguito dei 14 rami «Off», e nel ciclo, nella
-    # memoria e nella spia della fine della Fascia nel ramo del ritorno della VMC (14 + 14 + 14 + 3)
-    assert testo.count(LETTURA_PERSA) == 45
+    # memoria e nella spia della fine della Fascia nel ramo del ritorno della VMC (14 + 14 + 14 + 3); b36 (C1-5): nel
+    # ciclo, nella memoria e nella spia dei 2 rami dello spegnimento del Calendario durante la Fascia e della Velocita' 1
+    # ripetuta nel ramo del ritorno della VMC (3 + 3 + 3)
+    assert testo.count(LETTURA_PERSA) == 45 + 9
     # 176 nella b32, piu' i 14 rami «Off», piu' i 17 cicli della b34 (B1-2), piu' il ciclo della b35 (C1-1, ramo del
-    # ritorno della VMC)
-    assert testo.count(UTENTE) == 176 + 14 + 17 + 1
+    # ritorno della VMC), piu' il ciclo della Velocita' 1 della b36 (C1-5, ramo del ritorno della VMC)
+    assert testo.count(UTENTE) == 176 + 14 + 17 + 1 + 1

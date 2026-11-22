@@ -59,7 +59,7 @@ def _copie_countdown() -> tuple[Counter, Counter]:
 
 def test_verifica_al_riavvio_sempre_nella_stessa_forma():
     con_fase = [_norm(str(t["value_template"])) for t in _trigger_template() if "fase_riallineamento" in str(t["value_template"])]
-    assert len(con_fase) == 142  # b34: ritorno della VMC dopo un comando della Fascia non eseguito
+    assert len(con_fase) == 143  # b34: ritorno della VMC dopo un comando della Fascia non eseguito; b36: Spia Avvisi On
     soglie: Counter = Counter()
     for testo in con_fase:
         trovata = GUARDIA.search(testo)
@@ -70,7 +70,7 @@ def test_verifica_al_riavvio_sempre_nella_stessa_forma():
             assert altra in PRESE_IN_CARICO or re.fullmatch(
                 r"\(states\('input_boolean\.vmc_master_spia_velocita_[a-z0-9_]+_un_solo_avvio'\) == 'on'( or .+)?\)", altra
             ), altra
-    assert soglie == Counter({"4": 91, "2": 40, "3": 11})
+    assert soglie == Counter({"4": 92, "2": 40, "3": 11})
 
 
 def test_copie_in_evento_ancora_valido_identiche():
@@ -190,7 +190,9 @@ def test_memoria_velocita_0_mantenuta_dell_umidita():
             seguente = passi[k + 1]
             assert seguente["action"] == "input_boolean.turn_off" and SPIA_U0_MANTENUTA in _entita(seguente), passo
             spente += 1
-    assert (accese, spente) == (1, 46)  # b33: +4 spente al cambio del mese con l'Umidità in corso (A3-7)
+    # b33: +4 spente al cambio del mese con l'Umidità in corso (A3-7); b36: +1 interruttore Umidità con la VMC non disponibile (C4-5),
+    # +3 Set 0 con la Free sospesa nei 2 rami TeVsTi e nella fine Inquinanti in Free (C4-4)
+    assert (accese, spente) == (1, 50)
     testo = (PKG / "vmc_master_automazione.txt").read_text(encoding="utf-8")
     ramo = testo[testo.index("              - umidita_velocita_0\n") :]
     ramo = ramo[: ramo.index("\n      - conditions:")]
@@ -198,7 +200,8 @@ def test_memoria_velocita_0_mantenuta_dell_umidita():
     altrimenti = ramo[ramo.index("            else:\n") :]
     assert allora.index(f"entity_id: {SPIA_U0_MANTENUTA}") < allora.index("- variables:")
     assert f"- {SPIA_U0}\n                    - {SPIA_U0_MANTENUTA}" in altrimenti
-    assert testo.count(SPIA_U0_MANTENUTA) == 51  # b32: +1 nella condizione di umidita_velocita_0 (A3-3); b33: +4 (A3-7)
+    # b32: +1 nella condizione di umidita_velocita_0 (A3-3); b33: +4 (A3-7); b36: +1 C4-5, +4 C4-4 (fine Umidità, TeVsTi x2, R8)
+    assert testo.count(SPIA_U0_MANTENUTA) == 56
 
 
 def test_memoria_velocita_0_mantenuta_nel_package_e_nella_scheda():
