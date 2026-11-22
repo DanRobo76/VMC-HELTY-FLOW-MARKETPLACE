@@ -53,7 +53,7 @@ def _dopo_ripristino() -> list:
 
 def test_righe_nuove_sotto_il_ripristino() -> None:
     righe = _dopo_ripristino()
-    assert len(righe) == 3 + len(VELOCITA) + 1 + 1
+    assert len(righe) == 3 + len(VELOCITA) + 1 + 1 + 1  # b39: + comando di un'allerta non eseguito in Fascia
     assert all(r["type"] == "conditional" for r in righe)
     attivo = {"condition": "state", "entity": RIL, "state": "active"}
 
@@ -75,28 +75,41 @@ def test_righe_nuove_sotto_il_ripristino() -> None:
     assert righe[2]["row"]["label"].startswith("Black-Out rilevato: ")
 
     # 3) velocità memorizzata: una riga per spia, anche con la VMC di nuovo ON-Line (ripristino)
-    for riga, (chiave, testo) in zip(righe[3:-2], VELOCITA.items()):
+    for riga, (chiave, testo) in zip(righe[3:-3], VELOCITA.items()):
         assert riga["conditions"] == [
             {"condition": "state", "entity": f"input_boolean.vmc_master_spia_velocita_{chiave}", "state": "on"}
         ]
         assert riga["row"] == {"type": "text", "name": "Velocità salvata", "text": testo, "icon": "mdi:fan"}
 
     # 4) Black-Out durante una fascia del Calendario
-    assert righe[-2]["conditions"] == [OFF, {"condition": "state", "entity": CAL, "state": "on"}]
-    assert righe[-2]["row"]["label"].startswith("Black-Out durante la fascia del Calendario: ")
+    assert righe[-3]["conditions"] == [OFF, {"condition": "state", "entity": CAL, "state": "on"}]
+    assert righe[-3]["row"]["label"].startswith("Black-Out durante la fascia del Calendario: ")
 
     # 5) b34: comando della fascia non eseguito (VMC ON-Line ma velocità illeggibile); b35 (C5-1, C1-1): la causa vera e
     # anche la Velocità 0 di fine fascia
-    assert righe[-1]["conditions"] == [
+    assert righe[-2]["conditions"] == [
         {"condition": "state", "entity": "sensor.vmc_master_status_ip_interfaccia", "state": "ON-Line"},
         {"condition": "state", "entity": "input_boolean.vmc_master_spia_calendario_comando_non_eseguito", "state": "on"},
     ]
-    assert righe[-1]["row"]["label"].startswith("La VMC risponde in rete ma la sua velocità non si legge: ")
-    assert "Velocità 0 di fine fascia" in righe[-1]["row"]["label"]
+    assert righe[-2]["row"]["label"].startswith("La VMC risponde in rete ma la sua velocità non si legge: ")
+    assert "Velocità 0 di fine fascia" in righe[-2]["row"]["label"]
     # b36 (C1-3): con Congelamento/Δ in corso il comando riparte alla fine dell'allerta
-    assert righe[-1]["row"]["label"].endswith("salvo se nel frattempo la velocità è cambiata; con un'allerta Congelamento "
+    assert righe[-2]["row"]["label"].endswith("salvo se nel frattempo la velocità è cambiata; con un'allerta Congelamento "
                                               "o Δ Temp. in corso il comando riparte alla fine dell'allerta, al posto "
                                               "della velocità memorizzata dall'allerta. Non serve fare nulla.")
+
+    # 6) b39: comando di un'allerta (o del suo ripristino) non eseguito durante una fascia, finche' non viene ripetuto
+    testo = "input_text.vmc_master_comando_non_eseguito"
+    assert righe[-1]["conditions"] == [
+        {"condition": "state", "entity": "sensor.vmc_master_status_ip_interfaccia", "state": "ON-Line"},
+        {"condition": "state", "entity": testo, "state_not": ""},
+        {"condition": "state", "entity": testo, "state_not": "unknown"},
+        {"condition": "state", "entity": testo, "state_not": "unavailable"},
+    ]
+    assert righe[-1]["row"]["label"] == (
+        "La VMC risponde in rete ma la sua velocità non si legge: il comando di un'allerta (o del suo ripristino) dato "
+        "durante la fascia del Calendario non è confermato. Appena la velocità torna leggibile il comando riparte, salvo "
+        "se nel frattempo la velocità è cambiata. Non serve fare nulla.")
 
 
 def test_testi_brevi_e_senza_entita() -> None:

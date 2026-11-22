@@ -1438,8 +1438,9 @@ def test_id_del_package(tmp_path: Path) -> None:
     # b28: timer del countdown di riattivazione; b30: timer del countdown di gruppo;
     # b31: campo di esito della verifica dell'IP (input_text ..._ip_insert_esito);
     # b34: Spia Comando non eseguito del Calendario (input_boolean);
-    # b38: automazioni Registro Comandi e Scelte, Rimando della Scelta e Letture Ravvicinate, 3 input_text del registro
-    assert len(id_package) == 471
+    # b38: automazioni Registro Comandi e Scelte, Rimando della Scelta e Letture Ravvicinate, 3 input_text del registro;
+    # b39: Comando non Eseguito durante una Fascia (input_text)
+    assert len(id_package) == 472
     # nessun id in comune con un'altra VMC
     assert id_package.isdisjoint(_id_del_package_generato("salab"))
     # tag di Home Assistant e unique_id di blocco dei template

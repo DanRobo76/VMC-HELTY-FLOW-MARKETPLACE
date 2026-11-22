@@ -7206,7 +7206,7 @@ actions:
           and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
           and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
           and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-          and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+          and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       and (states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile')
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
@@ -7229,7 +7229,7 @@ actions:
           and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
           and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
           and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-          and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+          and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       and (states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile')
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
@@ -7252,7 +7252,7 @@ actions:
           and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
           and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
           and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-          and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+          and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       and (states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile')
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
@@ -7275,7 +7275,7 @@ actions:
           and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
           and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
           and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-          and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+          and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       and (states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile')
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
@@ -7298,7 +7298,7 @@ actions:
           and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
           and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
           and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-          and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+          and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       and (states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile')
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
@@ -7321,7 +7321,7 @@ actions:
           and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
           and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
           and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-          and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+          and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       and (states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile')
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
@@ -7344,7 +7344,7 @@ actions:
           and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
           and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
           and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-          and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+          and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       and (states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile')
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
@@ -7370,7 +7370,7 @@ actions:
           and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
           and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
           and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-          and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+          and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       and (
           states('input_boolean.vmc_master_spia_velocita_0_un_solo_avvio') == 'off'
@@ -7401,7 +7401,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == 'PdR Vel. 2 se Spia Inquinanti ON' -%}
@@ -7422,7 +7422,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == 'PdR Vel. 3 se Spia Inquinanti ON' -%}
@@ -7443,7 +7443,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == 'PdR Vel. 4 se Spia Inquinanti ON' -%}
@@ -7464,7 +7464,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == 'PdR Notturna se Spia Inquinanti ON' -%}
@@ -7485,7 +7485,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == 'PdR Free-Cooling se Spia Inquinanti ON' -%}
@@ -7506,7 +7506,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == 'PdR Iperventilazione se Spia Inquinanti ON' -%}
@@ -7527,7 +7527,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == 'Rip. Vel. 0 No PdR' -%}
@@ -7548,7 +7548,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       ) ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == 'Rip. Vel. 0 No PdR -> Spia PdR Velocità 0 OFF' -%}
       {{ (
@@ -7569,7 +7569,7 @@ actions:
           and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
           and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
           and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-          and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+          and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       ) ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == 'Rip. Vel. 1 No PdR' -%}
       {{ (
@@ -7597,7 +7597,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile' ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == 'Rip. Vel. 2 No PdR' -%}
@@ -7626,7 +7626,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile' ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == 'Rip. Vel. 3 No PdR' -%}
@@ -7655,7 +7655,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile' ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == 'Rip. Vel. 4 No PdR' -%}
@@ -7684,7 +7684,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile' ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == 'Rip. Notturno No PdR' -%}
@@ -7713,7 +7713,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile' ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == 'Rip. Iperventilazione No PdR' -%}
@@ -7742,7 +7742,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile' ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == 'Rip. Free Cool./Heat. No PdR' -%}
@@ -7771,7 +7771,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile' ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == 'Rip. Vel. 1 No PdR se Spia Inquinanti ON' -%}
@@ -7807,7 +7807,7 @@ actions:
           and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
           and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
           and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-          and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+          and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
         )
         and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile' ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == 'Rip. Vel. 2 No PdR se Spia Inquinanti ON' -%}
@@ -7834,7 +7834,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile' ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == 'Rip. Vel. 3 No PdR  se Spia Inquinanti ON' -%}
@@ -7861,7 +7861,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile' ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == 'Rip. Vel. 4 No PdR se Spia Inquinanti ON' -%}
@@ -7888,7 +7888,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile' ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == 'Rip. Notturno No PdR se Spia Inquinanti ON' -%}
@@ -7915,7 +7915,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile' ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == 'Rip. Iperventilazione No PdR se Spia Inquinanti ON' -%}
@@ -7942,7 +7942,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile' ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == 'Rip. Free Cool./Heat. No PdR se Spia Inquinanti ON' -%}
@@ -7963,7 +7963,7 @@ actions:
             states('input_boolean.vmc_master_spia_velocita_3') == 'off' and
             states('input_boolean.vmc_master_spia_velocita_4') == 'off' and
             states('input_boolean.vmc_master_spia_velocita_notturna') == 'off' and
-            states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off' and
+            states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off' and
             states('input_boolean.vmc_master_spia_velocita_iperventilazione') ==
             'off') and
             states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')!='Non disponibile' ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
@@ -7985,7 +7985,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
         and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile'
       )
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
@@ -8007,7 +8007,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
         and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile'
       )
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
@@ -8029,7 +8029,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
         and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile'
       )
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
@@ -8051,7 +8051,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
         and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile'
       )
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
@@ -8076,7 +8076,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
         and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile'
       ) ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == 'Rip. Free Cooling No TeVsTi ' -%}
@@ -8100,7 +8100,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
         and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile'
       ) ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == 'Rip. Free Heating No TeVsTi e Spia Inquinanti ON' -%}
@@ -8123,7 +8123,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
         and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile'
       ) ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == 'Rip. Free Cooling No TeVsTi e Spia Inquinanti ON' -%}
@@ -8146,7 +8146,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
         and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile'
       ) ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == ' Disattivazione VMC per Inquinanti CO2 e/o VOC, precedentemente Armato ed Attivato' -%}
@@ -8176,7 +8176,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       }}
       {%- elif trigger.id == ' Disattivazione Lim. Δ P. di Rugiada, precedentemente Armato ed Attivato' -%}
@@ -8203,7 +8203,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       }}
       {%- elif trigger.id == ' Disattivazione Lim. Δ P. di Rugiada, precedentemente Armato ed Attivato e Spia Inquinanti ON' -%}
@@ -8230,7 +8230,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       }}
       {%- elif trigger.id == 'Disattivazione VMC ON/OFF, in Funzione della Vel. Free Heating precedentemente Armato' -%}
@@ -8249,7 +8249,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       }}
       {%- elif trigger.id == ' Disattivazione VMC ON/OFF, in Funzione della Vel. Free Heating precedentemente Armato e Spia Inquinanti ON' -%}
@@ -8268,7 +8268,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       }}
       {%- elif trigger.id == 'Disattivazione VMC ON/OFF, in Funzione della Vel. Free Cooling precedentemente Armato' -%}
@@ -8287,7 +8287,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       }}
       {%- elif trigger.id == ' Disattivazione VMC ON/OFF, in Funzione della Vel. Free Cooling precedentemente Armato e Spia Inquinanti ON' -%}
@@ -8306,7 +8306,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       }}
       {%- elif trigger.id == 'Calendario Off tra Fascie e Spia Inquinanti ON' -%}
@@ -8341,7 +8341,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       ) ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == 'Calendario Off tra Fascie' -%}
       {{ (
@@ -8375,7 +8375,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       ) ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == 'Black-Out a Velocità 0' -%}
       {{ (
@@ -8971,6 +8971,12 @@ actions:
         and states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia') == 'off'
         and states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia') == 'off'
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
+      {%- elif trigger.id == 'comando_non_eseguito_ritorno' -%}
+      {{ (
+        states('input_text.vmc_master_comando_non_eseguito') not in ['', 'unknown', 'unavailable']
+        and states('sensor.vmc_master_status_ventola') not in ['unavailable', 'unknown', '']
+        and states('sensor.vmc_master_status_ip_interfaccia') == 'ON-Line'
+      ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == '1° Lunedì On' -%}
       {{ (( ((((states('sensor.vmc_master_status_accensione_vmc_tramite_calendario') == "Lunedi") and (states('sensor.vmc_master_status_spegnimento_vmc_tramite_calendario')== "Lunedi") and (now().strftime('%H:%M') >= strptime(states('input_datetime.vmc_master_accensione_lunedi'), '%H:%M:%S').strftime('%H:%M') and now().strftime('%H:%M') < strptime(states('input_datetime.vmc_master_spegnimento_lunedi'), '%H:%M:%S').strftime('%H:%M')))==true) and (states('sensor.vmc_master_status_ip_interfaccia')=="ON-Line") ) ) and (states('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia')== 'off' and states('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia')== 'off') and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')!='Non disponibile'and states('input_boolean.vmc_master_spia_calendario_lunedi_1')=='off' ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == '1° Lunedì Off' -%}
@@ -9139,7 +9145,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 3 or states('input_boolean.vmc_master_spia_co2_o_voc') == 'on') }}
       {%- elif trigger.id == 'Inquinanti con Spia PdR Velocità 0 -> Spia PdR Velocità 0 OFF' -%}
@@ -9160,7 +9166,7 @@ actions:
           and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
           and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
           and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-          and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+          and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 3) }}
       {%- elif trigger.id == 'inquinanti_co2_voc_off' -%}
@@ -9193,7 +9199,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       ) ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 3) }}
       {%- elif trigger.id == 'spia_velocita_0_inquinanti_co2_voc' -%}
       {{ (
@@ -9214,7 +9220,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 3) }}
       {%- elif trigger.id == 'spia_velocita_1_inquinanti_co2_voc' -%}
@@ -9234,7 +9240,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 3) }}
       {%- elif trigger.id == 'spia_velocita_2_inquinanti_co2_voc' -%}
@@ -9254,7 +9260,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 3) }}
       {%- elif trigger.id == 'spia_velocita_3_inquinanti_co2_voc' -%}
@@ -9274,7 +9280,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 3) }}
       {%- elif trigger.id == 'spia_velocita_4_inquinanti_co2_voc' -%}
@@ -9294,7 +9300,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 3) }}
       {%- elif trigger.id == 'spia_velocita_notturna_inquinanti_co2_voc' -%}
@@ -9314,7 +9320,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 3) }}
       {%- elif trigger.id == 'spia_velocita_iperventilazione_inquinanti_co2_voc' -%}
@@ -9334,7 +9340,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 3) }}
       {%- elif trigger.id == 'spia_velocita_freecooling_inquinanti_co2_voc' -%}
@@ -9354,7 +9360,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 3) }}
       {%- elif trigger.id == 'Congelamento ON' -%}
@@ -9376,7 +9382,7 @@ actions:
       and states('input_boolean.vmc_master_spia_velocita_3') == 'off'
       and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
       and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
-      and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
+      and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 2) }}
       {%- elif trigger.id == 'Congelamento OFF' -%}
@@ -9402,7 +9408,7 @@ actions:
           states('input_boolean.vmc_master_spia_velocita_4') == 'off' and
           states('input_boolean.vmc_master_spia_velocita_notturna') == 'off' and
           states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off' and
-          states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+          states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
         ) ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 2) }}
       {%- elif trigger.id == 'spia_velocita_0_congelamento' -%}
       {{ (
@@ -9425,7 +9431,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_1_congelamento') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_2_congelamento') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_3_congelamento') == 'off'
@@ -9455,7 +9461,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 2) }}
       {%- elif trigger.id == 'spia_velocita_2_congelamento' -%}
       {{ (
@@ -9478,7 +9484,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 2) }}
       {%- elif trigger.id == 'spia_velocita_3_congelamento' -%}
       {{ (
@@ -9501,7 +9507,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 2) }}
       {%- elif trigger.id == 'spia_velocita_4_congelamento' -%}
       {{ (
@@ -9524,7 +9530,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 2) }}
       {%- elif trigger.id == 'spia_velocita_iperventilazione_congelamento' -%}
       {{ (
@@ -9547,7 +9553,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 2) }}
       {%- elif trigger.id == 'spia_velocita_notturna_congelamento' -%}
       {{ (
@@ -9570,7 +9576,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 2) }}
       {%- elif trigger.id == 'spia_velocita_Free Cooling_congelamento' -%}
       {{ (
@@ -9593,7 +9599,7 @@ actions:
         and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
         and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 2) }}
       {%- elif trigger.id == 'Cambio Velocità quanto Spia FreeHeating o FreeCooling è ON - Inquinanti OFF' -%}
       {{ (
@@ -9622,7 +9628,7 @@ actions:
             states('input_boolean.vmc_master_spia_velocita_4') == 'off' and
             states('input_boolean.vmc_master_spia_velocita_notturna') == 'off' and
             states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off' and
-            states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+            states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
         )
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == 'PdR Vel. 0 con Spia FreeCooling On e Inquinanti Vel. 1 ON  -> Imposta Velocità 1' -%}
@@ -9650,7 +9656,7 @@ actions:
               states('input_boolean.vmc_master_spia_velocita_4') == 'off' and
               states('input_boolean.vmc_master_spia_velocita_notturna') == 'off' and
               states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off' and
-              states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+              states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       ) ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == 'PdR Spia Free Heating OFF e Spia FreeCooling ON -> Imposta Velocità 0' -%}
       {{ ( (
@@ -9682,7 +9688,7 @@ actions:
           and states('input_boolean.vmc_master_spia_velocita_4') == 'off'
           and states('input_boolean.vmc_master_spia_velocita_notturna') == 'off'
           and states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
-          and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+          and states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
           and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') != 'Non disponibile'
       ) ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == 'PdR Spia Free Heating OFF e Spia FreeCooling ON -> Imposta Velocità 1 se Spia Inquinanti ON' -%}
@@ -9712,7 +9718,7 @@ actions:
       states('input_boolean.vmc_master_spia_velocita_4')=='off' and
       states('input_boolean.vmc_master_spia_velocita_notturna')=='off' and
       states('input_boolean.vmc_master_spia_velocita_freecooling')=='off' and
-      states('input_boolean.vmc_master_spia_velocita_iperventilazione')=='off'
+      states('input_boolean.vmc_master_spia_velocita_iperventilazione')=='off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4 or (states('input_boolean.vmc_master_spia_velocita_0_un_solo_avvio') == 'on' or states('input_boolean.vmc_master_spia_velocita_1_un_solo_avvio') == 'on' or states('input_boolean.vmc_master_spia_velocita_2_un_solo_avvio') == 'on' or states('input_boolean.vmc_master_spia_velocita_3_un_solo_avvio') == 'on' or states('input_boolean.vmc_master_spia_velocita_4_un_solo_avvio') == 'on' or states('input_boolean.vmc_master_spia_velocita_notturna_un_solo_avvio') == 'on' or states('input_boolean.vmc_master_spia_velocita_iperventilazione_un_solo_avvio') == 'on' or states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio') == 'on')) }}
       {%- elif trigger.id == 'PdR Spia Free Heating ON e Spia FreeCooling OFF -> Imposta Velocità 0' -%}
       {{ (
@@ -9743,7 +9749,7 @@ actions:
       states('input_boolean.vmc_master_spia_velocita_4')=='off' and
       states('input_boolean.vmc_master_spia_velocita_notturna')=='off' and
       states('input_boolean.vmc_master_spia_velocita_freecooling')=='off' and
-      states('input_boolean.vmc_master_spia_velocita_iperventilazione')=='off'
+      states('input_boolean.vmc_master_spia_velocita_iperventilazione')=='off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == 'PdR Spia Free Heating ON e Spia FreeCooling OFF -> Imposta Velocità 1 se Spia Inquinanti ON' -%}
       {{ (
@@ -9772,7 +9778,7 @@ actions:
       states('input_boolean.vmc_master_spia_velocita_4') == 'off' and
       states('input_boolean.vmc_master_spia_velocita_notturna') == 'off' and
       states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off' and
-      states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+      states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4 or (states('input_boolean.vmc_master_spia_velocita_0_un_solo_avvio') == 'on' or states('input_boolean.vmc_master_spia_velocita_1_un_solo_avvio') == 'on' or states('input_boolean.vmc_master_spia_velocita_2_un_solo_avvio') == 'on' or states('input_boolean.vmc_master_spia_velocita_3_un_solo_avvio') == 'on' or states('input_boolean.vmc_master_spia_velocita_4_un_solo_avvio') == 'on' or states('input_boolean.vmc_master_spia_velocita_notturna_un_solo_avvio') == 'on' or states('input_boolean.vmc_master_spia_velocita_iperventilazione_un_solo_avvio') == 'on' or states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio') == 'on')) }}
       {%- elif trigger.id == 'PdR Vel. 0 con Spia FreeHeating On -> Imposta Velocità 0' -%}
       {{ (
@@ -9798,7 +9804,7 @@ actions:
         states('input_boolean.vmc_master_spia_velocita_4') == 'off' and
         states('input_boolean.vmc_master_spia_velocita_notturna') == 'off' and
         states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off' and
-        states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == 'PdR Vel. 0 con Spia FreeCooling On -> Imposta Velocità 0' -%}
       {{ (
@@ -9824,7 +9830,7 @@ actions:
         states('input_boolean.vmc_master_spia_velocita_4') == 'off' and
         states('input_boolean.vmc_master_spia_velocita_notturna') == 'off' and
         states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off' and
-        states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == 'PdR Vel. 0 con Spia FreeHeating On e Inquinanti Vel. 1 ON  -> Imposta Velocità 1' -%}
       {{ (
@@ -9850,7 +9856,7 @@ actions:
         states('input_boolean.vmc_master_spia_velocita_4') == 'off' and
         states('input_boolean.vmc_master_spia_velocita_notturna') == 'off' and
         states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off' and
-        states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 4) }}
       {%- elif trigger.id == 'Entità Temperatura Esterna Errore [Interfaccia]' -%}
       {{
@@ -10104,7 +10110,7 @@ actions:
       states('input_boolean.vmc_master_spia_velocita_4') == 'off' and
       states('input_boolean.vmc_master_spia_velocita_notturna') == 'off' and
       states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off' and
-      states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and
+      states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off' and
 
       states('input_boolean.vmc_master_spia_calendario_lunedi_1') == 'off' and
       states('input_boolean.vmc_master_spia_calendario_lunedi_2') == 'off' and
@@ -10179,7 +10185,7 @@ actions:
           states('input_boolean.vmc_master_spia_velocita_4') == 'off' and
           states('input_boolean.vmc_master_spia_velocita_notturna') == 'off' and
           states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off' and
-          states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+          states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
         ) and
 
         (
@@ -10224,7 +10230,7 @@ actions:
           states('input_boolean.vmc_master_spia_velocita_4') == 'off' and
           states('input_boolean.vmc_master_spia_velocita_notturna') == 'off' and
           states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and
-          states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off'
+          states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
         ) and
         (
           states('input_boolean.vmc_master_spia_calendario_lunedi_1') == 'off' and
@@ -10304,7 +10310,7 @@ actions:
           states('input_boolean.vmc_master_spia_velocita_4') == 'off' and
           states('input_boolean.vmc_master_spia_velocita_notturna') == 'off' and
           states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off' and
-          states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+          states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
         ) and
 
         (
@@ -10384,7 +10390,7 @@ actions:
           states('input_boolean.vmc_master_spia_velocita_4') == 'off' and
           states('input_boolean.vmc_master_spia_velocita_notturna') == 'off' and
           states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off' and
-          states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+          states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
         ) and
 
         (
@@ -10462,7 +10468,7 @@ actions:
           states('input_boolean.vmc_master_spia_velocita_4') == 'off' and
           states('input_boolean.vmc_master_spia_velocita_notturna') == 'off' and
           states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off' and
-          states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+          states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
         ) and
 
         (
@@ -10539,7 +10545,7 @@ actions:
           states('input_boolean.vmc_master_spia_velocita_4') == 'off' and
           states('input_boolean.vmc_master_spia_velocita_notturna') == 'off' and
           states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off' and
-          states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+          states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
         ) and
 
         (
@@ -10617,7 +10623,7 @@ actions:
           states('input_boolean.vmc_master_spia_velocita_4') == 'off' and
           states('input_boolean.vmc_master_spia_velocita_notturna') == 'off' and
           states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off' and
-          states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+          states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
         ) and
 
         (
@@ -10694,7 +10700,7 @@ actions:
           states('input_boolean.vmc_master_spia_velocita_4') == 'off' and
           states('input_boolean.vmc_master_spia_velocita_notturna') == 'off' and
           states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off' and
-          states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+          states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
         ) and
 
         (
@@ -10770,7 +10776,7 @@ actions:
           states('input_boolean.vmc_master_spia_velocita_4') == 'off' and
           states('input_boolean.vmc_master_spia_velocita_notturna') == 'off' and
           states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off' and
-          states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+          states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
         ) and
 
         (
@@ -10849,7 +10855,7 @@ actions:
           states('input_boolean.vmc_master_spia_velocita_4') == 'off' and
           states('input_boolean.vmc_master_spia_velocita_notturna') == 'off' and
           states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off' and
-          states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+          states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
         ) and
 
         (
@@ -10892,7 +10898,7 @@ actions:
       states('input_boolean.vmc_master_spia_velocita_4') == 'off' and
       states('input_boolean.vmc_master_spia_velocita_notturna') == 'off' and
       states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off' and
-      states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and
+      states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off' and
 
       states('input_boolean.vmc_master_spia_velocita_0_congelamento') == 'off' and
       states('input_boolean.vmc_master_spia_velocita_1_congelamento') == 'off' and
@@ -10929,7 +10935,7 @@ actions:
       states('input_boolean.vmc_master_spia_velocita_4') == 'off' and
       states('input_boolean.vmc_master_spia_velocita_notturna') == 'off' and
       states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off' and
-      states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and
+      states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off' and
 
       states('input_boolean.vmc_master_spia_velocita_0_congelamento') == 'off' and
       states('input_boolean.vmc_master_spia_velocita_1_congelamento') == 'off' and
@@ -10967,7 +10973,7 @@ actions:
         states('input_boolean.vmc_master_spia_velocita_4') == 'off' and
         states('input_boolean.vmc_master_spia_velocita_notturna') == 'off' and
         states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off' and
-        states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 2) }}
       {%- elif trigger.id == 'spia_velocita_1_delta_temp' -%}
@@ -10998,7 +11004,7 @@ actions:
         states('input_boolean.vmc_master_spia_velocita_4') == 'off' and
         states('input_boolean.vmc_master_spia_velocita_notturna') == 'off' and
         states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off' and
-        states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 2) }}
       {%- elif trigger.id == 'spia_velocita_2_delta_temp' -%}
@@ -11029,7 +11035,7 @@ actions:
         states('input_boolean.vmc_master_spia_velocita_4') == 'off' and
         states('input_boolean.vmc_master_spia_velocita_notturna') == 'off' and
         states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off' and
-        states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 2) }}
       {%- elif trigger.id == 'spia_velocita_3_delta_temp' -%}
@@ -11060,7 +11066,7 @@ actions:
         states('input_boolean.vmc_master_spia_velocita_4') == 'off' and
         states('input_boolean.vmc_master_spia_velocita_notturna') == 'off' and
         states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off' and
-        states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 2) }}
       {%- elif trigger.id == 'spia_velocita_4_delta_temp' -%}
@@ -11091,7 +11097,7 @@ actions:
         states('input_boolean.vmc_master_spia_velocita_4') == 'off' and
         states('input_boolean.vmc_master_spia_velocita_notturna') == 'off' and
         states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off' and
-        states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 2) }}
       {%- elif trigger.id == 'spia_velocita_notturna_delta_temp' -%}
@@ -11122,7 +11128,7 @@ actions:
         states('input_boolean.vmc_master_spia_velocita_4') == 'off' and
         states('input_boolean.vmc_master_spia_velocita_notturna') == 'off' and
         states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off' and
-        states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 2) }}
       {%- elif trigger.id == 'spia_velocita_iperventilazione_delta_temp' -%}
@@ -11153,7 +11159,7 @@ actions:
         states('input_boolean.vmc_master_spia_velocita_4') == 'off' and
         states('input_boolean.vmc_master_spia_velocita_notturna') == 'off' and
         states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off' and
-        states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 2) }}
       {%- elif trigger.id == 'spia_velocita_Free Cooling_delta_temp' -%}
@@ -11184,7 +11190,7 @@ actions:
         states('input_boolean.vmc_master_spia_velocita_4') == 'off' and
         states('input_boolean.vmc_master_spia_velocita_notturna') == 'off' and
         states('input_boolean.vmc_master_spia_velocita_freecooling') == 'off' and
-        states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off'
+        states('input_boolean.vmc_master_spia_velocita_iperventilazione') == 'off' and states('input_boolean.vmc_master_spia_calendario_black_out') == 'off'
       )
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 2) }}
       {%- else -%}

@@ -181,7 +181,12 @@ FRASI_17 = [
     ("la Fascia riparte, salvo se nel frattempo la Velocità è cambiata (per esempio con il Telecomando); lo stesso vale "
      "per la Velocità 0 di fine Fascia e per il comando dato spegnendo l'interruttore del Calendario durante una Fascia "
      "(Velocità 0, o Velocità 1 con Inquinanti): appena la velocità torna leggibile il comando viene ripetuto, anche "
-     "con l'interruttore del Calendario spento, salvo se nel frattempo la Velocità è cambiata; con un'allerta "
+     "con l'interruttore del Calendario spento, salvo se nel frattempo la Velocità è cambiata; "
+     "lo stesso vale per il comando di un'allerta (o del suo ripristino) dato durante una Fascia: dopo 32 Secondi "
+     "la ripetizione si ferma e, appena la velocità torna leggibile, il comando viene ripetuto, salvo se nel "
+     "frattempo la Velocità è cambiata (se anche il comando del Calendario non è stato eseguito, vale il più "
+     "recente); "
+     "con un'allerta "
      "Congelamento o Δ Temp. in corso il comando del Calendario aspetta la fine dell'allerta: a fine allerta, appena la "
      "velocità è leggibile, la Fascia riparte con la sua Velocità (o si ripete la Velocità 0, o 1, in sospeso) al posto "
      "della Velocità memorizzata dall'allerta, salvo se si sceglie un'altra Velocità dopo la fine dell'allerta; se "
@@ -447,9 +452,9 @@ def test_descrizione_del_countdown_attese() -> None:
 @pytest.mark.parametrize("nome", ["README.md", ".github/README.md"])
 def test_readme_black_out_a_fine_fascia(nome: str) -> None:
     """b35 C1-1: se la corrente torna a Fascia finita la VMC si arresta (IT ed EN); b36: una velocità scelta prima del
-    ritorno della Fascia resta."""
+    ritorno della Fascia resta; b39: le allerte in corso ripartono dopo la Fascia."""
     testo = (RADICE / nome).read_text(encoding="utf-8")
     assert testo.count("la VMC riparte con la velocità della fascia in corso (se nel frattempo la fascia è finita, si "
-                       "arresta; una velocità scelta prima resta).</sub>") == 1
+                       "arresta; una velocità scelta prima resta), poi ripartono le allerte in corso.</sub>") == 1
     assert testo.count("the unit restarts at the speed of the current slot (if the slot has ended in the meantime, it "
-                       "stops; a speed picked before is kept).</sub>") == 1
+                       "stops; a speed picked before is kept), then the alerts in progress resume.</sub>") == 1

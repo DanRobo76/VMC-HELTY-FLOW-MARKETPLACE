@@ -227,6 +227,8 @@ VELOCITA = Dimensione(
                 (r"spia_umidita_mantenuta_velocita_0", "U0MANT"),
                 (r"notifica_velocita_(?:0|diversa_da_0)", "NOTIFICA")],
     regole=[r"(?<=shell_command\.vmc_master_)(velocita_[0-4]|notturna|iperventilazione|freecooling)(?![a-z0-9_])",
+            # b39: il valore del Comando non eseguito «<velocità>|<istante>» (diviso a «{{», resta «<velocità>|»)
+            r"^(Velocità [0-4]|Notturna|Iperventilazione|Free Cooling)(?=\|$)",
             r"(?<=')(Velocità [0-4]|Notturna|Iperventilazione|Free Cooling|Free Cool\./Heat\.)(?=')",
             r"(?<=: )(Velocità [0-4]|Notturna|Iperventilazione|Free Cool\./Heat\.)$",
             r"(?<=velocita_)(0|1|2|3|4|notturna|iperventilazione|freecooling|free_cooling)(?![a-z0-9])",
@@ -594,10 +596,12 @@ def _gemelli_velocita() -> dict[str, tuple[int, int, int, int]]:
 #   il Δ comanda la Velocità 1; fine Umidità (spia_umidita_off); script delle Fasce: Fascia a V0 con Inquinanti -> V1 e
 #   ritorno a 0 (A25, A28).
 CLASSE_A = {
-    "[ramo d'azione] PdR Vel. X -> Imposta Velocità 0": 11,
-    "[ramo d'azione] PdR Vel. X se Spia Inquinanti ON": 16,
+    # b39: +2/+2/+2/+9 nelle 4 famiglie qui sotto, il passo «Comando non eseguito» dopo i cicli che esistono solo nelle
+    # copie speciali (V0/V1/Free): tolti i 135 passi i conteggi tornano quelli della b38 (11, 16, 20, 59)
+    "[ramo d'azione] PdR Vel. X -> Imposta Velocità 0": 13,
+    "[ramo d'azione] PdR Vel. X se Spia Inquinanti ON": 18,
     "[trigger] Rip. Vel. X No PdR": 2,
-    "[ramo d'azione] Rip. Vel. X No PdR": 20,
+    "[ramo d'azione] Rip. Vel. X No PdR": 22,
     "[trigger] Rip. Vel. X No PdR se Spia Inquinanti ON": 2,
     # b36 (b36-pdr2): 18 -> 21, la protezione della scelta dell'utente nei 3 casi con comando del ramo Free (dentro il choose)
     "[ramo d'azione] Rip. Vel. X No PdR se Spia Inquinanti ON": 21,
@@ -605,7 +609,7 @@ CLASSE_A = {
     "[ramo d'azione] Black-Out Velocità X [ON]": 2,
     "[ramo d'azione] Black-Out Velocità X [OFF, Ripristino]": 18,
     "[trigger] Spia Velocità X CO2/VOC": 1,
-    "[ramo d'azione] Spia Velocità X CO2/VOC": 59,
+    "[ramo d'azione] Spia Velocità X CO2/VOC": 68,
     "[trigger] Spia Velocità X Congelamento": 1,
     "[trigger] Umidità ON Vel. X": 2,
     "[ramo d'azione] Umidità ON Vel. X": 22,
@@ -625,7 +629,9 @@ CLASSE_A = {
 # «TeVsTi Free-Cooling e Spia Inquinanti ON» con la spia «per programmazione» Free Cooling in più (B1: la spia viene
 # accesa nello stesso giro del ciclo, nessun effetto pratico; da decidere se allineare).
 CLASSE_B = {
-    "[ramo d'azione] TeVsTi Free-X e Spia Inquinanti ON": (1, 1),
+    # b39: 1 -> 2 pezzi, il passo dopo il ciclo che memorizza il Comando non eseguito ripete l'«until» (con la stessa spia
+    # «per programmazione» in più della copia Free Cooling): stessa differenza B1, nessuna nuova
+    "[ramo d'azione] TeVsTi Free-X e Spia Inquinanti ON": (1, 2),
     # b36 (b36-umi, Foglio A21): nella protezione della scelta a fine Umidita' ogni velocita' memorizzata (2, 3, 4,
     # Notturna, Iperventilazione) esclude solo se stessa (la Velocita' 1 era gia' in classe A): differenza voluta
     "[opzioni annidate] automazione «spia_umidita_off»: «Velocità 0»": (5, 5),

@@ -562,7 +562,8 @@ async def test_c4_5_vmc_on_line_ramo_di_prima(hass: HomeAssistant) -> None:
 async def test_c4_5_rami_validi_per_home_assistant(hass: HomeAssistant) -> None:
     for ramo in _rami_interruttore_umidita():
         cv.SCRIPT_SCHEMA(ramo["sequence"])
-    assert len(next(b for b in _automazione()["actions"] if "choose" in b)["choose"]) == 197  # b36: + ramo «Black-Out Scelta Vel. 1»
+    # b36: + ramo «Black-Out Scelta Vel. 1»; b39: + ramo «Comando non eseguito» (ripetuto al ritorno della lettura)
+    assert len(next(b for b in _automazione()["actions"] if "choose" in b)["choose"]) == 198
 
 
 # ------------------------------------------------------------------------------------------------ C4-4 ovunque

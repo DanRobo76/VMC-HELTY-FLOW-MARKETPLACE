@@ -51,7 +51,7 @@ def _vera(c: dict, stati: dict) -> bool:
     if c["condition"] == "and":
         return all(_vera(x, stati) for x in c["conditions"])
     assert c["condition"] == "state"
-    valore = stati.get(c["entity"])
+    valore = stati.get(c["entity"], "unavailable")  # b39: come il frontend, un'entità senza stato vale «unavailable»
     if "state_not" in c:
         esclusi = c["state_not"] if isinstance(c["state_not"], list) else [c["state_not"]]
         return valore not in esclusi
