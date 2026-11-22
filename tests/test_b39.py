@@ -538,3 +538,30 @@ async def test_ritorno_della_fascia_con_congelamento_o_delta(hass: HomeAssistant
     assert chiamati == (["vmc_master_calendario_fascia_2_on"] if fascia_riparte else [])
     assert _stato(hass, CAL_BLACK_OUT) == "off"
     assert _stato(hass, CAL_NON_ESEGUITO) == ("off" if fascia_riparte else "on")
+
+
+# ------------------------------------------------------------------ fine Δ Temp. con il comando dell'allerta non eseguito
+async def test_fine_delta_velocita_vecchia_non_e_una_scelta(hass: HomeAssistant, freezer) -> None:
+    """Simulazione OF «DON M E» (porta 5001 muta in Fascia, Δ Temp. finito durante l'interruzione): la Velocità 1 del Δ
+    non è arrivata, la velocità letta è ancora quella di prima e a fine Δ la regola D6 la prendeva per una scelta
+    dell'utente (nessun ripristino, nessun ciclo): restava il Comando non eseguito della Velocità 1, rimandato al ritorno
+    della lettura. Ora con un Comando non eseguito e la velocità non cambiata da allora non è una scelta (ripristino, il
+    cui ciclo annulla il comando vecchio); una velocità cambiata dopo resta una scelta."""
+    (ramo,) = [r for b in _automazione()["actions"] if isinstance(b, dict) for r in b.get("choose", [])
+               if r["conditions"][0].get("id") == ["delta_temp_OFF"]]
+    (passo,) = [p for p in ramo["sequence"] if "if" in p and "vel_fine_delta in" in str(p["if"])]
+    cond = Template(passo["if"][0]["value_template"], hass)
+
+    def scelta(vel_fine: str) -> bool:
+        return result_as_boolean(cond.async_render({"vel_fine_delta": vel_fine}))
+
+    hass.states.async_set(LETTURA, "Velocità 2")
+    hass.states.async_set(NON_ESEGUITO, "")
+    assert scelta("Velocità 2") is True  # nessun comando in sospeso: D6 come nella b38
+    freezer.tick(timedelta(seconds=35))
+    hass.states.async_set(NON_ESEGUITO, f"Velocità 1|{dt_util.as_timestamp(dt_util.utcnow()):.1f}")
+    assert scelta("Velocità 2") is False  # velocità vecchia: non è una scelta
+    freezer.tick(timedelta(seconds=5))
+    hass.states.async_set(LETTURA, "Velocità 3")  # scelta dell'utente dopo il comando non eseguito
+    assert scelta("Velocità 3") is True
+    assert scelta("Velocità 1") is False  # la Velocità 1 non è mai una scelta (D6)

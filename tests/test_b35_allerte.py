@@ -250,9 +250,12 @@ def test_c3_1_protezione_nel_ramo_di_fine_delta() -> None:
     assert set(passi[1]["variables"]) == {"vel_fine_delta", "memoria_inquinanti_fine_delta"}
     protezione = passi[2]
     assert "[Foglio Logiche D6]" in protezione["alias"]
-    assert protezione["if"][0]["value_template"] == (
+    # b39: esclusa la velocità rimasta quella di prima di un comando non eseguito in Fascia (test_b39)
+    assert " ".join(protezione["if"][0]["value_template"].split()).startswith(
+        "{%- set non_eseguito = states('input_text.vmc_master_comando_non_eseguito') -%} "
+        "{%- set vel = states.sensor.vmc_master_status_ventola_lettura_codice_interpretato -%} "
         "{{ vel_fine_delta in ['Velocità 0', 'Velocità 2', 'Velocità 3', 'Velocità 4', 'Notturna', 'Iperventilazione', "
-        "'Free Cooling'] }}")
+        "'Free Cooling'] and not (")
     inquinanti, memorie, fermo = protezione["then"]
     assert set(memorie["target"]["entity_id"]) == {SPIA_DELTA, *MEMORIE_DELTA}
     assert fermo == {"stop": "Velocità scelta dall'utente durante l'allerta Δ Temp. mantenuta"}

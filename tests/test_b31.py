@@ -136,7 +136,7 @@ def test_righe_nuove_sotto_il_ripristino() -> None:
     assert righe[-1]["row"]["label"] == (
         "La VMC risponde in rete ma la sua velocità non si legge: il comando di un'allerta (o del suo ripristino) dato "
         "durante la fascia del Calendario non è confermato. Appena la velocità torna leggibile il comando riparte, salvo "
-        "se nel frattempo la velocità è cambiata. Non serve fare nulla.")
+        "se nel frattempo la velocità è cambiata o l'allerta è finita. Non serve fare nulla.")
 
 
 def test_testi_brevi_e_senza_entita() -> None:

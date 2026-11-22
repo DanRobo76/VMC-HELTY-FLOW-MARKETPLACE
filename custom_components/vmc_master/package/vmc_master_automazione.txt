@@ -252,7 +252,8 @@ description: >-
   cambiata; lo stesso vale per il comando di un'allerta (o del suo ripristino)
   dato durante una Fascia: dopo 32 Secondi la ripetizione si ferma e, appena la
   velocità torna leggibile, il comando viene ripetuto, salvo se nel frattempo la
-  Velocità è cambiata (se anche il comando del Calendario non è stato eseguito,
+  Velocità è cambiata o l'allerta è finita (se anche il comando
+  del Calendario non è stato eseguito,
   prima riparte la Fascia); con un'allerta Congelamento o Δ Temp. in corso il comando del
   Calendario aspetta la fine dell'allerta: a fine allerta, appena la velocità è
   leggibile, la Fascia riparte con la sua Velocità (o si ripete la Velocità 0, o
@@ -39829,10 +39830,17 @@ actions:
               durante l'allerta la VMC è tenuta a Velocità 1, quindi a fine allerta una velocità valida diversa dalla
               Velocità 1 è una scelta dell'utente (la Velocità 1 scelta non cambia la memoria e si ripristina la
               velocità memorizzata); dopo un Congelamento è la velocità scelta durante il Congelamento, rimessa dal suo
-              ripristino [Foglio Logiche C6]
+              ripristino [Foglio Logiche C6]. Non è una scelta la velocità rimasta quella di prima di un comando non
+              eseguito durante una Fascia (Comando non eseguito memorizzato e velocità non cambiata da allora: la VMC non
+              ha ricevuto la Velocità 1 dell'allerta) -> ripristino della velocità memorizzata, che annulla quel comando
             if:
               - condition: template
-                value_template: "{{ vel_fine_delta in ['Velocità 0', 'Velocità 2', 'Velocità 3', 'Velocità 4', 'Notturna', 'Iperventilazione', 'Free Cooling'] }}"
+                value_template: >-
+                  {%- set non_eseguito = states('input_text.vmc_master_comando_non_eseguito') -%}
+                  {%- set vel = states.sensor.vmc_master_status_ventola_lettura_codice_interpretato -%}
+                  {{ vel_fine_delta in ['Velocità 0', 'Velocità 2', 'Velocità 3', 'Velocità 4', 'Notturna', 'Iperventilazione', 'Free Cooling']
+                     and not (non_eseguito not in ['', 'unknown', 'unavailable'] and '|' in non_eseguito and vel is not none
+                              and as_timestamp(vel.last_changed, 0) <= (non_eseguito.split('|')[1] | float(0))) }}
             then:
               - alias: >-
                   Inquinanti in corso -> la velocità scelta diventa la memoria degli Inquinanti, come nelle opzioni del
