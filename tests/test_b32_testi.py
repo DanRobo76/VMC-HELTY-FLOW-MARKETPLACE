@@ -42,7 +42,9 @@ def test_black_out_velocita_salvata_e_fascia() -> None:
     """A4-4, A4-7: la scheda ridotta e le note dicono anche la velocita' dell'allerta in corso e la fascia finita."""
     scheda = _scheda()
     assert "torna alla velocità salvata (o a quella memorizzata dall'allerta in corso). Non serve fare nulla." in scheda
-    assert "riparte con la velocità della fascia (se nel frattempo la fascia è finita, si arresta). Non serve" in scheda
+    # b39: con Congelamento/Δ in corso la Fascia riparte alla fine dell'allerta
+    assert ("riparte con la velocità della fascia (se nel frattempo la fascia è finita, si arresta; con un'allerta "
+            "Congelamento o Δ Temp. in corso riparte alla fine dell'allerta). Non serve") in scheda
     piatto = _piatto(scheda)
     assert "che la VMC riprende al ritorno della corrente (o la velocità memorizzata dall'allerta in corso)." in piatto
     # b36 (C1-2): i 32 secondi si contano da quando la VMC e' ON-Line con la velocita' di nuovo leggibile

@@ -181,13 +181,23 @@ FRASI_17 = [
     ("la Fascia riparte, salvo se nel frattempo la Velocità è cambiata (per esempio con il Telecomando); lo stesso vale "
      "per la Velocità 0 di fine Fascia e per il comando dato spegnendo l'interruttore del Calendario durante una Fascia "
      "(Velocità 0, o Velocità 1 con Inquinanti): appena la velocità torna leggibile il comando viene ripetuto, anche "
-     "con l'interruttore del Calendario spento, salvo se nel frattempo la Velocità è cambiata; con un'allerta "
+     "con l'interruttore del Calendario spento, salvo se nel frattempo la Velocità è cambiata; "
+     "lo stesso vale per il comando di un'allerta (o del suo ripristino) dato durante una Fascia: dopo 32 Secondi "
+     "la ripetizione si ferma e, appena la velocità torna leggibile, il comando viene ripetuto, salvo se nel "
+     "frattempo la Velocità è cambiata o l'allerta è finita (se anche il comando del Calendario "
+     "non è stato eseguito, prima riparte la Fascia); "
+     "con un'allerta "
      "Congelamento o Δ Temp. in corso il comando del Calendario aspetta la fine dell'allerta: a fine allerta, appena la "
      "velocità è leggibile, la Fascia riparte con la sua Velocità (o si ripete la Velocità 0, o 1, in sospeso) al posto "
      "della Velocità memorizzata dall'allerta, salvo se si sceglie un'altra Velocità dopo la fine dell'allerta; se "
      "invece la corrente manca proprio mentre la Fascia finisce o mentre si spegne l'interruttore del Calendario, al "
      "ritorno della corrente la VMC si arresta dopo 32 Secondi (o va a Velocità 1, se l'interruttore è stato spento "
      "con Inquinanti presenti);", 1),
+    # b39: Black-Out durante una Fascia con Congelamento o Δ Temp. in corso: la Fascia riparte alla fine dell'allerta
+    ("come fuori dalle Fasce aspettano il ripristino dopo il Black-Out (con un'allerta Congelamento o Δ Temp. in corso "
+     "invece la Fascia riparte alla fine dell'allerta, al posto della Velocità memorizzata dall'allerta);", 1),
+    ("le allerte in corso aspettano il ritorno della Fascia e poi ripartono dalla sua Velocità (con un'allerta "
+     "Congelamento o Δ Temp. in corso invece la Fascia riparte alla fine dell'allerta). All'uscita dalla Fascia", 1),
     ("si ferma: passa a Velocità 1 e si ferma quando gli Inquinanti rientrano; il comando dato spegnendo "
      "l'interruttore del Calendario viene ripetuto finché la VMC non lo esegue, anche se nel frattempo la sua velocità "
      "non si legge o la VMC va OFF-Line (vedere Black-Out);", 1),
@@ -447,9 +457,11 @@ def test_descrizione_del_countdown_attese() -> None:
 @pytest.mark.parametrize("nome", ["README.md", ".github/README.md"])
 def test_readme_black_out_a_fine_fascia(nome: str) -> None:
     """b35 C1-1: se la corrente torna a Fascia finita la VMC si arresta (IT ed EN); b36: una velocità scelta prima del
-    ritorno della Fascia resta."""
+    ritorno della Fascia resta; b39: le allerte in corso ripartono dopo la Fascia."""
     testo = (RADICE / nome).read_text(encoding="utf-8")
     assert testo.count("la VMC riparte con la velocità della fascia in corso (se nel frattempo la fascia è finita, si "
-                       "arresta; una velocità scelta prima resta).</sub>") == 1
+                       "arresta; una velocità scelta prima resta), poi ripartono le allerte in corso (con un'allerta "
+                       "Congelamento o Δ Temp. in corso la fascia riparte alla fine dell'allerta).</sub>") == 1
     assert testo.count("the unit restarts at the speed of the current slot (if the slot has ended in the meantime, it "
-                       "stops; a speed picked before is kept).</sub>") == 1
+                       "stops; a speed picked before is kept), then the alerts in progress resume (with a freezing or "
+                       "Δ Temp. alert in progress the slot restarts when the alert ends).</sub>") == 1

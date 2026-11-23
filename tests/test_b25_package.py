@@ -59,7 +59,9 @@ def _copie_countdown() -> tuple[Counter, Counter]:
 
 def test_verifica_al_riavvio_sempre_nella_stessa_forma():
     con_fase = [_norm(str(t["value_template"])) for t in _trigger_template() if "fase_riallineamento" in str(t["value_template"])]
-    assert len(con_fase) == 143  # b34: ritorno della VMC dopo un comando della Fascia non eseguito; b36: Spia Avvisi On
+    # b34: ritorno della VMC dopo un comando della Fascia non eseguito; b36: Spia Avvisi On; b39: ritorno della lettura
+    # dopo un comando di un'allerta non eseguito durante una Fascia
+    assert len(con_fase) == 144
     soglie: Counter = Counter()
     for testo in con_fase:
         trovata = GUARDIA.search(testo)
@@ -70,13 +72,15 @@ def test_verifica_al_riavvio_sempre_nella_stessa_forma():
             assert altra in PRESE_IN_CARICO or re.fullmatch(
                 r"\(states\('input_boolean\.vmc_master_spia_velocita_[a-z0-9_]+_un_solo_avvio'\) == 'on'( or .+)?\)", altra
             ), altra
-    assert soglie == Counter({"4": 92, "2": 40, "3": 11})
+    assert soglie == Counter({"4": 93, "2": 40, "3": 11})
 
 
 def test_copie_in_evento_ancora_valido_identiche():
     righe = (PKG / "vmc_master_automazione.txt").read_text(encoding="utf-8").split("\n")
     trigger = _trigger_template()
-    assert len(trigger) == 168  # b28: avviso «Non Disponibile» del Dispositivo per Invio Notifica; b34: ritorno dopo un comando non eseguito
+    # b28: avviso «Non Disponibile» del Dispositivo per Invio Notifica; b34: ritorno dopo un comando non eseguito; b39:
+    # ritorno della lettura dopo un comando di un'allerta non eseguito in Fascia
+    assert len(trigger) == 169
     for t in trigger:
         tid = str(t["id"])
         intestazione = re.compile(r"\{%-? (el)?if trigger\.id == ['\"]" + re.escape(tid) + r"['\"] -?%\}")

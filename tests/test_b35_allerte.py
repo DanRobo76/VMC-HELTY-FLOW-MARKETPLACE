@@ -55,6 +55,7 @@ MEMORIE_CO2 = [f"input_boolean.vmc_master_spia_velocita_{s}_co2_o_voc" for s in 
 MEMORIE_DELTA = [f"input_boolean.vmc_master_spia_velocita_{s}_delta_temp_verifica_soglia_valore" for s in SUFFISSI]
 MEMORIE_PDR = [f"input_boolean.vmc_master_spia_velocita_{s}_un_solo_avvio" for s in SUFFISSI]
 BLACK_OUT = [f"input_boolean.vmc_master_spia_velocita_{s}" for s in SUFFISSI]
+SPIA_BO_CALENDARIO = "input_boolean.vmc_master_spia_calendario_black_out"
 COMANDI = ("velocita_0", "velocita_1", "velocita_2", "velocita_3", "velocita_4", "notturna", "iperventilazione",
            "freecooling")
 
@@ -127,6 +128,11 @@ def _render(hass: HomeAssistant, modello: str, variabili: dict[str, Any] | None 
 
 
 def _imposta(hass: HomeAssistant, stati: dict[str, str]) -> None:
+    # b39: i trigger delle allerte chiedono spenta anche la Spia Black-Out del Calendario (dopo un Black-Out in Fascia
+    # aspettano il ritorno della Fascia): chi dichiara spente le 8 spie del Black-Out dichiara «nessun Black-Out», quindi
+    # anche quella del Calendario, salvo se la imposta
+    if SPIA_BO_CALENDARIO not in stati and any(stati.get(e) == "off" for e in BLACK_OUT):
+        stati = {**stati, SPIA_BO_CALENDARIO: "off"}
     for entita, stato in stati.items():
         hass.states.async_set(entita, stato)
 
@@ -244,9 +250,12 @@ def test_c3_1_protezione_nel_ramo_di_fine_delta() -> None:
     assert set(passi[1]["variables"]) == {"vel_fine_delta", "memoria_inquinanti_fine_delta"}
     protezione = passi[2]
     assert "[Foglio Logiche D6]" in protezione["alias"]
-    assert protezione["if"][0]["value_template"] == (
+    # b39: esclusa la velocità rimasta quella di prima di un comando non eseguito in Fascia (test_b39)
+    assert " ".join(protezione["if"][0]["value_template"].split()).startswith(
+        "{%- set non_eseguito = states('input_text.vmc_master_comando_non_eseguito') -%} "
+        "{%- set vel = states.sensor.vmc_master_status_ventola_lettura_codice_interpretato -%} "
         "{{ vel_fine_delta in ['Velocità 0', 'Velocità 2', 'Velocità 3', 'Velocità 4', 'Notturna', 'Iperventilazione', "
-        "'Free Cooling'] }}")
+        "'Free Cooling'] and not (")
     inquinanti, memorie, fermo = protezione["then"]
     assert set(memorie["target"]["entity_id"]) == {SPIA_DELTA, *MEMORIE_DELTA}
     assert fermo == {"stop": "Velocità scelta dall'utente durante l'allerta Δ Temp. mantenuta"}

@@ -227,6 +227,8 @@ VELOCITA = Dimensione(
                 (r"spia_umidita_mantenuta_velocita_0", "U0MANT"),
                 (r"notifica_velocita_(?:0|diversa_da_0)", "NOTIFICA")],
     regole=[r"(?<=shell_command\.vmc_master_)(velocita_[0-4]|notturna|iperventilazione|freecooling)(?![a-z0-9_])",
+            # b39: il valore del Comando non eseguito «<velocità>|<istante>» (diviso a «{{», resta «<velocità>|»)
+            r"^(Velocità [0-4]|Notturna|Iperventilazione|Free Cooling)(?=\|$)",
             r"(?<=')(Velocità [0-4]|Notturna|Iperventilazione|Free Cooling|Free Cool\./Heat\.)(?=')",
             r"(?<=: )(Velocità [0-4]|Notturna|Iperventilazione|Free Cool\./Heat\.)$",
             r"(?<=velocita_)(0|1|2|3|4|notturna|iperventilazione|freecooling|free_cooling)(?![a-z0-9])",
@@ -594,18 +596,22 @@ def _gemelli_velocita() -> dict[str, tuple[int, int, int, int]]:
 #   il Δ comanda la Velocità 1; fine Umidità (spia_umidita_off); script delle Fasce: Fascia a V0 con Inquinanti -> V1 e
 #   ritorno a 0 (A25, A28).
 CLASSE_A = {
-    "[ramo d'azione] PdR Vel. X -> Imposta Velocità 0": 11,
-    "[ramo d'azione] PdR Vel. X se Spia Inquinanti ON": 16,
+    # b39: +2/+2/+2/+2/+9 nelle 5 famiglie qui sotto, il passo «Comando non eseguito» dopo i cicli che esistono solo nelle
+    # copie speciali (V0/V1/Free): tolti i 135 passi i conteggi tornano quelli della b38 (11, 16, 20, 21, 59), prova
+    # rifatta dopo l'«else» che annulla il comando più vecchio (prima il passo di «Rip. Vel. X No PdR se Spia Inquinanti
+    # ON» cadeva in un gruppo già contato)
+    "[ramo d'azione] PdR Vel. X -> Imposta Velocità 0": 13,
+    "[ramo d'azione] PdR Vel. X se Spia Inquinanti ON": 18,
     "[trigger] Rip. Vel. X No PdR": 2,
-    "[ramo d'azione] Rip. Vel. X No PdR": 20,
+    "[ramo d'azione] Rip. Vel. X No PdR": 22,
     "[trigger] Rip. Vel. X No PdR se Spia Inquinanti ON": 2,
     # b36 (b36-pdr2): 18 -> 21, la protezione della scelta dell'utente nei 3 casi con comando del ramo Free (dentro il choose)
-    "[ramo d'azione] Rip. Vel. X No PdR se Spia Inquinanti ON": 21,
+    "[ramo d'azione] Rip. Vel. X No PdR se Spia Inquinanti ON": 23,
     "[trigger] Black-Out Velocità X [ON]": 1,
     "[ramo d'azione] Black-Out Velocità X [ON]": 2,
     "[ramo d'azione] Black-Out Velocità X [OFF, Ripristino]": 18,
     "[trigger] Spia Velocità X CO2/VOC": 1,
-    "[ramo d'azione] Spia Velocità X CO2/VOC": 59,
+    "[ramo d'azione] Spia Velocità X CO2/VOC": 68,
     "[trigger] Spia Velocità X Congelamento": 1,
     "[trigger] Umidità ON Vel. X": 2,
     "[ramo d'azione] Umidità ON Vel. X": 22,
@@ -625,7 +631,9 @@ CLASSE_A = {
 # «TeVsTi Free-Cooling e Spia Inquinanti ON» con la spia «per programmazione» Free Cooling in più (B1: la spia viene
 # accesa nello stesso giro del ciclo, nessun effetto pratico; da decidere se allineare).
 CLASSE_B = {
-    "[ramo d'azione] TeVsTi Free-X e Spia Inquinanti ON": (1, 1),
+    # b39: 1 -> 2 pezzi, il passo dopo il ciclo che memorizza il Comando non eseguito ripete l'«until» (con la stessa spia
+    # «per programmazione» in più della copia Free Cooling): stessa differenza B1, nessuna nuova
+    "[ramo d'azione] TeVsTi Free-X e Spia Inquinanti ON": (1, 2),
     # b36 (b36-umi, Foglio A21): nella protezione della scelta a fine Umidita' ogni velocita' memorizzata (2, 3, 4,
     # Notturna, Iperventilazione) esclude solo se stessa (la Velocita' 1 era gia' in classe A): differenza voluta
     "[opzioni annidate] automazione «spia_umidita_off»: «Velocità 0»": (5, 5),
@@ -869,14 +877,16 @@ def test_fine_congelamento_e_fine_delta_gemelli() -> None:
     - A2 (C=8, D=0 e C=0, D=8; 20 e 10 pezzi): elenchi delle spie spente nei rami per velocità scritti in modo diverso
       (struttura diversa, stesso effetto);
     - A3 (C=0, D=1; 14 pezzi): solo il Δ ha il passo della velocità scelta negli ultimi secondi (C3-1, Foglio D6),
-      perché il trigger di fine Δ aspetta 4 s e quello di fine Congelamento no.
+      perché il trigger di fine Δ aspetta 4 s e quello di fine Congelamento no (b39: 14 -> 20 pezzi, la stessa
+      condizione esclude la velocità rimasta quella di prima di un comando non eseguito in Fascia; il Congelamento non
+      ha il passo e quindi nemmeno l'esclusione).
     A4 (il ramo Velocità 1 di fine Δ esclude la Velocità 1 avviata dagli Inquinanti partiti da Velocità 0, A1-2, e il
     gemello di fine Congelamento no) non c'è più: corretto nella b36."""
     gelo, delta = _membri_fine_allerta()
     gruppi = raggruppa(confronta([gelo, delta], ALLERTA))
     misurati = {tuple(sorted(g["conti"].items())): len(g["voci"]) for g in gruppi if g["tipo"] == "riga"}
     assert all(g["tipo"] == "riga" for g in gruppi)
-    assert misurati == {(("C", 1), ("D", 2)): 9, (("C", 8), ("D", 0)): 20, (("C", 0), ("D", 1)): 14,
+    assert misurati == {(("C", 1), ("D", 2)): 9, (("C", 8), ("D", 0)): 20, (("C", 0), ("D", 1)): 20,
                         (("C", 0), ("D", 8)): 10}, misurati
     passo = _righe_del_passo_c3_1(delta)
     (a3,) = [g for g in gruppi if g["conti"] == {"C": 0, "D": 1}]

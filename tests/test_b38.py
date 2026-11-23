@@ -67,12 +67,14 @@ def _servizi_velocita() -> dict[str, int]:
 
 # ------------------------------------------------------------------ versioni
 def test_versioni_b38() -> None:
-    """Automazione, scheda e manifest cambiano nella b38; gli script .sh no."""
-    assert "AUTOMAZIONE VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b38]" in _testo("vmc_master_automazione.txt")[:1000]
-    assert "SCHEDA MANUALE INTERFACCIA VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b38]" in _testo(
-        "vmc_master_scheda_manuale_interfaccia.txt")[:2000]
+    """Automazione, scheda e manifest cambiano nella b38 (dalla b39 possono avere una versione successiva); gli script
+    .sh no."""
+    for nome, titolo in (("vmc_master_automazione.txt", "AUTOMAZIONE"),
+                         ("vmc_master_scheda_manuale_interfaccia.txt", "SCHEDA MANUALE INTERFACCIA")):
+        trovata = re.search(titolo + r" VMC HELTY FLOW PLUS RELEASE \[VER\. 9\.0\.0b(\d+)\]", _testo(nome)[:2000])
+        assert trovata and int(trovata.group(1)) >= 38, nome
     manifest = json.loads((PKG.parent / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["version"] == "9.0.0b38"
+    assert re.fullmatch(r"9\.0\.0b(\d+)", manifest["version"]) and int(manifest["version"].split("b")[1]) >= 38
     assert "RELEASE [VER. 9.0.0b31]" in _testo("vmc_master_script_cambio_ip.sh")[:1000]
     assert "RELEASE [VER. 9.0.0b32]" in _testo("vmc_master_script_cambio_nome.sh")[:1000]
 
