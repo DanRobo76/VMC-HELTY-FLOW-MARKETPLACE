@@ -22491,6 +22491,11 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_spia_calendario_lunedi_1
             action: input_boolean.turn_off
+          - variables:
+              black_out_durante_la_fascia: "{{ is_state('input_boolean.vmc_master_spia_calendario_black_out', 'on') }}"
+            alias: >-
+              Memorizza se la Spia Black-Out del Calendario è accesa (Black-Out durante la Fascia, finita prima del ritorno
+              della corrente): la spengono le spie azzerate a fine Fascia
           - alias: >-
               Allerta a cavallo delle due fasce: se la 2° Fascia di Lunedì è già in corso non si ferma la VMC
               (la comanda la 2° Fascia) e non si azzerano le spie: si evita il comando Velocità 0 subito seguito
@@ -22565,12 +22570,13 @@ actions:
                   entity_id: input_boolean.vmc_master_spia_calendario_comando_non_eseguito
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
-              dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
+              dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0); con la Spia Black-Out del Calendario accesa (Fascia
+              finita durante il Black-Out) la fa ripartire, una volta sola, l'avvio degli Inquinanti appena la Spia si spegne
             if:
               - condition: template
                 value_template: >-
                   {{ (states('sensor.vmc_master_alert_monitoraggio_co2') == 'Allerta' or states('sensor.vmc_master_alert_monitoraggio_voc') == 'Allerta')
-                  and states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc') == 'on' }}
+                  and states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc') == 'on' and not black_out_durante_la_fascia }}
             then:
               - data: {}
                 target:
@@ -22600,6 +22606,11 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_spia_calendario_lunedi_2
             action: input_boolean.turn_off
+          - variables:
+              black_out_durante_la_fascia: "{{ is_state('input_boolean.vmc_master_spia_calendario_black_out', 'on') }}"
+            alias: >-
+              Memorizza se la Spia Black-Out del Calendario è accesa (Black-Out durante la Fascia, finita prima del ritorno
+              della corrente): la spengono le spie azzerate a fine Fascia
           - variables:
               vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
             alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
@@ -22664,12 +22675,13 @@ actions:
                   entity_id: input_boolean.vmc_master_spia_calendario_comando_non_eseguito
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
-              dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
+              dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0); con la Spia Black-Out del Calendario accesa (Fascia
+              finita durante il Black-Out) la fa ripartire, una volta sola, l'avvio degli Inquinanti appena la Spia si spegne
             if:
               - condition: template
                 value_template: >-
                   {{ (states('sensor.vmc_master_alert_monitoraggio_co2') == 'Allerta' or states('sensor.vmc_master_alert_monitoraggio_voc') == 'Allerta')
-                  and states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc') == 'on' }}
+                  and states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc') == 'on' and not black_out_durante_la_fascia }}
             then:
               - data: {}
                 target:
@@ -22700,6 +22712,11 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_spia_calendario_martedi_1
             action: input_boolean.turn_off
+          - variables:
+              black_out_durante_la_fascia: "{{ is_state('input_boolean.vmc_master_spia_calendario_black_out', 'on') }}"
+            alias: >-
+              Memorizza se la Spia Black-Out del Calendario è accesa (Black-Out durante la Fascia, finita prima del ritorno
+              della corrente): la spengono le spie azzerate a fine Fascia
           - alias: >-
               Allerta a cavallo delle due fasce: se la 2° Fascia di Martedì è già in corso non si ferma la VMC
               (la comanda la 2° Fascia) e non si azzerano le spie: si evita il comando Velocità 0 subito seguito
@@ -22774,12 +22791,13 @@ actions:
                   entity_id: input_boolean.vmc_master_spia_calendario_comando_non_eseguito
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
-              dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
+              dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0); con la Spia Black-Out del Calendario accesa (Fascia
+              finita durante il Black-Out) la fa ripartire, una volta sola, l'avvio degli Inquinanti appena la Spia si spegne
             if:
               - condition: template
                 value_template: >-
                   {{ (states('sensor.vmc_master_alert_monitoraggio_co2') == 'Allerta' or states('sensor.vmc_master_alert_monitoraggio_voc') == 'Allerta')
-                  and states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc') == 'on' }}
+                  and states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc') == 'on' and not black_out_durante_la_fascia }}
             then:
               - data: {}
                 target:
@@ -22809,6 +22827,11 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_spia_calendario_martedi_2
             action: input_boolean.turn_off
+          - variables:
+              black_out_durante_la_fascia: "{{ is_state('input_boolean.vmc_master_spia_calendario_black_out', 'on') }}"
+            alias: >-
+              Memorizza se la Spia Black-Out del Calendario è accesa (Black-Out durante la Fascia, finita prima del ritorno
+              della corrente): la spengono le spie azzerate a fine Fascia
           - variables:
               vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
             alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
@@ -22873,12 +22896,13 @@ actions:
                   entity_id: input_boolean.vmc_master_spia_calendario_comando_non_eseguito
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
-              dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
+              dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0); con la Spia Black-Out del Calendario accesa (Fascia
+              finita durante il Black-Out) la fa ripartire, una volta sola, l'avvio degli Inquinanti appena la Spia si spegne
             if:
               - condition: template
                 value_template: >-
                   {{ (states('sensor.vmc_master_alert_monitoraggio_co2') == 'Allerta' or states('sensor.vmc_master_alert_monitoraggio_voc') == 'Allerta')
-                  and states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc') == 'on' }}
+                  and states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc') == 'on' and not black_out_durante_la_fascia }}
             then:
               - data: {}
                 target:
@@ -22908,6 +22932,11 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_spia_calendario_mercoledi_1
             action: input_boolean.turn_off
+          - variables:
+              black_out_durante_la_fascia: "{{ is_state('input_boolean.vmc_master_spia_calendario_black_out', 'on') }}"
+            alias: >-
+              Memorizza se la Spia Black-Out del Calendario è accesa (Black-Out durante la Fascia, finita prima del ritorno
+              della corrente): la spengono le spie azzerate a fine Fascia
           - alias: >-
               Allerta a cavallo delle due fasce: se la 2° Fascia di Mercoledì è già in corso non si ferma la VMC
               (la comanda la 2° Fascia) e non si azzerano le spie: si evita il comando Velocità 0 subito seguito
@@ -22982,12 +23011,13 @@ actions:
                   entity_id: input_boolean.vmc_master_spia_calendario_comando_non_eseguito
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
-              dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
+              dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0); con la Spia Black-Out del Calendario accesa (Fascia
+              finita durante il Black-Out) la fa ripartire, una volta sola, l'avvio degli Inquinanti appena la Spia si spegne
             if:
               - condition: template
                 value_template: >-
                   {{ (states('sensor.vmc_master_alert_monitoraggio_co2') == 'Allerta' or states('sensor.vmc_master_alert_monitoraggio_voc') == 'Allerta')
-                  and states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc') == 'on' }}
+                  and states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc') == 'on' and not black_out_durante_la_fascia }}
             then:
               - data: {}
                 target:
@@ -23017,6 +23047,11 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_spia_calendario_mercoledi_2
             action: input_boolean.turn_off
+          - variables:
+              black_out_durante_la_fascia: "{{ is_state('input_boolean.vmc_master_spia_calendario_black_out', 'on') }}"
+            alias: >-
+              Memorizza se la Spia Black-Out del Calendario è accesa (Black-Out durante la Fascia, finita prima del ritorno
+              della corrente): la spengono le spie azzerate a fine Fascia
           - variables:
               vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
             alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
@@ -23081,12 +23116,13 @@ actions:
                   entity_id: input_boolean.vmc_master_spia_calendario_comando_non_eseguito
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
-              dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
+              dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0); con la Spia Black-Out del Calendario accesa (Fascia
+              finita durante il Black-Out) la fa ripartire, una volta sola, l'avvio degli Inquinanti appena la Spia si spegne
             if:
               - condition: template
                 value_template: >-
                   {{ (states('sensor.vmc_master_alert_monitoraggio_co2') == 'Allerta' or states('sensor.vmc_master_alert_monitoraggio_voc') == 'Allerta')
-                  and states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc') == 'on' }}
+                  and states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc') == 'on' and not black_out_durante_la_fascia }}
             then:
               - data: {}
                 target:
@@ -23117,6 +23153,11 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_spia_calendario_giovedi_1
             action: input_boolean.turn_off
+          - variables:
+              black_out_durante_la_fascia: "{{ is_state('input_boolean.vmc_master_spia_calendario_black_out', 'on') }}"
+            alias: >-
+              Memorizza se la Spia Black-Out del Calendario è accesa (Black-Out durante la Fascia, finita prima del ritorno
+              della corrente): la spengono le spie azzerate a fine Fascia
           - alias: >-
               Allerta a cavallo delle due fasce: se la 2° Fascia di Giovedì è già in corso non si ferma la VMC
               (la comanda la 2° Fascia) e non si azzerano le spie: si evita il comando Velocità 0 subito seguito
@@ -23192,12 +23233,13 @@ actions:
                   entity_id: input_boolean.vmc_master_spia_calendario_comando_non_eseguito
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
-              dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
+              dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0); con la Spia Black-Out del Calendario accesa (Fascia
+              finita durante il Black-Out) la fa ripartire, una volta sola, l'avvio degli Inquinanti appena la Spia si spegne
             if:
               - condition: template
                 value_template: >-
                   {{ (states('sensor.vmc_master_alert_monitoraggio_co2') == 'Allerta' or states('sensor.vmc_master_alert_monitoraggio_voc') == 'Allerta')
-                  and states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc') == 'on' }}
+                  and states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc') == 'on' and not black_out_durante_la_fascia }}
             then:
               - data: {}
                 target:
@@ -23227,6 +23269,11 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_spia_calendario_giovedi_2
             action: input_boolean.turn_off
+          - variables:
+              black_out_durante_la_fascia: "{{ is_state('input_boolean.vmc_master_spia_calendario_black_out', 'on') }}"
+            alias: >-
+              Memorizza se la Spia Black-Out del Calendario è accesa (Black-Out durante la Fascia, finita prima del ritorno
+              della corrente): la spengono le spie azzerate a fine Fascia
           - variables:
               vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
             alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
@@ -23291,12 +23338,13 @@ actions:
                   entity_id: input_boolean.vmc_master_spia_calendario_comando_non_eseguito
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
-              dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
+              dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0); con la Spia Black-Out del Calendario accesa (Fascia
+              finita durante il Black-Out) la fa ripartire, una volta sola, l'avvio degli Inquinanti appena la Spia si spegne
             if:
               - condition: template
                 value_template: >-
                   {{ (states('sensor.vmc_master_alert_monitoraggio_co2') == 'Allerta' or states('sensor.vmc_master_alert_monitoraggio_voc') == 'Allerta')
-                  and states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc') == 'on' }}
+                  and states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc') == 'on' and not black_out_durante_la_fascia }}
             then:
               - data: {}
                 target:
@@ -23326,6 +23374,11 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_spia_calendario_venerdi_1
             action: input_boolean.turn_off
+          - variables:
+              black_out_durante_la_fascia: "{{ is_state('input_boolean.vmc_master_spia_calendario_black_out', 'on') }}"
+            alias: >-
+              Memorizza se la Spia Black-Out del Calendario è accesa (Black-Out durante la Fascia, finita prima del ritorno
+              della corrente): la spengono le spie azzerate a fine Fascia
           - alias: >-
               Allerta a cavallo delle due fasce: se la 2° Fascia di Venerdì è già in corso non si ferma la VMC
               (la comanda la 2° Fascia) e non si azzerano le spie: si evita il comando Velocità 0 subito seguito
@@ -23400,12 +23453,13 @@ actions:
                   entity_id: input_boolean.vmc_master_spia_calendario_comando_non_eseguito
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
-              dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
+              dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0); con la Spia Black-Out del Calendario accesa (Fascia
+              finita durante il Black-Out) la fa ripartire, una volta sola, l'avvio degli Inquinanti appena la Spia si spegne
             if:
               - condition: template
                 value_template: >-
                   {{ (states('sensor.vmc_master_alert_monitoraggio_co2') == 'Allerta' or states('sensor.vmc_master_alert_monitoraggio_voc') == 'Allerta')
-                  and states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc') == 'on' }}
+                  and states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc') == 'on' and not black_out_durante_la_fascia }}
             then:
               - data: {}
                 target:
@@ -23435,6 +23489,11 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_spia_calendario_venerdi_2
             action: input_boolean.turn_off
+          - variables:
+              black_out_durante_la_fascia: "{{ is_state('input_boolean.vmc_master_spia_calendario_black_out', 'on') }}"
+            alias: >-
+              Memorizza se la Spia Black-Out del Calendario è accesa (Black-Out durante la Fascia, finita prima del ritorno
+              della corrente): la spengono le spie azzerate a fine Fascia
           - variables:
               vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
             alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
@@ -23499,12 +23558,13 @@ actions:
                   entity_id: input_boolean.vmc_master_spia_calendario_comando_non_eseguito
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
-              dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
+              dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0); con la Spia Black-Out del Calendario accesa (Fascia
+              finita durante il Black-Out) la fa ripartire, una volta sola, l'avvio degli Inquinanti appena la Spia si spegne
             if:
               - condition: template
                 value_template: >-
                   {{ (states('sensor.vmc_master_alert_monitoraggio_co2') == 'Allerta' or states('sensor.vmc_master_alert_monitoraggio_voc') == 'Allerta')
-                  and states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc') == 'on' }}
+                  and states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc') == 'on' and not black_out_durante_la_fascia }}
             then:
               - data: {}
                 target:
@@ -23534,6 +23594,11 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_spia_calendario_sabato_1
             action: input_boolean.turn_off
+          - variables:
+              black_out_durante_la_fascia: "{{ is_state('input_boolean.vmc_master_spia_calendario_black_out', 'on') }}"
+            alias: >-
+              Memorizza se la Spia Black-Out del Calendario è accesa (Black-Out durante la Fascia, finita prima del ritorno
+              della corrente): la spengono le spie azzerate a fine Fascia
           - alias: >-
               Allerta a cavallo delle due fasce: se la 2° Fascia di Sabato è già in corso non si ferma la VMC
               (la comanda la 2° Fascia) e non si azzerano le spie: si evita il comando Velocità 0 subito seguito
@@ -23608,12 +23673,13 @@ actions:
                   entity_id: input_boolean.vmc_master_spia_calendario_comando_non_eseguito
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
-              dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
+              dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0); con la Spia Black-Out del Calendario accesa (Fascia
+              finita durante il Black-Out) la fa ripartire, una volta sola, l'avvio degli Inquinanti appena la Spia si spegne
             if:
               - condition: template
                 value_template: >-
                   {{ (states('sensor.vmc_master_alert_monitoraggio_co2') == 'Allerta' or states('sensor.vmc_master_alert_monitoraggio_voc') == 'Allerta')
-                  and states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc') == 'on' }}
+                  and states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc') == 'on' and not black_out_durante_la_fascia }}
             then:
               - data: {}
                 target:
@@ -23643,6 +23709,11 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_spia_calendario_sabato_2
             action: input_boolean.turn_off
+          - variables:
+              black_out_durante_la_fascia: "{{ is_state('input_boolean.vmc_master_spia_calendario_black_out', 'on') }}"
+            alias: >-
+              Memorizza se la Spia Black-Out del Calendario è accesa (Black-Out durante la Fascia, finita prima del ritorno
+              della corrente): la spengono le spie azzerate a fine Fascia
           - variables:
               vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
             alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
@@ -23707,12 +23778,13 @@ actions:
                   entity_id: input_boolean.vmc_master_spia_calendario_comando_non_eseguito
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
-              dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
+              dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0); con la Spia Black-Out del Calendario accesa (Fascia
+              finita durante il Black-Out) la fa ripartire, una volta sola, l'avvio degli Inquinanti appena la Spia si spegne
             if:
               - condition: template
                 value_template: >-
                   {{ (states('sensor.vmc_master_alert_monitoraggio_co2') == 'Allerta' or states('sensor.vmc_master_alert_monitoraggio_voc') == 'Allerta')
-                  and states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc') == 'on' }}
+                  and states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc') == 'on' and not black_out_durante_la_fascia }}
             then:
               - data: {}
                 target:
@@ -23742,6 +23814,11 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_spia_calendario_domenica_1
             action: input_boolean.turn_off
+          - variables:
+              black_out_durante_la_fascia: "{{ is_state('input_boolean.vmc_master_spia_calendario_black_out', 'on') }}"
+            alias: >-
+              Memorizza se la Spia Black-Out del Calendario è accesa (Black-Out durante la Fascia, finita prima del ritorno
+              della corrente): la spengono le spie azzerate a fine Fascia
           - alias: >-
               Allerta a cavallo delle due fasce: se la 2° Fascia di Domenica è già in corso non si ferma la VMC
               (la comanda la 2° Fascia) e non si azzerano le spie: si evita il comando Velocità 0 subito seguito
@@ -23817,12 +23894,13 @@ actions:
                   entity_id: input_boolean.vmc_master_spia_calendario_comando_non_eseguito
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
-              dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
+              dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0); con la Spia Black-Out del Calendario accesa (Fascia
+              finita durante il Black-Out) la fa ripartire, una volta sola, l'avvio degli Inquinanti appena la Spia si spegne
             if:
               - condition: template
                 value_template: >-
                   {{ (states('sensor.vmc_master_alert_monitoraggio_co2') == 'Allerta' or states('sensor.vmc_master_alert_monitoraggio_voc') == 'Allerta')
-                  and states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc') == 'on' }}
+                  and states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc') == 'on' and not black_out_durante_la_fascia }}
             then:
               - data: {}
                 target:
@@ -23852,6 +23930,11 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_spia_calendario_domenica_2
             action: input_boolean.turn_off
+          - variables:
+              black_out_durante_la_fascia: "{{ is_state('input_boolean.vmc_master_spia_calendario_black_out', 'on') }}"
+            alias: >-
+              Memorizza se la Spia Black-Out del Calendario è accesa (Black-Out durante la Fascia, finita prima del ritorno
+              della corrente): la spengono le spie azzerate a fine Fascia
           - variables:
               vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
             alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
@@ -23916,12 +23999,13 @@ actions:
                   entity_id: input_boolean.vmc_master_spia_calendario_comando_non_eseguito
           - alias: >-
               Fuori dal Calendario hanno effetto tutte le verifiche: se gli Inquinanti sono presenti la logica Inquinanti riparte
-              dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0)
+              dalla VMC ferma (Velocità 1 fino al rientro, poi Velocità 0); con la Spia Black-Out del Calendario accesa (Fascia
+              finita durante il Black-Out) la fa ripartire, una volta sola, l'avvio degli Inquinanti appena la Spia si spegne
             if:
               - condition: template
                 value_template: >-
                   {{ (states('sensor.vmc_master_alert_monitoraggio_co2') == 'Allerta' or states('sensor.vmc_master_alert_monitoraggio_voc') == 'Allerta')
-                  and states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc') == 'on' }}
+                  and states('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc') == 'on' and not black_out_durante_la_fascia }}
             then:
               - data: {}
                 target:
