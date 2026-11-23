@@ -565,3 +565,48 @@ async def test_fine_delta_velocita_vecchia_non_e_una_scelta(hass: HomeAssistant,
     hass.states.async_set(LETTURA, "Velocità 3")  # scelta dell'utente dopo il comando non eseguito
     assert scelta("Velocità 3") is True
     assert scelta("Velocità 1") is False  # la Velocità 1 non è mai una scelta (D6)
+
+
+# ------------------------------------------------------------------ fine Fascia durante il Black-Out con Inquinanti in corso
+def _rami_fine_fascia() -> dict[str, list[dict[str, Any]]]:
+    return {r["conditions"][0]["id"]: r["sequence"] for b in _automazione()["actions"] if isinstance(b, dict)
+            for r in b.get("choose", [])
+            if isinstance(r.get("conditions"), list) and r["conditions"] and isinstance(r["conditions"][0], dict)
+            and re.fullmatch(r"[12]° \w+ Off", str(r["conditions"][0].get("id", "")))}
+
+
+def test_fine_fascia_con_black_out_un_solo_riavvio_degli_inquinanti() -> None:
+    """Famiglie Black-Out C5c (16 sbagliati sulla b39 0cf0dd4, giusti sulla b38): Black-Out in Fascia, la Fascia finisce
+    durante il Black-Out, Inquinanti in corso. Al ritorno il ramo di fine Fascia azzera le spie (Spia Black-Out del
+    Calendario compresa) e riarma gli Inquinanti (Spia CO₂/VOC ON): partivano insieme «Spia Velocità 0 CO₂/VOC» (V1,
+    Velocità Registrata 0) e l'avvio degli Inquinanti, sbloccato dalla Spia Black-Out spenta (classe P), che vedeva V1 e
+    cancellava la Velocità Registrata: a fine Inquinanti la VMC restava a V1 invece di tornare a V0. Classe intera (14 rami
+    di fine Fascia): la Spia Black-Out si legge all'inizio del ramo e con la Spia accesa il riarmo non si fa (riparte solo
+    l'avvio degli Inquinanti, una volta, come nella b38)."""
+    rami = _rami_fine_fascia()
+    assert len(rami) == 14
+    for nome, passi in rami.items():
+        k_var = [i for i, p in enumerate(passi) if "black_out_durante_la_fascia" in p.get("variables", {})]
+        assert len(k_var) == 1, nome
+        assert passi[k_var[0]]["variables"]["black_out_durante_la_fascia"] == (
+            "{{ is_state('input_boolean.vmc_master_spia_calendario_black_out', 'on') }}"), nome
+        k_riarmo = [i for i, p in enumerate(passi) if "if" in p and "vmc_master_spia_co2_o_voc" in str(p.get("then"))]
+        assert len(k_riarmo) == 1, nome
+        assert k_var[0] < k_riarmo[0], nome
+        assert passi[k_riarmo[0]]["if"][0]["value_template"].rstrip().endswith("and not black_out_durante_la_fascia }}"), nome
+        # la Spia si legge prima di ogni comando e prima delle spie azzerate dallo script di fine Fascia
+        primi = [i for i, p in enumerate(passi) if "repeat" in p or "fascia_1_o_2_off" in str(p.get("action", ""))]
+        assert primi and k_var[0] < min(primi), nome
+
+
+async def test_condizione_del_riarmo_degli_inquinanti_a_fine_fascia(hass: HomeAssistant) -> None:
+    passi = _rami_fine_fascia()["1° Giovedì Off"]
+    (riarmo,) = [p for p in passi if "if" in p and "vmc_master_spia_co2_o_voc" in str(p.get("then"))]
+    cond = Template(riarmo["if"][0]["value_template"], hass)
+    hass.states.async_set("sensor.vmc_master_alert_monitoraggio_co2", "Allerta")
+    hass.states.async_set("sensor.vmc_master_alert_monitoraggio_voc", "Nessuna Allerta")
+    hass.states.async_set("input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc", "on")
+    assert result_as_boolean(cond.async_render({"black_out_durante_la_fascia": False})) is True   # come nella b38
+    assert result_as_boolean(cond.async_render({"black_out_durante_la_fascia": True})) is False   # riparte l'avvio
+    hass.states.async_set("sensor.vmc_master_alert_monitoraggio_co2", "Nessuna Allerta")
+    assert result_as_boolean(cond.async_render({"black_out_durante_la_fascia": False})) is False
