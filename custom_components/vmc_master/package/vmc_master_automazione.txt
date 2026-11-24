@@ -27201,6 +27201,21 @@ actions:
                           data:
                             value: ""
                     else:
+                      - alias: >-
+                          Velocità 0 scelta durante l'allerta Inquinanti con la Free Cool./Heat. sospesa -> la ripresa in Free
+                          Cool./Heat. si annulla (Spie Free Heating e Free Cooling spente), salvo con un'allerta Umidità in
+                          corso: la ripresa resta in attesa e a fine Inquinanti la Velocità 0 riporta la VMC alla Velocità 1
+                          [Nota 3], come per il Δ Temp. e per la fine Inquinanti (regola del 24-11-2026, decisioni 2-3)
+                          [Foglio Logiche E6, A29]
+                        if:
+                          - condition: template
+                            value_template: "{{ is_state('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia', 'off') }}"
+                        then:
+                          - action: input_boolean.turn_off
+                            target:
+                              entity_id:
+                                - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling
+                                - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating
                       - variables:
                           vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
                         alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
@@ -27250,10 +27265,6 @@ actions:
                                     input_boolean.vmc_master_spia_velocita_iperventilazione_un_solo_avvio
                                   - >-
                                     input_boolean.vmc_master_spia_velocita_notturna_un_solo_avvio
-                                  - >-
-                                    input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling
-                                  - >-
-                                    input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating
                               action: input_boolean.turn_off
                             - data: {}
                               action: shell_command.vmc_master_velocita_1

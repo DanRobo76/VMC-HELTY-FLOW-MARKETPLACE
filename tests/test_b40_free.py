@@ -301,3 +301,48 @@ def test_free_v0_delta_velocita_0_esclusa_con_l_umidita() -> None:
     assert umidita in FREE_V0_FINE_INQUINANTI
     for a in (passo_on["alias"], passo_fine["alias"]):
         assert "Umidità in corso" in a and "24-11-2026" in a and "[Nota 3]" in a and "vmc_master" not in a, a
+
+
+# ------------------------------------------------------------------------------------------------ free_v0, Velocità 0 negli Inquinanti
+def _free_v0_inquinanti_v0_scelta() -> list[dict[str, Any]]:
+    """Ramo spia_velocita_0_inquinanti_co2_voc, opzione della Free sospesa (memoria Inquinanti accesa, Velocità 0 e una
+    spia Free accesa), ramo «else»: la Velocità 0 scelta dall'utente dopo l'avvio dell'allerta."""
+    opzione = _ramo("spia_velocita_0_inquinanti_co2_voc")["sequence"][0]["choose"][2]
+    assert "Spia un solo Avvio FreeCooling o Heating ON" in opzione["alias"] and "Almeno una Spia" in opzione["alias"]
+    return opzione["sequence"][0]["else"]
+
+
+@pytest.mark.parametrize(
+    ("free", "umidita", "ripresa"),
+    [
+        (FREE_C, "off", "off"),  # come prima: la Velocità 0 scelta annulla la ripresa (riferimento della decisione 1)
+        (FREE_H, "off", "off"),
+        (FREE_C, "on", "on"),  # Umidità in corso: la ripresa resta, Velocità 1 [Nota 3] a fine Inquinanti
+        (FREE_H, "on", "on"),
+    ],
+)
+async def test_free_v0_inquinanti_velocita_0_con_l_umidita(hass: HomeAssistant, free: str, umidita: str,
+                                                           ripresa: str) -> None:
+    """Regola del 24-11-2026 (ultima copia gemella): la Velocità 0 scelta durante gli Inquinanti con la Free sospesa
+    riavvia la VMC a Velocità 1 come prima; le spie Free si spengono solo senza un'allerta Umidità in corso."""
+    stati = {LETTURA: "Velocità 0", BLACK_OUT_RILEVATO: "off", FREE_C: "off", FREE_H: "off", free: "on",
+             SPIA_UMIDITA: umidita, INQ_1: "on", SPIA_CO2: "on", PARTENZA: "off"}
+    comandi = await _esegui(hass, _free_v0_inquinanti_v0_scelta(), stati, attesa=0.5)
+    assert comandi[:1] == ["vmc_master_velocita_1"]
+    assert _stato(hass, free) == ripresa
+    assert _stato(hass, PARTENZA) == "on" and _stato(hass, INQ_1) == "on"
+
+
+def test_free_v0_inquinanti_velocita_0_passo_nuovo() -> None:
+    """Le spie Free non sono più nell'elenco spento dal ciclo della Velocità 1: le spegne il passo nuovo prima del ciclo,
+    con la condizione «Umidità non in corso» delle altre copie."""
+    passi = _free_v0_inquinanti_v0_scelta()
+    passo = passi[0]
+    assert passo["if"][0]["value_template"] == f"{{{{ is_state('{SPIA_UMIDITA}', 'off') }}}}"
+    assert passo["then"] == [{"action": "input_boolean.turn_off", "target": {"entity_id": [FREE_C, FREE_H]}}]
+    (ciclo,) = [p for p in passi if "repeat" in p]
+    assert FREE_C not in str(ciclo) and FREE_H not in str(ciclo)
+    assert f"is_state('{SPIA_UMIDITA}', 'off')" in FREE_V0_FINE_INQUINANTI
+    a = passo["alias"]
+    assert "Umidità in corso" in a and "24-11-2026" in a and "[Nota 3]" in a and "vmc_master" not in a, a
+    cv.SCRIPT_SCHEMA(_ramo("spia_velocita_0_inquinanti_co2_voc")["sequence"])
