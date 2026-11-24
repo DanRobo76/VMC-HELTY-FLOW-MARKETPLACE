@@ -231,7 +231,7 @@ command_line:
 ################### Inizio Creazione Sensori Principali della VMC  ########################################################################################################################################################
 sensor:
   - platform: tcp
-    name: vmc_master_status_ventola                                             # [CONFIGURAZIONE, 1101 RICHIAMI] [INTERFACCIA, 8 RICHIAMI] [AUTOMAZIONE, 683 RICHIAMI] CREAZIONE DEL SENSORE LETTURA STATI DI VENTILAZIONE; N.b non tutti i valori sono identificabili
+    name: vmc_master_status_ventola                                             # [CONFIGURAZIONE, 1101 RICHIAMI] [INTERFACCIA, 8 RICHIAMI] [AUTOMAZIONE, 685 RICHIAMI] CREAZIONE DEL SENSORE LETTURA STATI DI VENTILAZIONE; N.b non tutti i valori sono identificabili
     host: 999.999.999.999                        # INDIRIZZO IP DELLA VMC MASTER
     port: 5001                                 # PORTA 5001 DELLA VMC IMPOSTAZIONE DI DEFAULT
     timeout: 3
@@ -644,7 +644,7 @@ template:
           {% endif %}
 
   - binary_sensor:
-      - default_entity_id: binary_sensor.vmc_master_black_out_rilevato          # [CONFIGURAZIONE, 365 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 447 RICHIAMI] BLACK-OUT RILEVATO: ON QUANDO UNA DELLE CONDIZIONI DEI TRIGGER «BLACK-OUT» DELL'AUTOMAZIONE (STESSO TESTO, 1:1) E' VERA DA ALMENO «ATTESA BLACK-OUT RILEVAZIONE» SECONDI; CON L'AUTOMAZIONE IN MODALITA' QUEUED FA USCIRE I CICLI DI CONFERMA DELLA VELOCITA', COME FACEVA IL RIAVVIO DELLA MODALITA' RESTART
+      - default_entity_id: binary_sensor.vmc_master_black_out_rilevato          # [CONFIGURAZIONE, 367 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 447 RICHIAMI] BLACK-OUT RILEVATO: ON QUANDO UNA DELLE CONDIZIONI DEI TRIGGER «BLACK-OUT» DELL'AUTOMAZIONE (STESSO TESTO, 1:1) E' VERA DA ALMENO «ATTESA BLACK-OUT RILEVAZIONE» SECONDI; CON L'AUTOMAZIONE IN MODALITA' QUEUED FA USCIRE I CICLI DI CONFERMA DELLA VELOCITA', COME FACEVA IL RIAVVIO DELLA MODALITA' RESTART
         name: "Black-Out Rilevato"
         unique_id: vmc_master_black_out_rilevato
         state: >
@@ -3358,7 +3358,7 @@ template:
         icon: mdi:timer-stop-outline
 
   - sensor:
-      - default_entity_id: sensor.vmc_master_status_accensione_vmc_tramite_calendario # [CONFIGURAZIONE, 30 RICHIAMI] [INTERFACCIA, 3 RICHIAMI] [AUTOMAZIONE, 107 RICHIAMI] SENSORE DI VERIFICA 1° FASCIA ACCENSIONE SE GLI ORARI SONO STATI INSERITI CORRETTAMENTE, DIVERSAMENTE MOSTRERA' "DISABILITATA"
+      - default_entity_id: sensor.vmc_master_status_accensione_vmc_tramite_calendario # [CONFIGURAZIONE, 30 RICHIAMI] [INTERFACCIA, 3 RICHIAMI] [AUTOMAZIONE, 108 RICHIAMI] SENSORE DI VERIFICA 1° FASCIA ACCENSIONE SE GLI ORARI SONO STATI INSERITI CORRETTAMENTE, DIVERSAMENTE MOSTRERA' "DISABILITATA"
         name: "1° Accensione programmata"
         unique_id: vmc_master_status_accensione_vmc_tramite_calendario
         state: >
@@ -3388,7 +3388,7 @@ template:
         icon: mdi:timer-play-outline
 
   - sensor:
-      - default_entity_id: sensor.vmc_master_status_accensione_vmc_tramite_calendario_2 # [CONFIGURAZIONE, 30 RICHIAMI] [INTERFACCIA, 3 RICHIAMI] [AUTOMAZIONE, 114 RICHIAMI] SENSORE DI VERIFICA 2° FASCIA ACCENSIONE SE GLI ORARI SONO STATI INSERITI CORRETTAMENTE, DIVERSAMENTE MOSTRERA' "DISABILITATA"
+      - default_entity_id: sensor.vmc_master_status_accensione_vmc_tramite_calendario_2 # [CONFIGURAZIONE, 30 RICHIAMI] [INTERFACCIA, 3 RICHIAMI] [AUTOMAZIONE, 115 RICHIAMI] SENSORE DI VERIFICA 2° FASCIA ACCENSIONE SE GLI ORARI SONO STATI INSERITI CORRETTAMENTE, DIVERSAMENTE MOSTRERA' "DISABILITATA"
         name: "2° Accensione programmata"
         unique_id: vmc_master_status_accensione_vmc_tramite_calendario_2
         state: >
@@ -5175,7 +5175,7 @@ input_boolean:
     name: "VMC ON/OFF, in Funzione del Lim. Δ P. di Rugiada"
     icon: mdi:light-switch-off
 
-  vmc_master_opzioni_accendi_spegni_vmc_vs_calendario:                          # [CONFIGURAZIONE, 63 RICHIAMI] [INTERFACCIA, 6 RICHIAMI] [AUTOMAZIONE, 119 RICHIAMI] VERIFICA SE RENDERE AUTONOMA LA VMC, SE "ON" VERRA' IMPIEGATO IL CALENDARIO AVVIANDO IN AUTONOMIA L'ACCENSIONE E LO SPEGNIMENTO; SE "OFF" NON VERRA' IMPIEGATO IL CALENDARIO PERTENDO L'AUTONOMIA DI ACCENSIONE E SPEGNIMENTO AUTOMATICO
+  vmc_master_opzioni_accendi_spegni_vmc_vs_calendario:                          # [CONFIGURAZIONE, 63 RICHIAMI] [INTERFACCIA, 6 RICHIAMI] [AUTOMAZIONE, 120 RICHIAMI] VERIFICA SE RENDERE AUTONOMA LA VMC, SE "ON" VERRA' IMPIEGATO IL CALENDARIO AVVIANDO IN AUTONOMIA L'ACCENSIONE E LO SPEGNIMENTO; SE "OFF" NON VERRA' IMPIEGATO IL CALENDARIO PERTENDO L'AUTONOMIA DI ACCENSIONE E SPEGNIMENTO AUTOMATICO
     name: "VMC ON/OFF, in Funzione del Calendario"
     icon: mdi:light-switch-off
 
@@ -5431,7 +5431,7 @@ input_boolean:
 
 ################### Inizio Creazione Switch Booleani impiegati nell'Automazione, per valutare CONGELAMENTO ############################
 
-  vmc_master_congelamento_verifica_soglia_valore_spia:                          # [CONFIGURAZIONE, 197 RICHIAMI] [INTERFACCIA, 14 RICHIAMI] [AUTOMAZIONE, 317 RICHIAMI] SENSORE TRACCIAMENTO CONGELAMENTO
+  vmc_master_congelamento_verifica_soglia_valore_spia:                          # [CONFIGURAZIONE, 197 RICHIAMI] [INTERFACCIA, 14 RICHIAMI] [AUTOMAZIONE, 318 RICHIAMI] SENSORE TRACCIAMENTO CONGELAMENTO
     name: "Spia VMC Congelamento ≤ -18 [°C] Temp. Esterna ?"
     icon: mdi:memory
 
@@ -5479,7 +5479,7 @@ input_boolean:
 
 ################### Inizio Creazione Switch Booleani impiegati nell'Automazione, per valutare DIFFERENZA DI TEMPERATURA ############################
 
-  vmc_master_delta_temp_verifica_soglia_valore_spia:                            # [CONFIGURAZIONE, 215 RICHIAMI] [INTERFACCIA, 13 RICHIAMI] [AUTOMAZIONE, 325 RICHIAMI] SENSORE TRACCIAMENTO DIFFERENZA DI TEMPERATURA > 23 °C
+  vmc_master_delta_temp_verifica_soglia_valore_spia:                            # [CONFIGURAZIONE, 215 RICHIAMI] [INTERFACCIA, 13 RICHIAMI] [AUTOMAZIONE, 326 RICHIAMI] SENSORE TRACCIAMENTO DIFFERENZA DI TEMPERATURA > 23 °C
     name: "Spia VMC Sensori Int. Δ Temp. > 23 [°C] ?"
     icon: mdi:memory
 
