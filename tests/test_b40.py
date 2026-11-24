@@ -99,7 +99,49 @@ def test_fascia58_rami_del_black_out_attese_e_memoria() -> None:
                 assert n["wait_template"].rstrip().endswith(BLACK_OUT + " or " + FASCIA58 + " }}"), ids
                 assert (n["timeout"], n["continue_on_timeout"]) == ("00:00:12", True), ids
     assert attese == 2
-    assert (PKG / "vmc_master_automazione.txt").read_text(encoding="utf-8").count(FASCIA58) == 58 + 2 + 8
+    assert (PKG / "vmc_master_automazione.txt").read_text(encoding="utf-8").count(FASCIA58) == 58 + 2 + 8 + 9
+
+
+MEMORIA_BO = "Black-Out prima della conferma"
+FINE_UMIDITA = {"spia_umidita_off", "umidita_off_con_inquinanti_partenza_velocita_0"}
+
+
+def test_fascia58_memoria_del_black_out_dopo_i_9_cicli_di_fine_umidita() -> None:
+    """I 9 cicli di FINE Umidità (8 «spia_umidita_off», 1 «umidita_off_con_inquinanti_partenza_velocita_0») spengono le
+    spie dell'Umidità prima del comando: se il comando non è confermato, la velocità di fine allerta la ricorda solo il
+    passo dopo il ciclo «Black-Out prima della conferma -> memorizza questa velocità» (memoria del Black-Out). Con
+    l'uscita per la Fascia (prima della rilevazione del Black-Out) il passo memorizza anche con «Fascia iniziata con la
+    velocità non leggibile»: se la Fascia parte la memoria la spegne il suo script, se l'orario finisce prima del ritorno
+    della VMC al ritorno si ripristina la velocità di fine Umidità (scenari MF|UOFF|F0|C|P e N del simulatore: senza,
+    V2 dell'Umidità invece di V0). Il passo segue il ciclo (dopo la variabile della velocità di fine allerta nella Free);
+    gli altri 71 passi con lo stesso nome (cicli che girano anche in Fascia) restano come prima; i 27 cicli di INIZIO
+    Umidità non hanno il passo (le spie dell'Umidità restano accese e i rami «umidita_velocita_*» ricomandano la velocità
+    al ritorno della VMC)."""
+    nuovo = "{{ (" + BLACK_OUT + " or " + FASCIA58 + ") and "
+    trovati = altri = senza = 0
+    for ids, seq in _rami():
+        for lista in (n for n in _nodi(seq) if isinstance(n, list)):
+            for i, passo in enumerate(lista):
+                if not (isinstance(passo, dict) and str(passo.get("alias", "")).startswith(MEMORIA_BO)):
+                    continue
+                cond = passo["if"][0]["value_template"]
+                if set(ids) & FINE_UMIDITA:
+                    assert set(ids) <= FINE_UMIDITA, ids
+                    assert cond.startswith(nuovo) and cond.count(FASCIA58) == 1, (ids, passo["alias"])
+                    assert "se la Fascia parte la memoria la" in passo["alias"], ids
+                    prima = lista[i - 1] if "repeat" in lista[i - 1] else lista[i - 2]
+                    assert "variables" in lista[i - 1] or prima is lista[i - 1], ids
+                    until = prima["repeat"]["until"][0]["value_template"]
+                    assert until.rstrip().endswith(BLACK_OUT + " or " + FASCIA58 + " }}"), ids
+                    trovati += 1
+                else:
+                    assert FASCIA58 not in cond, (ids, passo["alias"])
+                    altri += 1
+        if ids and all(i.startswith(("spia_umidita_on", "umidita_velocita_")) for i in ids):
+            senza += sum(1 for n in _nodi(seq) if isinstance(n, dict) and "repeat" in n
+                         and FASCIA58 in str(n["repeat"].get("until")))
+            assert not any(isinstance(n, dict) and str(n.get("alias", "")).startswith(MEMORIA_BO) for n in _nodi(seq)), ids
+    assert (trovati, altri, senza) == (9, 71, 27)
 
 
 def test_fascia58_le_spie_della_fascia_le_accendono_solo_i_14_rami_on() -> None:
