@@ -9,7 +9,8 @@ della VMC il ciclo mandava ancora il comando vecchio (circa 9-10 s alla velocit�
 scatterebbe mai: l'uscita usa le stesse condizioni del trigger della Fascia (interruttore del Calendario, giorno e orario
 della 1a o 2a Fascia, Congelamento e Δ Temp. non in corso) con la velocità della VMC non leggibile. Nei rami del
 Black-Out la memoria del Black-Out resta (la spegne lo script della Fascia quando parte; se la Fascia finisce prima del
-ritorno della VMC il ripristino avviene al ritorno)."""
+ritorno della VMC il ripristino avviene al ritorno); dopo i 9 cicli di fine Umidità la velocità di fine allerta si
+memorizza per il ripristino anche con l'uscita per la Fascia (non solo con il Black-Out rilevato)."""
 
 from __future__ import annotations
 
