@@ -174,33 +174,42 @@ def test_free_v0_umidita_v0_passo_prima_della_u3() -> None:
         ("spia_velocita_0_delta_temp", FREE_H, True),
         ("delta_temp_ON", FREE_C, False),  # avvio del Δ con la VMC ferma per la Free sospesa: la ripresa resta
         ("delta_temp_ON", FREE_H, False),
+        ("spia_velocita_0_delta_temp|umidita", FREE_C, False),  # Umidità in corso: la ripresa resta (24-11-2026)
+        ("spia_velocita_0_delta_temp|umidita", FREE_H, False),
     ],
 )
 async def test_free_v0_delta_velocita_0_annulla_la_ripresa(hass: HomeAssistant, trigger_id: str, free: str,
                                                            spenta: bool) -> None:
     """Decisione 1: opzione «Velocità 0» del ramo Δ ON: la Velocità 0 scelta durante il Δ con la Free sospesa spegne le 2
-    spie Free (ripresa annullata); all'avvio dell'allerta con la VMC già ferma la ripresa resta in attesa."""
+    spie Free (ripresa annullata); all'avvio dell'allerta con la VMC già ferma la ripresa resta in attesa; con
+    un'allerta Umidità in corso la ripresa resta e a fine Δ la VMC torna a Velocità 1 [Nota 3] (regola del 24-11-2026)."""
     opzione = _free_v0_opzione_delta_velocita_0()
-    stati = {LETTURA: "Velocità 0", BLACK_OUT_RILEVATO: "off", FREE_C: "off", FREE_H: "off", free: "on"}
+    trigger_id, _, umidita = trigger_id.partition("|")
+    stati = {LETTURA: "Velocità 0", BLACK_OUT_RILEVATO: "off", FREE_C: "off", FREE_H: "off", free: "on",
+             SPIA_UMIDITA: "on" if umidita else "off"}
     await _esegui(hass, opzione["sequence"], stati, attesa=0.5, variabili={"trigger": {"id": trigger_id}})
     assert _stato(hass, free) == ("off" if spenta else "on")
 
 
 @pytest.mark.parametrize(
-    ("letta", "free", "ripresa", "comando"),
+    ("letta", "free", "ripresa", "comando", "umidita"),
     [
-        ("Velocità 0", FREE_C, "off", None),  # scelta negli ultimi Secondi: resta e annulla la ripresa
-        ("Velocità 0", FREE_H, "off", None),
-        ("Velocità 3", FREE_H, "on", None),  # altre velocità: resta, la ripresa la annulla il trigger dei 20 s (A29)
-        ("Velocità 1", FREE_C, "on", "vmc_master_velocita_2"),  # nessuna scelta: ripristino come prima
+        ("Velocità 0", FREE_C, "off", None, "off"),  # scelta negli ultimi Secondi: resta e annulla la ripresa
+        ("Velocità 0", FREE_H, "off", None, "off"),
+        ("Velocità 3", FREE_H, "on", None, "off"),  # altre velocità: resta, la ripresa la annulla il trigger dei 20 s
+        ("Velocità 1", FREE_C, "on", "vmc_master_velocita_2", "off"),  # nessuna scelta: ripristino come prima
+        ("Velocità 0", FREE_C, "on", None, "on"),  # Umidità in corso: la ripresa resta, Velocità 1 dal ramo Umidità
+        ("Velocità 0", FREE_H, "on", None, "on"),
     ],
 )
 async def test_free_v0_fine_delta_velocita_0_annulla_la_ripresa(hass: HomeAssistant, letta: str, free: str, ripresa: str,
-                                                                comando: str | None) -> None:
+                                                                comando: str | None, umidita: str) -> None:
     """Decisione 1, passo di fine Δ (C3-1, Foglio D6): la Velocità 0 scelta quando non è ancora memorizzata resta e, con
-    la Free sospesa, annulla la ripresa, come la Velocità 0 memorizzata durante l'allerta."""
+    la Free sospesa, annulla la ripresa, come la Velocità 0 memorizzata durante l'allerta; non con un'allerta Umidità in
+    corso (regola del 24-11-2026): la ripresa resta e la Velocità 1 [Nota 3] la manda il ramo «Umidità ON Vel. 0»."""
     comandi = await _esegui(hass, _ramo("delta_temp_OFF")["sequence"],
-                            _stati_fine_delta(**{LETTURA: letta, FREE_C: "off", FREE_H: "off", free: "on"}), attesa=0.5)
+                            _stati_fine_delta(**{LETTURA: letta, FREE_C: "off", FREE_H: "off", free: "on",
+                                                 SPIA_UMIDITA: umidita}), attesa=0.5)
     assert comandi[:1] == ([comando] if comando else [])
     assert _stato(hass, free) == ripresa
 
@@ -277,3 +286,18 @@ async def test_free_v0_fine_inquinanti_passo_nella_protezione(hass: HomeAssistan
     cv.SCRIPT_SCHEMA(_ramo("inquinanti_co2_voc_off")["sequence"])
     for a in (passo["alias"], protezione["alias"]):
         assert "24-11-2026" in a and "input_boolean" not in a and "vmc_master" not in a and "master" not in a, a
+
+
+def test_free_v0_delta_velocita_0_esclusa_con_l_umidita() -> None:
+    """Le 2 copie del Δ (opzione «Velocità 0» del Δ ON e passo C3-1) hanno l'esclusione «Umidità in corso» con la stessa
+    definizione della fine Inquinanti (Spia Umidità accesa); gli alias la dicono senza entity_id."""
+    umidita = f"is_state('{SPIA_UMIDITA}', 'off')"
+    passo_on = _free_v0_opzione_delta_velocita_0()["sequence"][0]
+    (passo_fine,) = [p for p in _ramo("delta_temp_OFF")["sequence"][2]["then"] if "vel_fine_delta == 'Velocità 0'" in str(p)]
+    assert passo_on["if"][0]["value_template"] == (
+        "{{ trigger.id == 'spia_velocita_0_delta_temp' and " + FREE_V0_SOSPESA + f" and {umidita} }}}}")
+    assert passo_fine["if"][0]["value_template"] == (
+        "{{ vel_fine_delta == 'Velocità 0' and " + FREE_V0_SOSPESA + f" and {umidita} }}}}")
+    assert umidita in FREE_V0_FINE_INQUINANTI
+    for a in (passo_on["alias"], passo_fine["alias"]):
+        assert "Umidità in corso" in a and "24-11-2026" in a and "[Nota 3]" in a and "vmc_master" not in a, a

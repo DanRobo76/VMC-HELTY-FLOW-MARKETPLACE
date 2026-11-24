@@ -890,12 +890,14 @@ def test_fine_congelamento_e_fine_delta_gemelli() -> None:
     gemello di fine Congelamento no) non c'è più: corretto nella b36.
     b40 (free_v0, decisione 1 del 23-11-2026): nello stesso passo C3-1 del Δ la Velocità 0 scelta con la Free sospesa
     annulla la ripresa Free (A3 20 -> 23 pezzi; A5, C=0, D=2, 2 pezzi: «condition: template» e «input_boolean.turn_off»
-    ripetuti dal passo degli Inquinanti); il Congelamento non ha il passo (C6: con la Velocità 0 non cambia nulla)."""
+    ripetuti dal passo degli Inquinanti); il Congelamento non ha il passo (C6: con la Velocità 0 non cambia nulla).
+    Regola del 24-11-2026: lo stesso passo esclude l'allerta Umidità in corso (A3 23 -> 24 pezzi, una riga in più
+    dell'alias)."""
     gelo, delta = _membri_fine_allerta()
     gruppi = raggruppa(confronta([gelo, delta], ALLERTA))
     misurati = {tuple(sorted(g["conti"].items())): len(g["voci"]) for g in gruppi if g["tipo"] == "riga"}
     assert all(g["tipo"] == "riga" for g in gruppi)
-    assert misurati == {(("C", 1), ("D", 2)): 9, (("C", 8), ("D", 0)): 20, (("C", 0), ("D", 1)): 23,
+    assert misurati == {(("C", 1), ("D", 2)): 9, (("C", 8), ("D", 0)): 20, (("C", 0), ("D", 1)): 24,
                         (("C", 0), ("D", 8)): 10, (("C", 0), ("D", 2)): 2}, misurati
     passo = _righe_del_passo_c3_1(delta)
     (a3,) = [g for g in gruppi if g["conti"] == {"C": 0, "D": 1}]
