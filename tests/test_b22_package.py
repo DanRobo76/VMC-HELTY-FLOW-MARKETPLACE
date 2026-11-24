@@ -291,6 +291,32 @@ async def test_sensore_lan_risposte_brevi_o_diverse(hass: HomeAssistant) -> None
     assert template.async_render({"value": "VMSL CasaWiFi"}, parse_result=False) == "VMSL CasaWiFi"
 
 
+# b40: la VMC vera risponde a VMSL? SENZA «VMSL » davanti (letto il 24-11-2026 sulle VMC del proprietario: 117
+# caratteri = rete 32 + password 32 + 53 cifre, campi completati con asterischi): la password va coperta lo stesso.
+VMSL_REALE = (
+    "CasaWiFi 5G 2.4".ljust(32, "*")
+    + "Segreta-123456".ljust(32, "*")
+    + "192168200001"
+    + "05001"
+    + "192168200254"
+    + "255255255000"
+    + "1"
+).ljust(117, "0")
+
+
+async def test_sensore_lan_nasconde_la_password_senza_prefisso(hass: HomeAssistant) -> None:
+    template = Template(_template_lan(), hass)
+    assert len(VMSL_REALE) == 117
+    reso = template.async_render({"value": VMSL_REALE + "\r\n"}, parse_result=False)
+    assert "Segreta" not in reso and "123456" not in reso[32:64]
+    assert reso == VMSL_REALE[:32] + "*" * 32 + VMSL_REALE[64:]
+    assert reso.startswith("CasaWiFi 5G 2.4*")
+    # risposta senza prefisso troncata dentro la password: nessun carattere della password resta
+    assert template.async_render({"value": VMSL_REALE[:40]}, parse_result=False) == VMSL_REALE[:32] + "*" * 8
+    # risposte brevi (fino a 32 caratteri) restano come sono
+    assert template.async_render({"value": "OK"}, parse_result=False) == "OK"
+
+
 # ---------------------------------------------------------------- B-10: temperatura «1»
 
 

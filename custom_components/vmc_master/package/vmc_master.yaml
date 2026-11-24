@@ -261,11 +261,12 @@ sensor:
     port: 5001                                 # PORTA 5001 DELLA VMC IMPOSTAZIONE DI DEFAULT
     timeout: 3
     payload: "VMSL?"                           # INVIO COMANDO VMSL? ALLA VMC MASTER, PER OTTENERE INFORMAZIONI SUI DATI LAN DELLA VMC]
-    # LA RISPOSTA E' "VMSL " + RETE 32 + PASSWORD 32 + IP 15 + PORTA 5 + GATEWAY 15 + MASCHERA 15 + MODALITA' 2: LA PASSWORD DEL WI-FI (CARATTERI 37-68) E' SOSTITUITA DA 32 ASTERISCHI, GLI ALTRI CAMPI RESTANO
+    # LA RISPOSTA E' RETE 32 + PASSWORD 32 + IP 15 + PORTA 5 + GATEWAY 15 + MASCHERA 15 + MODALITA' (LA VMC VERA LA MANDA SENZA "VMSL " DAVANTI, ALTRE POSSONO AVERLO): LA PASSWORD DEL WI-FI (I 32 CARATTERI DOPO LA RETE) E' SOSTITUITA DA 32 ASTERISCHI, GLI ALTRI CAMPI RESTANO
     value_template: >-
       {%- set v = value | trim -%}
-      {%- if v[:5] == 'VMSL ' and v | length > 37 -%}
-        {{ v[:37] ~ '*' * ([v | length, 69] | min - 37) ~ v[69:] }}
+      {%- set p = 5 if v[:5] == 'VMSL ' else 0 -%}
+      {%- if v | length > p + 32 -%}
+        {{ v[:p + 32] ~ '*' * ([v | length, p + 64] | min - p - 32) ~ v[p + 64:] }}
       {%- else -%}
         {{ v }}
       {%- endif -%}
