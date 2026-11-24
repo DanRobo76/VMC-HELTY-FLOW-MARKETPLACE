@@ -256,7 +256,10 @@ def test_c3_1_protezione_nel_ramo_di_fine_delta() -> None:
         "{%- set vel = states.sensor.vmc_master_status_ventola_lettura_codice_interpretato -%} "
         "{{ vel_fine_delta in ['Velocità 0', 'Velocità 2', 'Velocità 3', 'Velocità 4', 'Notturna', 'Iperventilazione', "
         "'Free Cooling'] and not (")
-    inquinanti, memorie, fermo = protezione["then"]
+    # b40 (free_v0, decisione 1 del 23-11-2026): con la Velocità 0 e la Free sospesa si annulla anche la ripresa Free
+    inquinanti, free, memorie, fermo = protezione["then"]
+    assert "vel_fine_delta == 'Velocità 0'" in free["if"][0]["value_template"]
+    assert free["then"][0]["action"] == "input_boolean.turn_off"
     assert set(memorie["target"]["entity_id"]) == {SPIA_DELTA, *MEMORIE_DELTA}
     assert fermo == {"stop": "Velocità scelta dall'utente durante l'allerta Δ Temp. mantenuta"}
     # stesse memorie spente dalle opzioni del ripristino

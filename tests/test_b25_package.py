@@ -200,6 +200,9 @@ def test_memoria_velocita_0_mantenuta_dell_umidita():
     testo = (PKG / "vmc_master_automazione.txt").read_text(encoding="utf-8")
     ramo = testo[testo.index("              - umidita_velocita_0\n") :]
     ramo = ramo[: ramo.index("\n      - conditions:")]
+    # b40 (free_v0, decisioni 2-3 del 23-11-2026): il primo passo del ramo è la Velocità 1 con la Free sospesa [Nota 3];
+    # la Velocità 0 mantenuta resta nel passo seguente (correzione U3)
+    ramo = ramo[ramo.index("- alias: Umidità che ha avviato la VMC da Velocità 0") :]
     allora = ramo[ramo.index("            then:\n") : ramo.index("            else:\n")]
     altrimenti = ramo[ramo.index("            else:\n") :]
     assert allora.index(f"entity_id: {SPIA_U0_MANTENUTA}") < allora.index("- variables:")

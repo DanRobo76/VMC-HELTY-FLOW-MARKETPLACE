@@ -175,9 +175,10 @@ def test_cicli_in_fascia_escono_con_la_lettura_persa() -> None:
     Fascia (134 delle allerte + la ripetizione del Comando non eseguito) hanno l'uscita «velocità non leggibile da 32 s
     con una Fascia in corso», subito dopo il Black-Out e per ultima; i 58 che girano solo fuori Fascia non la hanno: dalla
     b40 hanno per ultima, dopo il Black-Out, l'uscita «Fascia iniziata con la velocità non leggibile» (senza attesa dei
-    32 s e senza le spie, che lì non possono accendersi; prova completa in tests/test_b40.py)."""
+    32 s e senza le spie, che lì non possono accendersi; prova completa in tests/test_b40.py).
+    b40 (free_v0): 212 cicli, fuori Fascia 59 (Velocità 1 dell'Umidità con la Free sospesa, ramo «Umidità ON Vel. 0»)."""
     classi = _classi()
-    assert {k: len(v) for k, v in classi.items()} == {"calendario": 18, "fuori": 58, "fascia": 135}
+    assert {k: len(v) for k, v in classi.items()} == {"calendario": 18, "fuori": 59, "fascia": 135}
     for ids, testo, _, _ in classi["calendario"]:
         assert LETTURA_PERSA in testo and LETTURA_PERSA_IN_FASCIA not in testo, ids
     for ids, testo, _, _ in classi["fuori"]:

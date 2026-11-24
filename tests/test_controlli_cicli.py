@@ -144,7 +144,8 @@ CALENDARIO = re.compile(r"[Cc]alendario|^[12]° \w+ Off$")
 # senza l'uscita «VMC non raggiungibile» (b36-b38: 192; b39: 58, i 134 che possono girare in Fascia hanno l'uscita
 # nuova; +1 ciclo dell'automazione, la ripetizione del Comando non eseguito; tests/test_b39.py; b40: i 58 hanno l'uscita
 # «Fascia iniziata con la velocita' non leggibile», che non e' l'uscita «VMC non raggiungibile da N s»: restano 58)
-FISSATI = {"cicli_automazione": 211, "cicli_package": 360, "senza_d_automazione": 58}
+# b40 (free_v0): +1 ciclo, Velocità 1 dell'Umidità con la Free sospesa nel ramo «Umidità ON Vel. 0» (fuori Fascia)
+FISSATI = {"cicli_automazione": 212, "cicli_package": 360, "senza_d_automazione": 59}
 
 
 def test_d1_ogni_ciclo_di_comando_ha_le_uscite_velocita_scelta_black_out() -> None:
@@ -194,7 +195,8 @@ def test_d1_cicli_senza_uscita_vmc_non_raggiungibile_censiti() -> None:
     le spie del Calendario spente e la Spia di una Fascia non puo' accendersi mentre girano, quindi fuori Fascia li ferma
     il Black-Out). Dalla b40 i 58 si fermano anche quando arriva l'ora di una Fascia con la velocita' non leggibile (la
     Fascia parte al ritorno della VMC e comanda lei: Foglio A25; tests/test_b40.py, fascia58): non e' un'uscita «VMC non
-    raggiungibile da N s», quindi il numero resta 58. Il numero e' fissato: un ciclo nuovo senza l'uscita «VMC non
+    raggiungibile da N s», quindi il numero resta 58. b40 (free_v0): 59, Umidita' 37 con la
+    Velocita' 1 della Free sospesa nel ramo «Umidità ON Vel. 0». Il numero e' fissato: un ciclo nuovo senza l'uscita «VMC non
     raggiungibile» va guardato e contato qui."""
     senza = [(f, d) for f, d, c in _cicli_con_comando() if not (U_DT.search(_testo(c.get("until")))
                                                                or U_DI.search(_testo(c.get("until"))))]
