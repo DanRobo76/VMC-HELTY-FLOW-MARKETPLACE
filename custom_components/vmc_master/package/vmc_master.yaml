@@ -5328,11 +5328,11 @@ input_boolean:
     name: "Spia Velocità freecooling 1° Avvio"
     icon: mdi:memory
 
-  vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling: # [CONFIGURAZIONE, 72 RICHIAMI] [INTERFACCIA, 20 RICHIAMI] [AUTOMAZIONE, 239 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' FREE-COOLING, IN CASO DI ALLERTA PROGRAMMATA DEL FREE COOLING
+  vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling: # [CONFIGURAZIONE, 72 RICHIAMI] [INTERFACCIA, 20 RICHIAMI] [AUTOMAZIONE, 242 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' FREE-COOLING, IN CASO DI ALLERTA PROGRAMMATA DEL FREE COOLING
     name: "Spia su Programmazione Velocità Free Cooling 1° Avvio"
     icon: mdi:memory
 
-  vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating: # [CONFIGURAZIONE, 96 RICHIAMI] [INTERFACCIA, 20 RICHIAMI] [AUTOMAZIONE, 237 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' FREE-COOLING, IN CASO DI ALLERTA PROGRAMMATA DEL FREE HEATING
+  vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating: # [CONFIGURAZIONE, 96 RICHIAMI] [INTERFACCIA, 20 RICHIAMI] [AUTOMAZIONE, 240 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' FREE-COOLING, IN CASO DI ALLERTA PROGRAMMATA DEL FREE HEATING
     name: "Spia su Programmazione Velocità Free Heating 1° Avvio"
     icon: mdi:memory
 
@@ -5378,11 +5378,11 @@ input_boolean:
     name: "Spia Inquinanti CO₂ e/o VOC"
     icon: mdi:memory
 
-  vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0:                        # [CONFIGURAZIONE, 60 RICHIAMI] [INTERFACCIA, 14 RICHIAMI] [AUTOMAZIONE, 231 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER LA VERIFICA DI INQUINANTI CO2 E VOC PARTENZA DA VELOCITA' 0 E RITORNO A VELOCITA' 0
+  vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0:                        # [CONFIGURAZIONE, 60 RICHIAMI] [INTERFACCIA, 14 RICHIAMI] [AUTOMAZIONE, 233 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER LA VERIFICA DI INQUINANTI CO2 E VOC PARTENZA DA VELOCITA' 0 E RITORNO A VELOCITA' 0
     name: "Spia di Richiamo Vel. 0 CO₂ e/o VOC "
     icon: mdi:memory
 
-  vmc_master_spia_velocita_0_co2_o_voc:                                         # [CONFIGURAZIONE, 41 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 208 RICHIAMI] SENSORE TRACCIAMENTO VELOCITA' 0, IN CASO DI INQUINANTI CO2 E VOC
+  vmc_master_spia_velocita_0_co2_o_voc:                                         # [CONFIGURAZIONE, 41 RICHIAMI] [INTERFACCIA, 12 RICHIAMI] [AUTOMAZIONE, 210 RICHIAMI] SENSORE TRACCIAMENTO VELOCITA' 0, IN CASO DI INQUINANTI CO2 E VOC
     name: "Spia Velocità 0 CO₂ e/o VOC"
     icon: mdi:memory
 
@@ -5463,7 +5463,7 @@ input_boolean:
 
 ################### Inizio Creazione Switch Booleani impiegati nell'Automazione, per valutare UMIDITA' ############################
 
-  vmc_master_umidita_verifica_soglia_valore_spia:                               # [CONFIGURAZIONE, 38 RICHIAMI] [INTERFACCIA, 22 RICHIAMI] [AUTOMAZIONE, 70 RICHIAMI] SENSORE TRACCIAMENTO umidità
+  vmc_master_umidita_verifica_soglia_valore_spia:                               # [CONFIGURAZIONE, 38 RICHIAMI] [INTERFACCIA, 22 RICHIAMI] [AUTOMAZIONE, 72 RICHIAMI] SENSORE TRACCIAMENTO umidità
     name: "Spia VMC Umidità"
     icon: mdi:memory
 

@@ -25786,10 +25786,11 @@ actions:
               ripristino; non contano come scelta la Velocità 1 data dagli Inquinanti partiti da ferma (o riavviati da
               Velocità 0), che lascia la ripresa a Velocità 0, e la Velocità 1 imposta durante gli Inquinanti da un altro
               ramo (memoria Velocità 1 Inquinanti/PdR accesa); esclusa la Free Cool./Heat. sospesa da un'allerta (ha la
-              sua ripresa), mentre la Free Cool./Heat. memorizzata senza sospensione vale come le altre velocità
+              sua ripresa), salvo la Velocità 0 scelta, che resta e annulla la ripresa (regola del 24-11-2026), mentre la
+              Free Cool./Heat. memorizzata senza sospensione vale come le altre velocità
             if:
               - condition: template
-                value_template: "{{ is_state('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia', 'off') and is_state('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia', 'off') and vel_ripristino_inquinanti != '' and vel_fine_inquinanti in ['Velocità 0', 'Velocità 1', 'Velocità 2', 'Velocità 3', 'Velocità 4', 'Notturna', 'Iperventilazione', 'Free Cooling'] and vel_fine_inquinanti != vel_ripristino_inquinanti and not (vel_ripristino_inquinanti == 'Velocità 0' and vel_fine_inquinanti == 'Velocità 1') and not (vel_fine_inquinanti == 'Velocità 1' and is_state('input_boolean.vmc_master_spia_velocita_1_co2_o_voc_pdr', 'on')) }}"
+                value_template: "{{ is_state('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia', 'off') and is_state('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia', 'off') and ((vel_ripristino_inquinanti != '' and vel_fine_inquinanti in ['Velocità 0', 'Velocità 1', 'Velocità 2', 'Velocità 3', 'Velocità 4', 'Notturna', 'Iperventilazione', 'Free Cooling'] and vel_fine_inquinanti != vel_ripristino_inquinanti and not (vel_ripristino_inquinanti == 'Velocità 0' and vel_fine_inquinanti == 'Velocità 1') and not (vel_fine_inquinanti == 'Velocità 1' and is_state('input_boolean.vmc_master_spia_velocita_1_co2_o_voc_pdr', 'on'))) or (vel_fine_inquinanti == 'Velocità 0' and (is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling', 'on') or is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating', 'on')) and is_state('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia', 'off') and is_state('input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0', 'off') and is_state('input_boolean.vmc_master_spia_velocita_0_co2_o_voc', 'off'))) }}"
             then:
               - data: {}
                 target:
@@ -25824,6 +25825,23 @@ actions:
                         - input_boolean.vmc_master_spia_velocita_notturna_un_solo_avvio
                         - input_boolean.vmc_master_spia_velocita_iperventilazione_un_solo_avvio
                         - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio
+                    action: input_boolean.turn_off
+              - alias: >-
+                  Velocità 0 scelta con la Free Cool./Heat. sospesa (Spia Free Heating o Free Cooling accesa) -> la ripresa
+                  in Free Cool./Heat. si annulla e resta la Velocità 0 scelta, come per la Velocità 0 memorizzata durante
+                  l'allerta e come per il Δ Temp. (regola del 24-11-2026, gemella della decisione 1 del 23-11-2026); senza
+                  allerta Umidità in corso (con l'Umidità la Velocità 0 riporta la VMC alla Velocità 1 [Nota 3]); non vale
+                  per la Velocità 0 che non è una scelta: Inquinanti partiti da ferma o riavviati da Velocità 0, oppure
+                  Velocità 0 già memorizzata [Foglio Logiche E6, A29]
+                if:
+                  - condition: template
+                    value_template: "{{ vel_fine_inquinanti == 'Velocità 0' and (is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling', 'on') or is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating', 'on')) and is_state('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia', 'off') and is_state('input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0', 'off') and is_state('input_boolean.vmc_master_spia_velocita_0_co2_o_voc', 'off') }}"
+                then:
+                  - data: {}
+                    target:
+                      entity_id:
+                        - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling
+                        - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating
                     action: input_boolean.turn_off
               - stop: Velocità scelta dall'utente durante l'attesa della fine dell'allerta Inquinanti mantenuta
           - choose:
