@@ -12,6 +12,10 @@ VMC ferma in attesa della ripresa) e Velocità 0 scelta dall'utente.
   partita a Free già sospesa (memoria Free) o prima della sospensione (memoria Free), e con l'Umidità partita da
   Velocità 0 con la Velocità di avvio Free Cool./Heat.: trigger «Umidità ON Vel. 0» (con le sue 3 copie) e primo passo
   del suo ramo.
+- Regola del 24-11-2026 (coordinatore, gemella della decisione 1 nella fine Inquinanti, C3-2): nell'attesa di 8 s della
+  fine Inquinanti con la Free sospesa, la Velocità 0 scelta e non ancora memorizzata resta e annulla la ripresa in Free;
+  non vale per gli Inquinanti partiti da ferma o riavviati da Velocità 0, per la Velocità 0 già memorizzata e con
+  l'allerta Umidità in corso.
 La verifica dinamica (HA vero, VMC simulata) è nel simulatore: famiglia FX, classe di 112 scenari (tasto Velocità 0 con
 la VMC in Free) e scenari mirati in /home/user/sim/simulatore-b36/b40/free_v0/."""
 
@@ -30,6 +34,7 @@ from tests.test_b35_allerte import (
     SPIA_U0,
     _copia_guardia,
     _copie_countdown,
+    _imposta,
     _norm,
     _ramo,
     _rami,
@@ -38,7 +43,19 @@ from tests.test_b35_allerte import (
     _testo,
     _trigger,
 )
-from tests.test_b36_allerte import SET_UMIDITA, SPIA_U0_MANTENUTA, SPIA_U_FREE, _esegui, _stato
+from tests.test_b36_allerte import (
+    MEMORIE_CO2,
+    PARTENZA,
+    SET_UMIDITA,
+    SPIA_CO2,
+    SPIA_U0_MANTENUTA,
+    SPIA_U_FREE,
+    SPIA_UMIDITA,
+    _esegui,
+    _passi_fine_inquinanti,
+    _stati_fine_inquinanti,
+    _stato,
+)
 
 ALLERTA_UMIDITA = "sensor.vmc_master_alert_monitoraggio_umidita"
 BLACK_OUT_RILEVATO = "binary_sensor.vmc_master_black_out_rilevato"
@@ -200,3 +217,63 @@ async def test_free_v0_rami_validi_e_alias_chiari(hass: HomeAssistant) -> None:
     assert len(nuovi) == 5, alias
     for a in nuovi:
         assert "input_boolean" not in a and "vmc_master" not in a and "master" not in a, a
+
+
+# ------------------------------------------------------------------------------------------------ free_v0, fine Inquinanti
+INQ_0 = "input_boolean.vmc_master_spia_velocita_0_co2_o_voc"
+INQ_1 = "input_boolean.vmc_master_spia_velocita_1_co2_o_voc"
+INQ_FREE = "input_boolean.vmc_master_spia_velocita_freecooling_co2_o_voc"
+FREE_V0_FINE_INQUINANTI = (
+    "vel_fine_inquinanti == 'Velocità 0' and " + FREE_V0_SOSPESA + f" and is_state('{SPIA_UMIDITA}', 'off') and "
+    f"is_state('{PARTENZA}', 'off') and is_state('{INQ_0}', 'off')")
+
+
+@pytest.mark.parametrize(
+    ("memorie", "letta", "free", "ripresa"),
+    [
+        ({INQ_1: "on"}, "Velocità 0", FREE_C, "off"),  # Inquinanti con la Free già sospesa: la Velocità 0 resta
+        ({INQ_1: "on"}, "Velocità 0", FREE_H, "off"),
+        ({INQ_FREE: "on"}, "Velocità 0", FREE_H, "off"),  # Free sospesa durante gli Inquinanti partiti in Free
+        ({INQ_1: "on", PARTENZA: "on"}, "Velocità 0", FREE_C, "on"),  # riavviati da Velocità 0: non è una scelta
+        ({INQ_1: "on", SPIA_UMIDITA: "on"}, "Velocità 0", FREE_C, "on"),  # Umidità in corso: Velocità 1 [Nota 3]
+        ({INQ_1: "on"}, "Velocità 3", FREE_C, "on"),  # altre velocità: la ripresa la annulla il trigger dei 20 s
+        ({INQ_1: "on"}, "Velocità 1", FREE_H, "on"),  # nessuna scelta: ripresa in attesa
+    ],
+)
+async def test_free_v0_fine_inquinanti_velocita_0_annulla_la_ripresa(hass: HomeAssistant, memorie: dict[str, str],
+                                                                     letta: str, free: str, ripresa: str) -> None:
+    """Regola del 24-11-2026 (C3-2, Foglio E6 e A29): la Velocità 0 scelta nell'attesa della fine Inquinanti con la Free
+    sospesa resta (nessun comando, memorie Inquinanti spente) e annulla la ripresa in Free (spie Free spente)."""
+    stati = _stati_fine_inquinanti(**{**memorie, LETTURA: letta, free: "on"})
+    comandi = await _esegui(hass, _ramo("inquinanti_co2_voc_off")["sequence"], stati)
+    assert _stato(hass, free) == ripresa
+    if ripresa == "off":
+        assert comandi == []
+        assert all(_stato(hass, e) == "off" for e in (SPIA_CO2, PARTENZA, *MEMORIE_CO2))
+        assert _stato(hass, FREE_C if free == FREE_H else FREE_H) == "off"
+
+
+async def test_free_v0_fine_inquinanti_velocita_0_memorizzata_come_prima(hass: HomeAssistant) -> None:
+    """La Velocità 0 già memorizzata durante l'allerta non passa dalla regola nuova: ripristino a Velocità 0 di prima."""
+    variabili, protezione, _ = _passi_fine_inquinanti()
+    stati = _stati_fine_inquinanti(**{INQ_0: "on", LETTURA: "Velocità 0", FREE_C: "on"})
+    _imposta(hass, stati)
+    ripristino = _render(hass, variabili["variables"]["vel_ripristino_inquinanti"])
+    assert ripristino == "Velocità 0"
+    assert _render(hass, protezione["if"][0]["value_template"],
+                   {"vel_ripristino_inquinanti": ripristino, "vel_fine_inquinanti": "Velocità 0"}) is False
+
+
+async def test_free_v0_fine_inquinanti_passo_nella_protezione(hass: HomeAssistant) -> None:
+    """Il passo nuovo è nella protezione C3-2, dopo lo spegnimento delle memorie e prima dello «stop»; la condizione
+    della protezione contiene la stessa clausola; il ramo è valido e l'alias è in italiano chiaro."""
+    _, protezione, _ = _passi_fine_inquinanti()
+    assert "(" + FREE_V0_FINE_INQUINANTI + ")" in protezione["if"][0]["value_template"]
+    passo = protezione["then"][-2]
+    assert "stop" in protezione["then"][-1]
+    assert passo["if"][0]["value_template"] == "{{ " + FREE_V0_FINE_INQUINANTI + " }}"
+    assert passo["then"] == [{"data": {}, "target": {"entity_id": [FREE_C, FREE_H]}, "action": "input_boolean.turn_off"}]
+    assert not any("shell_command" in str(p) for p in protezione["then"])
+    cv.SCRIPT_SCHEMA(_ramo("inquinanti_co2_voc_off")["sequence"])
+    for a in (passo["alias"], protezione["alias"]):
+        assert "24-11-2026" in a and "input_boolean" not in a and "vmc_master" not in a and "master" not in a, a
