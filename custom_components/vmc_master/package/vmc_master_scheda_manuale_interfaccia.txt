@@ -11477,6 +11477,7 @@ cards:
                           'automation.vmc_master_registro_comandi_e_scelte',
                           'automation.vmc_master_rimando_della_scelta',
                           'automation.vmc_master_letture_ravvicinate',
+                          'automation.vmc_master_ripartenza_della_vmc',
                           'binary_sensor.vmc_master_tasto_velocita_0',
                           'binary_sensor.vmc_master_tasto_velocita_1',
                           'binary_sensor.vmc_master_tasto_velocita_2',
