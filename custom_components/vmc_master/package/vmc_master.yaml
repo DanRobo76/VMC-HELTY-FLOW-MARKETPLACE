@@ -637,7 +637,7 @@ template:
           {% endif %}
 
   - binary_sensor:
-      - default_entity_id: binary_sensor.vmc_master_black_out_rilevato          # [CONFIGURAZIONE, 365 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 446 RICHIAMI] BLACK-OUT RILEVATO: ON QUANDO UNA DELLE CONDIZIONI DEI TRIGGER «BLACK-OUT» DELL'AUTOMAZIONE (STESSO TESTO, 1:1) E' VERA DA ALMENO «ATTESA BLACK-OUT RILEVAZIONE» SECONDI; CON L'AUTOMAZIONE IN MODALITA' QUEUED FA USCIRE I CICLI DI CONFERMA DELLA VELOCITA', COME FACEVA IL RIAVVIO DELLA MODALITA' RESTART
+      - default_entity_id: binary_sensor.vmc_master_black_out_rilevato          # [CONFIGURAZIONE, 365 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 447 RICHIAMI] BLACK-OUT RILEVATO: ON QUANDO UNA DELLE CONDIZIONI DEI TRIGGER «BLACK-OUT» DELL'AUTOMAZIONE (STESSO TESTO, 1:1) E' VERA DA ALMENO «ATTESA BLACK-OUT RILEVAZIONE» SECONDI; CON L'AUTOMAZIONE IN MODALITA' QUEUED FA USCIRE I CICLI DI CONFERMA DELLA VELOCITA', COME FACEVA IL RIAVVIO DELLA MODALITA' RESTART
         name: "Black-Out Rilevato"
         unique_id: vmc_master_black_out_rilevato
         state: >
@@ -1026,7 +1026,7 @@ template:
         icon: mdi:code-array
 
   - sensor:
-      - default_entity_id: sensor.vmc_master_status_ventola_lettura_codice_interpretato # [CONFIGURAZIONE, 888 RICHIAMI] [INTERFACCIA, 55 RICHIAMI] [AUTOMAZIONE, 1264 RICHIAMI] SENSORE DI INTERPRETAZIONE DELLA LETTURA DEI DATI "VELOCITA'" MEMORIZZATI NELLA VMC CONVERITA IN "STRINGA", PREVIA VERIFICA DI AVVENUTA LETTURA DEI DATI "VELOCITA'"" MEMORIZZATI NELLA VMC
+      - default_entity_id: sensor.vmc_master_status_ventola_lettura_codice_interpretato # [CONFIGURAZIONE, 888 RICHIAMI] [INTERFACCIA, 55 RICHIAMI] [AUTOMAZIONE, 1267 RICHIAMI] SENSORE DI INTERPRETAZIONE DELLA LETTURA DEI DATI "VELOCITA'" MEMORIZZATI NELLA VMC CONVERITA IN "STRINGA", PREVIA VERIFICA DI AVVENUTA LETTURA DEI DATI "VELOCITA'"" MEMORIZZATI NELLA VMC
         name: "Status Ventilazione"
         unique_id: vmc_master_status_ventola_lettura_codice_interpretato
         state: >
@@ -2726,7 +2726,7 @@ template:
 
 ########################################################################################### INIZIO SENSORI PER POP-UP MONITORAGGIO ##################################################################
   - sensor:
-      - default_entity_id: sensor.vmc_master_alert_monitoraggio_umidita         # [CONFIGURAZIONE, 17 RICHIAMI] [INTERFACCIA, 15 RICHIAMI] [AUTOMAZIONE, 15 RICHIAMI] SENSORE POP-UP MONITORAGGIO UMIDITA'; SENSORE MONITORAGGIO SCHEDA AVVISI
+      - default_entity_id: sensor.vmc_master_alert_monitoraggio_umidita         # [CONFIGURAZIONE, 19 RICHIAMI] [INTERFACCIA, 15 RICHIAMI] [AUTOMAZIONE, 17 RICHIAMI] SENSORE POP-UP MONITORAGGIO UMIDITA'; SENSORE MONITORAGGIO SCHEDA AVVISI
         name: "Monitoraggio Umidità"
         unique_id: vmc_master_alert_monitoraggio_umidita
         state: >
@@ -4647,7 +4647,7 @@ input_select:
       - Dicembre
     icon: mdi:calendar-month-outline  
 
-  vmc_master_speed_umidita:                                                     # [CONFIGURAZIONE, 21 RICHIAMI] [INTERFACCIA, 29 RICHIAMI] [AUTOMAZIONE, 66 RICHIAMI] SENSORE DI MEMORIZZAZIONE DELLA VELOCITA' CHE SI DESIDERA IMPOSTARE NELLA VMC
+  vmc_master_speed_umidita:                                                     # [CONFIGURAZIONE, 23 RICHIAMI] [INTERFACCIA, 29 RICHIAMI] [AUTOMAZIONE, 69 RICHIAMI] SENSORE DI MEMORIZZAZIONE DELLA VELOCITA' CHE SI DESIDERA IMPOSTARE NELLA VMC
     name: "Set Velocità Umidità di Avvio"
     options:
       - Velocità 0
@@ -5328,15 +5328,15 @@ input_boolean:
     name: "Spia Velocità freecooling 1° Avvio"
     icon: mdi:memory
 
-  vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling: # [CONFIGURAZIONE, 72 RICHIAMI] [INTERFACCIA, 20 RICHIAMI] [AUTOMAZIONE, 234 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' FREE-COOLING, IN CASO DI ALLERTA PROGRAMMATA DEL FREE COOLING
+  vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling: # [CONFIGURAZIONE, 72 RICHIAMI] [INTERFACCIA, 20 RICHIAMI] [AUTOMAZIONE, 239 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' FREE-COOLING, IN CASO DI ALLERTA PROGRAMMATA DEL FREE COOLING
     name: "Spia su Programmazione Velocità Free Cooling 1° Avvio"
     icon: mdi:memory
 
-  vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating: # [CONFIGURAZIONE, 96 RICHIAMI] [INTERFACCIA, 20 RICHIAMI] [AUTOMAZIONE, 232 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' FREE-COOLING, IN CASO DI ALLERTA PROGRAMMATA DEL FREE HEATING
+  vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating: # [CONFIGURAZIONE, 96 RICHIAMI] [INTERFACCIA, 20 RICHIAMI] [AUTOMAZIONE, 237 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' FREE-COOLING, IN CASO DI ALLERTA PROGRAMMATA DEL FREE HEATING
     name: "Spia su Programmazione Velocità Free Heating 1° Avvio"
     icon: mdi:memory
 
-  vmc_master_spia_umidita_velocita_0:                                           # [CONFIGURAZIONE, 9 RICHIAMI] [INTERFACCIA, 13 RICHIAMI] [AUTOMAZIONE, 74 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' 0, IN CASO DI ALLERTA UMIDITA'
+  vmc_master_spia_umidita_velocita_0:                                           # [CONFIGURAZIONE, 11 RICHIAMI] [INTERFACCIA, 13 RICHIAMI] [AUTOMAZIONE, 76 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' 0, IN CASO DI ALLERTA UMIDITA'
     name: "Spia Umidità Velocità 0"
     icon: mdi:memory
 
@@ -5368,7 +5368,7 @@ input_boolean:
     name: "Spia Umidità Velocità Notturna"
     icon: mdi:memory
 
-  vmc_master_spia_umidita_velocita_freecooling:                                 # [CONFIGURAZIONE, 5 RICHIAMI] [INTERFACCIA, 9 RICHIAMI] [AUTOMAZIONE, 54 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' FREE COOL./HEAT, IN CASO DI ALLERTA UMIDITA'
+  vmc_master_spia_umidita_velocita_freecooling:                                 # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 9 RICHIAMI] [AUTOMAZIONE, 56 RICHIAMI] SENSORE DI SUPPORTO NELL'AUTOMAZIONE PER IL RIPRISTINO DELLA VELOCITA' FREE COOL./HEAT, IN CASO DI ALLERTA UMIDITA'
     name: "Spia Umidità Velocità Free Cool./Heat."
     icon: mdi:memory
 ################### Fine Creazione Switch Booleani impiegati nell'Automazione, per valutare la Velocità in caso di Black-Out e/o SUPERAMENTO DEL Set Lim. Δ Punto di Rugiada ##############################################
@@ -32814,8 +32814,13 @@ automation:
               states('input_boolean.vmc_master_spia_velocita_freecooling_delta_temp_verifica_soglia_valore') == 'off'
             ) and
 
-            states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling') == 'off' and
-            states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating') == 'off' and
+            (
+              (states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling') == 'off' and
+               states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating') == 'off') or
+              (states('sensor.vmc_master_alert_monitoraggio_umidita') == 'Allerta' and
+               states('input_select.vmc_master_speed_umidita') != 'Velocità 0' and
+               (states('input_boolean.vmc_master_spia_umidita_velocita_freecooling') == 'on' or states('input_boolean.vmc_master_spia_umidita_velocita_0') == 'on'))
+            ) and
 
             (
               states('input_boolean.vmc_master_spia_velocita_0') == 'off' and
@@ -32898,8 +32903,13 @@ automation:
               states('input_boolean.vmc_master_spia_velocita_freecooling_delta_temp_verifica_soglia_valore') == 'off'
             ) and
 
-            states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling') == 'off' and
-            states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating') == 'off' and
+            (
+              (states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling') == 'off' and
+               states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating') == 'off') or
+              (states('sensor.vmc_master_alert_monitoraggio_umidita') == 'Allerta' and
+               states('input_select.vmc_master_speed_umidita') != 'Velocità 0' and
+               (states('input_boolean.vmc_master_spia_umidita_velocita_freecooling') == 'on' or states('input_boolean.vmc_master_spia_umidita_velocita_0') == 'on'))
+            ) and
 
             (
               states('input_boolean.vmc_master_spia_velocita_0') == 'off' and
@@ -36427,7 +36437,7 @@ shell_command:
   vmc_master_velocita_4:                   printf 'VMWH0000004\n' | timeout 5 nc -w 3 999.999.999.999 5001 # [CONFIGURAZIONE, 28 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 14 RICHIAMI] INVIO COMANDO VELOCITA' 4 ALLA VMC
   vmc_master_velocita_3:                   printf 'VMWH0000003\n' | timeout 5 nc -w 3 999.999.999.999 5001 # [CONFIGURAZIONE, 28 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 14 RICHIAMI] INVIO COMANDO VELOCITA' 3 ALLA VMC
   vmc_master_velocita_2:                   printf 'VMWH0000002\n' | timeout 5 nc -w 3 999.999.999.999 5001 # [CONFIGURAZIONE, 28 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 14 RICHIAMI] INVIO COMANDO VELOCITA' 2 ALLA VMC
-  vmc_master_velocita_1:                   printf 'VMWH0000001\n' | timeout 5 nc -w 3 999.999.999.999 5001 # [CONFIGURAZIONE, 48 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 69 RICHIAMI] INVIO COMANDO VELOCITA' 1 ALLA VMC
+  vmc_master_velocita_1:                   printf 'VMWH0000001\n' | timeout 5 nc -w 3 999.999.999.999 5001 # [CONFIGURAZIONE, 48 RICHIAMI] [INTERFACCIA, 2 RICHIAMI] [AUTOMAZIONE, 70 RICHIAMI] INVIO COMANDO VELOCITA' 1 ALLA VMC
   vmc_master_velocita_0:                   printf 'VMWH0000000\n' | timeout 5 nc -w 3 999.999.999.999 5001 # [CONFIGURAZIONE, 111 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 52 RICHIAMI] INVIO COMANDO VELOCITA' 0 ALLA VMC
   vmc_master_sensori_on:                   printf 'VMWH0300000\n' | timeout 5 nc -w 3 999.999.999.999 5001 # [CONFIGURAZIONE, 1 RICHIAMO] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 0 RICHIAMI] INVIO COMANDO SENSORI ON ALLA VMC PER ACCENDERE I SENSORI DELLA VMC; I valori rilevati dai sensori nella schermata INFO dell'App Mobile saranno disponibili e i relativi allarmi verrano segnalati
   vmc_master_sensori_off:                  printf 'VMWH0300002\n' | timeout 5 nc -w 3 999.999.999.999 5001 # [CONFIGURAZIONE, 2 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 0 RICHIAMI] INVIO COMANDO SENSORI OFF ALLA VMC PER DISATTIVARE I SENSORI DELLA VMC; I valori rilevati dai sensori nella schermata INFO dell'App Mobile NON saranno disponibili e i relativi allarmi NON verrano segnalati
