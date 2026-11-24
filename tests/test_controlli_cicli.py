@@ -142,7 +142,8 @@ CALENDARIO = re.compile(r"[Cc]alendario|^[12]° \w+ Off$")
 # ------------------------------------------------------------------------------------------------ d1
 # misurati sulla b36 (b36-pdr2): cicli con un comando nell'automazione e nel package installato, cicli dell'automazione
 # senza l'uscita «VMC non raggiungibile» (b36-b38: 192; b39: 58, i 134 che possono girare in Fascia hanno l'uscita
-# nuova; +1 ciclo dell'automazione, la ripetizione del Comando non eseguito; tests/test_b39.py)
+# nuova; +1 ciclo dell'automazione, la ripetizione del Comando non eseguito; tests/test_b39.py; b40: i 58 hanno l'uscita
+# «Fascia iniziata con la velocita' non leggibile», che non e' l'uscita «VMC non raggiungibile da N s»: restano 58)
 FISSATI = {"cicli_automazione": 211, "cicli_package": 360, "senza_d_automazione": 58}
 
 
@@ -190,8 +191,11 @@ def test_d1_cicli_senza_uscita_vmc_non_raggiungibile_censiti() -> None:
     proprietario sul Foglio A27 N.B.) i 134 che possono girare in Fascia, e la ripetizione del Comando non eseguito, hanno
     anche l'uscita «velocita' non leggibile da 32 s con una Fascia in corso» (forma e spie in tests/test_b39.py); restano
     senza i 58 che girano solo fuori Fascia (ripristino dopo il Black-Out 22, Umidita' 36: tutti i loro trigger chiedono
-    le spie del Calendario spente e una Fascia non puo' iniziare mentre girano, quindi li ferma il Black-Out). Il numero
-    e' fissato: un ciclo nuovo senza l'uscita «VMC non raggiungibile» va guardato e contato qui."""
+    le spie del Calendario spente e la Spia di una Fascia non puo' accendersi mentre girano, quindi fuori Fascia li ferma
+    il Black-Out). Dalla b40 i 58 si fermano anche quando arriva l'ora di una Fascia con la velocita' non leggibile (la
+    Fascia parte al ritorno della VMC e comanda lei: Foglio A25; tests/test_b40.py, fascia58): non e' un'uscita «VMC non
+    raggiungibile da N s», quindi il numero resta 58. Il numero e' fissato: un ciclo nuovo senza l'uscita «VMC non
+    raggiungibile» va guardato e contato qui."""
     senza = [(f, d) for f, d, c in _cicli_con_comando() if not (U_DT.search(_testo(c.get("until")))
                                                                or U_DI.search(_testo(c.get("until"))))]
     assert all(f == "automazione" for f, _ in senza), [d for f, d in senza if f != "automazione"]
