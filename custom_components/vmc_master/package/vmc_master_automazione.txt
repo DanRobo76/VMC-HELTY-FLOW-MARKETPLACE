@@ -1,6 +1,6 @@
 ###########################################################################################################################################################################################################################
 #                                                                                                                                                                                                                         #
-#                                                          AUTOMAZIONE VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b39]                                                                                                        #
+#                                                          AUTOMAZIONE VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b40]                                                                                                        #
 #                                                                                                                                                                                                                         #
 # SVILUPPATO DA ING. DANILO ROBOTTI, ALLE PRIME ARMI CON HOME ASSISTANT :)                                                                                                                                                #
 #                                                                                                                                                                                                                         #
@@ -111,7 +111,9 @@ description: >-
 
   - Ripristina la Velocità precedente in caso di Black-Out, se la VMC ha una
   linea dedicata e/o se installato un relè domotico (salvo se nel frattempo si è
-  scelta un'altra Velocità, che resta); durante una Fascia del
+  scelta un'altra Velocità, che resta), anche dopo un taglio della corrente
+  troppo breve per essere rilevato o avvenuto a Home Assistant spento, se la VMC
+  riparte da sola a Velocità 1; durante una Fascia del
   Calendario, al ritorno della corrente, la VMC riparte con la Velocità della
   Fascia in corso (se nel frattempo la Fascia è finita, si arresta);
 
@@ -229,7 +231,17 @@ description: >-
   dalla ripartenza della VMC, che dopo un Black-Out può riaccendersi da sola a
   Velocità 1); le
   allerte in corso la trattano come una scelta fatta durante l'allerta
-  (Congelamento e Δ Temp. impongono comunque la loro Velocità); durante una
+  (Congelamento e Δ Temp. impongono comunque la loro Velocità); se la VMC
+  riparte da sola a Velocità 1 dopo un taglio della corrente troppo breve per il
+  Rilevamento o avvenuto a Home Assistant spento (la sua velocità torna
+  leggibile a Velocità 1 senza un comando di un'altra Velocità mandato dopo
+  l'ultima lettura), la ripartenza vale come un Black-Out: 32 Secondi dopo che
+  la VMC è di nuovo ON-Line con la velocità leggibile (dopo un riavvio di Home
+  Assistant, a 1° gruppo del riallineamento riattivato) la VMC torna alla
+  Velocità letta prima del taglio, o durante una Fascia riparte con la Velocità
+  della Fascia (automazione «VMC Master - Ripartenza della VMC»; una Velocità 1
+  scelta dall'App o dal telecomando della VMC mentre la velocità non si leggeva
+  non si distingue dalla ripartenza); durante una
   Fascia del Calendario la rilevazione del Black-Out non è attiva: al ritorno
   della corrente (VMC OFF-Line almeno 32 Secondi) la VMC riparte con la Velocità
   della Fascia in corso 32 Secondi dopo che è di nuovo ON-Line con la velocità
