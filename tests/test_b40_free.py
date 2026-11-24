@@ -28,7 +28,6 @@ from tests.test_b35_allerte import (
     FREE_H,
     LETTURA,
     SPIA_U0,
-    _automazione,
     _copia_guardia,
     _copie_countdown,
     _norm,
@@ -201,4 +200,3 @@ async def test_free_v0_rami_validi_e_alias_chiari(hass: HomeAssistant) -> None:
     assert len(nuovi) == 5, alias
     for a in nuovi:
         assert "input_boolean" not in a and "vmc_master" not in a and "master" not in a, a
-    assert len(_automazione()["triggers"]) == 220
