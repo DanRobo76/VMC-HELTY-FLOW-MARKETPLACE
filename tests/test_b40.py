@@ -83,9 +83,9 @@ def test_fascia58_i_58_cicli_fuori_fascia_si_fermano_quando_inizia_una_fascia() 
 def test_fascia58_rami_del_black_out_attese_e_memoria() -> None:
     """Gli 8 rami «Black-Out Off» (ripristino): le 2 attese di 12 s dopo i cicli (Velocità 0 e Free) non attendono con
     la Fascia iniziata e la velocità non leggibile; prima del passo finale che spegne le 8 spie del Black-Out c'è la
-    condizione «non (Fascia iniziata con la velocità non leggibile)»: la memoria del Black-Out resta, così al ritorno
-    della VMC la Fascia (che la spegne nel suo script) parte senza il comando vecchio, oppure, se la Fascia è finita
-    prima, il ripristino avviene al ritorno. In tutto il file l'uscita compare 58 + 2 + 8 volte."""
+    condizione «non (Fascia iniziata con la velocità non leggibile)»: la memoria del Black-Out resta, così la Fascia
+    (che la spegne nel suo script) parte senza il comando vecchio, subito se Home Assistant vede ancora la VMC ON-Line,
+    altrimenti al suo ritorno; se la Fascia finisce prima di partire, il ripristino avviene al ritorno della VMC. In tutto il file l'uscita compare 58 + 2 + 8 volte."""
     rami = [(ids, seq) for ids, seq in _rami() if ids and all(i.startswith("Black-Out Off") for i in ids)]
     assert len(rami) == 8
     attese = 0
