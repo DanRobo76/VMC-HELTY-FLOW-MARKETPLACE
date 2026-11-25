@@ -170,6 +170,5 @@ def test_tutti_i_cicli_dell_automazione_restano_uguali() -> None:
     assert testo.count(LETTURA_PERSA) == 45 + 9
     # 176 nella b32, piu' i 14 rami «Off», piu' i 17 cicli della b34 (B1-2), piu' il ciclo della b35 (C1-1, ramo del
     # ritorno della VMC), piu' il ciclo della Velocita' 1 della b36 (C1-5, ramo del ritorno della VMC); b39: i 135 passi
-    # «Comando non eseguito» dopo i cicli in Fascia (ripetono l'until senza l'uscita a 32 s) e il ciclo del ramo nuovo;
-    # b40 (free_v0): il ciclo della Velocità 1 dell'Umidità con la Free sospesa (ramo «Umidità ON Vel. 0»)
-    assert testo.count(UTENTE) == 176 + 14 + 17 + 1 + 1 + 135 + 1 + 1
+    # «Comando non eseguito» dopo i cicli in Fascia (ripetono l'until senza l'uscita a 32 s) e il ciclo del ramo nuovo
+    assert testo.count(UTENTE) == 176 + 14 + 17 + 1 + 1 + 135 + 1
