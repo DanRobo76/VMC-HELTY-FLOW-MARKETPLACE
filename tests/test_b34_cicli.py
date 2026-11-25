@@ -124,9 +124,8 @@ def test_comandi_di_velocita_fuori_ciclo_solo_quelli_voluti() -> None:
     tutti = list(_comandi(dati["actions"]))
     # b35 (C1-1): +1, Velocita' 0 di fine Fascia ripetuta nel ramo del ritorno della VMC; b36 (C1-5): +1, Velocita' 1
     # dello spegnimento del Calendario con gli Inquinanti ripetuta nel ramo del ritorno della VMC; b39: +1, ripetizione del
-    # Comando non eseguito durante una Fascia (comando con template, nel ciclo standard); b40 (free_v0): +1, Velocita' 1
-    # dell'Umidita' con la Free sospesa nel ramo «Umidità ON Vel. 0» (nel ciclo)
-    assert len(tutti) == 222
+    # Comando non eseguito durante una Fascia (comando con template, nel ciclo standard)
+    assert len(tutti) == 221
     fuori = [azione for azione, dentro in tutti if not dentro]
     assert fuori == ["shell_command.vmc_master_velocita_1"] * 4
     ramo = _rami(dati)["spia_velocita_1_inquinanti_co2_voc"]

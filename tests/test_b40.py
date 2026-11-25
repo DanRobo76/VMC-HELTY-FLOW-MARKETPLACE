@@ -65,16 +65,15 @@ def _bersagli(passo: dict[str, Any]) -> set[str]:
 
 
 def test_fascia58_i_58_cicli_fuori_fascia_si_fermano_quando_inizia_una_fascia() -> None:
-    """Classe intera: i 59 cicli che girano solo fuori Fascia (22 del ripristino dopo il Black-Out, 37 dell'Umidità, compreso
-    il ciclo nuovo della b40 «Velocità 1 dell'Umidità con la Free sospesa» nel ramo «Umidità ON Vel. 0») hanno per
-    ultima, subito dopo il Black-Out, l'uscita «Fascia iniziata con la velocità non leggibile»; nessuno degli altri 153
-    cicli dell'automazione (135 che possono girare in Fascia, 18 del Calendario) la ha."""
+    """Classe intera: i 58 cicli che girano solo fuori Fascia (22 del ripristino dopo il Black-Out, 36 dell'Umidità)
+    hanno per ultima, subito dopo il Black-Out, l'uscita «Fascia iniziata con la velocità non leggibile»; nessuno degli
+    altri 153 cicli dell'automazione (135 che possono girare in Fascia, 18 del Calendario) la ha."""
     classi = _classi()
     fuori = classi["fuori"]
-    assert len(fuori) == 59
+    assert len(fuori) == 58
     bo = [c for c in fuori if all(i.startswith("Black-Out Off") for i in c[0])]
     umi = [c for c in fuori if all(i.startswith(("spia_umidita_", "umidita_")) for i in c[0])]
-    assert (len(bo), len(umi)) == (22, 37)
+    assert (len(bo), len(umi)) == (22, 36)
     for ids, testo, _, _ in fuori:
         assert testo.count(FASCIA58) == 1, ids
         assert testo.rstrip().endswith(BLACK_OUT + " or " + FASCIA58 + " }}"), ids
@@ -87,8 +86,7 @@ def test_fascia58_rami_del_black_out_attese_e_memoria() -> None:
     la Fascia iniziata e la velocità non leggibile; prima del passo finale che spegne le 8 spie del Black-Out c'è la
     condizione «non (Fascia iniziata con la velocità non leggibile)»: la memoria del Black-Out resta, così la Fascia
     (che la spegne nel suo script) parte senza il comando vecchio, subito se Home Assistant vede ancora la VMC ON-Line,
-    altrimenti al suo ritorno; se la Fascia finisce prima di partire, il ripristino avviene al ritorno della VMC. In tutto il file l'uscita compare 59 + 2 + 8 + 9 volte
-    (b40 free_v0: +1 ciclo dell'Umidità con la Free sospesa)."""
+    altrimenti al suo ritorno; se la Fascia finisce prima di partire, il ripristino avviene al ritorno della VMC. In tutto il file l'uscita compare 58 + 2 + 8 volte."""
     rami = [(ids, seq) for ids, seq in _rami() if ids and all(i.startswith("Black-Out Off") for i in ids)]
     assert len(rami) == 8
     attese = 0
@@ -102,7 +100,7 @@ def test_fascia58_rami_del_black_out_attese_e_memoria() -> None:
                 assert n["wait_template"].rstrip().endswith(BLACK_OUT + " or " + FASCIA58 + " }}"), ids
                 assert (n["timeout"], n["continue_on_timeout"]) == ("00:00:12", True), ids
     assert attese == 2
-    assert (PKG / "vmc_master_automazione.txt").read_text(encoding="utf-8").count(FASCIA58) == 59 + 2 + 8 + 9
+    assert (PKG / "vmc_master_automazione.txt").read_text(encoding="utf-8").count(FASCIA58) == 58 + 2 + 8 + 9
 
 
 MEMORIA_BO = "Black-Out prima della conferma"
@@ -117,8 +115,8 @@ def test_fascia58_memoria_del_black_out_dopo_i_9_cicli_di_fine_umidita() -> None
     velocità non leggibile»: se la Fascia parte la memoria la spegne il suo script, se l'orario finisce prima del ritorno
     della VMC al ritorno si ripristina la velocità di fine Umidità (scenari MF|UOFF|F0|C|P e N del simulatore: senza,
     V2 dell'Umidità invece di V0). Il passo segue il ciclo (dopo la variabile della velocità di fine allerta nella Free);
-    gli altri 71 passi con lo stesso nome (cicli che girano anche in Fascia) restano come prima; i 28 cicli di INIZIO
-    Umidità (27 + il ciclo b40 «Velocità 1 dell'Umidità con la Free sospesa») non hanno il passo (le spie dell'Umidità restano accese e i rami «umidita_velocita_*» ricomandano la velocità
+    gli altri 71 passi con lo stesso nome (cicli che girano anche in Fascia) restano come prima; i 27 cicli di INIZIO
+    Umidità non hanno il passo (le spie dell'Umidità restano accese e i rami «umidita_velocita_*» ricomandano la velocità
     al ritorno della VMC)."""
     nuovo = "{{ (" + BLACK_OUT + " or " + FASCIA58 + ") and "
     trovati = altri = senza = 0
@@ -144,13 +142,13 @@ def test_fascia58_memoria_del_black_out_dopo_i_9_cicli_di_fine_umidita() -> None
             senza += sum(1 for n in _nodi(seq) if isinstance(n, dict) and "repeat" in n
                          and FASCIA58 in str(n["repeat"].get("until")))
             assert not any(isinstance(n, dict) and str(n.get("alias", "")).startswith(MEMORIA_BO) for n in _nodi(seq)), ids
-    assert (trovati, altri, senza) == (9, 71, 28)
+    assert (trovati, altri, senza) == (9, 71, 27)
 
 
 def test_fascia58_le_spie_della_fascia_le_accendono_solo_i_14_rami_on() -> None:
     """Perché l'uscita non usa le 14 spie: le accendono solo i 14 rami «N° Giorno On» dell'automazione (nessuno script
     né altra automazione del package), che con mode: queued non possono partire mentre un ciclo dell'automazione gira;
-    un'uscita «spia della Fascia accesa» nei 59 cicli non scatterebbe mai."""
+    un'uscita «spia della Fascia accesa» nei 58 cicli non scatterebbe mai."""
     trovati: dict[str, set[str]] = {}
     for ids, seq in _rami():
         for n in _nodi(seq):

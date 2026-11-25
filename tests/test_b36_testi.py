@@ -131,12 +131,11 @@ FRASI_17 = [
     ("se l'Umidità ha avviato la VMC da Velocità 0, la VMC è ancora alla [Set Velocità Umidità di Avvio] e a fine "
      "Umidità sono ancora presenti gli Inquinanti, la VMC scende a Velocità 1 dopo 28 Secondi e torna a Velocità 0 al "
      "rientro degli Inquinanti (se l'utente ha scelto un'altra Velocità, quella resta);", 1),
-    # C5-4 n. 3 (G7) e decisioni 2-3 del 23-11-2026 (b40): con la Free sospesa la Velocità 0 torna a Velocità 1 [Nota 3]
-    ("(per fermarla si spegne l'interruttore dell'Umidità; con la Free Cool./Heat. sospesa la VMC torna "
-     "invece a Velocità 1 [Nota 3], anche se l'Umidità era partita con la VMC già in Free Cool./Heat., e "
-     'la ripresa in Free resta in attesa);', 1),
-    ('Con la Free Cool./Heat. sospesa dopo 4 Secondi torna a Velocità 1 [Nota 3] (non alla [Set Velocità '
-     'Umidità di Avvio]) e a fine Umidità va a Velocità 0; la ripresa in Free resta in attesa', 1),
+    # C5-4 n. 3 (G7), di nuovo dalla b41 (decisioni 2-3, risposta del proprietario del 25-11-2026): con la Free sospesa
+    # nessun cambio
+    ("(per fermarla si spegne l'interruttore dell'Umidità; con la Free Cool./Heat. sospesa nessun cambio: la VMC resta "
+     "a Velocità 0);", 1),
+    ("Con la Free Cool./Heat. sospesa nessun cambio: la VMC resta a Velocità 0", 1),
     # C5-4 n. 4 (D6): Velocità 1 durante il Δ (voce e tabella)
     ("(se l'allerta finisce prima che sia memorizzata, la Velocità scelta resta); scegliere Velocità 1 non cambia la "
      "memoria;", 1),
@@ -167,13 +166,13 @@ FRASI_17 = [
      "tra il 1° Spegnimento e la 2° Accensione) e tutti gli orari devono essere diversi: se una regola non è "
      "rispettata il giorno risulta «Disabilitata» e nessuna delle due Fasce parte.", 1),
     # C3-2: velocità scelta durante gli 8 s di attesa della fine degli Inquinanti (voce e tabella)
-    # b40: con la Free sospesa la Velocità 0 scelta annulla la ripresa (tranne con l'Umidità in corso)
+    # b40: con la Free sospesa la Velocità 0 scelta annulla la ripresa; b41 (decisione 1, 25-11-2026): anche con
+    # l'Umidità in corso
     ("anche se prima dell'allerta era a un'altra Velocità; una Velocità scelta durante gli 8 Secondi di "
      'attesa dopo il rientro degli Inquinanti resta e la Velocità memorizzata non viene ripristinata '
      "(salvo con un'allerta Congelamento o Δ Temp. in corso e salvo se la Free Cool./Heat. è sospesa da "
      "un'allerta, che ha la sua ripresa); con la Free Cool./Heat. sospesa la Velocità 0 scelta, durante "
-     "l'allerta o nell'attesa, annulla la ripresa in Free e resta, tranne con un'allerta Umidità in corso,"
-     ' dove la ripresa resta in attesa e al rientro la VMC va a Velocità 1 [Nota 3];', 1),
+     "l'allerta o nell'attesa, annulla la ripresa in Free e resta, anche con un'allerta Umidità in corso;", 1),
     ('e PdR superato); anche una Velocità scelta durante gli 8 Secondi di attesa dopo il rientro resta '
      "(salvo con un'allerta Congelamento o Δ Temp. in corso e salvo se la Free Cool./Heat. è sospesa da "
      "un'allerta, che ha la sua ripresa)", 1),
@@ -254,10 +253,9 @@ def test_voce_7_umidita() -> None:
             "l'allerta Umidità si accende ma la VMC resta ferma, anche con la Free Cool./Heat. sospesa (all'avvio "
             "dell'Umidità, all'arresto per condizioni sfavorevoli e a fine Inquinanti, dove con un'altra velocità di "
             "avvio la VMC va a Velocità 1 [Nota 3]).") in voce
-    # b40 (decisioni 2-3 del 23-11-2026): con la Free sospesa la Velocità 0 scelta non resta
-    assert ("Con la Free Cool./Heat. sospesa (Umidità a Velocità 1 [Nota 3]) la Velocità 0 scelta non resta: dopo 4 "
-            "secondi la VMC torna a Velocità 1, anche se l'Umidità era partita con la VMC già in Free Cool./Heat.; la "
-            "ripresa in Free resta in attesa.") in voce
+    # b41 (decisioni 2-3, risposta del proprietario del 25-11-2026): di nuovo come la b39
+    assert ("Con la Free Cool./Heat. sospesa (Umidità partita a Velocità 1 [Nota 3]) nessun cambio: la VMC resta a "
+            "Velocità 0.") in voce
     assert ("• Se l'Umidità ha avviato la VMC da Velocità 0, la VMC è ancora alla [Set Velocità Umidità di Avvio] e a "
             "fine Umidità sono ancora presenti gli Inquinanti, la VMC scende a Velocità 1 dopo 28 secondi e torna a "
             "Velocità 0 al rientro degli Inquinanti (se si è scelta un'altra velocità, quella resta).") in voce

@@ -1,6 +1,6 @@
 ###########################################################################################################################################################################################################################
 #                                                                                                                                                                                                                         #
-#                                                          AUTOMAZIONE VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b40]                                                                                                        #
+#                                                          AUTOMAZIONE VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b41]                                                                                                        #
 #                                                                                                                                                                                                                         #
 # SVILUPPATO DA ING. DANILO ROBOTTI, ALLE PRIME ARMI CON HOME ASSISTANT :)                                                                                                                                                #
 #                                                                                                                                                                                                                         #
@@ -143,8 +143,8 @@ description: >-
 
   I Secondi indicati sono fissi e non vanno modificati: ogni tempo di attesa è
   una costante che non compare nella scheda e
-  che il Profilo Inizializzazione riporta ai valori originali. Il countdown della
-  scheda legge le stesse costanti.
+  che Home Assistant a ogni avvio e il Profilo Inizializzazione riportano ai
+  valori originali. Il countdown della scheda legge le stesse costanti.
 
   - Congelamento ≤ -18 [°C] Temp. Ext.: 0 Secondi. Durante il Congelamento la VMC
   resta ferma: se si prova a cambiarle Velocità viene riportata subito a Velocità
@@ -169,11 +169,10 @@ description: >-
   ripristinata (salvo con un'allerta Congelamento o Δ Temp. in corso e salvo se
   la Free Cool./Heat. è sospesa da un'allerta, che ha la sua ripresa); con la
   Free Cool./Heat. sospesa la Velocità 0 scelta, durante l'allerta o
-  nell'attesa, annulla la ripresa in Free e resta, tranne con un'allerta Umidità
-  in corso, dove la ripresa resta in attesa e al rientro la VMC va a Velocità 1
-  [Nota 3]; se un'allerta Lim. Δ PdR è iniziata con la VMC a Velocità 0,
+  nell'attesa, annulla la ripresa in Free e resta, anche con un'allerta Umidità
+  in corso; se un'allerta Lim. Δ PdR è iniziata con la VMC a Velocità 0,
   all'arrivo degli Inquinanti la sua memoria di Velocità 0 si azzera e la VMC
-  parte a Velocità 1 dopo 4 Secondi;
+  parte a Velocità 1 dopo 8 Secondi;
 
   - Sup. Lim. Δ PdR con Inquinanti: 12 Secondi;
 
@@ -214,15 +213,14 @@ description: >-
   avviato la VMC da Velocità 0 e la VMC risulta ancora, o di nuovo, a Velocità
   0, dopo 4 Secondi viene riportata alla [Set Velocità Umidità di Avvio] e a
   fine Umidità torna a Velocità 0 (per fermarla si spegne l'interruttore
-  dell'Umidità; con la Free Cool./Heat. sospesa la VMC torna invece a Velocità 1
-  [Nota 3], anche se l'Umidità era partita con la VMC già in Free Cool./Heat., e
-  la ripresa in Free resta in attesa); se invece prima si sceglie una Velocità
-  diversa da quella di avvio e la si tiene almeno 4 Secondi, la Velocità 0
-  scelta dopo viene memorizzata e la VMC resta ferma anche a fine Umidità; se
-  l'Umidità ha avviato la VMC da Velocità 0, la VMC è ancora alla [Set Velocità
-  Umidità di Avvio] e a fine Umidità sono ancora presenti gli Inquinanti, la VMC
-  scende a Velocità 1 dopo 28 Secondi e torna a Velocità 0 al rientro degli
-  Inquinanti (se l'utente ha scelto un'altra Velocità, quella resta);
+  dell'Umidità; con la Free Cool./Heat. sospesa nessun cambio: la VMC resta a
+  Velocità 0); se invece prima si sceglie una Velocità diversa da quella di
+  avvio e la si tiene almeno 4 Secondi, la Velocità 0 scelta dopo viene
+  memorizzata e la VMC resta ferma anche a fine Umidità; se l'Umidità ha avviato
+  la VMC da Velocità 0, la VMC è ancora alla [Set Velocità Umidità di Avvio] e a
+  fine Umidità sono ancora presenti gli Inquinanti, la VMC scende a Velocità 1
+  dopo 28 Secondi e torna a Velocità 0 al rientro degli Inquinanti (se l'utente
+  ha scelto un'altra Velocità, quella resta);
 
   - Black-Out: 32 Secondi per il Rilevamento e per il Ripristino; una Velocità
   scelta dopo il ritorno della corrente e prima del ripristino (Telecomando,
@@ -335,8 +333,7 @@ description: >-
   scelta); scegliere Velocità 1 non cambia la memoria; si sceglie Velocità 0 → viene riportata a
   Velocità 1; a fine allerta resta a Velocità 0 (con la Free Cool./Heat. sospesa la ripresa
   automatica in Free si annulla, come con gli Inquinanti, anche se la Velocità 0 è scelta negli
-  ultimi Secondi o durante l'attesa della fine; con un'allerta Umidità in corso invece la
-  ripresa resta in attesa e dopo 4 Secondi la VMC torna a Velocità 1 [Nota 3]);
+  ultimi Secondi o durante l'attesa della fine, anche con un'allerta Umidità in corso);
 
   - Inquinanti (CO₂ e VOC): si sceglie un'altra Velocità → viene memorizzata
   dopo 8 Secondi e mantenuta, anche dopo il rientro degli Inquinanti (anche la
@@ -346,9 +343,8 @@ description: >-
   è sospesa da un'allerta, che ha la sua ripresa); si sceglie Velocità 0 → dopo
   circa 8 Secondi riparte a Velocità 1; al rientro degli Inquinanti torna a
   Velocità 0 (con la Free Cool./Heat. sospesa la ripresa in Free si annulla,
-  anche se la Velocità 0 è scelta nell'attesa di 8 Secondi dopo il rientro; con
-  un'allerta Umidità in corso invece la ripresa resta in attesa e al rientro la
-  VMC va a Velocità 1 [Nota 3]);
+  anche se la Velocità 0 è scelta nell'attesa di 8 Secondi dopo il rientro,
+  anche con un'allerta Umidità in corso);
 
   - Lim. Δ Punto di Rugiada: si sceglie un'altra Velocità → viene riportata a
   Velocità 0; la Velocità scelta viene memorizzata e ripristinata a fine allerta
@@ -364,16 +360,15 @@ description: >-
   Cool./Heat. con le condizioni ancora sfavorevoli la VMC torna a Velocità 0
   dopo 24 Secondi; si sceglie Velocità 0 → la VMC è già ferma: nessun effetto;
   quando le condizioni tornano favorevoli riprende in Free Cool./Heat. (con
-  un'allerta Δ Temp. o Inquinanti in corso la Velocità 0 scelta resta e
-  annulla la ripresa; con un'allerta Umidità in corso, anche insieme al Δ
-  Temp. o agli Inquinanti, la VMC torna a Velocità 1 [Nota 3]);
+  un'allerta Umidità in corso la VMC, a Velocità 1 [Nota 3], si ferma e resta
+  a Velocità 0 fino alla ripresa; con un'allerta Δ Temp. o Inquinanti in
+  corso, anche insieme all'Umidità, la Velocità 0 scelta resta e annulla la
+  ripresa);
 
   - Umidità, con la VMC già in moto all'inizio: si sceglie un'altra Velocità →
   memorizzata dopo 4 Secondi e mantenuta a fine Umidità (se l'Umidità finisce
   prima che sia memorizzata, resta la Velocità scelta); si sceglie Velocità 0 →
-  la VMC si ferma e resta a Velocità 0, anche a fine Umidità (con la Free
-  Cool./Heat. sospesa invece dopo 4 Secondi torna a Velocità 1 [Nota 3] e la
-  ripresa in Free resta in attesa);
+  la VMC si ferma e resta a Velocità 0, anche a fine Umidità;
 
   - Umidità, con la VMC avviata da Velocità 0: si sceglie un'altra Velocità →
   una Velocità diversa da quella di avvio viene memorizzata dopo 4 Secondi e
@@ -384,9 +379,7 @@ description: >-
   l'interruttore dell'Umidità. Se invece prima si è scelta una Velocità diversa
   da quella di avvio e la si è tenuta almeno 4 Secondi, la Velocità 0 viene
   memorizzata e la VMC resta ferma anche a fine Umidità. Con la Free Cool./Heat.
-  sospesa dopo 4 Secondi torna a Velocità 1 [Nota 3] (non alla [Set Velocità
-  Umidità di Avvio]) e a fine Umidità va a Velocità 0; la ripresa in Free resta
-  in attesa.
+  sospesa nessun cambio: la VMC resta a Velocità 0.
 
   Esempio: la VMC è a Velocità 2 e la CO₂ sale; si sceglie Velocità 0: dopo circa
   8 Secondi la VMC riparte a Velocità 1 e, quando la CO₂ rientra, torna a Velocità
@@ -4051,7 +4044,7 @@ triggers:
       ) and (states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) == 0 or states('input_number.vmc_master_fase_riallineamento_al_riavvio') | float(0) >= 3) }}
     id: Inquinanti con Spia PdR Velocità 0 -> Spia PdR Velocità 0 OFF
     for:
-      seconds: "{{ states('input_number.vmc_master_attesa_inquinanti_avvio_spia_pdr') | int(4) }}"
+      seconds: "{{ states('input_number.vmc_master_attesa_inquinanti_avvio_spia_pdr') | int(8) }}"
     trigger: template
   - alias: Disattivazione Automatica VMC per Inquinanti CO2 e/o VOC Rilevati
     value_template: |
@@ -5908,10 +5901,7 @@ triggers:
     id: umidita_off_con_inquinanti_partenza_velocita_0
     for:
       seconds: "{{ states('input_number.vmc_master_attesa_umidita_fine') | int(28) }}"
-  - alias: >-
-      Umidità ON Vel. 0 [Spia Umidità ON] (anche con la Free Cool./Heat. sospesa, se l'Umidità è partita con la VMC in
-      Free o da Velocità 0 e [Set Velocità Umidità di Avvio] non è su Velocità 0: la Velocità 0 scelta riporta la VMC
-      alla Velocità 1 [Nota 3])
+  - alias: Umidità ON Vel. 0 [Spia Umidità ON]
     trigger: template
     value_template: |
       {{ ( 
@@ -5964,13 +5954,8 @@ triggers:
           states('input_boolean.vmc_master_spia_velocita_freecooling_delta_temp_verifica_soglia_valore') == 'off'
         ) and
 
-        (
-          (states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling') == 'off' and
-           states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating') == 'off') or
-          (states('sensor.vmc_master_alert_monitoraggio_umidita') == 'Allerta' and
-           states('input_select.vmc_master_speed_umidita') != 'Velocità 0' and
-           (states('input_boolean.vmc_master_spia_umidita_velocita_freecooling') == 'on' or states('input_boolean.vmc_master_spia_umidita_velocita_0') == 'on'))
-        ) and
+        states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling') == 'off' and
+        states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating') == 'off' and
 
         (
           states('input_boolean.vmc_master_spia_velocita_0') == 'off' and
@@ -10353,13 +10338,8 @@ actions:
           states('input_boolean.vmc_master_spia_velocita_freecooling_delta_temp_verifica_soglia_valore') == 'off'
         ) and
 
-        (
-          (states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling') == 'off' and
-           states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating') == 'off') or
-          (states('sensor.vmc_master_alert_monitoraggio_umidita') == 'Allerta' and
-           states('input_select.vmc_master_speed_umidita') != 'Velocità 0' and
-           (states('input_boolean.vmc_master_spia_umidita_velocita_freecooling') == 'on' or states('input_boolean.vmc_master_spia_umidita_velocita_0') == 'on'))
-        ) and
+        states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling') == 'off' and
+        states('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating') == 'off' and
 
         (
           states('input_boolean.vmc_master_spia_velocita_0') == 'off' and
@@ -25826,7 +25806,7 @@ actions:
               Free Cool./Heat. memorizzata senza sospensione vale come le altre velocità
             if:
               - condition: template
-                value_template: "{{ is_state('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia', 'off') and is_state('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia', 'off') and ((vel_ripristino_inquinanti != '' and vel_fine_inquinanti in ['Velocità 0', 'Velocità 1', 'Velocità 2', 'Velocità 3', 'Velocità 4', 'Notturna', 'Iperventilazione', 'Free Cooling'] and vel_fine_inquinanti != vel_ripristino_inquinanti and not (vel_ripristino_inquinanti == 'Velocità 0' and vel_fine_inquinanti == 'Velocità 1') and not (vel_fine_inquinanti == 'Velocità 1' and is_state('input_boolean.vmc_master_spia_velocita_1_co2_o_voc_pdr', 'on'))) or (vel_fine_inquinanti == 'Velocità 0' and (is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling', 'on') or is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating', 'on')) and is_state('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia', 'off') and is_state('input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0', 'off') and is_state('input_boolean.vmc_master_spia_velocita_0_co2_o_voc', 'off'))) }}"
+                value_template: "{{ is_state('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia', 'off') and is_state('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia', 'off') and ((vel_ripristino_inquinanti != '' and vel_fine_inquinanti in ['Velocità 0', 'Velocità 1', 'Velocità 2', 'Velocità 3', 'Velocità 4', 'Notturna', 'Iperventilazione', 'Free Cooling'] and vel_fine_inquinanti != vel_ripristino_inquinanti and not (vel_ripristino_inquinanti == 'Velocità 0' and vel_fine_inquinanti == 'Velocità 1') and not (vel_fine_inquinanti == 'Velocità 1' and is_state('input_boolean.vmc_master_spia_velocita_1_co2_o_voc_pdr', 'on'))) or (vel_fine_inquinanti == 'Velocità 0' and (is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling', 'on') or is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating', 'on')) and is_state('input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0', 'off') and is_state('input_boolean.vmc_master_spia_velocita_0_co2_o_voc', 'off'))) }}"
             then:
               - data: {}
                 target:
@@ -25865,13 +25845,13 @@ actions:
               - alias: >-
                   Velocità 0 scelta con la Free Cool./Heat. sospesa (Spia Free Heating o Free Cooling accesa) -> la ripresa
                   in Free Cool./Heat. si annulla e resta la Velocità 0 scelta, come per la Velocità 0 memorizzata durante
-                  l'allerta e come per il Δ Temp. (regola del 24-11-2026, gemella della decisione 1 del 23-11-2026); senza
-                  allerta Umidità in corso (con l'Umidità la Velocità 0 riporta la VMC alla Velocità 1 [Nota 3]); non vale
-                  per la Velocità 0 che non è una scelta: Inquinanti partiti da ferma o riavviati da Velocità 0, oppure
+                  l'allerta e come per il Δ Temp. (regola del 24-11-2026, gemella della decisione 1 del 23-11-2026), anche con
+                  un'allerta Umidità in corso (gli Inquinanti hanno priorità sull'Umidità, decisione del proprietario
+                  25-11-2026); non vale per la Velocità 0 che non è una scelta: Inquinanti partiti da ferma o riavviati da Velocità 0, oppure
                   Velocità 0 già memorizzata [Foglio Logiche E6, A29]
                 if:
                   - condition: template
-                    value_template: "{{ vel_fine_inquinanti == 'Velocità 0' and (is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling', 'on') or is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating', 'on')) and is_state('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia', 'off') and is_state('input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0', 'off') and is_state('input_boolean.vmc_master_spia_velocita_0_co2_o_voc', 'off') }}"
+                    value_template: "{{ vel_fine_inquinanti == 'Velocità 0' and (is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling', 'on') or is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating', 'on')) and is_state('input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0', 'off') and is_state('input_boolean.vmc_master_spia_velocita_0_co2_o_voc', 'off') }}"
                 then:
                   - data: {}
                     target:
@@ -27237,21 +27217,6 @@ actions:
                           data:
                             value: ""
                     else:
-                      - alias: >-
-                          Velocità 0 scelta durante l'allerta Inquinanti con la Free Cool./Heat. sospesa -> la ripresa in Free
-                          Cool./Heat. si annulla (Spie Free Heating e Free Cooling spente), salvo con un'allerta Umidità in
-                          corso: la ripresa resta in attesa e a fine Inquinanti la Velocità 0 riporta la VMC alla Velocità 1
-                          [Nota 3], come per il Δ Temp. e per la fine Inquinanti (regola del 24-11-2026, decisioni 2-3)
-                          [Foglio Logiche E6, A29]
-                        if:
-                          - condition: template
-                            value_template: "{{ is_state('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia', 'off') }}"
-                        then:
-                          - action: input_boolean.turn_off
-                            target:
-                              entity_id:
-                                - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling
-                                - input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating
                       - variables:
                           vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
                         alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
@@ -27301,6 +27266,10 @@ actions:
                                     input_boolean.vmc_master_spia_velocita_iperventilazione_un_solo_avvio
                                   - >-
                                     input_boolean.vmc_master_spia_velocita_notturna_un_solo_avvio
+                                  - >-
+                                    input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling
+                                  - >-
+                                    input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating
                               action: input_boolean.turn_off
                             - data: {}
                               action: shell_command.vmc_master_velocita_1
@@ -38552,42 +38521,6 @@ actions:
             id:
               - umidita_velocita_0
         sequence:
-          - alias: >-
-              Allerta Umidità in corso con la Free Cool./Heat. sospesa (Spia Free Heating o Free Cooling accesa) e [Set
-              Velocità Umidità di Avvio] diversa da Velocità 0 -> la Velocità 0 scelta dall'utente non resta: la VMC torna
-              alla Velocità 1 dell'Umidità [Nota 3], come l'Umidità che ha avviato la VMC da Velocità 0; la memoria
-              dell'Umidità non cambia (a fine Umidità Velocità 0) e la ripresa in Free Cool./Heat. resta in attesa. Vale
-              sia con l'Umidità partita con la Free già sospesa sia con quella partita prima della sospensione (decisione
-              del proprietario 23-11-2026); se inizia una Fascia del Calendario con la velocità della VMC non leggibile la
-              ripetizione si ferma: la VMC la comanda la Fascia [Foglio Logiche A21, A25, A27, A29]
-            if:
-              - condition: template
-                value_template: "{{ (is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling', 'on') or is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating', 'on')) and states('input_select.vmc_master_speed_umidita') != 'Velocità 0' }}"
-            then:
-              - variables:
-                  vel_prima_del_comando: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') }}"
-                alias: Memorizza la velocità prima del comando (un cambio fatto dall'utente ferma il ciclo di conferma)
-              - repeat:
-                  sequence:
-                    - action: shell_command.vmc_master_velocita_1
-                    - delay:
-                        hours: 0
-                        minutes: 0
-                        seconds: 1
-                        milliseconds: 0
-                    - action: homeassistant.update_entity
-                      target:
-                        entity_id: sensor.vmc_master_status_ventola
-                      alias: Rilettura immediata della velocità (la velocità non ancora aggiornata non va presa per una scelta dell'utente)
-                    - delay:
-                        hours: 0
-                        minutes: 0
-                        seconds: 4
-                        milliseconds: 0
-                  until:
-                    - condition: template
-                      value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 1' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') or (is_state('sensor.vmc_master_status_ventola', 'unavailable') and is_state('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_calendario', 'on') and is_state('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia', 'off') and is_state('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia', 'off') and ((states('sensor.vmc_master_status_accensione_vmc_tramite_calendario') == (['lunedi', 'martedi', 'mercoledi', 'giovedi', 'venerdi', 'sabato', 'domenica'][now().weekday()] | capitalize) and now().strftime('%H:%M') >= states('input_datetime.vmc_master_accensione_' ~ ['lunedi', 'martedi', 'mercoledi', 'giovedi', 'venerdi', 'sabato', 'domenica'][now().weekday()])[0:5] and now().strftime('%H:%M') < states('input_datetime.vmc_master_spegnimento_' ~ ['lunedi', 'martedi', 'mercoledi', 'giovedi', 'venerdi', 'sabato', 'domenica'][now().weekday()])[0:5]) or (states('sensor.vmc_master_status_accensione_vmc_tramite_calendario_2') == (['lunedi', 'martedi', 'mercoledi', 'giovedi', 'venerdi', 'sabato', 'domenica'][now().weekday()] | capitalize) and now().strftime('%H:%M') >= states('input_datetime.vmc_master_accensione_' ~ ['lunedi', 'martedi', 'mercoledi', 'giovedi', 'venerdi', 'sabato', 'domenica'][now().weekday()] ~ '_2')[0:5] and now().strftime('%H:%M') < states('input_datetime.vmc_master_spegnimento_' ~ ['lunedi', 'martedi', 'mercoledi', 'giovedi', 'venerdi', 'sabato', 'domenica'][now().weekday()] ~ '_2')[0:5]))) }}"
-              - stop: Velocità 1 dell'allerta Umidità con la Free sospesa [Nota 3]
           - alias: Umidità che ha avviato la VMC da Velocità 0 e VMC ancora (o di nuovo) a 0 -> rimanda la velocità di avvio dell'opzione 175, la memoria resta (correzione U3); non se la Velocità 0 l'ha scelta l'utente durante l'Umidità (Velocità 0 mantenuta); anche con la lettura appena tornata disponibile dopo un OFF-Line breve (B4-4)
             if:
               - condition: template
@@ -38668,8 +38601,7 @@ actions:
                   until:
                     - condition: template
                       value_template: "{{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') == 'Velocità 0' or (vel_prima_del_comando not in ['Non disponibile', 'unknown', 'unavailable', ''] and states('sensor.vmc_master_status_ventola_lettura_codice_interpretato') not in [vel_prima_del_comando, 'Non disponibile', 'unknown', 'unavailable', '']) or is_state('binary_sensor.vmc_master_black_out_rilevato', 'on') or (is_state('sensor.vmc_master_status_ventola', 'unavailable') and is_state('input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_calendario', 'on') and is_state('input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia', 'off') and is_state('input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia', 'off') and ((states('sensor.vmc_master_status_accensione_vmc_tramite_calendario') == (['lunedi', 'martedi', 'mercoledi', 'giovedi', 'venerdi', 'sabato', 'domenica'][now().weekday()] | capitalize) and now().strftime('%H:%M') >= states('input_datetime.vmc_master_accensione_' ~ ['lunedi', 'martedi', 'mercoledi', 'giovedi', 'venerdi', 'sabato', 'domenica'][now().weekday()])[0:5] and now().strftime('%H:%M') < states('input_datetime.vmc_master_spegnimento_' ~ ['lunedi', 'martedi', 'mercoledi', 'giovedi', 'venerdi', 'sabato', 'domenica'][now().weekday()])[0:5]) or (states('sensor.vmc_master_status_accensione_vmc_tramite_calendario_2') == (['lunedi', 'martedi', 'mercoledi', 'giovedi', 'venerdi', 'sabato', 'domenica'][now().weekday()] | capitalize) and now().strftime('%H:%M') >= states('input_datetime.vmc_master_accensione_' ~ ['lunedi', 'martedi', 'mercoledi', 'giovedi', 'venerdi', 'sabato', 'domenica'][now().weekday()] ~ '_2')[0:5] and now().strftime('%H:%M') < states('input_datetime.vmc_master_spegnimento_' ~ ['lunedi', 'martedi', 'mercoledi', 'giovedi', 'venerdi', 'sabato', 'domenica'][now().weekday()] ~ '_2')[0:5]))) }}"
-        alias: >-
-          Umidità ON Vel. 0 [Spia Umidità ON] (con la Free Cool./Heat. sospesa la VMC torna alla Velocità 1 [Nota 3])
+        alias: Umidità ON Vel. 0 [Spia Umidità ON]
       - conditions:
           - condition: trigger
             id:
@@ -39385,12 +39317,11 @@ actions:
                       Velocità 0 scelta dall'utente durante l'allerta Δ Temp. con la Free Cool./Heat. sospesa (Spia Free
                       Heating o Free Cooling accesa) -> la ripresa in Free Cool./Heat. si annulla: a fine allerta resta la
                       Velocità 0 scelta, come con gli Inquinanti (decisione del proprietario 23-11-2026); non all'avvio
-                      dell'allerta con la VMC già ferma per la Free sospesa e non con un'allerta Umidità in corso: lì la
-                      ripresa resta in attesa e a fine allerta la Velocità 0 riporta la VMC alla Velocità 1 [Nota 3], come
-                      con gli Inquinanti (regola del 24-11-2026, decisioni 2-3) [Foglio Logiche D6, A29]
+                      dell'allerta con la VMC già ferma per la Free sospesa; vale anche con un'allerta Umidità in corso (il Δ
+                      Temp. ha priorità sull'Umidità, decisione del proprietario 25-11-2026) [Foglio Logiche D6, A29]
                     if:
                       - condition: template
-                        value_template: "{{ trigger.id == 'spia_velocita_0_delta_temp' and (is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling', 'on') or is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating', 'on')) and is_state('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia', 'off') }}"
+                        value_template: "{{ trigger.id == 'spia_velocita_0_delta_temp' and (is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling', 'on') or is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating', 'on')) }}"
                     then:
                       - action: input_boolean.turn_off
                         target:
@@ -40189,12 +40120,11 @@ actions:
               - alias: >-
                   Velocità 0 scelta con la Free Cool./Heat. sospesa (Spia Free Heating o Free Cooling accesa) -> la ripresa
                   in Free Cool./Heat. si annulla e resta la Velocità 0 scelta, come per la Velocità 0 memorizzata durante
-                  l'allerta (decisione del proprietario 23-11-2026); non con un'allerta Umidità in corso: la ripresa resta
-                  in attesa e la Velocità 0 riporta la VMC alla Velocità 1 [Nota 3], come con gli Inquinanti (regola del
-                  24-11-2026, decisioni 2-3) [Foglio Logiche D6, A29]
+                  l'allerta (decisione del proprietario 23-11-2026); vale anche con un'allerta Umidità in corso (il Δ Temp. ha
+                  priorità sull'Umidità, decisione del proprietario 25-11-2026) [Foglio Logiche D6, A29]
                 if:
                   - condition: template
-                    value_template: "{{ vel_fine_delta == 'Velocità 0' and (is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling', 'on') or is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating', 'on')) and is_state('input_boolean.vmc_master_umidita_verifica_soglia_valore_spia', 'off') }}"
+                    value_template: "{{ vel_fine_delta == 'Velocità 0' and (is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling', 'on') or is_state('input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating', 'on')) }}"
                 then:
                   - action: input_boolean.turn_off
                     target:

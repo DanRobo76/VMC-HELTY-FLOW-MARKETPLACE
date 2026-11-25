@@ -613,12 +613,10 @@ CLASSE_A = {
     "[trigger] Spia Velocità X CO2/VOC": 1,
     "[ramo d'azione] Spia Velocità X CO2/VOC": 68,
     "[trigger] Spia Velocità X Congelamento": 1,
-    # b40 (free_v0, decisioni 2-3 del 23-11-2026): 2 -> 3 e 22 -> 28, solo la copia V0 ha la condizione e il passo della
-    # Free sospesa (con l'Umidità in corso la Velocità 0 scelta riporta la VMC alla Velocità 1 [Nota 3], Foglio A21/A27;
-    # le altre velocità annullano già la ripresa Free con il trigger «Cambio Velocità quanto Spia FreeHeating o
-    # FreeCooling è ON - Inquinanti OFF»)
-    "[trigger] Umidità ON Vel. X": 3,
-    "[ramo d'azione] Umidità ON Vel. X": 28,
+    # b40 (free_v0, decisioni 2-3 del 23-11-2026) 2 -> 3 e 22 -> 28; b41 (decisioni 2-3 del proprietario del
+    # 25-11-2026: con la Free sospesa la Velocità 0 scelta durante l'Umidità resta, come nella b39) di nuovo 2 e 22
+    "[trigger] Umidità ON Vel. X": 2,
+    "[ramo d'azione] Umidità ON Vel. X": 22,
     "[opzioni annidate] automazione «inquinanti_co2_voc_on»: «Caso Velocità 0 con PdR su Velocità 1 o Spia Inquinanti "
     "su Velocità 1»": 5,
     "[opzioni annidate] automazione «Congelamento ON» (+8 trigger): «Velocità 0»": 41,
@@ -890,14 +888,12 @@ def test_fine_congelamento_e_fine_delta_gemelli() -> None:
     gemello di fine Congelamento no) non c'è più: corretto nella b36.
     b40 (free_v0, decisione 1 del 23-11-2026): nello stesso passo C3-1 del Δ la Velocità 0 scelta con la Free sospesa
     annulla la ripresa Free (A3 20 -> 23 pezzi; A5, C=0, D=2, 2 pezzi: «condition: template» e «input_boolean.turn_off»
-    ripetuti dal passo degli Inquinanti); il Congelamento non ha il passo (C6: con la Velocità 0 non cambia nulla).
-    Regola del 24-11-2026: lo stesso passo esclude l'allerta Umidità in corso (A3 23 -> 24 pezzi, una riga in più
-    dell'alias)."""
+    ripetuti dal passo degli Inquinanti); il Congelamento non ha il passo (C6: con la Velocità 0 non cambia nulla)."""
     gelo, delta = _membri_fine_allerta()
     gruppi = raggruppa(confronta([gelo, delta], ALLERTA))
     misurati = {tuple(sorted(g["conti"].items())): len(g["voci"]) for g in gruppi if g["tipo"] == "riga"}
     assert all(g["tipo"] == "riga" for g in gruppi)
-    assert misurati == {(("C", 1), ("D", 2)): 9, (("C", 8), ("D", 0)): 20, (("C", 0), ("D", 1)): 24,
+    assert misurati == {(("C", 1), ("D", 2)): 9, (("C", 8), ("D", 0)): 20, (("C", 0), ("D", 1)): 23,
                         (("C", 0), ("D", 8)): 10, (("C", 0), ("D", 2)): 2}, misurati
     passo = _righe_del_passo_c3_1(delta)
     (a3,) = [g for g in gruppi if g["conti"] == {"C": 0, "D": 1}]
