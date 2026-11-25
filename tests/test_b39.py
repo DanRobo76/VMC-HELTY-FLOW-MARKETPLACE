@@ -8,8 +8,9 @@ girare in una Fascia. La b39:
 - A: aggiunge ai 134 cicli che possono partire anche in Fascia l'uscita «velocità non leggibile da 32 s con una Fascia in
   corso» (fuori Fascia è sempre falsa: i cicli restano quelli della b38). I 58 cicli che girano solo fuori Fascia
   (ripristino dopo il Black-Out, Umidità) non la hanno: tutti i loro trigger chiedono le spie del Calendario spente e le
-  spie si accendono solo nei rami della stessa automazione (mode: queued), quindi una Fascia non può iniziare mentre
-  girano; i cicli del Calendario hanno già la loro uscita (b34-b36).
+  spie si accendono solo nei rami della stessa automazione (mode: queued), quindi la Spia della Fascia non può
+  accendersi mentre girano; i cicli del Calendario hanno già la loro uscita (b34-b36). La b40 dà ai 58 un'uscita
+  propria: si fermano quando l'ora di una Fascia è arrivata con la velocità non leggibile (tests/test_b40.py, fascia58).
 - M (porta 5001 muta, VMC che risponde al ping): dopo ognuno dei 134 cicli, se è finito senza velocità raggiunta, senza
   scelta dell'utente e senza Black-Out, il comando si memorizza (Comando non eseguito, «velocità|ora») e si ripete appena
   la velocità torna leggibile con la VMC ON-Line, salvo se nel frattempo la velocità è cambiata o se c'è un Black-Out del
@@ -172,13 +173,18 @@ def test_versioni_b39() -> None:
 def test_cicli_in_fascia_escono_con_la_lettura_persa() -> None:
     """211 cicli di conferma: i 18 del Calendario hanno l'uscita senza condizioni (b34-b36); i 135 che possono girare in
     Fascia (134 delle allerte + la ripetizione del Comando non eseguito) hanno l'uscita «velocità non leggibile da 32 s
-    con una Fascia in corso», subito dopo il Black-Out e per ultima; i 58 che girano solo fuori Fascia non la hanno."""
+    con una Fascia in corso», subito dopo il Black-Out e per ultima; i 58 che girano solo fuori Fascia non la hanno: dalla
+    b40 hanno per ultima, dopo il Black-Out, l'uscita «Fascia iniziata con la velocità non leggibile» (senza attesa dei
+    32 s e senza le spie, che lì non possono accendersi; prova completa in tests/test_b40.py).
+    b40 (free_v0): 212 cicli, fuori Fascia 59 (Velocità 1 dell'Umidità con la Free sospesa, ramo «Umidità ON Vel. 0»)."""
     classi = _classi()
-    assert {k: len(v) for k, v in classi.items()} == {"calendario": 18, "fuori": 58, "fascia": 135}
+    assert {k: len(v) for k, v in classi.items()} == {"calendario": 18, "fuori": 59, "fascia": 135}
     for ids, testo, _, _ in classi["calendario"]:
         assert LETTURA_PERSA in testo and LETTURA_PERSA_IN_FASCIA not in testo, ids
     for ids, testo, _, _ in classi["fuori"]:
-        assert "sensor.vmc_master_status_ventola'" not in testo and BLACK_OUT in testo, ids
+        assert "last_changed" not in testo and LETTURA_PERSA_IN_FASCIA not in testo and "spia_calendario_" not in testo, ids
+        uscita = testo[testo.index(BLACK_OUT + " or (is_state('sensor.vmc_master_status_ventola', 'unavailable')"):]
+        assert "sensor.vmc_master_status_accensione_vmc_tramite_calendario_2" in uscita and uscita.rstrip().endswith(" }}"), ids
         assert any(i.startswith(("Black-Out Off", "spia_umidita_", "umidita_")) for i in ids), ids
     for ids, testo, _, _ in classi["fascia"]:
         assert testo.count(BLACK_OUT + " or " + LETTURA_PERSA_IN_FASCIA) == 1, ids

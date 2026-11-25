@@ -21,6 +21,8 @@ from typing import Any
 
 from homeassistant.util import yaml as hay
 
+from tests.test_b40 import FASCIA58
+
 PKG = Path(__file__).parent.parent / "custom_components" / "vmc_master" / "package"
 LETTURA = "sensor.vmc_master_status_ventola_lettura_codice_interpretato"
 COMANDO = re.compile(r"^shell_command\.vmc_master_(velocita_[0-4]|notturna|freecooling|iperventilazione|\{\{.*\}\})$")
@@ -54,7 +56,8 @@ LETTURA_PERSA_IN_FASCIA = (
 
 
 def _fine(etichetta: str, fascia: bool = True) -> str:
-    persa = f" or {LETTURA_PERSA_IN_FASCIA}" if fascia else ""
+    # b40 (fascia58): i cicli fuori Fascia si fermano quando inizia una Fascia con la velocita' non leggibile
+    persa = f" or {LETTURA_PERSA_IN_FASCIA}" if fascia else f" or {FASCIA58}"
     return f"{{{{ states('{LETTURA}') == '{etichetta}' or {UTENTE} or {BLACK_OUT}{persa} }}}}"
 
 
@@ -121,8 +124,9 @@ def test_comandi_di_velocita_fuori_ciclo_solo_quelli_voluti() -> None:
     tutti = list(_comandi(dati["actions"]))
     # b35 (C1-1): +1, Velocita' 0 di fine Fascia ripetuta nel ramo del ritorno della VMC; b36 (C1-5): +1, Velocita' 1
     # dello spegnimento del Calendario con gli Inquinanti ripetuta nel ramo del ritorno della VMC; b39: +1, ripetizione del
-    # Comando non eseguito durante una Fascia (comando con template, nel ciclo standard)
-    assert len(tutti) == 221
+    # Comando non eseguito durante una Fascia (comando con template, nel ciclo standard); b40 (free_v0): +1, Velocita' 1
+    # dell'Umidita' con la Free sospesa nel ramo «Umidità ON Vel. 0» (nel ciclo)
+    assert len(tutti) == 222
     fuori = [azione for azione, dentro in tutti if not dentro]
     assert fuori == ["shell_command.vmc_master_velocita_1"] * 4
     ramo = _rami(dati)["spia_velocita_1_inquinanti_co2_voc"]
@@ -135,7 +139,7 @@ def test_ripristino_dopo_il_black_out_ogni_comando_nel_ciclo_standard() -> None:
     """B1-2: «Black-Out Off Vel. 0» (8 memorie PdR, Inquinanti -> Velocita' 1 e il caso senza memorie) e «Black-Out
     Off Free Cool./Heat.» (4 casi e i 2 del caso non coperto): ogni comando nel ciclo standard, uguale a quello dei
     rami «Black-Out Off Vel. 1..4, Notturna, Iperventilazione» a parte il comando; l'attesa di 12 s prima di
-    spegnere le spie resta."""
+    spegnere le spie resta (b40: non attende se e' iniziata una Fascia con la velocita' non leggibile)."""
     rami = _rami(_automazione())
     alias_modello: set[str] = set()
     for ident in ("Black-Out Off Vel. 1", "Black-Out Off Vel. 2", "Black-Out Off Vel. 3", "Black-Out Off Vel. 4",
@@ -159,7 +163,7 @@ def test_ripristino_dopo_il_black_out_ogni_comando_nel_ciclo_standard() -> None:
         attesa = [p for p in ramo["sequence"] if "wait_template" in p]
         assert len(attesa) == 1 and attesa[0]["timeout"] == "00:00:12", ident
         assert attesa[0]["wait_template"] == (
-            f"{{{{ states('{LETTURA}') != vel_prima_del_comando or {BLACK_OUT} }}}}"), ident
+            f"{{{{ states('{LETTURA}') != vel_prima_del_comando or {BLACK_OUT} or {FASCIA58} }}}}"), ident
         # b36 (scelta): il primo passo e' la velocita' scelta dall'utente prima del ripristino (test_b36_scelta)
         assert ramo["sequence"][1]["variables"] == MEMORIA, ident
     # Inquinanti -> Velocita' 1: la memoria della Velocita' 0 si spegne dopo il ciclo, come prima dopo il comando

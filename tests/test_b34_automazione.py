@@ -301,8 +301,10 @@ VEL_UMIDITA = "input_select.vmc_master_speed_umidita"
 
 def _scelta_umidita_velocita_0() -> dict:
     passi = _ramo("umidita_velocita_0")["sequence"]
-    assert len(passi) == 1
-    return passi[0]
+    # b40 (free_v0): prima c'è il passo della Free sospesa (Velocità 1 [Nota 3], decisioni 2-3 del 23-11-2026, prove in
+    # tests/test_b40.py), poi la scelta di sempre
+    assert len(passi) == 2 and "Free Cool./Heat. sospesa" in passi[0]["alias"]
+    return passi[1]
 
 
 def test_umidita_velocita_0_lettura_appena_tornata_struttura() -> None:

@@ -1432,15 +1432,16 @@ def test_id_del_package(tmp_path: Path) -> None:
     for _entity_id, *chiave in ENTITA_PACKAGE_SALA:
         assert tuple(chiave) in id_package
     assert all("vmc_sala_" in unique_id or unique_id == "automazione_vmc_sala" for *_d, unique_id in id_package)
-    # 133 unique_id e 13 automazioni, piu' le chiavi di aiutanti, timer e script
+    # 133 unique_id e 14 automazioni, piu' le chiavi di aiutanti, timer e script
     assert sum(1 for d, p, _u in id_package if p in ("template", "command_line", "rest")) == 133
-    assert sum(1 for d, _p, _u in id_package if d == "automation") == 13
+    assert sum(1 for d, _p, _u in id_package if d == "automation") == 14
     # b28: timer del countdown di riattivazione; b30: timer del countdown di gruppo;
     # b31: campo di esito della verifica dell'IP (input_text ..._ip_insert_esito);
     # b34: Spia Comando non eseguito del Calendario (input_boolean);
     # b38: automazioni Registro Comandi e Scelte, Rimando della Scelta e Letture Ravvicinate, 3 input_text del registro;
-    # b39: Comando non Eseguito durante una Fascia (input_text)
-    assert len(id_package) == 472
+    # b39: Comando non Eseguito durante una Fascia (input_text);
+    # b40: automazione Ripartenza della VMC
+    assert len(id_package) == 473
     # nessun id in comune con un'altra VMC
     assert id_package.isdisjoint(_id_del_package_generato("salab"))
     # tag di Home Assistant e unique_id di blocco dei template
