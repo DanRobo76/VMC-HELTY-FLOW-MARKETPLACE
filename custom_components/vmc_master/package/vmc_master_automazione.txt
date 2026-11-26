@@ -48,10 +48,11 @@ description: >-
   esegue solo se la sua condizione è ancora vera quando arriva il suo turno,
   rileggendo prima la velocità della VMC se l'evento arriva allo scadere di
   un'attesa (per le finestre della scheda l'apertura vale solo se la finestra
-  è ancora aperta e la chiusura solo se è ancora chiusa, così le finestre
-  aperte e chiuse mentre l'automazione è occupata non si riaprono e richiudono
-  senza fine; lo spegnimento dell'interruttore dell'Umidità vale solo se è
-  ancora spento);
+  è ancora aperta e chiude solo le finestre aperte prima, la chiusura vale solo
+  se è ancora chiusa: le finestre aperte e chiuse mentre l'automazione è
+  occupata non si riaprono e richiudono senza fine e resta aperta l'ultima
+  toccata; lo spegnimento dell'interruttore dell'Umidità vale solo se è ancora
+  spento);
 
   - Se un Black-Out arriva mentre un'allerta sta finendo, al ripristino la VMC
   torna alla velocità di fine allerta (Priorità 7); con un'allerta ancora in
@@ -11255,28 +11256,28 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_opzioni_vmc
             action: input_boolean.turn_on
-          - data: {}
+          - alias: >-
+              Chiude le altre finestre solo se sono state aperte prima di questa [b42: una finestra aperta dopo, mentre
+              l'automazione era occupata, resta aperta e vince l'ultimo tocco]
+            data: {}
             target:
-              entity_id:
-                - input_boolean.vmc_master_opzioni_avvisi
-                - input_boolean.vmc_master_opzioni_avvisi_grafici
-                - input_boolean.vmc_master_opzioni_offset_sensori
-                - input_boolean.vmc_master_opzioni_monitoraggio_sensori
-                - input_boolean.vmc_master_opzioni_lettura_sensori
-                - input_boolean.vmc_master_opzioni_interruttore_calendario
-                - input_boolean.vmc_master_opzioni_calendario
-                - input_boolean.vmc_master_opzioni_calendario_main
-                - input_boolean.vmc_master_opzioni_free_heating_o_free_cooling
-                - input_boolean.vmc_master_opzioni_punto_di_rugiada
-                - >-
-                  input_boolean.vmc_master_opzioni_interruttore_monitoraggio_sensori_extra
-                - input_boolean.vmc_master_opzioni_interruttore_sensori_vmc_interni
-                - input_boolean.vmc_master_opzioni_interruttore_offset_sensori
-                - input_boolean.vmc_master_opzioni_scelta_sensori
-                - input_boolean.vmc_master_opzioni_elementi_chimici
-                - input_boolean.vmc_master_opzione_finestra_audio
-                - input_boolean.vmc_master_conferma_pulizia_cronologia
-                - input_boolean.vmc_master_opzione_finestra_clona
+              entity_id: >-
+                {{ expand(['input_boolean.vmc_master_opzioni_avvisi', 'input_boolean.vmc_master_opzioni_avvisi_grafici',
+                'input_boolean.vmc_master_opzioni_offset_sensori',
+                'input_boolean.vmc_master_opzioni_monitoraggio_sensori',
+                'input_boolean.vmc_master_opzioni_lettura_sensori',
+                'input_boolean.vmc_master_opzioni_interruttore_calendario',
+                'input_boolean.vmc_master_opzioni_calendario', 'input_boolean.vmc_master_opzioni_calendario_main',
+                'input_boolean.vmc_master_opzioni_free_heating_o_free_cooling',
+                'input_boolean.vmc_master_opzioni_punto_di_rugiada',
+                'input_boolean.vmc_master_opzioni_interruttore_monitoraggio_sensori_extra',
+                'input_boolean.vmc_master_opzioni_interruttore_sensori_vmc_interni',
+                'input_boolean.vmc_master_opzioni_interruttore_offset_sensori',
+                'input_boolean.vmc_master_opzioni_scelta_sensori', 'input_boolean.vmc_master_opzioni_elementi_chimici',
+                'input_boolean.vmc_master_opzione_finestra_audio',
+                'input_boolean.vmc_master_conferma_pulizia_cronologia',
+                'input_boolean.vmc_master_opzione_finestra_clona']) | selectattr('state', 'eq', 'on') |
+                selectattr('last_changed', 'le', trigger.to_state.last_changed) | map(attribute='entity_id') | list }}
             action: input_boolean.turn_off
         alias: Trigger Attivazione Finestra Telecomando
       - conditions:
@@ -11309,28 +11310,27 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_opzioni_monitoraggio_sensori
             action: input_boolean.turn_on
-          - data: {}
+          - alias: >-
+              Chiude le altre finestre solo se sono state aperte prima di questa [b42: una finestra aperta dopo, mentre
+              l'automazione era occupata, resta aperta e vince l'ultimo tocco]
+            data: {}
             target:
-              entity_id:
-                - input_boolean.vmc_master_opzioni_avvisi
-                - input_boolean.vmc_master_opzioni_avvisi_grafici
-                - input_boolean.vmc_master_opzioni_offset_sensori
-                - input_boolean.vmc_master_opzioni_vmc
-                - input_boolean.vmc_master_opzioni_lettura_sensori
-                - input_boolean.vmc_master_opzioni_interruttore_calendario
-                - input_boolean.vmc_master_opzioni_calendario
-                - input_boolean.vmc_master_opzioni_calendario_main
-                - input_boolean.vmc_master_opzioni_free_heating_o_free_cooling
-                - input_boolean.vmc_master_opzioni_punto_di_rugiada
-                - >-
-                  input_boolean.vmc_master_opzioni_interruttore_monitoraggio_sensori_extra
-                - input_boolean.vmc_master_opzioni_interruttore_sensori_vmc_interni
-                - input_boolean.vmc_master_opzioni_interruttore_offset_sensori
-                - input_boolean.vmc_master_opzioni_scelta_sensori
-                - input_boolean.vmc_master_opzioni_elementi_chimici
-                - input_boolean.vmc_master_opzione_finestra_audio
-                - input_boolean.vmc_master_conferma_pulizia_cronologia
-                - input_boolean.vmc_master_opzione_finestra_clona
+              entity_id: >-
+                {{ expand(['input_boolean.vmc_master_opzioni_avvisi', 'input_boolean.vmc_master_opzioni_avvisi_grafici',
+                'input_boolean.vmc_master_opzioni_offset_sensori', 'input_boolean.vmc_master_opzioni_vmc',
+                'input_boolean.vmc_master_opzioni_lettura_sensori',
+                'input_boolean.vmc_master_opzioni_interruttore_calendario',
+                'input_boolean.vmc_master_opzioni_calendario', 'input_boolean.vmc_master_opzioni_calendario_main',
+                'input_boolean.vmc_master_opzioni_free_heating_o_free_cooling',
+                'input_boolean.vmc_master_opzioni_punto_di_rugiada',
+                'input_boolean.vmc_master_opzioni_interruttore_monitoraggio_sensori_extra',
+                'input_boolean.vmc_master_opzioni_interruttore_sensori_vmc_interni',
+                'input_boolean.vmc_master_opzioni_interruttore_offset_sensori',
+                'input_boolean.vmc_master_opzioni_scelta_sensori', 'input_boolean.vmc_master_opzioni_elementi_chimici',
+                'input_boolean.vmc_master_opzione_finestra_audio',
+                'input_boolean.vmc_master_conferma_pulizia_cronologia',
+                'input_boolean.vmc_master_opzione_finestra_clona']) | selectattr('state', 'eq', 'on') |
+                selectattr('last_changed', 'le', trigger.to_state.last_changed) | map(attribute='entity_id') | list }}
             enabled: true
             action: input_boolean.turn_off
         alias: Trigger Attivazione Finestra Monitoraggio
@@ -11370,12 +11370,15 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_opzioni_interruttore_offset_sensori
             action: input_boolean.turn_on
-          - data: {}
+          - alias: >-
+              Chiude le altre finestre solo se sono state aperte prima di questa [b42: una finestra aperta dopo, mentre
+              l'automazione era occupata, resta aperta e vince l'ultimo tocco]
+            data: {}
             target:
-              entity_id:
-                - >-
-                  input_boolean.vmc_master_opzioni_interruttore_monitoraggio_sensori_extra
-                - input_boolean.vmc_master_opzioni_interruttore_sensori_vmc_interni
+              entity_id: >-
+                {{ expand(['input_boolean.vmc_master_opzioni_interruttore_monitoraggio_sensori_extra',
+                'input_boolean.vmc_master_opzioni_interruttore_sensori_vmc_interni']) | selectattr('state', 'eq', 'on')
+                | selectattr('last_changed', 'le', trigger.to_state.last_changed) | map(attribute='entity_id') | list }}
             action: input_boolean.turn_off
         alias: Trigger Attivazione Sotto Finestra Offset - Finestra Monitoraggio
       - conditions:
@@ -11409,11 +11412,15 @@ actions:
               entity_id: >-
                 input_boolean.vmc_master_opzioni_interruttore_monitoraggio_sensori_extra
             action: input_boolean.turn_on
-          - data: {}
+          - alias: >-
+              Chiude le altre finestre solo se sono state aperte prima di questa [b42: una finestra aperta dopo, mentre
+              l'automazione era occupata, resta aperta e vince l'ultimo tocco]
+            data: {}
             target:
-              entity_id:
-                - input_boolean.vmc_master_opzioni_interruttore_offset_sensori
-                - input_boolean.vmc_master_opzioni_interruttore_sensori_vmc_interni
+              entity_id: >-
+                {{ expand(['input_boolean.vmc_master_opzioni_interruttore_offset_sensori',
+                'input_boolean.vmc_master_opzioni_interruttore_sensori_vmc_interni']) | selectattr('state', 'eq', 'on')
+                | selectattr('last_changed', 'le', trigger.to_state.last_changed) | map(attribute='entity_id') | list }}
             action: input_boolean.turn_off
         alias: >-
           Trigger Attivazione Sotto Finestra Sensori Extra - Finestra
@@ -11451,12 +11458,15 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_opzioni_interruttore_sensori_vmc_interni
             action: input_boolean.turn_on
-          - data: {}
+          - alias: >-
+              Chiude le altre finestre solo se sono state aperte prima di questa [b42: una finestra aperta dopo, mentre
+              l'automazione era occupata, resta aperta e vince l'ultimo tocco]
+            data: {}
             target:
-              entity_id:
-                - >-
-                  input_boolean.vmc_master_opzioni_interruttore_monitoraggio_sensori_extra
-                - input_boolean.vmc_master_opzioni_interruttore_offset_sensori
+              entity_id: >-
+                {{ expand(['input_boolean.vmc_master_opzioni_interruttore_monitoraggio_sensori_extra',
+                'input_boolean.vmc_master_opzioni_interruttore_offset_sensori']) | selectattr('state', 'eq', 'on') |
+                selectattr('last_changed', 'le', trigger.to_state.last_changed) | map(attribute='entity_id') | list }}
             action: input_boolean.turn_off
         alias: >-
           Trigger Attivazione Sotto Finestra Sensori VMC Interni - Finestra
@@ -11493,28 +11503,27 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_opzioni_interruttore_calendario
             action: input_boolean.turn_on
-          - data: {}
+          - alias: >-
+              Chiude le altre finestre solo se sono state aperte prima di questa [b42: una finestra aperta dopo, mentre
+              l'automazione era occupata, resta aperta e vince l'ultimo tocco]
+            data: {}
             target:
-              entity_id:
-                - input_boolean.vmc_master_opzioni_lettura_sensori
-                - input_boolean.vmc_master_opzioni_avvisi
-                - input_boolean.vmc_master_opzioni_avvisi_grafici
-                - input_boolean.vmc_master_opzioni_offset_sensori
-                - input_boolean.vmc_master_opzioni_vmc
-                - input_boolean.vmc_master_opzioni_monitoraggio_sensori
-                - input_boolean.vmc_master_opzioni_calendario
-                - input_boolean.vmc_master_opzioni_calendario_main
-                - input_boolean.vmc_master_opzioni_free_heating_o_free_cooling
-                - input_boolean.vmc_master_opzioni_punto_di_rugiada
-                - >-
-                  input_boolean.vmc_master_opzioni_interruttore_monitoraggio_sensori_extra
-                - input_boolean.vmc_master_opzioni_interruttore_sensori_vmc_interni
-                - input_boolean.vmc_master_opzioni_interruttore_offset_sensori
-                - input_boolean.vmc_master_opzioni_scelta_sensori
-                - input_boolean.vmc_master_opzioni_elementi_chimici
-                - input_boolean.vmc_master_opzione_finestra_audio
-                - input_boolean.vmc_master_conferma_pulizia_cronologia
-                - input_boolean.vmc_master_opzione_finestra_clona
+              entity_id: >-
+                {{ expand(['input_boolean.vmc_master_opzioni_lettura_sensori',
+                'input_boolean.vmc_master_opzioni_avvisi', 'input_boolean.vmc_master_opzioni_avvisi_grafici',
+                'input_boolean.vmc_master_opzioni_offset_sensori', 'input_boolean.vmc_master_opzioni_vmc',
+                'input_boolean.vmc_master_opzioni_monitoraggio_sensori', 'input_boolean.vmc_master_opzioni_calendario',
+                'input_boolean.vmc_master_opzioni_calendario_main',
+                'input_boolean.vmc_master_opzioni_free_heating_o_free_cooling',
+                'input_boolean.vmc_master_opzioni_punto_di_rugiada',
+                'input_boolean.vmc_master_opzioni_interruttore_monitoraggio_sensori_extra',
+                'input_boolean.vmc_master_opzioni_interruttore_sensori_vmc_interni',
+                'input_boolean.vmc_master_opzioni_interruttore_offset_sensori',
+                'input_boolean.vmc_master_opzioni_scelta_sensori', 'input_boolean.vmc_master_opzioni_elementi_chimici',
+                'input_boolean.vmc_master_opzione_finestra_audio',
+                'input_boolean.vmc_master_conferma_pulizia_cronologia',
+                'input_boolean.vmc_master_opzione_finestra_clona']) | selectattr('state', 'eq', 'on') |
+                selectattr('last_changed', 'le', trigger.to_state.last_changed) | map(attribute='entity_id') | list }}
             action: input_boolean.turn_off
         alias: Trigger Attivazione Programmazione Giornaliera
       - conditions:
@@ -11547,28 +11556,27 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_opzioni_offset_sensori
             action: input_boolean.turn_on
-          - data: {}
+          - alias: >-
+              Chiude le altre finestre solo se sono state aperte prima di questa [b42: una finestra aperta dopo, mentre
+              l'automazione era occupata, resta aperta e vince l'ultimo tocco]
+            data: {}
             target:
-              entity_id:
-                - input_boolean.vmc_master_opzioni_avvisi
-                - input_boolean.vmc_master_opzioni_avvisi_grafici
-                - input_boolean.vmc_master_opzioni_vmc
-                - input_boolean.vmc_master_opzioni_monitoraggio_sensori
-                - input_boolean.vmc_master_opzioni_lettura_sensori
-                - input_boolean.vmc_master_opzioni_interruttore_calendario
-                - input_boolean.vmc_master_opzioni_free_heating_o_free_cooling
-                - input_boolean.vmc_master_opzioni_punto_di_rugiada
-                - input_boolean.vmc_master_opzioni_interruttore_offset_sensori
-                - >-
-                  input_boolean.vmc_master_opzioni_interruttore_monitoraggio_sensori_extra
-                - input_boolean.vmc_master_opzioni_interruttore_sensori_vmc_interni
-                - input_boolean.vmc_master_opzioni_calendario
-                - input_boolean.vmc_master_opzioni_calendario_main
-                - input_boolean.vmc_master_opzioni_scelta_sensori
-                - input_boolean.vmc_master_opzioni_elementi_chimici
-                - input_boolean.vmc_master_opzione_finestra_audio
-                - input_boolean.vmc_master_conferma_pulizia_cronologia
-                - input_boolean.vmc_master_opzione_finestra_clona
+              entity_id: >-
+                {{ expand(['input_boolean.vmc_master_opzioni_avvisi', 'input_boolean.vmc_master_opzioni_avvisi_grafici',
+                'input_boolean.vmc_master_opzioni_vmc', 'input_boolean.vmc_master_opzioni_monitoraggio_sensori',
+                'input_boolean.vmc_master_opzioni_lettura_sensori',
+                'input_boolean.vmc_master_opzioni_interruttore_calendario',
+                'input_boolean.vmc_master_opzioni_free_heating_o_free_cooling',
+                'input_boolean.vmc_master_opzioni_punto_di_rugiada',
+                'input_boolean.vmc_master_opzioni_interruttore_offset_sensori',
+                'input_boolean.vmc_master_opzioni_interruttore_monitoraggio_sensori_extra',
+                'input_boolean.vmc_master_opzioni_interruttore_sensori_vmc_interni',
+                'input_boolean.vmc_master_opzioni_calendario', 'input_boolean.vmc_master_opzioni_calendario_main',
+                'input_boolean.vmc_master_opzioni_scelta_sensori', 'input_boolean.vmc_master_opzioni_elementi_chimici',
+                'input_boolean.vmc_master_opzione_finestra_audio',
+                'input_boolean.vmc_master_conferma_pulizia_cronologia',
+                'input_boolean.vmc_master_opzione_finestra_clona']) | selectattr('state', 'eq', 'on') |
+                selectattr('last_changed', 'le', trigger.to_state.last_changed) | map(attribute='entity_id') | list }}
             enabled: true
             action: input_boolean.turn_off
           - alias: >-
@@ -11627,17 +11635,19 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_opzioni_punto_di_rugiada
             action: input_boolean.turn_on
-          - data: {}
+          - alias: >-
+              Chiude le altre finestre solo se sono state aperte prima di questa [b42: una finestra aperta dopo, mentre
+              l'automazione era occupata, resta aperta e vince l'ultimo tocco]
+            data: {}
             target:
-              entity_id:
-                - input_boolean.vmc_master_opzioni_calendario_main
-                - input_boolean.vmc_master_opzioni_free_heating_o_free_cooling
-                - input_boolean.vmc_master_opzioni_calendario
-                - input_boolean.vmc_master_opzioni_scelta_sensori
-                - input_boolean.vmc_master_opzioni_elementi_chimici
-                - input_boolean.vmc_master_opzione_finestra_audio
-                - input_boolean.vmc_master_conferma_pulizia_cronologia
-                - input_boolean.vmc_master_opzione_finestra_clona
+              entity_id: >-
+                {{ expand(['input_boolean.vmc_master_opzioni_calendario_main',
+                'input_boolean.vmc_master_opzioni_free_heating_o_free_cooling',
+                'input_boolean.vmc_master_opzioni_calendario', 'input_boolean.vmc_master_opzioni_scelta_sensori',
+                'input_boolean.vmc_master_opzioni_elementi_chimici', 'input_boolean.vmc_master_opzione_finestra_audio',
+                'input_boolean.vmc_master_conferma_pulizia_cronologia',
+                'input_boolean.vmc_master_opzione_finestra_clona']) | selectattr('state', 'eq', 'on') |
+                selectattr('last_changed', 'le', trigger.to_state.last_changed) | map(attribute='entity_id') | list }}
             action: input_boolean.turn_off
         alias: >-
           Trigger Attivazione Sotto Finestra Opzioni - Finestra Lim. Δ P. di
@@ -11674,17 +11684,19 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_opzioni_calendario_main
             action: input_boolean.turn_on
-          - data: {}
+          - alias: >-
+              Chiude le altre finestre solo se sono state aperte prima di questa [b42: una finestra aperta dopo, mentre
+              l'automazione era occupata, resta aperta e vince l'ultimo tocco]
+            data: {}
             target:
-              entity_id:
-                - input_boolean.vmc_master_opzioni_free_heating_o_free_cooling
-                - input_boolean.vmc_master_opzioni_punto_di_rugiada
-                - input_boolean.vmc_master_opzioni_calendario
-                - input_boolean.vmc_master_opzioni_scelta_sensori
-                - input_boolean.vmc_master_opzioni_elementi_chimici
-                - input_boolean.vmc_master_opzione_finestra_audio
-                - input_boolean.vmc_master_conferma_pulizia_cronologia
-                - input_boolean.vmc_master_opzione_finestra_clona
+              entity_id: >-
+                {{ expand(['input_boolean.vmc_master_opzioni_free_heating_o_free_cooling',
+                'input_boolean.vmc_master_opzioni_punto_di_rugiada', 'input_boolean.vmc_master_opzioni_calendario',
+                'input_boolean.vmc_master_opzioni_scelta_sensori', 'input_boolean.vmc_master_opzioni_elementi_chimici',
+                'input_boolean.vmc_master_opzione_finestra_audio',
+                'input_boolean.vmc_master_conferma_pulizia_cronologia',
+                'input_boolean.vmc_master_opzione_finestra_clona']) | selectattr('state', 'eq', 'on') |
+                selectattr('last_changed', 'le', trigger.to_state.last_changed) | map(attribute='entity_id') | list }}
             action: input_boolean.turn_off
         alias: Trigger Attivazione Sotto Finestra Opzioni - Finestra Calendario Main
       - conditions:
@@ -11719,16 +11731,18 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_opzioni_calendario
             action: input_boolean.turn_on
-          - data: {}
+          - alias: >-
+              Chiude le altre finestre solo se sono state aperte prima di questa [b42: una finestra aperta dopo, mentre
+              l'automazione era occupata, resta aperta e vince l'ultimo tocco]
+            data: {}
             target:
-              entity_id:
-                - input_boolean.vmc_master_opzioni_free_heating_o_free_cooling
-                - input_boolean.vmc_master_opzioni_punto_di_rugiada
-                - input_boolean.vmc_master_opzioni_scelta_sensori
-                - input_boolean.vmc_master_opzioni_elementi_chimici
-                - input_boolean.vmc_master_opzione_finestra_audio
-                - input_boolean.vmc_master_conferma_pulizia_cronologia
-                - input_boolean.vmc_master_opzione_finestra_clona
+              entity_id: >-
+                {{ expand(['input_boolean.vmc_master_opzioni_free_heating_o_free_cooling',
+                'input_boolean.vmc_master_opzioni_punto_di_rugiada', 'input_boolean.vmc_master_opzioni_scelta_sensori',
+                'input_boolean.vmc_master_opzioni_elementi_chimici', 'input_boolean.vmc_master_opzione_finestra_audio',
+                'input_boolean.vmc_master_conferma_pulizia_cronologia',
+                'input_boolean.vmc_master_opzione_finestra_clona']) | selectattr('state', 'eq', 'on') |
+                selectattr('last_changed', 'le', trigger.to_state.last_changed) | map(attribute='entity_id') | list }}
             action: input_boolean.turn_off
         alias: Trigger Attivazione Sotto Finestra Opzioni - Finestra Calendario
       - conditions:
@@ -11761,17 +11775,19 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_opzioni_free_heating_o_free_cooling
             action: input_boolean.turn_on
-          - data: {}
+          - alias: >-
+              Chiude le altre finestre solo se sono state aperte prima di questa [b42: una finestra aperta dopo, mentre
+              l'automazione era occupata, resta aperta e vince l'ultimo tocco]
+            data: {}
             target:
-              entity_id:
-                - input_boolean.vmc_master_opzioni_calendario_main
-                - input_boolean.vmc_master_opzioni_punto_di_rugiada
-                - input_boolean.vmc_master_opzioni_calendario
-                - input_boolean.vmc_master_opzioni_scelta_sensori
-                - input_boolean.vmc_master_opzioni_elementi_chimici
-                - input_boolean.vmc_master_opzione_finestra_audio
-                - input_boolean.vmc_master_conferma_pulizia_cronologia
-                - input_boolean.vmc_master_opzione_finestra_clona
+              entity_id: >-
+                {{ expand(['input_boolean.vmc_master_opzioni_calendario_main',
+                'input_boolean.vmc_master_opzioni_punto_di_rugiada', 'input_boolean.vmc_master_opzioni_calendario',
+                'input_boolean.vmc_master_opzioni_scelta_sensori', 'input_boolean.vmc_master_opzioni_elementi_chimici',
+                'input_boolean.vmc_master_opzione_finestra_audio',
+                'input_boolean.vmc_master_conferma_pulizia_cronologia',
+                'input_boolean.vmc_master_opzione_finestra_clona']) | selectattr('state', 'eq', 'on') |
+                selectattr('last_changed', 'le', trigger.to_state.last_changed) | map(attribute='entity_id') | list }}
             action: input_boolean.turn_off
         alias: >-
           Trigger Attivazione Sotto Finestra Opzioni - Finestra Calendario Free
@@ -11809,25 +11825,26 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_opzioni_avvisi
             action: input_boolean.turn_on
-          - data: {}
+          - alias: >-
+              Chiude le altre finestre solo se sono state aperte prima di questa [b42: una finestra aperta dopo, mentre
+              l'automazione era occupata, resta aperta e vince l'ultimo tocco]
+            data: {}
             target:
-              entity_id:
-                - input_boolean.vmc_master_opzioni_vmc
-                - input_boolean.vmc_master_opzioni_monitoraggio_sensori
-                - input_boolean.vmc_master_opzioni_lettura_sensori
-                - input_boolean.vmc_master_opzioni_interruttore_calendario
-                - input_boolean.vmc_master_opzioni_free_heating_o_free_cooling
-                - input_boolean.vmc_master_opzioni_punto_di_rugiada
-                - input_boolean.vmc_master_opzioni_interruttore_offset_sensori
-                - >-
-                  input_boolean.vmc_master_opzioni_interruttore_monitoraggio_sensori_extra
-                - input_boolean.vmc_master_opzioni_interruttore_sensori_vmc_interni
-                - input_boolean.vmc_master_opzioni_calendario
-                - input_boolean.vmc_master_opzioni_calendario_main
-                - input_boolean.vmc_master_opzioni_offset_sensori
-                - input_boolean.vmc_master_opzioni_avvisi_grafici
-                - input_boolean.vmc_master_opzioni_scelta_sensori
-                - input_boolean.vmc_master_opzioni_elementi_chimici
+              entity_id: >-
+                {{ expand(['input_boolean.vmc_master_opzioni_vmc',
+                'input_boolean.vmc_master_opzioni_monitoraggio_sensori',
+                'input_boolean.vmc_master_opzioni_lettura_sensori',
+                'input_boolean.vmc_master_opzioni_interruttore_calendario',
+                'input_boolean.vmc_master_opzioni_free_heating_o_free_cooling',
+                'input_boolean.vmc_master_opzioni_punto_di_rugiada',
+                'input_boolean.vmc_master_opzioni_interruttore_offset_sensori',
+                'input_boolean.vmc_master_opzioni_interruttore_monitoraggio_sensori_extra',
+                'input_boolean.vmc_master_opzioni_interruttore_sensori_vmc_interni',
+                'input_boolean.vmc_master_opzioni_calendario', 'input_boolean.vmc_master_opzioni_calendario_main',
+                'input_boolean.vmc_master_opzioni_offset_sensori', 'input_boolean.vmc_master_opzioni_avvisi_grafici',
+                'input_boolean.vmc_master_opzioni_scelta_sensori', 'input_boolean.vmc_master_opzioni_elementi_chimici'])
+                | selectattr('state', 'eq', 'on') | selectattr('last_changed', 'le', trigger.to_state.last_changed) |
+                map(attribute='entity_id') | list }}
             action: input_boolean.turn_off
         alias: Trigger Attivazione Finestra Avvisi
       - conditions:
@@ -11863,28 +11880,27 @@ actions:
             target:
               entity_id: input_boolean.vmc_master_opzioni_lettura_sensori
             action: input_boolean.turn_on
-          - data: {}
+          - alias: >-
+              Chiude le altre finestre solo se sono state aperte prima di questa [b42: una finestra aperta dopo, mentre
+              l'automazione era occupata, resta aperta e vince l'ultimo tocco]
+            data: {}
             target:
-              entity_id:
-                - input_boolean.vmc_master_opzioni_avvisi
-                - input_boolean.vmc_master_opzioni_avvisi_grafici
-                - input_boolean.vmc_master_opzioni_offset_sensori
-                - input_boolean.vmc_master_opzioni_vmc
-                - input_boolean.vmc_master_opzioni_monitoraggio_sensori
-                - input_boolean.vmc_master_opzioni_interruttore_calendario
-                - input_boolean.vmc_master_opzioni_calendario
-                - input_boolean.vmc_master_opzioni_calendario_main
-                - input_boolean.vmc_master_opzioni_free_heating_o_free_cooling
-                - input_boolean.vmc_master_opzioni_punto_di_rugiada
-                - >-
-                  input_boolean.vmc_master_opzioni_interruttore_monitoraggio_sensori_extra
-                - input_boolean.vmc_master_opzioni_interruttore_sensori_vmc_interni
-                - input_boolean.vmc_master_opzioni_interruttore_offset_sensori
-                - input_boolean.vmc_master_opzioni_scelta_sensori
-                - input_boolean.vmc_master_opzioni_elementi_chimici
-                - input_boolean.vmc_master_opzione_finestra_audio
-                - input_boolean.vmc_master_conferma_pulizia_cronologia
-                - input_boolean.vmc_master_opzione_finestra_clona
+              entity_id: >-
+                {{ expand(['input_boolean.vmc_master_opzioni_avvisi', 'input_boolean.vmc_master_opzioni_avvisi_grafici',
+                'input_boolean.vmc_master_opzioni_offset_sensori', 'input_boolean.vmc_master_opzioni_vmc',
+                'input_boolean.vmc_master_opzioni_monitoraggio_sensori',
+                'input_boolean.vmc_master_opzioni_interruttore_calendario',
+                'input_boolean.vmc_master_opzioni_calendario', 'input_boolean.vmc_master_opzioni_calendario_main',
+                'input_boolean.vmc_master_opzioni_free_heating_o_free_cooling',
+                'input_boolean.vmc_master_opzioni_punto_di_rugiada',
+                'input_boolean.vmc_master_opzioni_interruttore_monitoraggio_sensori_extra',
+                'input_boolean.vmc_master_opzioni_interruttore_sensori_vmc_interni',
+                'input_boolean.vmc_master_opzioni_interruttore_offset_sensori',
+                'input_boolean.vmc_master_opzioni_scelta_sensori', 'input_boolean.vmc_master_opzioni_elementi_chimici',
+                'input_boolean.vmc_master_opzione_finestra_audio',
+                'input_boolean.vmc_master_conferma_pulizia_cronologia',
+                'input_boolean.vmc_master_opzione_finestra_clona']) | selectattr('state', 'eq', 'on') |
+                selectattr('last_changed', 'le', trigger.to_state.last_changed) | map(attribute='entity_id') | list }}
             action: input_boolean.turn_off
         alias: Trigger Attivazione Finestra Informazioni
       - conditions:
@@ -36507,17 +36523,19 @@ actions:
               entity_id:
                 - input_boolean.vmc_master_opzioni_scelta_sensori
             action: input_boolean.turn_on
-          - data: {}
+          - alias: >-
+              Chiude le altre finestre solo se sono state aperte prima di questa [b42: una finestra aperta dopo, mentre
+              l'automazione era occupata, resta aperta e vince l'ultimo tocco]
+            data: {}
             target:
-              entity_id:
-                - input_boolean.vmc_master_opzioni_calendario_main
-                - input_boolean.vmc_master_opzioni_free_heating_o_free_cooling
-                - input_boolean.vmc_master_opzioni_calendario
-                - input_boolean.vmc_master_opzioni_punto_di_rugiada
-                - input_boolean.vmc_master_opzioni_elementi_chimici
-                - input_boolean.vmc_master_opzione_finestra_audio
-                - input_boolean.vmc_master_conferma_pulizia_cronologia
-                - input_boolean.vmc_master_opzione_finestra_clona
+              entity_id: >-
+                {{ expand(['input_boolean.vmc_master_opzioni_calendario_main',
+                'input_boolean.vmc_master_opzioni_free_heating_o_free_cooling',
+                'input_boolean.vmc_master_opzioni_calendario', 'input_boolean.vmc_master_opzioni_punto_di_rugiada',
+                'input_boolean.vmc_master_opzioni_elementi_chimici', 'input_boolean.vmc_master_opzione_finestra_audio',
+                'input_boolean.vmc_master_conferma_pulizia_cronologia',
+                'input_boolean.vmc_master_opzione_finestra_clona']) | selectattr('state', 'eq', 'on') |
+                selectattr('last_changed', 'le', trigger.to_state.last_changed) | map(attribute='entity_id') | list }}
             action: input_boolean.turn_off
         alias: >-
           Trigger Attivazione Sotto Finestra Opzioni - Finestra Sensori
@@ -36556,17 +36574,19 @@ actions:
             action: input_boolean.turn_on
             target:
               entity_id: input_boolean.vmc_master_opzioni_elementi_chimici
-          - data: {}
+          - alias: >-
+              Chiude le altre finestre solo se sono state aperte prima di questa [b42: una finestra aperta dopo, mentre
+              l'automazione era occupata, resta aperta e vince l'ultimo tocco]
+            data: {}
             target:
-              entity_id:
-                - input_boolean.vmc_master_opzioni_calendario_main
-                - input_boolean.vmc_master_opzioni_free_heating_o_free_cooling
-                - input_boolean.vmc_master_opzioni_calendario
-                - input_boolean.vmc_master_opzioni_punto_di_rugiada
-                - input_boolean.vmc_master_opzioni_scelta_sensori
-                - input_boolean.vmc_master_opzione_finestra_audio
-                - input_boolean.vmc_master_conferma_pulizia_cronologia
-                - input_boolean.vmc_master_opzione_finestra_clona
+              entity_id: >-
+                {{ expand(['input_boolean.vmc_master_opzioni_calendario_main',
+                'input_boolean.vmc_master_opzioni_free_heating_o_free_cooling',
+                'input_boolean.vmc_master_opzioni_calendario', 'input_boolean.vmc_master_opzioni_punto_di_rugiada',
+                'input_boolean.vmc_master_opzioni_scelta_sensori', 'input_boolean.vmc_master_opzione_finestra_audio',
+                'input_boolean.vmc_master_conferma_pulizia_cronologia',
+                'input_boolean.vmc_master_opzione_finestra_clona']) | selectattr('state', 'eq', 'on') |
+                selectattr('last_changed', 'le', trigger.to_state.last_changed) | map(attribute='entity_id') | list }}
             action: input_boolean.turn_off
         alias: Trigger Attivazione Sotto Finestra Opzioni - Finestra Elementi Chimici
       - conditions:
@@ -36603,17 +36623,19 @@ actions:
             action: input_boolean.turn_on
             target:
               entity_id: input_boolean.vmc_master_opzione_finestra_audio
-          - data: {}
+          - alias: >-
+              Chiude le altre finestre solo se sono state aperte prima di questa [b42: una finestra aperta dopo, mentre
+              l'automazione era occupata, resta aperta e vince l'ultimo tocco]
+            data: {}
             target:
-              entity_id:
-                - input_boolean.vmc_master_opzioni_calendario_main
-                - input_boolean.vmc_master_opzioni_free_heating_o_free_cooling
-                - input_boolean.vmc_master_opzioni_calendario
-                - input_boolean.vmc_master_opzioni_punto_di_rugiada
-                - input_boolean.vmc_master_opzioni_scelta_sensori
-                - input_boolean.vmc_master_opzioni_elementi_chimici
-                - input_boolean.vmc_master_opzione_finestra_clona
-                - input_boolean.vmc_master_conferma_pulizia_cronologia
+              entity_id: >-
+                {{ expand(['input_boolean.vmc_master_opzioni_calendario_main',
+                'input_boolean.vmc_master_opzioni_free_heating_o_free_cooling',
+                'input_boolean.vmc_master_opzioni_calendario', 'input_boolean.vmc_master_opzioni_punto_di_rugiada',
+                'input_boolean.vmc_master_opzioni_scelta_sensori', 'input_boolean.vmc_master_opzioni_elementi_chimici',
+                'input_boolean.vmc_master_opzione_finestra_clona',
+                'input_boolean.vmc_master_conferma_pulizia_cronologia']) | selectattr('state', 'eq', 'on') |
+                selectattr('last_changed', 'le', trigger.to_state.last_changed) | map(attribute='entity_id') | list }}
             action: input_boolean.turn_off
         alias: Trigger Attivazione Sotto Finestra Opzioni - Finestra Audio
       - conditions:
@@ -36649,17 +36671,19 @@ actions:
             action: input_boolean.turn_on
             target:
               entity_id: input_boolean.vmc_master_opzione_finestra_clona
-          - data: {}
+          - alias: >-
+              Chiude le altre finestre solo se sono state aperte prima di questa [b42: una finestra aperta dopo, mentre
+              l'automazione era occupata, resta aperta e vince l'ultimo tocco]
+            data: {}
             target:
-              entity_id:
-                - input_boolean.vmc_master_opzioni_calendario_main
-                - input_boolean.vmc_master_opzioni_free_heating_o_free_cooling
-                - input_boolean.vmc_master_opzioni_calendario
-                - input_boolean.vmc_master_opzioni_punto_di_rugiada
-                - input_boolean.vmc_master_opzioni_scelta_sensori
-                - input_boolean.vmc_master_opzioni_elementi_chimici
-                - input_boolean.vmc_master_opzione_finestra_audio
-                - input_boolean.vmc_master_conferma_pulizia_cronologia
+              entity_id: >-
+                {{ expand(['input_boolean.vmc_master_opzioni_calendario_main',
+                'input_boolean.vmc_master_opzioni_free_heating_o_free_cooling',
+                'input_boolean.vmc_master_opzioni_calendario', 'input_boolean.vmc_master_opzioni_punto_di_rugiada',
+                'input_boolean.vmc_master_opzioni_scelta_sensori', 'input_boolean.vmc_master_opzioni_elementi_chimici',
+                'input_boolean.vmc_master_opzione_finestra_audio',
+                'input_boolean.vmc_master_conferma_pulizia_cronologia']) | selectattr('state', 'eq', 'on') |
+                selectattr('last_changed', 'le', trigger.to_state.last_changed) | map(attribute='entity_id') | list }}
             action: input_boolean.turn_off
         alias: Trigger Attivazione Sotto Finestra Opzioni - Finestra Clona
       - conditions:
@@ -36690,17 +36714,19 @@ actions:
             entity_id: input_boolean.vmc_master_conferma_pulizia_cronologia
             state: 'on'
         sequence:
-          - data: {}
+          - alias: >-
+              Chiude le altre finestre solo se sono state aperte prima di questa [b42: una finestra aperta dopo, mentre
+              l'automazione era occupata, resta aperta e vince l'ultimo tocco]
+            data: {}
             target:
-              entity_id:
-                - input_boolean.vmc_master_opzioni_calendario_main
-                - input_boolean.vmc_master_opzioni_free_heating_o_free_cooling
-                - input_boolean.vmc_master_opzioni_calendario
-                - input_boolean.vmc_master_opzioni_punto_di_rugiada
-                - input_boolean.vmc_master_opzioni_scelta_sensori
-                - input_boolean.vmc_master_opzioni_elementi_chimici
-                - input_boolean.vmc_master_opzione_finestra_audio
-                - input_boolean.vmc_master_opzione_finestra_clona
+              entity_id: >-
+                {{ expand(['input_boolean.vmc_master_opzioni_calendario_main',
+                'input_boolean.vmc_master_opzioni_free_heating_o_free_cooling',
+                'input_boolean.vmc_master_opzioni_calendario', 'input_boolean.vmc_master_opzioni_punto_di_rugiada',
+                'input_boolean.vmc_master_opzioni_scelta_sensori', 'input_boolean.vmc_master_opzioni_elementi_chimici',
+                'input_boolean.vmc_master_opzione_finestra_audio', 'input_boolean.vmc_master_opzione_finestra_clona']) |
+                selectattr('state', 'eq', 'on') | selectattr('last_changed', 'le', trigger.to_state.last_changed) |
+                map(attribute='entity_id') | list }}
             action: input_boolean.turn_off
         alias: Trigger Apertura Riquadro di Conferma Pulizia Cronologia Entità
       - conditions:
