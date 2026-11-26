@@ -5199,7 +5199,7 @@ input_boolean:
     name: "Spia Avvisi"
     icon: mdi:alert-rhombus-outline
 
-  vmc_master_opzioni_accendi_spegni_vmc_vs_umidita:                             # [CONFIGURAZIONE, 28 RICHIAMI] [INTERFACCIA, 16 RICHIAMI] [AUTOMAZIONE, 25 RICHIAMI] VERIFICA IL VALORE DI PERICOLOSITA' DELL'UMIDITA' SETTATA; LA VMC VERRA' SI AVVIERA' IN AUTOMATICO SE VIENE ACCESO (ON), QUALORA IL VALORE RISULTI PERICOLOSO
+  vmc_master_opzioni_accendi_spegni_vmc_vs_umidita:                             # [CONFIGURAZIONE, 28 RICHIAMI] [INTERFACCIA, 16 RICHIAMI] [AUTOMAZIONE, 27 RICHIAMI] VERIFICA IL VALORE DI PERICOLOSITA' DELL'UMIDITA' SETTATA; LA VMC VERRA' SI AVVIERA' IN AUTOMATICO SE VIENE ACCESO (ON), QUALORA IL VALORE RISULTI PERICOLOSO
     name: "VMC ON/OFF, in Funzione dell'Umidità Interna"
     icon: mdi:light-switch-off
 ################### Fine Creazione Switch Booleani impiegati nell'Interfaccia Lovelace per mostrare o meno le Opzioni ####################################################################################
@@ -35416,8 +35416,7 @@ automation:
       aprendola si chiudono le altre, aprendo un'altra finestra di Opzioni si chiude lei, e si chiude anche quando si
       chiude o si riapre il pannello Opzioni. È separata dall'Automazione VMC Master per non accodarle un evento
       (mode: queued) a ogni apertura di finestra. Ogni evento si esegue solo se la finestra (o la scheda) è ancora
-      nello stato che lo ha fatto scattare quando arriva il suo turno: un evento vecchio non chiude una finestra
-      aperta dopo.
+      nello stato che lo ha fatto scattare quando arriva il suo turno: un evento vecchio non chiude le altre finestre.
     mode: queued
     max: 10
     triggers:
@@ -35455,17 +35454,16 @@ automation:
       - trigger: state
         entity_id: input_boolean.vmc_master_opzioni_offset_sensori
         id: pannello
-    conditions:
-      - alias: >-
-          Finestra (o scheda) ancora nello stato che ha fatto scattare il trigger al turno di questo evento [b42: in
-          modalità queued un evento vecchio, con la finestra già cambiata di nuovo, non chiude le altre finestre]
-        condition: template
-        value_template: "{{ is_state(trigger.entity_id, trigger.to_state.state) }}"
     actions:
       - choose:
           - conditions:
               - condition: trigger
                 id: nuova_timer
+              - alias: >-
+                  Finestra (o scheda) ancora nello stato che ha fatto scattare il trigger al turno di questo evento [b42:
+                  in modalità queued un evento vecchio, con la finestra già cambiata di nuovo, non chiude le altre finestre]
+                condition: template
+                value_template: "{{ trigger.to_state is not none and is_state(trigger.entity_id, trigger.to_state.state) }}"
             sequence:
               - action: input_boolean.turn_off
                 target:
@@ -35478,6 +35476,11 @@ automation:
                 id:
                   - esistente_sensori
                   - pannello_sensori
+              - alias: >-
+                  Finestra (o scheda) ancora nello stato che ha fatto scattare il trigger al turno di questo evento [b42:
+                  in modalità queued un evento vecchio, con la finestra già cambiata di nuovo, non chiude le altre finestre]
+                condition: template
+                value_template: "{{ trigger.to_state is not none and is_state(trigger.entity_id, trigger.to_state.state) }}"
             sequence:
               - action: input_boolean.turn_off
                 target:
@@ -35485,6 +35488,11 @@ automation:
           - conditions:
               - condition: trigger
                 id: nuova
+              - alias: >-
+                  Finestra (o scheda) ancora nello stato che ha fatto scattare il trigger al turno di questo evento [b42:
+                  in modalità queued un evento vecchio, con la finestra già cambiata di nuovo, non chiude le altre finestre]
+                condition: template
+                value_template: "{{ trigger.to_state is not none and is_state(trigger.entity_id, trigger.to_state.state) }}"
             sequence:
               - action: input_boolean.turn_off
                 target:
@@ -35503,6 +35511,11 @@ automation:
                 id:
                   - esistente
                   - pannello
+              - alias: >-
+                  Finestra (o scheda) ancora nello stato che ha fatto scattare il trigger al turno di questo evento [b42:
+                  in modalità queued un evento vecchio, con la finestra già cambiata di nuovo, non chiude le altre finestre]
+                condition: template
+                value_template: "{{ trigger.to_state is not none and is_state(trigger.entity_id, trigger.to_state.state) }}"
             sequence:
               - action: input_boolean.turn_off
                 target:

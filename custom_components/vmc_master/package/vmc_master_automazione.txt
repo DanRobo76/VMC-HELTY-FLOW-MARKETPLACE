@@ -47,10 +47,11 @@ description: >-
   queued): nessun evento interrompe un comando già avviato; un evento si
   esegue solo se la sua condizione è ancora vera quando arriva il suo turno,
   rileggendo prima la velocità della VMC se l'evento arriva allo scadere di
-  un'attesa; l'apertura o la chiusura di una finestra della scheda si esegue
-  solo se la finestra è ancora aperta o chiusa quando arriva il suo turno,
-  così le finestre aperte e chiuse mentre l'automazione è occupata non si
-  riaprono e richiudono a vicenda senza fine;
+  un'attesa (per le finestre della scheda l'apertura vale solo se la finestra
+  è ancora aperta e la chiusura solo se è ancora chiusa, così le finestre
+  aperte e chiuse mentre l'automazione è occupata non si riaprono e richiudono
+  senza fine; lo spegnimento dell'interruttore dell'Umidità vale solo se è
+  ancora spento);
 
   - Se un Black-Out arriva mentre un'allerta sta finendo, al ripristino la VMC
   torna alla velocità di fine allerta (Priorità 7); con un'allerta ancora in
@@ -19669,6 +19670,12 @@ actions:
           - condition: trigger
             id:
               - ' Disattivazione Umidità Limite, precedentemente Armato ed Attivato'
+          - alias: >-
+              Interruttore Umidità ancora spento al turno di questo evento [b42: in modalità queued un evento vecchio,
+              con l'interruttore già riacceso, non chiude l'allerta Umidità e non cambia la velocità della VMC]
+            condition: state
+            entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_umidita
+            state: 'off'
           - alias: Allerta Umidità in corso con la VMC OFF-Line, Non disponibile o in ripristino dopo un Black-Out
             condition: template
             value_template: >-
@@ -19775,6 +19782,12 @@ actions:
           - condition: trigger
             id:
               - ' Disattivazione Umidità Limite, precedentemente Armato ed Attivato'
+          - alias: >-
+              Interruttore Umidità ancora spento al turno di questo evento [b42: in modalità queued un evento vecchio,
+              con l'interruttore già riacceso, non chiude l'allerta Umidità e non cambia la velocità della VMC]
+            condition: state
+            entity_id: input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_umidita
+            state: 'off'
           - alias: Non con l'allerta Umidità in corso e la VMC OFF-Line, Non disponibile o in ripristino dopo un Black-Out (ramo precedente)
             condition: template
             value_template: >-
