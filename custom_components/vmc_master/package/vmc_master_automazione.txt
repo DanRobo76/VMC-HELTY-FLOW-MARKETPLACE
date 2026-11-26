@@ -1,6 +1,6 @@
 ###########################################################################################################################################################################################################################
 #                                                                                                                                                                                                                         #
-#                                                          AUTOMAZIONE VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b41]                                                                                                        #
+#                                                          AUTOMAZIONE VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b42]                                                                                                        #
 #                                                                                                                                                                                                                         #
 # SVILUPPATO DA ING. DANILO ROBOTTI, ALLE PRIME ARMI CON HOME ASSISTANT :)                                                                                                                                                #
 #                                                                                                                                                                                                                         #
@@ -47,7 +47,10 @@ description: >-
   queued): nessun evento interrompe un comando già avviato; un evento si
   esegue solo se la sua condizione è ancora vera quando arriva il suo turno,
   rileggendo prima la velocità della VMC se l'evento arriva allo scadere di
-  un'attesa;
+  un'attesa; l'apertura o la chiusura di una finestra della scheda si esegue
+  solo se la finestra è ancora aperta o chiusa quando arriva il suo turno,
+  così le finestre aperte e chiuse mentre l'automazione è occupata non si
+  riaprono e richiudono a vicenda senza fine;
 
   - Se un Black-Out arriva mentre un'allerta sta finendo, al ripristino la VMC
   torna alla velocità di fine allerta (Priorità 7); con un'allerta ancora in
@@ -11239,6 +11242,13 @@ actions:
       - conditions:
           - condition: trigger
             id: Opzioni Telecomando On
+          - alias: >-
+              Finestra ancora aperta al turno di questo evento [b42: in modalità queued un evento vecchio, con la
+              finestra già richiusa, non la riapre e non chiude le altre finestre; così finestre aperte e chiuse mentre
+              l'automazione è occupata non si riaprono e richiudono a vicenda senza fine]
+            condition: state
+            entity_id: input_boolean.vmc_master_opzioni_vmc
+            state: 'on'
         sequence:
           - data: {}
             target:
@@ -11271,6 +11281,12 @@ actions:
       - conditions:
           - condition: trigger
             id: Opzioni Telecomando Off
+          - alias: >-
+              Finestra ancora chiusa al turno di questo evento [b42: in modalità queued un evento vecchio, con la
+              finestra già riaperta, non la richiude]
+            condition: state
+            entity_id: input_boolean.vmc_master_opzioni_vmc
+            state: 'off'
         sequence:
           - data: {}
             target:
@@ -11280,6 +11296,13 @@ actions:
       - conditions:
           - condition: trigger
             id: Opzioni Monitoraggio On
+          - alias: >-
+              Finestra ancora aperta al turno di questo evento [b42: in modalità queued un evento vecchio, con la
+              finestra già richiusa, non la riapre e non chiude le altre finestre; così finestre aperte e chiuse mentre
+              l'automazione è occupata non si riaprono e richiudono a vicenda senza fine]
+            condition: state
+            entity_id: input_boolean.vmc_master_opzioni_monitoraggio_sensori
+            state: 'on'
         sequence:
           - data: {}
             target:
@@ -11313,6 +11336,12 @@ actions:
       - conditions:
           - condition: trigger
             id: Opzioni Monitoraggio Off
+          - alias: >-
+              Finestra ancora chiusa al turno di questo evento [b42: in modalità queued un evento vecchio, con la
+              finestra già riaperta, non la richiude]
+            condition: state
+            entity_id: input_boolean.vmc_master_opzioni_monitoraggio_sensori
+            state: 'off'
         sequence:
           - data: {}
             target:
@@ -11328,6 +11357,13 @@ actions:
       - conditions:
           - condition: trigger
             id: Opzioni Sub Offset On
+          - alias: >-
+              Finestra ancora aperta al turno di questo evento [b42: in modalità queued un evento vecchio, con la
+              finestra già richiusa, non la riapre e non chiude le altre finestre; così finestre aperte e chiuse mentre
+              l'automazione è occupata non si riaprono e richiudono a vicenda senza fine]
+            condition: state
+            entity_id: input_boolean.vmc_master_opzioni_interruttore_offset_sensori
+            state: 'on'
         sequence:
           - data: {}
             target:
@@ -11344,6 +11380,12 @@ actions:
       - conditions:
           - condition: trigger
             id: Opzioni Sub Offset Off
+          - alias: >-
+              Finestra ancora chiusa al turno di questo evento [b42: in modalità queued un evento vecchio, con la
+              finestra già riaperta, non la richiude]
+            condition: state
+            entity_id: input_boolean.vmc_master_opzioni_interruttore_offset_sensori
+            state: 'off'
         sequence:
           - data: {}
             target:
@@ -11353,6 +11395,13 @@ actions:
       - conditions:
           - condition: trigger
             id: Opzioni Sub Extra Sensori On
+          - alias: >-
+              Finestra ancora aperta al turno di questo evento [b42: in modalità queued un evento vecchio, con la
+              finestra già richiusa, non la riapre e non chiude le altre finestre; così finestre aperte e chiuse mentre
+              l'automazione è occupata non si riaprono e richiudono a vicenda senza fine]
+            condition: state
+            entity_id: input_boolean.vmc_master_opzioni_interruttore_monitoraggio_sensori_extra
+            state: 'on'
         sequence:
           - data: {}
             target:
@@ -11371,6 +11420,12 @@ actions:
       - conditions:
           - condition: trigger
             id: Opzioni Sub Extra Sensori Off
+          - alias: >-
+              Finestra ancora chiusa al turno di questo evento [b42: in modalità queued un evento vecchio, con la
+              finestra già riaperta, non la richiude]
+            condition: state
+            entity_id: input_boolean.vmc_master_opzioni_interruttore_monitoraggio_sensori_extra
+            state: 'off'
         sequence:
           - data: {}
             target:
@@ -11383,6 +11438,13 @@ actions:
       - conditions:
           - condition: trigger
             id: Opzioni Sub VMC Interni On
+          - alias: >-
+              Finestra ancora aperta al turno di questo evento [b42: in modalità queued un evento vecchio, con la
+              finestra già richiusa, non la riapre e non chiude le altre finestre; così finestre aperte e chiuse mentre
+              l'automazione è occupata non si riaprono e richiudono a vicenda senza fine]
+            condition: state
+            entity_id: input_boolean.vmc_master_opzioni_interruttore_sensori_vmc_interni
+            state: 'on'
         sequence:
           - data: {}
             target:
@@ -11401,6 +11463,12 @@ actions:
       - conditions:
           - condition: trigger
             id: Opzioni Sub VMC Interni Off
+          - alias: >-
+              Finestra ancora chiusa al turno di questo evento [b42: in modalità queued un evento vecchio, con la
+              finestra già riaperta, non la richiude]
+            condition: state
+            entity_id: input_boolean.vmc_master_opzioni_interruttore_sensori_vmc_interni
+            state: 'off'
         sequence:
           - data: {}
             target:
@@ -11412,6 +11480,13 @@ actions:
       - conditions:
           - condition: trigger
             id: Opzioni Sub Programmazione Giornaliera On
+          - alias: >-
+              Finestra ancora aperta al turno di questo evento [b42: in modalità queued un evento vecchio, con la
+              finestra già richiusa, non la riapre e non chiude le altre finestre; così finestre aperte e chiuse mentre
+              l'automazione è occupata non si riaprono e richiudono a vicenda senza fine]
+            condition: state
+            entity_id: input_boolean.vmc_master_opzioni_interruttore_calendario
+            state: 'on'
         sequence:
           - data: {}
             target:
@@ -11444,6 +11519,12 @@ actions:
       - conditions:
           - condition: trigger
             id: Opzioni Sub Programmazione Giornaliera Off
+          - alias: >-
+              Finestra ancora chiusa al turno di questo evento [b42: in modalità queued un evento vecchio, con la
+              finestra già riaperta, non la richiude]
+            condition: state
+            entity_id: input_boolean.vmc_master_opzioni_interruttore_calendario
+            state: 'off'
         sequence:
           - data: {}
             target:
@@ -11453,6 +11534,13 @@ actions:
       - conditions:
           - condition: trigger
             id: ' Opzioni On'
+          - alias: >-
+              Finestra ancora aperta al turno di questo evento [b42: in modalità queued un evento vecchio, con la
+              finestra già richiusa, non la riapre e non chiude le altre finestre; così finestre aperte e chiuse mentre
+              l'automazione è occupata non si riaprono e richiudono a vicenda senza fine]
+            condition: state
+            entity_id: input_boolean.vmc_master_opzioni_offset_sensori
+            state: 'on'
         sequence:
           - data: {}
             target:
@@ -11500,6 +11588,12 @@ actions:
           - condition: trigger
             id: Opzioni Off
             enabled: true
+          - alias: >-
+              Finestra ancora chiusa al turno di questo evento [b42: in modalità queued un evento vecchio, con la
+              finestra già riaperta, non la richiude]
+            condition: state
+            entity_id: input_boolean.vmc_master_opzioni_offset_sensori
+            state: 'off'
         sequence:
           - data: {}
             target:
@@ -11520,6 +11614,13 @@ actions:
       - conditions:
           - condition: trigger
             id: Opzioni Sub Lim. Δ P. di Rugiada On
+          - alias: >-
+              Finestra ancora aperta al turno di questo evento [b42: in modalità queued un evento vecchio, con la
+              finestra già richiusa, non la riapre e non chiude le altre finestre; così finestre aperte e chiuse mentre
+              l'automazione è occupata non si riaprono e richiudono a vicenda senza fine]
+            condition: state
+            entity_id: input_boolean.vmc_master_opzioni_punto_di_rugiada
+            state: 'on'
         sequence:
           - data: {}
             target:
@@ -11543,6 +11644,12 @@ actions:
       - conditions:
           - condition: trigger
             id: Opzioni Sub Lim. Δ P. di Rugiada Off
+          - alias: >-
+              Finestra ancora chiusa al turno di questo evento [b42: in modalità queued un evento vecchio, con la
+              finestra già riaperta, non la richiude]
+            condition: state
+            entity_id: input_boolean.vmc_master_opzioni_punto_di_rugiada
+            state: 'off'
         sequence:
           - data: {}
             target:
@@ -11554,6 +11661,13 @@ actions:
       - conditions:
           - condition: trigger
             id: Opzioni Sub Calendario Main On
+          - alias: >-
+              Finestra ancora aperta al turno di questo evento [b42: in modalità queued un evento vecchio, con la
+              finestra già richiusa, non la riapre e non chiude le altre finestre; così finestre aperte e chiuse mentre
+              l'automazione è occupata non si riaprono e richiudono a vicenda senza fine]
+            condition: state
+            entity_id: input_boolean.vmc_master_opzioni_calendario_main
+            state: 'on'
         sequence:
           - data: {}
             target:
@@ -11575,6 +11689,12 @@ actions:
       - conditions:
           - condition: trigger
             id: Opzioni Sub Calendario Main Off
+          - alias: >-
+              Finestra ancora chiusa al turno di questo evento [b42: in modalità queued un evento vecchio, con la
+              finestra già riaperta, non la richiude]
+            condition: state
+            entity_id: input_boolean.vmc_master_opzioni_calendario_main
+            state: 'off'
         sequence:
           - data: {}
             target:
@@ -11586,6 +11706,13 @@ actions:
       - conditions:
           - condition: trigger
             id: Opzioni Sub Calendario On
+          - alias: >-
+              Finestra ancora aperta al turno di questo evento [b42: in modalità queued un evento vecchio, con la
+              finestra già richiusa, non la riapre e non chiude le altre finestre; così finestre aperte e chiuse mentre
+              l'automazione è occupata non si riaprono e richiudono a vicenda senza fine]
+            condition: state
+            entity_id: input_boolean.vmc_master_opzioni_calendario
+            state: 'on'
         sequence:
           - data: {}
             target:
@@ -11606,6 +11733,12 @@ actions:
       - conditions:
           - condition: trigger
             id: Opzioni Sub Calendario Off
+          - alias: >-
+              Finestra ancora chiusa al turno di questo evento [b42: in modalità queued un evento vecchio, con la
+              finestra già riaperta, non la richiude]
+            condition: state
+            entity_id: input_boolean.vmc_master_opzioni_calendario
+            state: 'off'
         sequence:
           - data: {}
             target:
@@ -11615,6 +11748,13 @@ actions:
       - conditions:
           - condition: trigger
             id: Opzioni Sub Calendario Free H/C On
+          - alias: >-
+              Finestra ancora aperta al turno di questo evento [b42: in modalità queued un evento vecchio, con la
+              finestra già richiusa, non la riapre e non chiude le altre finestre; così finestre aperte e chiuse mentre
+              l'automazione è occupata non si riaprono e richiudono a vicenda senza fine]
+            condition: state
+            entity_id: input_boolean.vmc_master_opzioni_free_heating_o_free_cooling
+            state: 'on'
         sequence:
           - data: {}
             target:
@@ -11638,6 +11778,12 @@ actions:
       - conditions:
           - condition: trigger
             id: Opzioni Sub Calendario Free H/C Off
+          - alias: >-
+              Finestra ancora chiusa al turno di questo evento [b42: in modalità queued un evento vecchio, con la
+              finestra già riaperta, non la richiude]
+            condition: state
+            entity_id: input_boolean.vmc_master_opzioni_free_heating_o_free_cooling
+            state: 'off'
         sequence:
           - data: {}
             target:
@@ -11650,6 +11796,13 @@ actions:
           - condition: trigger
             id:
               - Opzioni Avvisi On
+          - alias: >-
+              Finestra ancora aperta al turno di questo evento [b42: in modalità queued un evento vecchio, con la
+              finestra già richiusa, non la riapre e non chiude le altre finestre; così finestre aperte e chiuse mentre
+              l'automazione è occupata non si riaprono e richiudono a vicenda senza fine]
+            condition: state
+            entity_id: input_boolean.vmc_master_opzioni_avvisi
+            state: 'on'
         sequence:
           - data: {}
             target:
@@ -11680,6 +11833,12 @@ actions:
           - condition: trigger
             id:
               - Opzioni Avvisi Off
+          - alias: >-
+              Finestra ancora chiusa al turno di questo evento [b42: in modalità queued un evento vecchio, con la
+              finestra già riaperta, non la richiude]
+            condition: state
+            entity_id: input_boolean.vmc_master_opzioni_avvisi
+            state: 'off'
         sequence:
           - data: {}
             target:
@@ -11691,6 +11850,13 @@ actions:
       - conditions:
           - condition: trigger
             id: Opzioni Informazioni On
+          - alias: >-
+              Finestra ancora aperta al turno di questo evento [b42: in modalità queued un evento vecchio, con la
+              finestra già richiusa, non la riapre e non chiude le altre finestre; così finestre aperte e chiuse mentre
+              l'automazione è occupata non si riaprono e richiudono a vicenda senza fine]
+            condition: state
+            entity_id: input_boolean.vmc_master_opzioni_lettura_sensori
+            state: 'on'
         sequence:
           - data: {}
             target:
@@ -11723,6 +11889,12 @@ actions:
       - conditions:
           - condition: trigger
             id: Opzioni Informazioni Off
+          - alias: >-
+              Finestra ancora chiusa al turno di questo evento [b42: in modalità queued un evento vecchio, con la
+              finestra già riaperta, non la richiude]
+            condition: state
+            entity_id: input_boolean.vmc_master_opzioni_lettura_sensori
+            state: 'off'
         sequence:
           - data: {}
             target:
@@ -36309,6 +36481,13 @@ actions:
           - condition: trigger
             id:
               - Opzioni Sub Sensori Opzionati On
+          - alias: >-
+              Finestra ancora aperta al turno di questo evento [b42: in modalità queued un evento vecchio, con la
+              finestra già richiusa, non la riapre e non chiude le altre finestre; così finestre aperte e chiuse mentre
+              l'automazione è occupata non si riaprono e richiudono a vicenda senza fine]
+            condition: state
+            entity_id: input_boolean.vmc_master_opzioni_scelta_sensori
+            state: 'on'
         sequence:
           - data: {}
             target:
@@ -36334,6 +36513,12 @@ actions:
           - condition: trigger
             id:
               - Opzioni Sub Sensori Opzionati Off
+          - alias: >-
+              Finestra ancora chiusa al turno di questo evento [b42: in modalità queued un evento vecchio, con la
+              finestra già riaperta, non la richiude]
+            condition: state
+            entity_id: input_boolean.vmc_master_opzioni_scelta_sensori
+            state: 'off'
         sequence:
           - data: {}
             action: input_boolean.turn_off
@@ -36346,6 +36531,13 @@ actions:
           - condition: trigger
             id:
               - Opzioni Sub Elementi Chimici On
+          - alias: >-
+              Finestra ancora aperta al turno di questo evento [b42: in modalità queued un evento vecchio, con la
+              finestra già richiusa, non la riapre e non chiude le altre finestre; così finestre aperte e chiuse mentre
+              l'automazione è occupata non si riaprono e richiudono a vicenda senza fine]
+            condition: state
+            entity_id: input_boolean.vmc_master_opzioni_elementi_chimici
+            state: 'on'
         sequence:
           - data: {}
             action: input_boolean.turn_on
@@ -36368,6 +36560,12 @@ actions:
           - condition: trigger
             id:
               - Opzioni Sub Elementi Chimici Off
+          - alias: >-
+              Finestra ancora chiusa al turno di questo evento [b42: in modalità queued un evento vecchio, con la
+              finestra già riaperta, non la richiude]
+            condition: state
+            entity_id: input_boolean.vmc_master_opzioni_elementi_chimici
+            state: 'off'
         sequence:
           - data: {}
             action: input_boolean.turn_off
@@ -36380,6 +36578,13 @@ actions:
           - condition: trigger
             id:
               - Opzioni Sub Elementi Audio On
+          - alias: >-
+              Finestra ancora aperta al turno di questo evento [b42: in modalità queued un evento vecchio, con la
+              finestra già richiusa, non la riapre e non chiude le altre finestre; così finestre aperte e chiuse mentre
+              l'automazione è occupata non si riaprono e richiudono a vicenda senza fine]
+            condition: state
+            entity_id: input_boolean.vmc_master_opzione_finestra_audio
+            state: 'on'
         sequence:
           - data: {}
             action: input_boolean.turn_on
@@ -36402,6 +36607,12 @@ actions:
           - condition: trigger
             id:
               - Opzioni Sub Elementi Audio Off
+          - alias: >-
+              Finestra ancora chiusa al turno di questo evento [b42: in modalità queued un evento vecchio, con la
+              finestra già riaperta, non la richiude]
+            condition: state
+            entity_id: input_boolean.vmc_master_opzione_finestra_audio
+            state: 'off'
         sequence:
           - data: {}
             action: input_boolean.turn_off
@@ -36413,6 +36624,13 @@ actions:
           - condition: trigger
             id:
               - Opzioni Sub Elementi Clona On
+          - alias: >-
+              Finestra ancora aperta al turno di questo evento [b42: in modalità queued un evento vecchio, con la
+              finestra già richiusa, non la riapre e non chiude le altre finestre; così finestre aperte e chiuse mentre
+              l'automazione è occupata non si riaprono e richiudono a vicenda senza fine]
+            condition: state
+            entity_id: input_boolean.vmc_master_opzione_finestra_clona
+            state: 'on'
         sequence:
           - data: {}
             action: input_boolean.turn_on
@@ -36435,6 +36653,12 @@ actions:
           - condition: trigger
             id:
               - Opzioni Sub Elementi Clona Off
+          - alias: >-
+              Finestra ancora chiusa al turno di questo evento [b42: in modalità queued un evento vecchio, con la
+              finestra già riaperta, non la richiude]
+            condition: state
+            entity_id: input_boolean.vmc_master_opzione_finestra_clona
+            state: 'off'
         sequence:
           - data: {}
             action: input_boolean.turn_off
@@ -36446,6 +36670,12 @@ actions:
           - condition: trigger
             id:
               - Opzioni Sub Conferma Pulizia On
+          - alias: >-
+              Riquadro di conferma ancora aperto al turno di questo evento [b42: in modalità queued un evento vecchio,
+              con il riquadro già chiuso, non chiude le finestre]
+            condition: state
+            entity_id: input_boolean.vmc_master_conferma_pulizia_cronologia
+            state: 'on'
         sequence:
           - data: {}
             target:
