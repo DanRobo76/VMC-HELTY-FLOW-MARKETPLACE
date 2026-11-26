@@ -5076,7 +5076,7 @@ input_boolean:
     icon: mdi:alert-circle-outline
 # >>> FINE SEZIONE INSTALLA VMC (SOLO MASTER, RIMOSSA DA VMC_SCRIPT_CLONA.SH) <<<
 # >>> INIZIO SEZIONE CLONA VMC (SOLO MASTER, RIMOSSA DA VMC_SCRIPT_CLONA.SH) <<<
-  vmc_master_opzione_finestra_clona:                                            # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 5 RICHIAMI] [AUTOMAZIONE, 18 RICHIAMI] FINESTRA CLONA VMC NEL PANNELLO IMPOSTAZIONI
+  vmc_master_opzione_finestra_clona:                                            # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 5 RICHIAMI] [AUTOMAZIONE, 20 RICHIAMI] FINESTRA CLONA VMC NEL PANNELLO IMPOSTAZIONI
     name: "Finestra Clona"
     icon: mdi:content-copy
 
@@ -5091,7 +5091,7 @@ input_boolean:
     icon: mdi:delete-alert
 # >>> FINE SEZIONE CLONA VMC (SOLO MASTER, RIMOSSA DA VMC_SCRIPT_CLONA.SH) <<<
 
-  vmc_master_opzioni_avvisi:                                                    # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 9 RICHIAMI]
+  vmc_master_opzioni_avvisi:                                                    # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 10 RICHIAMI]
     name: "Avvisi"
     initial: false
     icon: mdi:alert-rhombus-outline
@@ -5101,72 +5101,72 @@ input_boolean:
     initial: false
     icon: mdi:chart-bell-curve-cumulative
 
-  vmc_master_opzioni_vmc:                                                       # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 9 RICHIAMI]
+  vmc_master_opzioni_vmc:                                                       # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 11 RICHIAMI]
     name: "Telecomando"
     initial: false
     icon: mdi:remote-tv
 
-  vmc_master_opzioni_offset_sensori:                                            # [CONFIGURAZIONE, 6 RICHIAMI] [INTERFACCIA, 29 RICHIAMI] [AUTOMAZIONE, 9 RICHIAMI]
+  vmc_master_opzioni_offset_sensori:                                            # [CONFIGURAZIONE, 6 RICHIAMI] [INTERFACCIA, 29 RICHIAMI] [AUTOMAZIONE, 10 RICHIAMI]
     name: "Opzioni"
     initial: false
     icon: mdi:format-list-checkbox
 
-  vmc_master_opzioni_interruttore_offset_sensori:                               # [CONFIGURAZIONE, 5 RICHIAMI] [INTERFACCIA, 5 RICHIAMI] [AUTOMAZIONE, 13 RICHIAMI]
+  vmc_master_opzioni_interruttore_offset_sensori:                               # [CONFIGURAZIONE, 5 RICHIAMI] [INTERFACCIA, 5 RICHIAMI] [AUTOMAZIONE, 15 RICHIAMI]
     name: "Sensori Selezionati - Offset"
     initial: false
     icon: mdi:format-list-checkbox
 
-  vmc_master_opzioni_monitoraggio_sensori:                                      # [CONFIGURAZIONE, 4 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 9 RICHIAMI]
+  vmc_master_opzioni_monitoraggio_sensori:                                      # [CONFIGURAZIONE, 4 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 10 RICHIAMI]
     name: "Sensori"
     initial: false
     icon: mdi:memory
 
-  vmc_master_opzioni_interruttore_monitoraggio_sensori_extra:                   # [CONFIGURAZIONE, 5 RICHIAMI] [INTERFACCIA, 5 RICHIAMI] [AUTOMAZIONE, 13 RICHIAMI]
+  vmc_master_opzioni_interruttore_monitoraggio_sensori_extra:                   # [CONFIGURAZIONE, 5 RICHIAMI] [INTERFACCIA, 5 RICHIAMI] [AUTOMAZIONE, 15 RICHIAMI]
     name: "Sensori - Extra"
     initial: false
     icon: mdi:memory
 
-  vmc_master_opzioni_interruttore_sensori_vmc_interni:                          # [CONFIGURAZIONE, 5 RICHIAMI] [INTERFACCIA, 5 RICHIAMI] [AUTOMAZIONE, 13 RICHIAMI]
+  vmc_master_opzioni_interruttore_sensori_vmc_interni:                          # [CONFIGURAZIONE, 5 RICHIAMI] [INTERFACCIA, 5 RICHIAMI] [AUTOMAZIONE, 15 RICHIAMI]
     name: "Sensori - VMC Interni"
     initial: false
     icon: mdi:chip
 
-  vmc_master_opzioni_calendario_main:                                           # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 5 RICHIAMI] [AUTOMAZIONE, 18 RICHIAMI]
+  vmc_master_opzioni_calendario_main:                                           # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 5 RICHIAMI] [AUTOMAZIONE, 20 RICHIAMI]
     name: "Calendario"
     initial: false
     icon: mdi:calendar-multiselect
 
-  vmc_master_opzioni_calendario:                                                # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 5 RICHIAMI] [AUTOMAZIONE, 19 RICHIAMI]
+  vmc_master_opzioni_calendario:                                                # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 5 RICHIAMI] [AUTOMAZIONE, 21 RICHIAMI]
     name: "Programmazione Calendario"
     initial: false
     icon: mdi:calendar-clock-outline
 
-  vmc_master_opzioni_punto_di_rugiada:                                          # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 5 RICHIAMI] [AUTOMAZIONE, 19 RICHIAMI]
+  vmc_master_opzioni_punto_di_rugiada:                                          # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 5 RICHIAMI] [AUTOMAZIONE, 21 RICHIAMI]
     name: "Lim. Δ P. di Rugiada"
     initial: false
     icon: mdi:thermometer-water
 
-  vmc_master_opzioni_free_heating_o_free_cooling:                               # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 5 RICHIAMI] [AUTOMAZIONE, 19 RICHIAMI]
+  vmc_master_opzioni_free_heating_o_free_cooling:                               # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 5 RICHIAMI] [AUTOMAZIONE, 21 RICHIAMI]
     name: "Calendario Free Heating / Free Cooling"
     initial: false
     icon: mdi:sun-snowflake-variant
 
-  vmc_master_opzioni_interruttore_calendario:                                   # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 9 RICHIAMI]
+  vmc_master_opzioni_interruttore_calendario:                                   # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 11 RICHIAMI]
     name: "Status Programmazione Giornaliera"
     initial: false
     icon: mdi:calendar-today
 
-  vmc_master_opzioni_lettura_sensori:                                           # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 9 RICHIAMI]
+  vmc_master_opzioni_lettura_sensori:                                           # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 11 RICHIAMI]
     name: "Informazioni"
     initial: false
     icon: mdi:information-slab-box-outline
 
-  vmc_master_opzioni_scelta_sensori:                                            # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 5 RICHIAMI] [AUTOMAZIONE, 19 RICHIAMI]
+  vmc_master_opzioni_scelta_sensori:                                            # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 5 RICHIAMI] [AUTOMAZIONE, 21 RICHIAMI]
     name: "Sensori Opzionati"
     initial: false
     icon: mdi:memory
 
-  vmc_master_opzioni_elementi_chimici:                                          # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 5 RICHIAMI] [AUTOMAZIONE, 19 RICHIAMI]
+  vmc_master_opzioni_elementi_chimici:                                          # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 5 RICHIAMI] [AUTOMAZIONE, 21 RICHIAMI]
     name: "Elementi Chimici"
     initial: false
     icon: mdi:test-tube
@@ -5199,7 +5199,7 @@ input_boolean:
     name: "Spia Avvisi"
     icon: mdi:alert-rhombus-outline
 
-  vmc_master_opzioni_accendi_spegni_vmc_vs_umidita:                             # [CONFIGURAZIONE, 28 RICHIAMI] [INTERFACCIA, 16 RICHIAMI] [AUTOMAZIONE, 25 RICHIAMI] VERIFICA IL VALORE DI PERICOLOSITA' DELL'UMIDITA' SETTATA; LA VMC VERRA' SI AVVIERA' IN AUTOMATICO SE VIENE ACCESO (ON), QUALORA IL VALORE RISULTI PERICOLOSO
+  vmc_master_opzioni_accendi_spegni_vmc_vs_umidita:                             # [CONFIGURAZIONE, 28 RICHIAMI] [INTERFACCIA, 16 RICHIAMI] [AUTOMAZIONE, 27 RICHIAMI] VERIFICA IL VALORE DI PERICOLOSITA' DELL'UMIDITA' SETTATA; LA VMC VERRA' SI AVVIERA' IN AUTOMATICO SE VIENE ACCESO (ON), QUALORA IL VALORE RISULTI PERICOLOSO
     name: "VMC ON/OFF, in Funzione dell'Umidità Interna"
     icon: mdi:light-switch-off
 ################### Fine Creazione Switch Booleani impiegati nell'Interfaccia Lovelace per mostrare o meno le Opzioni ####################################################################################
@@ -5527,12 +5527,12 @@ input_boolean:
 
 ################### Inizio Creazione Switch Booleano impiegato nella riproduzione Audio, al Media Player Selezionato ############################
 
-  vmc_master_conferma_pulizia_cronologia:                                       # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 6 RICHIAMI] [AUTOMAZIONE, 15 RICHIAMI] ON = MOSTRA IL RIQUADRO DI CONFERMA «Sì / No» CON L'ELENCO DELLE ENTITÀ PRIMA DI PULIRE LA CRONOLOGIA
+  vmc_master_conferma_pulizia_cronologia:                                       # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 6 RICHIAMI] [AUTOMAZIONE, 16 RICHIAMI] ON = MOSTRA IL RIQUADRO DI CONFERMA «Sì / No» CON L'ELENCO DELLE ENTITÀ PRIMA DI PULIRE LA CRONOLOGIA
     name: Conferma Pulizia Cronologia Entità
     initial: false
     icon: mdi:delete-clock
 
-  vmc_master_opzione_finestra_audio:                                            # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 5 RICHIAMI] [AUTOMAZIONE, 18 RICHIAMI] SENSORE TRACCIAMENTO AUDIO
+  vmc_master_opzione_finestra_audio:                                            # [CONFIGURAZIONE, 7 RICHIAMI] [INTERFACCIA, 5 RICHIAMI] [AUTOMAZIONE, 20 RICHIAMI] SENSORE TRACCIAMENTO AUDIO
     name: "Finestra Audio"
     icon: mdi:volume-high
 
@@ -35415,7 +35415,9 @@ automation:
       più presente nella scheda) si comporta come le altre del pannello Opzioni (Audio, Calendario, ...):
       aprendola si chiudono le altre, aprendo un'altra finestra di Opzioni si chiude lei, e si chiude anche quando si
       chiude o si riapre il pannello Opzioni. È separata dall'Automazione VMC Master per non accodarle un evento
-      (mode: queued) a ogni apertura di finestra.
+      (mode: queued) a ogni apertura di finestra. Ogni evento si esegue solo se la finestra (o la scheda) è ancora
+      nello stato che lo ha fatto scattare quando arriva il suo turno (un evento vecchio non chiude le altre finestre)
+      e chiude solo le finestre aperte prima di lui, così resta aperta l'ultima toccata.
     mode: queued
     max: 10
     triggers:
@@ -35458,47 +35460,97 @@ automation:
           - conditions:
               - condition: trigger
                 id: nuova_timer
+              - alias: >-
+                  Finestra (o scheda) ancora nello stato che ha fatto scattare il trigger al turno di questo evento [b42:
+                  in modalità queued un evento vecchio, con la finestra già cambiata di nuovo, non chiude le altre finestre]
+                condition: template
+                value_template: "{{ trigger.to_state is not none and is_state(trigger.entity_id, trigger.to_state.state) }}"
             sequence:
-              - action: input_boolean.turn_off
+              - alias: >-
+                  Chiude solo le finestre aperte prima di questo evento [b42: una finestra aperta dopo, mentre
+                  l'automazione era occupata, resta aperta e vince l'ultimo tocco]
+                action: input_boolean.turn_off
                 target:
-                  entity_id:
-                    - input_boolean.vmc_master_opzioni_interruttore_monitoraggio_sensori_extra
-                    - input_boolean.vmc_master_opzioni_interruttore_sensori_vmc_interni
-                    - input_boolean.vmc_master_opzioni_interruttore_offset_sensori
+                  entity_id: >-
+                    {{ expand([
+                      'input_boolean.vmc_master_opzioni_interruttore_monitoraggio_sensori_extra',
+                      'input_boolean.vmc_master_opzioni_interruttore_sensori_vmc_interni',
+                      'input_boolean.vmc_master_opzioni_interruttore_offset_sensori',
+                    ]) | selectattr('state', 'eq', 'on')
+                    | selectattr('last_changed', 'le', trigger.to_state.last_changed)
+                    | map(attribute='entity_id') | list }}
           - conditions:
               - condition: trigger
                 id:
                   - esistente_sensori
                   - pannello_sensori
+              - alias: >-
+                  Finestra (o scheda) ancora nello stato che ha fatto scattare il trigger al turno di questo evento [b42:
+                  in modalità queued un evento vecchio, con la finestra già cambiata di nuovo, non chiude le altre finestre]
+                condition: template
+                value_template: "{{ trigger.to_state is not none and is_state(trigger.entity_id, trigger.to_state.state) }}"
             sequence:
-              - action: input_boolean.turn_off
+              - alias: >-
+                  Chiude solo le finestre aperte prima di questo evento [b42: una finestra aperta dopo, mentre
+                  l'automazione era occupata, resta aperta e vince l'ultimo tocco]
+                action: input_boolean.turn_off
                 target:
-                  entity_id: input_boolean.vmc_master_opzione_finestra_prossime_letture
+                  entity_id: >-
+                    {{ expand([
+                      'input_boolean.vmc_master_opzione_finestra_prossime_letture',
+                    ]) | selectattr('state', 'eq', 'on')
+                    | selectattr('last_changed', 'le', trigger.to_state.last_changed)
+                    | map(attribute='entity_id') | list }}
           - conditions:
               - condition: trigger
                 id: nuova
+              - alias: >-
+                  Finestra (o scheda) ancora nello stato che ha fatto scattare il trigger al turno di questo evento [b42:
+                  in modalità queued un evento vecchio, con la finestra già cambiata di nuovo, non chiude le altre finestre]
+                condition: template
+                value_template: "{{ trigger.to_state is not none and is_state(trigger.entity_id, trigger.to_state.state) }}"
             sequence:
-              - action: input_boolean.turn_off
+              - alias: >-
+                  Chiude solo le finestre aperte prima di questo evento [b42: una finestra aperta dopo, mentre
+                  l'automazione era occupata, resta aperta e vince l'ultimo tocco]
+                action: input_boolean.turn_off
                 target:
-                  entity_id:
-                    - input_boolean.vmc_master_opzioni_calendario_main
-                    - input_boolean.vmc_master_opzioni_free_heating_o_free_cooling
-                    - input_boolean.vmc_master_opzioni_calendario
-                    - input_boolean.vmc_master_opzioni_punto_di_rugiada
-                    - input_boolean.vmc_master_opzioni_scelta_sensori
-                    - input_boolean.vmc_master_opzioni_elementi_chimici
-                    - input_boolean.vmc_master_opzione_finestra_audio
-                    - input_boolean.vmc_master_opzione_finestra_clona
-                    - input_boolean.vmc_master_conferma_pulizia_cronologia
+                  entity_id: >-
+                    {{ expand([
+                      'input_boolean.vmc_master_opzioni_calendario_main',
+                      'input_boolean.vmc_master_opzioni_free_heating_o_free_cooling',
+                      'input_boolean.vmc_master_opzioni_calendario',
+                      'input_boolean.vmc_master_opzioni_punto_di_rugiada',
+                      'input_boolean.vmc_master_opzioni_scelta_sensori',
+                      'input_boolean.vmc_master_opzioni_elementi_chimici',
+                      'input_boolean.vmc_master_opzione_finestra_audio',
+                      'input_boolean.vmc_master_opzione_finestra_clona',
+                      'input_boolean.vmc_master_conferma_pulizia_cronologia',
+                    ]) | selectattr('state', 'eq', 'on')
+                    | selectattr('last_changed', 'le', trigger.to_state.last_changed)
+                    | map(attribute='entity_id') | list }}
           - conditions:
               - condition: trigger
                 id:
                   - esistente
                   - pannello
+              - alias: >-
+                  Finestra (o scheda) ancora nello stato che ha fatto scattare il trigger al turno di questo evento [b42:
+                  in modalità queued un evento vecchio, con la finestra già cambiata di nuovo, non chiude le altre finestre]
+                condition: template
+                value_template: "{{ trigger.to_state is not none and is_state(trigger.entity_id, trigger.to_state.state) }}"
             sequence:
-              - action: input_boolean.turn_off
+              - alias: >-
+                  Chiude solo le finestre aperte prima di questo evento [b42: una finestra aperta dopo, mentre
+                  l'automazione era occupata, resta aperta e vince l'ultimo tocco]
+                action: input_boolean.turn_off
                 target:
-                  entity_id: input_boolean.vmc_master_opzione_finestra_tempi_attesa
+                  entity_id: >-
+                    {{ expand([
+                      'input_boolean.vmc_master_opzione_finestra_tempi_attesa',
+                    ]) | selectattr('state', 'eq', 'on')
+                    | selectattr('last_changed', 'le', trigger.to_state.last_changed)
+                    | map(attribute='entity_id') | list }}
 ################### Fine Creazione Automazione Esclusivita' delle Finestre Timer Lettura Dati VMC e Tempi di Attesa ###################
 
 ################### Inizio Creazione Automazione Inizializzazione dei Tempi di Attesa ###################
