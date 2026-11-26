@@ -47,12 +47,12 @@ description: >-
   queued): nessun evento interrompe un comando già avviato; un evento si
   esegue solo se la sua condizione è ancora vera quando arriva il suo turno,
   rileggendo prima la velocità della VMC se l'evento arriva allo scadere di
-  un'attesa (per le finestre della scheda l'apertura vale solo se la finestra
-  è ancora aperta e chiude solo le finestre aperte prima, la chiusura vale solo
-  se è ancora chiusa: le finestre aperte e chiuse mentre l'automazione è
+  un'attesa (l'apertura di una finestra della scheda conta solo se la finestra
+  è ancora aperta e chiude soltanto le finestre aperte prima, la chiusura solo
+  se è ancora chiusa, lo spegnimento dell'interruttore dell'Umidità solo se è
+  ancora spento: così le finestre aperte e chiuse mentre l'automazione è
   occupata non si riaprono e richiudono senza fine e resta aperta l'ultima
-  toccata; lo spegnimento dell'interruttore dell'Umidità vale solo se è ancora
-  spento);
+  toccata);
 
   - Se un Black-Out arriva mentre un'allerta sta finendo, al ripristino la VMC
   torna alla velocità di fine allerta (Priorità 7); con un'allerta ancora in

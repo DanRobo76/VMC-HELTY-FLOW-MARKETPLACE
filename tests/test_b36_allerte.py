@@ -485,9 +485,12 @@ def _rami_interruttore_umidita() -> list[dict[str, Any]]:
 
 def test_c4_5_due_rami_che_si_escludono() -> None:
     nuovo, vecchio = _rami_interruttore_umidita()
-    assert len(nuovo["conditions"]) == 2 and len(vecchio["conditions"]) == 2
-    vmc_non_usabile = nuovo["conditions"][1]["value_template"]
-    assert _norm(vecchio["conditions"][1]["value_template"]) == _norm(
+    assert len(nuovo["conditions"]) == 3 and len(vecchio["conditions"]) == 3
+    for ramo in (nuovo, vecchio):  # b42: interruttore ancora spento al turno dell'evento
+        assert {"condition": "state", "entity_id": "input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_umidita",
+                "state": "off"}.items() <= ramo["conditions"][1].items()
+    vmc_non_usabile = nuovo["conditions"][2]["value_template"]
+    assert _norm(vecchio["conditions"][2]["value_template"]) == _norm(
         "{{ not (" + vmc_non_usabile.strip()[3:-3].strip() + ") }}")
     assert not any("shell_command" in str(passo) for passo in nuovo["sequence"])
     # stesse condizioni del ramo con la VMC ON-Line, senza ON-Line e senza le memorie del Black-Out
@@ -512,8 +515,8 @@ def test_c4_5_due_rami_che_si_escludono() -> None:
 async def test_c4_5_condizioni_dei_due_rami(hass: HomeAssistant, altri: dict[str, str], nuovo: bool) -> None:
     ramo_nuovo, ramo_vecchio = _rami_interruttore_umidita()
     _imposta(hass, {SPIA_UMIDITA: "on", IP: "ON-Line", LETTURA_I: "Velocità 1", **_spente(BLACK_OUT), **altri})
-    assert _render(hass, ramo_nuovo["conditions"][1]["value_template"]) is nuovo
-    assert _render(hass, ramo_vecchio["conditions"][1]["value_template"]) is (not nuovo)
+    assert _render(hass, ramo_nuovo["conditions"][2]["value_template"]) is nuovo
+    assert _render(hass, ramo_vecchio["conditions"][2]["value_template"]) is (not nuovo)
 
 
 def _stati_interruttore(**altri: str) -> dict[str, str]:
