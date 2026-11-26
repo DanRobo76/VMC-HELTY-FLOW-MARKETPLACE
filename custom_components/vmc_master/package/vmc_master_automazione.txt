@@ -11357,10 +11357,12 @@ actions:
             entity_id: input_boolean.vmc_master_opzioni_monitoraggio_sensori
             state: 'off'
         sequence:
-          - data: {}
+          - alias: >-
+              Chiude le sue sotto-finestre, non la propria, già chiusa [b42: richiusa insieme alle altre
+              arriverebbe un giro dopo la condizione e chiuderebbe la finestra se riaperta subito]
+            data: {}
             target:
               entity_id:
-                - input_boolean.vmc_master_opzioni_monitoraggio_sensori
                 - >-
                   input_boolean.vmc_master_opzioni_interruttore_monitoraggio_sensori_extra
                 - input_boolean.vmc_master_opzioni_interruttore_sensori_vmc_interni
@@ -11640,10 +11642,12 @@ actions:
             entity_id: input_boolean.vmc_master_opzioni_offset_sensori
             state: 'off'
         sequence:
-          - data: {}
+          - alias: >-
+              Chiude le sue sotto-finestre, non la propria, già chiusa [b42: richiusa insieme alle altre
+              arriverebbe un giro dopo la condizione e chiuderebbe la finestra se riaperta subito]
+            data: {}
             target:
               entity_id:
-                - input_boolean.vmc_master_opzioni_offset_sensori
                 - input_boolean.vmc_master_opzioni_punto_di_rugiada
                 - input_boolean.vmc_master_opzioni_calendario_main
                 - input_boolean.vmc_master_opzioni_calendario
@@ -11919,10 +11923,12 @@ actions:
             entity_id: input_boolean.vmc_master_opzioni_avvisi
             state: 'off'
         sequence:
-          - data: {}
+          - alias: >-
+              Chiude le sue sotto-finestre, non la propria, già chiusa [b42: richiusa insieme alle altre
+              arriverebbe un giro dopo la condizione e chiuderebbe la finestra se riaperta subito]
+            data: {}
             target:
               entity_id:
-                - input_boolean.vmc_master_opzioni_avvisi
                 - input_boolean.vmc_master_opzioni_avvisi_grafici
             action: input_boolean.turn_off
         alias: Trigger Disattivazione Finestra Avvisi

@@ -5091,7 +5091,7 @@ input_boolean:
     icon: mdi:delete-alert
 # >>> FINE SEZIONE CLONA VMC (SOLO MASTER, RIMOSSA DA VMC_SCRIPT_CLONA.SH) <<<
 
-  vmc_master_opzioni_avvisi:                                                    # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 11 RICHIAMI]
+  vmc_master_opzioni_avvisi:                                                    # [CONFIGURAZIONE, 3 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 10 RICHIAMI]
     name: "Avvisi"
     initial: false
     icon: mdi:alert-rhombus-outline
@@ -5106,7 +5106,7 @@ input_boolean:
     initial: false
     icon: mdi:remote-tv
 
-  vmc_master_opzioni_offset_sensori:                                            # [CONFIGURAZIONE, 6 RICHIAMI] [INTERFACCIA, 29 RICHIAMI] [AUTOMAZIONE, 11 RICHIAMI]
+  vmc_master_opzioni_offset_sensori:                                            # [CONFIGURAZIONE, 6 RICHIAMI] [INTERFACCIA, 29 RICHIAMI] [AUTOMAZIONE, 10 RICHIAMI]
     name: "Opzioni"
     initial: false
     icon: mdi:format-list-checkbox
@@ -5116,7 +5116,7 @@ input_boolean:
     initial: false
     icon: mdi:format-list-checkbox
 
-  vmc_master_opzioni_monitoraggio_sensori:                                      # [CONFIGURAZIONE, 4 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 11 RICHIAMI]
+  vmc_master_opzioni_monitoraggio_sensori:                                      # [CONFIGURAZIONE, 4 RICHIAMI] [INTERFACCIA, 28 RICHIAMI] [AUTOMAZIONE, 10 RICHIAMI]
     name: "Sensori"
     initial: false
     icon: mdi:memory
