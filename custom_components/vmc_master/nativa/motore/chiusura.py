@@ -20,7 +20,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
-from homeassistant.core import CALLBACK_TYPE, Event, HomeAssistant, callback
+from homeassistant.core import CALLBACK_TYPE, Event, HassJob, HomeAssistant, callback
 from homeassistant.helpers.event import async_call_later
 from homeassistant.util.async_ import create_eager_task
 from homeassistant.util.hass_dict import HassKey
@@ -61,8 +61,17 @@ class RegistroSequenze:
         return togli
 
     async def _alla_chiusura(self, _evento: Event) -> None:
-        """Come ``_async_stop_scripts_at_shutdown``."""
-        async_call_later(self.hass, ATTESA_MASSIMA, self._dopo_la_chiusura)
+        """Come ``_async_stop_scripts_at_shutdown``. L'attesa finisce con Home
+        Assistant (``cancel_on_shutdown``): se si ferma prima, non serve più."""
+        async_call_later(
+            self.hass,
+            ATTESA_MASSIMA,
+            HassJob(
+                self._dopo_la_chiusura,
+                "vmc_master: sequenze dopo la chiusura",
+                cancel_on_shutdown=True,
+            ),
+        )
         in_corso = [s for s, prima in self._sequenze.values() if s.in_corso and prima]
         if in_corso:
             _LOGGER.debug(
