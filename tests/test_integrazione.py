@@ -631,8 +631,8 @@ def test_readme_marketplace_e_github() -> None:
     github = (RADICE / ".github" / "README.md").read_text(encoding="utf-8")
     for testo in ("| 📌 **1. Aggiungere il repository** (primo passo) |\n|---|\n",
                   "| 📌 **1. Add the repository** (first step) |\n|---|\n",
-                  "3. **Installare**: cercare **VMC Master** nel Marketplace e premere **Installa**.",
-                  "3. **Install**: search for **VMC Master** in the Marketplace and press **Install**.",
+                  "2. **Installare**: cercare **VMC Master** nel Marketplace e premere **Installa**.",
+                  "2. **Install**: search for **VMC Master** in the Marketplace and press **Install**.",
                   "6. **Una volta per ogni VMC**, nel pannello **Opzioni** della scheda:",
                   "6. **Once per unit**, in the card's **Opzioni** panel:",
                   "**Altre VMC**: ripetere il punto 4.", "**More units**: repeat step 4.",
@@ -640,23 +640,24 @@ def test_readme_marketplace_e_github() -> None:
                   "Dopo l'installazione tutto si regola", "After installation everything is set"):
         assert testo in github and testo not in marketplace, testo
     # versione nativa: configuration.yaml serve solo per le Notifiche Audio (righe tts); b45:
-    # prima si verifica se le righe ci sono, si aggiungono solo se mancano. Su GitHub è il
-    # punto 2, dopo il riquadro «Aggiungere il repository»
-    for testo in ("**Solo per le Notifiche Audio, controllare `configuration.yaml`** (una volta sola):",
-                  "**Only for audio notifications, check `configuration.yaml`** (once):"):
-        assert f"\n1. {testo}" in marketplace and f"\n2. {testo}" in github, testo
-    for testo in ("   - verificare se sono già presenti le righe:",
-                  "   - se sono presenti, chiudere il file senza modificarlo;",
-                  "   - se mancano, aggiungerle in fondo al file e salvare con l'icona del **dischetto**.",
-                  "   - check whether these lines are already present:",
-                  "   - if they are present, close the file without changing it;",
-                  "   - if they are missing, add them at the end of the file and save with the **disk** icon."):
+    # prima Installare, poi le Notifiche Audio, dove si suggerisce di verificare se la
+    # stringa tts c'è e di aggiungere le righe solo se mancano (nel Marketplace punto 2, su
+    # GitHub punto 3, dopo il riquadro «Aggiungere il repository» e «Installare»)
+    for testo in ("**Notifiche Audio**: si suggerisce di verificare che `configuration.yaml` contenga la stringa `tts:` (una volta sola):",
+                  "**Audio notifications**: it is recommended to check that `configuration.yaml` contains the `tts:` string (once):"):
+        assert f"\n2. {testo}" in marketplace and f"\n3. {testo}" in github, testo
+    for testo in ("   - se sono già presenti le righe seguenti, chiudere il file senza modificarlo:",
+                  "   - in caso di assenza, per le Notifiche Audio aggiungerle in fondo al file e salvare con l'icona del **dischetto**.",
+                  "   - if the following lines are already present, close the file without changing it:",
+                  "   - if they are missing, add them at the end of the file for audio notifications and save with the **disk** icon."):
         assert marketplace.count(testo) == 1 and github.count(testo) == 1, testo
     for testo in ("aggiungere in fondo:", "add at the end:", "modificare `configuration.yaml`",
-                  "edit `configuration.yaml`"):
+                  "edit `configuration.yaml`", "Solo per le Notifiche Audio",
+                  "Only for audio notifications", "verificare se sono già presenti",
+                  "check whether these lines"):
         assert testo not in marketplace and testo not in github, testo
-    for testo in ("2. **Installare**: cercare il pulsante **Installa** in alto a destra, premerlo e seguire le indicazioni a schermo.",
-                  "2. **Install**: look for the **Install** button at the top right, press it and follow the on-screen instructions.",
+    for testo in ("1. **Installare**: cercare il pulsante **Installa** in alto a destra, premerlo e seguire le indicazioni a schermo.",
+                  "1. **Install**: look for the **Install** button at the top right, press it and follow the on-screen instructions.",
                   "Per ogni VMC nel pannello **Opzioni** della scheda:",
                   "For each unit in the card's **Opzioni** panel:",
                   "**Altre VMC**: *Impostazioni → Dispositivi e servizi → pulsante «Aggiungi integrazione» in basso a destra → VMC Master*.",

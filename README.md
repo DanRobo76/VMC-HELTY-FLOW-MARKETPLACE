@@ -127,19 +127,18 @@ actions:
 <details>
 <summary><strong>Installazione</strong></summary>
 
-1. **Solo per le Notifiche Audio, controllare `configuration.yaml`** (una volta sola):
+1. **Installare**: cercare il pulsante **Installa** in alto a destra, premerlo e seguire le indicazioni a schermo.
+2. **Notifiche Audio**: si suggerisce di verificare che `configuration.yaml` contenga la stringa `tts:` (una volta sola):
    - installare l'app **File editor**: *Impostazioni → Applicazioni → Installa app → File editor → Installa*;
    - premere **Avvia**, poi **Apri l'interfaccia web**;
    - premere l'icona della **cartella** in alto a sinistra e scegliere `configuration.yaml`;
-   - verificare se sono già presenti le righe:
+   - se sono già presenti le righe seguenti, chiudere il file senza modificarlo:
 
      ```yaml
      tts:
        - platform: google_translate
      ```
-   - se sono presenti, chiudere il file senza modificarlo;
-   - se mancano, aggiungerle in fondo al file e salvare con l'icona del **dischetto**.
-2. **Installare**: cercare il pulsante **Installa** in alto a destra, premerlo e seguire le indicazioni a schermo.
+   - in caso di assenza, per le Notifiche Audio aggiungerle in fondo al file e salvare con l'icona del **dischetto**.
 3. **Aggiungere la scheda**:
    - premere **Ctrl+F5**;
    - nella plancia (va bene anche **Panoramica**) premere **matita → Aggiungi scheda → Sfoglia tutte le schede**;
@@ -333,19 +332,18 @@ actions:
 <details>
 <summary><strong>Installation</strong></summary>
 
-1. **Only for audio notifications, check `configuration.yaml`** (once):
+1. **Install**: look for the **Install** button at the top right, press it and follow the on-screen instructions.
+2. **Audio notifications**: it is recommended to check that `configuration.yaml` contains the `tts:` string (once):
    - install the **File editor** app: *Settings → Apps → Install app → File editor → Install*;
    - press **Start**, then **Open web UI**;
    - press the **folder** icon at the top left and choose `configuration.yaml`;
-   - check whether these lines are already present:
+   - if the following lines are already present, close the file without changing it:
 
      ```yaml
      tts:
        - platform: google_translate
      ```
-   - if they are present, close the file without changing it;
-   - if they are missing, add them at the end of the file and save with the **disk** icon.
-2. **Install**: look for the **Install** button at the top right, press it and follow the on-screen instructions.
+   - if they are missing, add them at the end of the file for audio notifications and save with the **disk** icon.
 3. **Add the card**:
    - press **Ctrl+F5**;
    - on the dashboard (**Overview** is fine too) press **pencil → Add card → Browse all cards**;

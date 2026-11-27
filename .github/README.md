@@ -170,11 +170,12 @@ actions:
 | premere **Aggiungi**, poi **Continue** |
 | seguire le indicazioni di Home Assistant, autorizzando HACS |
 
-2. **Solo per le Notifiche Audio, controllare `configuration.yaml`** (una volta sola):
+2. **Installare**: cercare **VMC Master** nel Marketplace e premere **Installa**.
+3. **Notifiche Audio**: si suggerisce di verificare che `configuration.yaml` contenga la stringa `tts:` (una volta sola):
    - installare l'app **File editor**: *Impostazioni → Applicazioni → Installa app → File editor → Installa*;
    - premere **Avvia**, poi **Apri l'interfaccia web**;
    - premere l'icona della **cartella** in alto a sinistra e scegliere `configuration.yaml`;
-   - verificare se sono già presenti le righe:
+   - se sono già presenti le righe seguenti, chiudere il file senza modificarlo:
 
      ```yaml
      tts:
@@ -182,9 +183,7 @@ actions:
      ```
 
      Servono proprio queste righe: aggiungere Google Translate solo da *Impostazioni → Dispositivi e servizi* non basta e le Notifiche Audio resterebbero mute;
-   - se sono presenti, chiudere il file senza modificarlo;
-   - se mancano, aggiungerle in fondo al file e salvare con l'icona del **dischetto**.
-3. **Installare**: cercare **VMC Master** nel Marketplace e premere **Installa**.
+   - in caso di assenza, per le Notifiche Audio aggiungerle in fondo al file e salvare con l'icona del **dischetto**.
 4. **Aggiungere la VMC**: *Impostazioni → Dispositivi e servizi → pulsante «Aggiungi integrazione» in basso a destra → VMC Master*.
    - VMC nuova, mai collegata: vedere **VMC nuova** qui sotto.
    - VMC già collegata al Wi-Fi di casa:
@@ -508,11 +507,12 @@ actions:
 | press **Add**, then **Continue** |
 | follow Home Assistant's instructions, authorizing HACS |
 
-2. **Only for audio notifications, check `configuration.yaml`** (once):
+2. **Install**: search for **VMC Master** in the Marketplace and press **Install**.
+3. **Audio notifications**: it is recommended to check that `configuration.yaml` contains the `tts:` string (once):
    - install the **File editor** app: *Settings → Apps → Install app → File editor → Install*;
    - press **Start**, then **Open web UI**;
    - press the **folder** icon at the top left and choose `configuration.yaml`;
-   - check whether these lines are already present:
+   - if the following lines are already present, close the file without changing it:
 
      ```yaml
      tts:
@@ -520,9 +520,7 @@ actions:
      ```
 
      These exact lines are needed: adding Google Translate only from *Settings → Devices & services* is not enough and the audio notifications stay silent;
-   - if they are present, close the file without changing it;
-   - if they are missing, add them at the end of the file and save with the **disk** icon.
-3. **Install**: search for **VMC Master** in the Marketplace and press **Install**.
+   - if they are missing, add them at the end of the file for audio notifications and save with the **disk** icon.
 4. **Add the unit**: *Settings → Devices & services → «Add integration» button at the bottom right → VMC Master*.
    - New unit, never connected: see **New unit** below.
    - Unit already on the home Wi-Fi:
