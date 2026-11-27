@@ -26,6 +26,7 @@ from freezegun.api import FrozenDateTimeFactory
 from homeassistant.const import (
     EVENT_HOMEASSISTANT_START,
     EVENT_HOMEASSISTANT_STARTED,
+    EVENT_STATE_CHANGED,
     MATCH_ALL,
 )
 from homeassistant.core import (
@@ -50,8 +51,11 @@ from homeassistant.util import dt as dt_util
 from pytest_homeassistant_custom_component.common import async_test_home_assistant
 
 from custom_components.vmc_master.nativa.motore import generato
+from custom_components.vmc_master.nativa.motore.chiusura import registro_sequenze
 from custom_components.vmc_master.nativa.motore.ha import Motore
+from custom_components.vmc_master.nativa.motore.stati_logiche import stati_logiche
 
+from .fase3 import MotoreFase3
 from .test_semantica import (
     AIUTANTI,
     PASSO,
@@ -201,14 +205,6 @@ automation:
     actions:
       - action: prova.registra
         data: {passo: "subito {{ trigger.entity_id }} {{ trigger.from_state.state }}"}
-  - alias: Prova Spenta
-    id: prova_spenta
-    initial_state: false
-    triggers:
-      - {trigger: state, entity_id: input_boolean.a}
-    actions:
-      - action: prova.registra
-        data: {passo: mai}
   - triggers:
       - {trigger: state, entity_id: input_boolean.c}
     actions:
@@ -227,131 +223,16 @@ automation:
 
 
 # --- stato ripristinato -------------------------------------------------------------------
-
-_PRIMA = (T0 - timedelta(hours=1)).isoformat()
-
-scenario(
-    "ripristino",
-    """
-script:
-  prova_ripristino:
-    alias: Prova Ripristino
-    sequence:
-      - action: prova.registra
-        data: {passo: "script {{ this.attributes.last_triggered }}"}
-automation:
-  - alias: Prova Ripristinata
-    id: prova_ripristinata
-    triggers:
-      - {trigger: state, entity_id: input_boolean.c}
-    actions:
-      - action: prova.registra
-        data: {passo: "ripristinata {{ this.attributes.last_triggered }}"}
-      - action: script.prova_ripristino
-  - alias: Prova Ripristinata Spenta
-    id: prova_ripristinata_spenta
-    triggers:
-      - {trigger: state, entity_id: input_boolean.c}
-    actions:
-      - action: prova.registra
-        data: {passo: "ripristinata spenta {{ this.attributes.last_triggered }}"}
-  - alias: Prova Iniziale Accesa
-    id: prova_iniziale_accesa
-    initial_state: true
-    triggers:
-      - {trigger: state, entity_id: input_boolean.c}
-    actions:
-      - action: prova.registra
-        data: {passo: iniziale-accesa}
-  - alias: Prova Iniziale Spenta
-    id: prova_iniziale_spenta
-    initial_state: false
-    triggers:
-      - {trigger: state, entity_id: input_boolean.c}
-    actions:
-      - action: prova.registra
-        data: {passo: mai}
-  - alias: Prova Senza Id Spenta
-    triggers:
-      - {trigger: state, entity_id: input_boolean.c}
-    actions:
-      - action: prova.registra
-        data: {passo: mai}
-""",
-    spento("input_boolean.c"),
-    attendi(1),
-    servizio(
-        "automation.turn_on", {"entity_id": "automation.prova_ripristinata_spenta"}
-    ),
-    acceso("input_boolean.c"),
-    attendi(1),
-    ripristino=[
-        State("automation.prova_ripristinata", "on", {"last_triggered": _PRIMA}),
-        State(
-            "automation.prova_ripristinata_spenta", "off", {"last_triggered": _PRIMA}
-        ),
-        State("automation.prova_iniziale_accesa", "off", {"last_triggered": None}),
-        State("automation.prova_iniziale_spenta", "on", {"last_triggered": _PRIMA}),
-        State("automation.prova_senza_id_spenta", "off", {}),
-        State("script.prova_ripristino", "off", {"last_triggered": _PRIMA}),
-        State("input_boolean.c", "on", {}),
-    ],
-)
+#
+# Lo scenario «ripristino» (stato e last_triggered delle automazioni ripresi all'avvio,
+# initial_state, automation.turn_on di un'automazione ripristinata spenta) non c'è più: le
+# automazioni del motore sono logiche dell'integrazione, sempre attive, senza stato ripreso
+# (nessuna automazione del package ha initial_state, nessun modello legge last_triggered).
 
 # --- servizi ------------------------------------------------------------------------------
 
-scenario(
-    "servizi_automazioni",
-    """
-automation:
-  - alias: Prova Servizi
-    id: prova_servizi
-    mode: single
-    variables:
-      doppio: "{{ (n | default(1)) * 2 }}"
-    triggers:
-      - {trigger: state, entity_id: input_boolean.a, to: "on"}
-    conditions:
-      - condition: state
-        entity_id: input_boolean.b
-        state: "on"
-    actions:
-      - action: prova.registra
-        data: {passo: "servizi {{ trigger.platform }} {{ doppio }} {{ n | default('?') }}"}
-      - delay: 3
-      - action: prova.registra
-        data: {passo: servizi-fine}
-""",
-    chiama(
-        "automation.trigger",
-        {"entity_id": "automation.prova_servizi", "skip_condition": False},
-    ),
-    chiama(
-        "automation.trigger",
-        {"entity_id": "automation.prova_servizi", "variables": {"n": 4}},
-    ),
-    attendi(1),
-    servizio(
-        "automation.turn_off",
-        {"entity_id": "automation.prova_servizi", "stop_actions": False},
-    ),
-    attendi(3),
-    servizio("automation.turn_on", {"entity_id": "automation.prova_servizi"}),
-    chiama("automation.trigger", {"entity_id": "automation.prova_servizi"}),
-    attendi(1),
-    servizio("automation.turn_off", {"entity_id": "automation.prova_servizi"}),
-    attendi(1),
-    servizio("automation.toggle", {"entity_id": "automation.prova_servizi"}),
-    acceso("input_boolean.b"),
-    acceso("input_boolean.a"),
-    attendi(1),
-    servizio("automation.toggle", {"entity_id": "automation.prova_servizi"}),
-    attendi(3),
-    servizio("automation.toggle", {"entity_id": "automation.prova_servizi"}),
-    spento("input_boolean.a"),
-    acceso("input_boolean.a"),
-    attendi(4),
-)
+# Lo scenario «servizi_automazioni» (automation.trigger, turn_off, turn_on e toggle) non
+# c'è più: le logiche del motore non hanno questi servizi (il package non li usa).
 
 scenario(
     "servizi_script",
@@ -468,27 +349,6 @@ automation:
       - action: prova.registra
         data:
           passo: "stato {{ trigger.id }} {{ trigger.from_state.state }} {{ trigger.to_state.state }} {{ trigger.for }}"
-  - alias: Prova Numerico
-    mode: parallel
-    triggers:
-      - trigger: numeric_state
-        entity_id: input_number.n
-        above: 50
-        for: {seconds: 1}
-        id: sopra
-      - trigger: numeric_state
-        entity_id: input_number.n
-        below: 20
-        value_template: "{{ state.state | float * 2 }}"
-        id: sotto
-      - trigger: numeric_state
-        entity_id: sensor.prova
-        attribute: livello
-        above: 3
-        id: livello
-    actions:
-      - action: prova.registra
-        data: {passo: "numerico {{ trigger.id }} {{ trigger.below }} {{ trigger.above }}"}
   - alias: Prova Modello Per
     mode: queued
     triggers:
@@ -757,6 +617,16 @@ def _ripristina(hass: HomeAssistant, stati: list[State]) -> None:
     )
 
 
+def _stati(hass: HomeAssistant) -> list[Any]:
+    """Gli stati di automazioni e script, con quelli delle logiche del motore (non sono
+    nella macchina degli stati)."""
+    stati = [
+        *hass.states.async_all(("automation", "script")),
+        *stati_logiche(hass).stati.values(),
+    ]
+    return sorted((s.entity_id, s.state, _norma(dict(s.attributes))) for s in stati)
+
+
 def _registro_entita(hass: HomeAssistant) -> list[Any]:
     """Le voci del registro delle entità di automazioni e script (senza gli id interni
     e gli istanti di creazione)."""
@@ -806,11 +676,17 @@ async def _corsa(
     motore: bool,
     caricati: list[str],
     cartella: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> dict[str, Any]:
     freezer.move_to(T0)
     # i trigger time e time_pattern scattano a un microsecondo a caso (randint di
-    # async_track_utc_time_change): stessa sequenza casuale per Home Assistant e motore
+    # async_track_utc_time_change): stessa sequenza casuale per Home Assistant e motore,
+    # tutta loro (gli id delle voci del registro e delle tracce delle automazioni, che il
+    # motore non ha, prendono altri numeri dal generatore comune)
     random.seed(0)
+    monkeypatch.setattr(
+        "homeassistant.helpers.event.randint", random.Random(0).randint
+    )
     registro: list[Any] = []
     configurazione = yaml.safe_load(prova["configurazione"])
     di_setup: list[Any] = []
@@ -848,12 +724,6 @@ async def _corsa(
         if prova["ripristino"]:
             _ripristina(hass, prova["ripristino"])
 
-        # i contesti (id casuali) come numeri d'ordine: si confronta chi ha causato cosa
-        contesti: dict[str | None, int | None] = {None: None}
-
-        def contesto(identificativo: str | None) -> int | None:
-            return contesti.setdefault(identificativo, len(contesti) - 1)
-
         @callback
         def annota(evento: Event) -> None:
             if evento.event_type in DI_SETUP:
@@ -867,12 +737,22 @@ async def _corsa(
                     _norma(evento.time_fired),
                     evento.event_type,
                     _norma(dict(dati)),
-                    contesto(evento.context.id),
-                    contesto(evento.context.parent_id),
+                    evento.context.id,
+                    evento.context.parent_id,
                 )
             )
 
-        hass.bus.async_listen(MATCH_ALL, annota)
+        smetti = [hass.bus.async_listen(MATCH_ALL, annota)]
+        if motore:
+            # gli stati delle logiche (le automazioni del motore) non sono nella macchina
+            # degli stati: entrano nel registro nel punto del bus di state_changed
+            smetti.append(
+                stati_logiche(hass).osserva(
+                    callback(
+                        lambda e: annota(e) if e.event_type == EVENT_STATE_CHANGED else None
+                    )
+                )
+            )
         assert await async_setup_component(hass, "homeassistant", {})
         for dominio, voci in AIUTANTI.items():
             assert await async_setup_component(hass, dominio, {dominio: voci})
@@ -913,8 +793,9 @@ async def _corsa(
             caricati.append(f"{generato.__name__}.avvio_{nome}_motore")
             _carica(f"avvio_{nome}_modelli", testo_modelli)
             codice = _carica(f"avvio_{nome}_motore", testo_motore)
-            m = Motore(hass)
+            m = MotoreFase3(hass)
             await m.avvia(crea=codice.crea, configurazione=altre)
+            esito["logiche"] = {logica.entity_id for logica in m.automazioni}
         else:
             assert await async_setup_component(
                 hass, "script", {"script": {**altre["script"], **script}}
@@ -984,15 +865,21 @@ async def _corsa(
                 await _fino_alla_fine(hass, freezer, fermata)
                 registro.append(("fermato",))
 
-        esito["stati"] = sorted(
-            (s.entity_id, s.state, _norma(dict(s.attributes)))
-            for s in hass.states.async_all(("automation", "script"))
-        )
+        esito["stati"] = _stati(hass)
         esito["entita"] = _registro_entita(hass)
-        esito["nuove_vietate"] = DATA_NEW_SCRIPT_RUNS_NOT_ALLOWED in hass.data
+        # le sequenze del motore hanno il proprio divieto (chiusura.RegistroSequenze)
+        esito["nuove_vietate"] = DATA_NEW_SCRIPT_RUNS_NOT_ALLOWED in hass.data or (
+            motore and registro_sequenze(hass).vietate
+        )
         descrizioni = await async_get_all_descriptions(hass)
         esito["descrizioni"] = _norma(descrizioni.get("script", {}))
+        # la pulizia della prova non si confronta: con Home Assistant spegne le automazioni
+        # (automation.turn_off), con il motore ferma le logiche
+        for togli in smetti:
+            togli()
         if hass.state is CoreState.running:
+            if m is not None:
+                await m.ferma()
             await hass.services.async_call(
                 "automation", "turn_off", {"entity_id": "all"}, blocking=True
             )
@@ -1009,6 +896,32 @@ async def _corsa(
                 chiamata.cancel()
         await asyncio.gather(*chiamate, return_exceptions=True)
     return esito
+
+
+def _come_logiche(esito: dict[str, Any], logiche: set[str]) -> None:
+    """Senza ciò che di un'automazione ha solo l'entità di Home Assistant e non la logica
+    del motore (stesso entity_id): la voce del registro delle entità (e il suo evento) e
+    l'evento ``automation_triggered`` (l'istante in cui parte è nel suo stato). Poi i
+    contesti (id casuali) diventano numeri d'ordine: si confronta chi ha causato cosa."""
+
+    def dell_entita(voce: tuple[Any, ...]) -> bool:
+        return (
+            len(voce) == 5
+            and voce[1] in ("entity_registry_updated", "automation_triggered")
+            and voce[2].get("entity_id") in logiche
+        )
+
+    contesti: dict[str | None, int | None] = {None: None}
+
+    def contesto(identificativo: str | None) -> int | None:
+        return contesti.setdefault(identificativo, len(contesti) - 1)
+
+    esito["registro"] = [
+        (*voce[:3], contesto(voce[3]), contesto(voce[4])) if len(voce) == 5 else voce
+        for voce in esito["registro"]
+        if not dell_entita(voce)
+    ]
+    esito["entita"] = [voce for voce in esito["entita"] if voce[0] not in logiche]
 
 
 def _confronta(atteso: Any, ottenuto: Any, cosa: str) -> None:
@@ -1030,15 +943,32 @@ async def test_avvio_come_home_assistant(
     freezer: FrozenDateTimeFactory,
     moduli: list[str],  # noqa: F811
     tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Stessi eventi (dall'avvio), stati, entità e descrizioni dei servizi."""
     prova = SCENARI[nome]
     atteso = await _corsa(
-        freezer, nome, prova, motore=False, caricati=moduli, cartella=tmp_path / "ha"
+        freezer,
+        nome,
+        prova,
+        motore=False,
+        caricati=moduli,
+        cartella=tmp_path / "ha",
+        monkeypatch=monkeypatch,
     )
     ottenuto = await _corsa(
-        freezer, nome, prova, motore=True, caricati=moduli, cartella=tmp_path / "m"
+        freezer,
+        nome,
+        prova,
+        motore=True,
+        caricati=moduli,
+        cartella=tmp_path / "m",
+        monkeypatch=monkeypatch,
     )
+    # le automazioni della prova sono logiche del motore, senza entità
+    assert not any(voce[0] in ottenuto["logiche"] for voce in ottenuto["entita"])
+    _come_logiche(atteso, ottenuto["logiche"])
+    _come_logiche(ottenuto, ottenuto["logiche"])
     if prova["altre"]:
         # con altre automazioni e altri script YAML le entità del motore nascono dopo
         # tutte quelle YAML (le integrazioni automation e script si avviano prima):
@@ -1074,8 +1004,11 @@ async def _entita_del_package(
     automazioni, script = leggi_package()
     async with async_test_home_assistant(initial_state=CoreState.not_running) as hass:
         assert await async_setup_component(hass, "homeassistant", {})
+        logiche: set[str] = set()
         if motore:
-            await Motore(hass).avvia()
+            m = MotoreFase3(hass)
+            await m.avvia()
+            logiche = {logica.entity_id for logica in m.automazioni}
         else:
             assert await async_setup_component(hass, "script", {"script": script})
             assert await async_setup_component(
@@ -1085,11 +1018,9 @@ async def _entita_del_package(
         descrizioni = await async_get_all_descriptions(hass)
         esito = {
             "entita": _registro_entita(hass),
-            "stati": sorted(
-                (s.entity_id, s.state, _norma(dict(s.attributes)))
-                for s in hass.states.async_all(("automation", "script"))
-            ),
+            "stati": _stati(hass),
             "descrizioni": sorted(_norma(descrizioni["script"]).items()),
+            "logiche": logiche,
         }
         await hass.async_stop(force=True)
         freezer.tick(timedelta(seconds=61))
@@ -1101,15 +1032,21 @@ async def test_entita_del_package_come_home_assistant(
     freezer: FrozenDateTimeFactory,
 ) -> None:
     """Le automazioni (tutte con id: l'Automazione VMC Master ha quello che le dà
-    l'integrazione) e gli script del package: stessi entity_id, unique_id, nomi, icone,
-    stati e descrizioni dei servizi con il YAML e con il motore."""
+    l'integrazione) e gli script del package: stessi entity_id, nomi, stati e attributi
+    (le automazioni come logiche del motore, con il loro stato interno) e, per gli script
+    (entità nelle prove della fase 3), stessi unique_id, icone e descrizioni dei servizi
+    con il YAML e con il motore. Le logiche non hanno voci nel registro delle entità."""
     atteso = await _entita_del_package(freezer, motore=False)
     ottenuto = await _entita_del_package(freezer, motore=True)
     assert len(atteso["stati"]) == 14 + 51
-    assert (
-        sum(1 for voce in atteso["entita"] if voce[0].startswith("automation.")) == 14
+    automazioni = {voce[0] for voce in atteso["entita"] if voce[0].startswith("automation.")}
+    assert len(automazioni) == 14
+    assert ottenuto["logiche"] == automazioni
+    _confronta(
+        [voce for voce in atteso["entita"] if voce[0] not in automazioni],
+        ottenuto["entita"],
+        "registri delle entità",
     )
-    _confronta(atteso["entita"], ottenuto["entita"], "registri delle entità")
     _confronta(atteso["stati"], ottenuto["stati"], "stati")
     _confronta(
         atteso["descrizioni"], ottenuto["descrizioni"], "descrizioni dei servizi"

@@ -35,8 +35,9 @@ from homeassistant.setup import async_setup_component
 from pytest_homeassistant_custom_component.common import async_test_home_assistant
 
 from custom_components.vmc_master.nativa.motore import generato
-from custom_components.vmc_master.nativa.motore.ha import Motore
+from custom_components.vmc_master.nativa.motore.stati_logiche import stati_logiche
 
+from .fase3 import MotoreFase3
 from .traduci import traduci_configurazione
 
 T0 = datetime(2026, 11, 25, 10, 0, 0, tzinfo=UTC)
@@ -45,10 +46,11 @@ AIUTANTI = {
     "input_boolean": {"a": {}, "b": {}, "c": {}},
     "input_number": {"n": {"min": 0, "max": 100, "step": 1}},
 }
+# Senza ``automation_triggered``: le automazioni del motore sono logiche dell'integrazione,
+# senza l'evento (l'istante in cui partono è nel loro stato: ``last_triggered``, ``current``)
 EVENTI = {
     EVENT_STATE_CHANGED,
     EVENT_CALL_SERVICE,
-    "automation_triggered",
     "script_started",
     "prova",
 }
@@ -417,9 +419,10 @@ automation:
         value_template: "{{ states('input_number.n') | float(0) > 50 }}"
         for: {seconds: 2}
         id: alto
-      - trigger: numeric_state
-        entity_id: input_number.n
-        below: 10
+      # numeric_state come modello: le automazioni del package non lo usano e le
+      # attivazioni del motore non lo hanno
+      - trigger: template
+        value_template: "{{ states('input_number.n') | float(0) < 10 }}"
         id: basso
     actions:
       - action: prova.registra
@@ -753,19 +756,11 @@ automation:
     attendi(1),
     ("servizio", "script.turn_off", {"entity_id": "script.prova_chiamato_pausa"}),
     attendi(1),
+    # le automazioni del motore non hanno automation.turn_off e turn_on: lo script chiamato
+    # dentro una sequenza annidata si ferma con script.turn_off
     acceso("input_boolean.c"),
     attendi(1),
-    ("servizio", "automation.turn_off", {"entity_id": "automation.prova_chiama_c"}),
-    attendi(3),
-    ("servizio", "automation.turn_on", {"entity_id": "automation.prova_chiama_c"}),
-    spento("input_boolean.c"),
-    acceso("input_boolean.c"),
-    attendi(1),
-    (
-        "servizio",
-        "automation.turn_off",
-        {"entity_id": "automation.prova_chiama_c", "stop_actions": False},
-    ),
+    ("servizio", "script.turn_off", {"entity_id": "script.prova_chiamato"}),
     attendi(3),
 )
 
@@ -811,21 +806,12 @@ automation:
     numero(4),
     numero(5),
     attendi(1.5),
+    # le automazioni del motore non hanno automation.turn_off e turn_on: la coda
+    # dell'automazione si svuota da sola
     acceso("input_boolean.a"),
     spento("input_boolean.a"),
     acceso("input_boolean.a"),
-    attendi(0.3),
-    (
-        "servizio",
-        "automation.turn_off",
-        {"entity_id": "automation.prova_coda_automazione"},
-    ),
-    attendi(0.5),
-    (
-        "servizio",
-        "automation.turn_on",
-        {"entity_id": "automation.prova_coda_automazione"},
-    ),
+    attendi(0.8),
     spento("input_boolean.a"),
     attendi(3),
 )
@@ -1299,14 +1285,17 @@ automation:
   - alias: Prova Ferma Stretto
     mode: parallel
     triggers:
-      - {trigger: numeric_state, entity_id: input_number.n, above: 2}
+      # numeric_state come modello (le attivazioni del motore non lo hanno)
+      - trigger: template
+        value_template: "{{ states('input_number.n') | float(0) > 2 }}"
     actions:
       - action: script.turn_off
         target: {entity_id: script.prova_stretto}
   - alias: Prova Riavvia Stretto
     mode: parallel
     triggers:
-      - {trigger: numeric_state, entity_id: input_number.n, above: 4}
+      - trigger: template
+        value_template: "{{ states('input_number.n') | float(0) > 4 }}"
     actions:
       - action: script.turn_on
         target: {entity_id: script.prova_stretto}
@@ -1818,7 +1807,13 @@ def _norma(valore: Any) -> Any:
     if isinstance(valore, State):
         return (valore.entity_id, valore.state, _norma(dict(valore.attributes)))
     if isinstance(valore, dict):
-        return {k: _norma(v) for k, v in sorted(valore.items()) if k != "run_id"}
+        # le chiavi come testo (gli attributi delle entità di Home Assistant sono StrEnum,
+        # uguali al loro testo ma con un'altra repr)
+        return {
+            str(k) if isinstance(k, str) else k: _norma(v)
+            for k, v in sorted(valore.items())
+            if k != "run_id"
+        }
     if isinstance(valore, (list, tuple)):
         return [_norma(v) for v in valore]
     return valore
@@ -1903,7 +1898,7 @@ async def _corsa(
             moduli.append(f"{generato.__name__}.prova_{nome}_motore")
             _carica(f"prova_{nome}_modelli", testo_modelli)
             codice = _carica(f"prova_{nome}_motore", testo_motore)
-            m = Motore(hass)
+            m = MotoreFase3(hass)
             await m.avvia(crea=codice.crea)
         else:
             assert await async_setup_component(hass, "script", {"script": script})
@@ -1924,6 +1919,12 @@ async def _corsa(
             )
 
         togli = hass.bus.async_listen(MATCH_ALL, annota)
+        if motore:
+            # gli stati delle logiche (le automazioni del motore) non sono nella macchina
+            # degli stati: entrano nel registro nel punto del bus di state_changed
+            smetti = stati_logiche(hass).osserva(
+                callback(lambda e: annota(e) if e.event_type == EVENT_STATE_CHANGED else None)
+            )
         for passo in passi:
             if passo[0] == "servizio":
                 dominio, servizio = passo[1].split(".")
@@ -1937,9 +1938,13 @@ async def _corsa(
             else:
                 await _avanza(hass, freezer, passo[1])
         togli()
-        await hass.services.async_call(
-            "automation", "turn_off", {"entity_id": "all"}, blocking=True
-        )
+        if motore:
+            smetti()
+            await m.ferma()
+        else:
+            await hass.services.async_call(
+                "automation", "turn_off", {"entity_id": "all"}, blocking=True
+            )
         await hass.services.async_call(
             "script", "turn_off", {"entity_id": "all"}, blocking=True
         )
