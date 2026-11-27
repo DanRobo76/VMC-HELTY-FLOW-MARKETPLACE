@@ -42,7 +42,8 @@ class StatiLogiche:
     sul bus nello stesso punto in cui Home Assistant consegnerebbe ``state_changed`` (un
     ``state_reported`` con un marchio e l'entity_id vuoto, che non arriva agli ascoltatori
     di tutti gli eventi né al registro); alla consegna il cambio va prima agli
-    ``osservatori`` e poi a chi segue l'entità (``CambiInterni``). Come la memoria interna
+    ``osservatori`` e poi a chi segue l'entità (``CambiInterni``). Una scrittura senza
+    cambio arriva solo agli osservatori, come ``state_reported``. Come la memoria interna
     per i suoi valori."""
 
     def __init__(self, hass: HomeAssistant) -> None:
@@ -79,15 +80,16 @@ class StatiLogiche:
             return
         self.hass.bus.async_fire(
             EVENT_STATE_REPORTED,
-            {"entity_id": "", _MARCHIO: (entity_id, vecchio, None)},
+            {"entity_id": "", _MARCHIO: (entity_id, vecchio, None, False)},
         )
 
     # --- scritture -----------------------------------------------------------------------
 
     @callback
     def osserva(self, funzione: Callable[[Event[Any]], None]) -> CALLBACK_TYPE:
-        """``funzione(evento state_changed)`` a ogni cambio, prima di chi segue lo stato;
-        restituisce come smettere."""
+        """``funzione(evento)`` a ogni scrittura: ``state_changed`` per un cambio (prima di
+        chi segue lo stato), ``state_reported`` per una scrittura senza cambio; restituisce
+        come smettere."""
         self._osservatori.append(funzione)
 
         @callback
@@ -116,8 +118,8 @@ class StatiLogiche:
             contesto = Context()
         if vecchio is not None:
             if vecchio.state == nuovo and vecchio.attributes == attributi:
-                # nessuno segue i «state_reported» delle logiche: basta il nuovo istante
-                self.stati[entity_id] = State(
+                # cambia solo ``last_reported`` (gli altri campi restano quelli del cambio)
+                riportato = self.stati[entity_id] = State(
                     entity_id,
                     nuovo,
                     vecchio.attributes,
@@ -128,6 +130,12 @@ class StatiLogiche:
                     False,
                     None,
                     vecchio.last_updated_timestamp,
+                )
+                self.hass.bus.async_fire(
+                    EVENT_STATE_REPORTED,
+                    {"entity_id": "", _MARCHIO: (entity_id, vecchio, riportato, True)},
+                    context=contesto,
+                    time_fired=istante,
                 )
                 return
             if vecchio.attributes == attributi:
@@ -149,14 +157,30 @@ class StatiLogiche:
         self.stati[entity_id] = stato
         self.hass.bus.async_fire(
             EVENT_STATE_REPORTED,
-            {"entity_id": "", _MARCHIO: (entity_id, vecchio, stato)},
+            {"entity_id": "", _MARCHIO: (entity_id, vecchio, stato, False)},
             context=contesto,
             time_fired=istante,
         )
 
     @callback
     def _consegna(self, evento: Event[Any]) -> None:
-        entity_id, vecchio, nuovo = evento.data[_MARCHIO]
+        entity_id, vecchio, nuovo, riportato = evento.data[_MARCHIO]
+        if riportato:
+            rapporto: Event[Any] = Event(
+                EVENT_STATE_REPORTED,
+                {
+                    "entity_id": entity_id,
+                    "old_last_reported": vecchio.last_reported,
+                    "last_reported": nuovo.last_reported,
+                    "new_state": nuovo,
+                },
+                EventOrigin.local,
+                evento.time_fired_timestamp,
+                evento.context,
+            )
+            for funzione in list(self._osservatori):
+                funzione(rapporto)
+            return
         cambio: Event[Any] = Event(
             EVENT_STATE_CHANGED,
             {"entity_id": entity_id, "old_state": vecchio, "new_state": nuovo},

@@ -4,8 +4,9 @@
   sostituisce: le 14 automazioni, i 51 script, i 16 comandi di shell, i 34 timer, tutti gli
   aiutanti input_* (173 entità native, 68 valori interni nella memoria del motore), i
   sensori template, tcp, rest e command_line.
-  Restano «homeassistant: customize» (le icone delle automazioni, che restano entità) e
-  «recorder:» (spento dal simulatore). Copia l'integrazione vmc_master del repository
+  Restano «homeassistant: customize» (le icone delle automazioni: domani le automazioni sono
+  logiche dell'integrazione senza entità, la traccia le aggiunge ai loro stati come Home
+  Assistant le aggiungerebbe a un'entità) e «recorder:» (spento dal simulatore). Copia l'integrazione vmc_master del repository
   ($VMC_RADICE) in <cfg>/custom_components/vmc_master (solo per importarla: non è in
   configuration.yaml) e aggiunge un'integrazione minima, sim_vmc_nativa4, che nel suo setup
   (durante l'avvio di Home Assistant) crea la VMC con nativa/assemblaggio.py
@@ -29,7 +30,9 @@
   oggi); voci ``MS`` per i cambi dei timer del motore (stato, attributi e contesto come li
   scriverebbe Home Assistant) che confronta.py --mappa mette a confronto con le voci ``S``
   dei timer del lato A; voci ``S``/``R`` dei valori interni dalla memoria (con l'entity_id
-  di oggi), che confronta.py --mappa fa diventare ``MS``/``MR`` sui due lati. Le voci C e MS
+  di oggi), che confronta.py --mappa fa diventare ``MS``/``MR`` sui due lati; voci ``S``/``R``
+  degli stati delle logiche (le automazioni, entity_id ``automation.*``) come quelle delle
+  entità automation del lato A, anche nello stato all'avvio e al fork. Le voci C e MS
   entrano nella traccia nel punto del bus in cui Home Assistant consegnerebbe l'evento.
 """
 
@@ -219,10 +222,15 @@ async def avvia_assemblaggio(hass, config):
         VMCAssemblata,
         aggiungi_con_piattaforme,
     )
+    from custom_components.vmc_master.nativa.motore.stati_logiche import stati_logiche
     from homeassistant.core import callback
     vmc = VMCAssemblata(hass, NOME, IP, client=ClientFinto(hass, IP), prova_ping=ping_finto, cambia_ip=cambia_ip_finto,
                         versione=False)
-    await vmc.avvia(await aggiungi_con_piattaforme(hass), config)
+    STATO['hass'] = hass
+    _annota_i_trigger()
+    stati_logiche(hass).osserva(callback(_traccia_logica))
+    _istantanea_con_le_logiche(hass)
+    await vmc.avvia(await aggiungi_con_piattaforme(hass))
     comandi_come_oggi(vmc.c.comandi)
     _ascolta_voci(hass)
     vmc.c.comandi.ascolta(callback(_traccia_comando))
@@ -263,6 +271,75 @@ def _traccia_comando(evento):
     voce = ['C', vclock._V[0], d['domain'], d['service'], tracce._json(d['service_data'] or {}),
             tracce.forma_contesto(evento.context)]
     _in_traccia(STATO['vmc'].hass, voce, evento.context)
+
+
+def _annota_i_trigger():
+    """REC.trig del runner (i trigger dell'Automazione VMC Master): nel lato A li annota
+    runner.install_patch sull'entità automation, qui sulla logica (prima che agganci i
+    trigger, che prendono il metodo in quel momento)."""
+    import sys
+    from custom_components.vmc_master.nativa.motore import logiche
+    runner = next((m for m in (sys.modules.get('__main__'), sys.modules.get('runner'))
+                   if m is not None and hasattr(m, 'REC') and hasattr(m, 'install_patch')), None)
+    if runner is None or getattr(logiche.Logica, '_annotata', False):
+        return
+    originale = logiche.Logica._scatta_se_attiva
+
+    async def scatta(self, run_variables, context=None, skip_condition=False):
+        if self.entity_id == 'automation.automazione_vmc_master':
+            runner.REC.trig.append((vclock._V[0], str(run_variables.get('trigger', {}).get('id'))))
+        return await originale(self, run_variables, context, skip_condition)
+
+    logiche.Logica._scatta_se_attiva = scatta
+    logiche.Logica._annotata = True
+
+
+def _con_customize(stato):
+    """Gli attributi dello stato di una logica come li scriverebbe Home Assistant per
+    un'entità: più quelli di «homeassistant: customize» (l'icona delle automazioni)."""
+    from homeassistant.core_config import DATA_CUSTOMIZE
+    attributi = dict(stato.attributes)
+    if custom := STATO['hass'].data.get(DATA_CUSTOMIZE, {}).get(stato.entity_id):
+        attributi |= custom
+    return attributi
+
+
+def _traccia_logica(evento):
+    """Lo stato di una logica nella traccia come quello dell'entità automation di oggi (voce S
+    per un cambio, R per una scrittura senza cambio), nel punto del bus in cui Home Assistant
+    consegnerebbe l'evento (prima di chi segue lo stato)."""
+    from homeassistant.const import EVENT_STATE_REPORTED
+    entity_id = evento.data['entity_id']
+    if not tracce.entita_vmc(entity_id):
+        return
+    if evento.event_type == EVENT_STATE_REPORTED:
+        tracce.TR.ev.append(['R', vclock._V[0], entity_id, tracce.forma_contesto(evento.context)])
+        return
+    s = evento.data['new_state']
+    if s is None:
+        tracce.TR.ev.append(['S', vclock._V[0], entity_id, None, None, tracce.forma_contesto(evento.context)])
+        return
+    tracce.TR.ev.append(['S', vclock._V[0], entity_id, s.state, tracce.TR.impronta(_con_customize(s)),
+                         tracce.forma_contesto(s.context)])
+
+
+def _istantanea_con_le_logiche(hass):
+    """Lo stato all'avvio e al fork (tracce.istantanea) con gli stati delle logiche, come
+    quelli delle entità automation del lato A."""
+    from custom_components.vmc_master.nativa.motore.stati_logiche import stati_logiche
+    originale = tracce.TR.istantanea.__func__ if hasattr(tracce.TR.istantanea, '__func__') else None
+    if originale is None or getattr(tracce.TR, '_con_logiche', False):
+        return
+    tr = tracce.TR
+
+    def istantanea(hass_):
+        voci = originale(tr, hass_)
+        voci += [[s.entity_id, s.state, tr.impronta(_con_customize(s))]
+                 for s in stati_logiche(hass).stati.values() if tracce.entita_vmc(s.entity_id)]
+        return sorted(voci, key=lambda v: v[0])
+
+    tr.istantanea = istantanea
+    tr._con_logiche = True
 
 
 def _traccia_interno(evento):
