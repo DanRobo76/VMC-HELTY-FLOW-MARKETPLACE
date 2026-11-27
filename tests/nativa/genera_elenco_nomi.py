@@ -7,11 +7,12 @@ Scrive, da ``tabelle.DOMANI`` e dalla colonna «Domani» della fase 1
   della VMC): impostazioni che cambiano dominio, timer che diventano sensori con l'ora di
   fine, script e comandi che diventano pulsanti, voci che diventano interne
   all'integrazione;
-- il riepilogo (quante voci per dominio di oggi e di domani) nei due README, in italiano e
-  in inglese, fra i segni ``INIZIO`` e ``FINE``.
+- dalla 9.0.0b45 i due README non hanno più il riepilogo (la sezione «Passaggio dalla beta»
+  è stata tolta): l'elenco resta solo in questa pagina, aperta da «Ulteriori informazioni»
+  della riparazione del passaggio dalla beta.
 
-Il test test_elenco_nomi.py controlla che pagina e riepiloghi siano uguali a quelli che il
-programma scrive. ``voci()`` dà le stesse voci a chi le vuole usare altrove (per esempio
+Il test test_elenco_nomi.py controlla che la pagina sia uguale a quella che il programma
+scrive e che nei README non sia rimasto un riepilogo. ``voci()`` dà le stesse voci a chi le vuole usare altrove (per esempio
 il testo di una riparazione: ``Voce.per_vmc``).
 
 Uso (dalla cartella del repository):
@@ -41,7 +42,6 @@ NOME_FASE_1 = "master"
 SEGNAPOSTO = "‹nome›"
 INIZIO = "<!-- inizio riepilogo dei nomi (generato da tests/nativa/genera_elenco_nomi.py) -->"
 FINE = "<!-- fine riepilogo dei nomi -->"
-LINGUE = ("it", "en")
 _AIUTANTI = (
     "input_boolean",
     "input_number",
@@ -259,44 +259,6 @@ def pagina() -> str:
 
 
 # ----------------------------------------------------------------------------- riepilogo
-_TESTI = {
-    "it": {
-        "intestazione": ("Oggi", "Versione nativa", "Quante"),
-        "timer": "`sensor` (ora di fine)",
-        "interna": "non più entità",
-    },
-    "en": {
-        "intestazione": ("Today", "Native version", "How many"),
-        "timer": "`sensor` (end time)",
-        "interna": "no longer an entity",
-    },
-}
-
-
-def riepilogo(lingua: str) -> str:
-    """La tabella del riepilogo nei README (``lingua`` «it» o «en»), segni compresi."""
-    testi = _TESTI[lingua]
-    righe = [
-        INIZIO,
-        "",
-        "| " + " | ".join(f"<sub>{t}</sub>" for t in testi["intestazione"]) + " |",
-    ]
-    righe.append("|---|---|---:|")
-    for gruppo in gruppi():
-        for (dominio, domani), voci_coppia in _coppie(gruppo):
-            if domani == INTERNA:
-                arrivo = testi["interna"]
-            elif dominio == "timer":
-                arrivo = testi["timer"]
-            else:
-                arrivo = f"`{domani}`"
-            righe.append(
-                f"| <sub>`{dominio}`</sub> | <sub>{arrivo}</sub> | <sub>{len(voci_coppia)}</sub> |"
-            )
-    righe += ["", FINE]
-    return "\n".join(righe)
-
-
 def riepiloghi_nel_testo(testo: str) -> list[str]:
     """I riepiloghi di un README, segni compresi, nell'ordine in cui compaiono."""
     trovati: list[str] = []
@@ -310,16 +272,6 @@ def riepiloghi_nel_testo(testo: str) -> list[str]:
     return trovati
 
 
-def readme_aggiornato(testo: str) -> str:
-    """Il README con i riepiloghi riscritti: il primo in italiano, il secondo in inglese."""
-    trovati = riepiloghi_nel_testo(testo)
-    if len(trovati) != len(LINGUE):
-        raise ValueError(f"{len(trovati)} riepiloghi dei nomi invece di {len(LINGUE)}")
-    for vecchio, lingua in zip(trovati, LINGUE, strict=True):
-        testo = testo.replace(vecchio, riepilogo(lingua), 1)
-    return testo
-
-
 def conteggi() -> Counter[tuple[str, str]]:
     """Quante voci per (dominio di oggi, dominio di domani)."""
     return Counter((v.dominio, v.domani) for v in voci())
@@ -327,11 +279,7 @@ def conteggi() -> Counter[tuple[str, str]]:
 
 def scrivi() -> list[Path]:
     PAGINA.write_text(pagina(), encoding="utf-8")
-    for percorso in README:
-        percorso.write_text(
-            readme_aggiornato(percorso.read_text(encoding="utf-8")), encoding="utf-8"
-        )
-    return [PAGINA, *README]
+    return [PAGINA]
 
 
 if __name__ == "__main__":

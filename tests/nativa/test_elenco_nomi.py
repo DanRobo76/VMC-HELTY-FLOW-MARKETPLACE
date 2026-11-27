@@ -1,4 +1,4 @@
-"""L'elenco dei nomi cambiati (NOMI_NATIVI.md e riepiloghi dei README) è quello generato."""
+"""L'elenco dei nomi cambiati (NOMI_NATIVI.md) è quello generato; i README non hanno più il riepilogo."""
 
 from __future__ import annotations
 
@@ -8,14 +8,12 @@ import pytest
 
 from .genera_elenco_nomi import (
     INTERNA,
-    LINGUE,
     PAGINA,
     README,
     SEGNAPOSTO,
     gruppi,
     pagina,
     riepiloghi_nel_testo,
-    riepilogo,
     voci,
 )
 
@@ -30,10 +28,14 @@ def test_pagina_aggiornata() -> None:
 
 
 @pytest.mark.parametrize("percorso", README, ids=("README.md", ".github/README.md"))
-def test_riepiloghi_nei_readme(percorso) -> None:
-    """Ogni README ha due riepiloghi, in italiano e in inglese, uguali a quelli generati."""
-    trovati = riepiloghi_nel_testo(percorso.read_text(encoding="utf-8"))
-    assert trovati == [riepilogo(lingua) for lingua in LINGUE], RIGENERA
+def test_readme_senza_passaggio_dalla_beta(percorso) -> None:
+    """9.0.0b45: le guide non hanno più la sezione «Passaggio dalla beta» né il riepilogo
+    dei nomi (l'elenco resta in NOMI_NATIVI.md, aperto dalla riparazione)."""
+    testo = percorso.read_text(encoding="utf-8")
+    assert riepiloghi_nel_testo(testo) == []
+    assert "Passaggio dalla beta" not in testo
+    assert "Switching from the beta" not in testo
+    assert "NOMI_NATIVI" not in testo
 
 
 def test_conteggi() -> None:
