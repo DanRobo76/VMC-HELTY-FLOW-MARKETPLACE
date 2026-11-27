@@ -63,6 +63,7 @@ from custom_components.vmc_master.nativa.tabelle import DOMANI, IMPOSTAZIONI, TO
 
 from . import confronto as c
 from .genera_tabelle import NOMI_NATIVI
+from .servizi_di_prova import registra_servizi
 
 T0 = datetime(2026, 11, 25, 9, 0, 0, tzinfo=UTC)
 NOME = c.NOME
@@ -556,7 +557,7 @@ async def _corsa(
     await banco.prepara(freezer)
     servizi = {}
     if via == "registrato":
-        servizi = banco.scrittura.registra(DOMINIO_PROVA)
+        servizi = registra_servizi(banco.scrittura, DOMINIO_PROVA)
     conteggi: dict[str, Any] = {
         "scritture": 0,
         "errori": Counter(),

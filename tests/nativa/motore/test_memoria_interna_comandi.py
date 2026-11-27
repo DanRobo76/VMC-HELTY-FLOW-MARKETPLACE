@@ -34,6 +34,8 @@ from custom_components.vmc_master.nativa.motore.memoria_interna import MemoriaIn
 from custom_components.vmc_master.nativa.stato import StatoVMC
 from custom_components.vmc_master.nativa.tabelle import DOMANI, IMPOSTAZIONI
 
+from ..servizi_di_prova import registra_servizi
+
 T0 = datetime(2026, 11, 25, 9, 0, 0, tzinfo=UTC)
 INTERNO = "input_boolean.spia_umidita_mantenuta_velocita_0"
 # Il bersaglio di uno dei 51 spegnimenti misti del package (9 spie native e la spia
@@ -145,7 +147,7 @@ async def _corsa(
             scrittura = ScritturaComandi(
                 hass, [v for g in gruppi.values() for v in g], memoria
             )
-            registrati = scrittura.registra(DOMINIO_PROVA)
+            registrati = registra_servizi(scrittura, DOMINIO_PROVA)
             assert hass.states.get(_oggi(INTERNO)) is None
         else:
             assert await async_setup_component(

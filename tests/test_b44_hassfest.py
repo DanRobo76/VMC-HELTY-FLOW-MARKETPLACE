@@ -9,12 +9,20 @@ anche il controllo HACS è sempre rosso, quindi il giro intero risultava comunqu
 - una riparazione che si corregge (``fix_flow``) non può avere anche ``description``: per hassfest
   le due chiavi si escludono.
 
+Dalla b46 (hassfest rosso sulla PR della b46):
+
+- senza services.yaml nessun file .py può contenere i nomi con cui si registrano i servizi
+  (hassfest li cerca nel testo, commenti compresi): l'integrazione non registra servizi;
+- un requisito del manifest non fissa una versione con ``==``: per un pacchetto che Home Assistant
+  già usa hassfest vuole la versione minima (``>=``).
+
 Le liste sono quelle di hassfest di Home Assistant 2026.11.2 (script/hassfest/dependencies.py e
 translations.py): l'unica prova completa resta il controllo hassfest della CI.
 """
 
 import ast
 import json
+import re
 from pathlib import Path
 
 from homeassistant.const import Platform
@@ -127,3 +135,33 @@ def test_riparazioni_correggibili_senza_description() -> None:
                 assert "description" not in riparazione, (percorso.name, chiave)
     # riavvio_necessario, passaggio_dalla_beta, impostazioni_rinominate in 3 file
     assert controllate == 9
+
+
+# hassfest (script/hassfest/services.py, validate_services): la stessa ricerca nel testo
+SERVIZI_REGISTRATI = re.compile(
+    r"(hass\.services\.(register|async_register))"
+    r"|async_register_entity_service|async_register_admin_service"
+)
+
+
+def test_nessun_servizio_senza_services_yaml() -> None:
+    """Senza services.yaml hassfest dà errore se un file .py contiene i nomi con cui si
+    registrano i servizi (anche in un commento): dalla b46 l'integrazione non registra
+    servizi e non ha services.yaml."""
+    assert not (CC / "services.yaml").exists()
+    trovati = sorted(
+        str(file.relative_to(CC))
+        for file in CC.rglob("*.py")
+        if SERVIZI_REGISTRATI.search(file.read_text(encoding="utf-8"))
+    )
+    assert trovati == []
+    for percorso in [CC / "strings.json", *sorted((CC / "translations").glob("*.json"))]:
+        assert "services" not in json.loads(percorso.read_text(encoding="utf-8")), percorso.name
+
+
+def test_requisiti_con_versione_minima() -> None:
+    """Nessun requisito fissato con ``==``: hassfest vuole ``>=`` per i pacchetti che Home
+    Assistant già usa (icmplib, quello del ping di Home Assistant)."""
+    manifest = json.loads((CC / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["requirements"]
+    assert [r for r in manifest["requirements"] if "==" in r] == []

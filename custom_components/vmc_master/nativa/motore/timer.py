@@ -144,8 +144,8 @@ EVENTI_TIMER = frozenset(
 )
 
 # I servizi dei timer: metodo del timer e schema dei dati, come li registra
-# homeassistant.components.timer.services (con lo schema delle entità di
-# EntityComponent.async_register_entity_service).
+# homeassistant.components.timer.services (con lo schema dei servizi delle entità
+# di EntityComponent).
 _DURATA = {
     probatio.Optional(
         TimerServiceArgument.DURATION, default=DEFAULT_DURATION
