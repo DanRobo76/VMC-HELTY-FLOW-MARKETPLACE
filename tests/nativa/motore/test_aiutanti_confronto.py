@@ -29,6 +29,8 @@ from pytest_homeassistant_custom_component.common import (
     async_fire_time_changed,
 )
 
+import custom_components.vmc_master  # noqa: F401  (si prova anche da solo)
+
 from .aiutanti_nativi import (
     InterruttoreNativo,
     NumeroNativo,

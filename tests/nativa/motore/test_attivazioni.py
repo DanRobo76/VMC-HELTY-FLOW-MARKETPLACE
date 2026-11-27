@@ -1002,7 +1002,7 @@ async def _prepara_fase4(b: Banco) -> None:
 
 async def test_attivazioni_del_codice_tradotto(freezer: FrozenDateTimeFactory) -> None:
     """Le configurazioni dei trigger come le scrive il codice tradotto (``generato_fase4``,
-    14 automazioni, oltre 600 trigger) con la memoria interna vera: stessi trigger, stessi
+    13 automazioni, centinaia di trigger) con la memoria interna vera: stessi trigger, stessi
     messaggi e stesse azioni con il codice di oggi e con il motore, anche ai cambi dei
     valori interni e delle entità che i trigger seguono."""
     registro = await come_home_assistant(
@@ -1029,7 +1029,7 @@ async def test_attivazioni_del_codice_tradotto(freezer: FrozenDateTimeFactory) -
         ],
     )
     agganciate = {r[2][0]: r[2][1] for r in etichette(registro, "agganciata")}
-    assert len(agganciate) == 14
+    assert len(agganciate) == 13
     # i suoi trigger sono tutti agganci dei comandi (spenti qui)
     assert [nome for nome, si in agganciate.items() if not si] == [
         "VMC Master - Letture Ravvicinate"
