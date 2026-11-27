@@ -255,7 +255,7 @@ Se subito dopo un riavvio di Home Assistant la scheda mostra «Custom element do
 Dopo l'installazione tutto si regola dall'interfaccia, senza modificare lo YAML.
 
 **Dalla scheda «VMC Master»:**
-- indirizzo IP e nome della VMC («Cambia IP VMC (Riavvio di H.A.)» e «Cambia Nome VMC»);
+- nome della VMC («Cambia Nome VMC»);
 - selezione delle entità: Temperatura (interna ed esterna), Umidità (interna ed esterna), CO₂ interna, Dispositivo Mobile e Media Player;
 - offset dei sensori;
 - `Set Lim. Δ Punto di Rugiada` e Condizione Climatica Esterna;
@@ -267,7 +267,7 @@ Ogni pulsante chiede conferma con il popup «Vuoi Procedere?». Per i dettagli a
 
 **Da *Impostazioni → Dispositivi e servizi → VMC Master*:**
 - **nome della VMC**: la riga mostra il nome dell'App Air Guard e si aggiorna a ogni avvio; con **tre puntini → Rinomina** se ne può mostrare un altro. Il nome interno (entità, scheda) non cambia;
-- **cambiare l'IP** (in alternativa al campo della scheda):
+- **cambiare l'IP**:
   1. icona ingranaggio sulla riga della VMC → **«Cambia l'IP della VMC»**;
   2. scrivere il nuovo IP;
   3. premere **Invia**.
@@ -592,7 +592,7 @@ If the card shows «Custom element doesn't exist» right after a Home Assistant 
 After installation everything is set from the interface, without editing YAML.
 
 **From the «VMC Master» card:**
-- unit IP address and name («Cambia IP VMC (Riavvio di H.A.)» and «Cambia Nome VMC»);
+- unit name («Cambia Nome VMC»);
 - entity selection: Temperature (indoor and outdoor), Humidity (indoor and outdoor), indoor CO₂, Mobile Device and Media Player;
 - sensor offsets;
 - `Set Lim. Δ Punto di Rugiada` (dew point Δ limit) and outdoor climate condition;
@@ -604,7 +604,7 @@ Every button asks for confirmation with the «Vuoi Procedere?» popup. For detai
 
 **From *Settings → Devices & services → VMC Master*:**
 - **unit name**: the row shows the Air Guard name and is refreshed at every start; **three dots → Rename** shows another one. The internal name (entities, card) never changes;
-- **change the IP** (as an alternative to the card field):
+- **change the IP**:
   1. gear icon on the unit's row → **«Change the unit's IP»**;
   2. enter the new IP;
   3. press **Submit**.

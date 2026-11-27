@@ -115,14 +115,17 @@ def rimuovi_sezioni_solo_master(testo: str) -> str:
 #   («custom:vmc-master-conto-alla-rovescia», «vmc-master-card»), definiti una volta
 #   sola dal JavaScript della scheda (gli entity_id hanno solo trattini bassi);
 # - il nome del repository dell'integrazione nativa (VMC-HELTY-FLOW-MASTER) nei link
-#   e nella pagina del Marketplace.
-# Nei file della beta (cartella «package») le ultime due non ci sono: restano identici.
+#   e nella pagina del Marketplace;
+# - il nome dell'integrazione nel percorso dove si cambia l'IP della VMC (b46: scheda
+#   nativa e descrizione dell'Automazione VMC Master), uguale per tutte le VMC.
+# Nei file della beta (cartella «package») le ultime tre non ci sono: restano identici.
 _VIDEO_PROMO = "VMC_MASTER_promo_"
 _CARTELLA_BACKUP = "vmc_master_backup"
 _SERVIZIO_VERIFICA_IP = "vmc_master.verifica_ip"
 _INTEGRAZIONE = "INTEGRAZIONE VMC MASTER"
 _ELEMENTI_SCHEDA = "vmc-master-"
 _REPOSITORY_NATIVA = "HELTY-FLOW-MASTER"
+_PERCORSO_INTEGRAZIONE = "→ VMC Master →"
 _PROTETTE = (
     _VIDEO_PROMO,
     _CARTELLA_BACKUP,
@@ -130,6 +133,7 @@ _PROTETTE = (
     _INTEGRAZIONE,
     _ELEMENTI_SCHEDA,
     _REPOSITORY_NATIVA,
+    _PERCORSO_INTEGRAZIONE,
 )
 
 
@@ -137,7 +141,8 @@ def rinomina(testo: str, nome: str) -> str:
     """s/master/nome/g, poi s/Master/nome/g, poi s/MASTER/nome/g (come vmc_script_clona.sh),
     lasciando intatte le parole di _PROTETTE (video promozionale, cartella dei backup,
     servizio verifica_ip, nome dell'integrazione nella licenza, tipi delle schede
-    personalizzate e repository dell'integrazione nativa)."""
+    personalizzate, repository dell'integrazione nativa e nome dell'integrazione nel
+    percorso dove si cambia l'IP)."""
     for indice, parola in enumerate(_PROTETTE):
         testo = testo.replace(parola, f"\x00PROTETTA{indice}\x00")
     testo = testo.replace("master", nome).replace("Master", nome).replace("MASTER", nome)

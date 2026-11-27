@@ -6,7 +6,7 @@ all'infinito. Ora riceve il nome e la descrizione (con la nota che attivazioni,
 condizioni e azioni sono nel codice dell'integrazione), senza attivazioni, condizioni e
 azioni: la pagina si apre in sola lettura, come ogni automazione fuori da automations.yaml;
 con l'``id`` dell'automazione il pulsante «Tracce» della pagina apre le esecuzioni.
-``automation.reload`` lascia le 14 automazioni come sono (stesse entità, accese), anche
+``automation.reload`` lascia le 13 automazioni come sono (stesse entità, accese), anche
 con la configurazione mostrata.
 
 Home Assistant vero, VMC finta (nessuna rete)."""
@@ -24,14 +24,14 @@ from .banco import aggiungi_e_avvia, automazioni_attese, senza_rete, voce
 
 
 async def test_pagina_e_ricarica(hass: HomeAssistant, hass_ws_client) -> None:
-    """Le 14 automazioni della VMC danno alla pagina una configurazione che si apre;
+    """Le 13 automazioni della VMC danno alla pagina una configurazione che si apre;
     automation.reload le lascia come sono."""
     with senza_rete():
         una = voce("master")
         await aggiungi_e_avvia(hass, [una])
         client = await hass_ws_client(hass)
         attese = automazioni_attese("master")
-        assert len(attese) == 14
+        assert len(attese) == 13
         for numero, entity_id in enumerate(sorted(attese), start=1):
             await client.send_json(
                 {"id": numero, "type": "automation/config", "entity_id": entity_id}

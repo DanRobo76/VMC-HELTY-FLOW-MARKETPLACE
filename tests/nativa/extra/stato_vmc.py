@@ -48,39 +48,6 @@ EXTRA: dict[str, set[str]] = {
         "Non disponibile",
         "sconosciuto",
     },
-    # IP fuori intervallo, riservati, con zeri iniziali o con spazi ai lati (questi ultimi
-    # rendono piu' frequenti gli esiti della verifica, che valgono solo per lo stesso IP)
-    "input_text.vmc_master_ip_insert": {
-        "0.1.2.3",
-        "127.0.0.1",
-        "224.0.0.1",
-        "223.255.255.254",
-        "169.254.10.20",
-        "169.253.1.1",
-        "256.1.1.1",
-        "1.2.3",
-        " 192.168.1.60 ",
-        "192.168.1.60 ",
-        "\t192.168.1.60",
-        " 10.0.0.7",
-        "10.0.0.7\n",
-        "192.168.1.50 ",
-        "192.168.001.1",
-    },
-    # esiti della verifica per gli IP provati
-    "input_text.vmc_master_ip_insert_esito": {
-        "ok 192.168.1.60",
-        "ok 10.0.0.7",
-        "ok 223.255.255.254",
-        "ok 169.253.1.1",
-        "non_risponde 192.168.1.60",
-        "non_risponde 10.0.0.7",
-        "altro_dispositivo 10.0.0.7",
-        "altro_dispositivo 192.168.1.60",
-        "nome_diverso 192.168.1.60",
-        "nome_diverso 223.255.255.254",
-        "ok",
-    },
     # volumi che danno ore, minuti e secondi al singolare e al plurale con ogni portata;
     # i volumi minuscoli portano i ricambi oltre 1e16 (Home Assistant scrive «1.2e+16»)
     "input_number.vmc_master_volume_da_inserire": {
@@ -111,9 +78,3 @@ UN_SOLO_RISULTATO: dict[str, str] = {
     "sensor.versione_corrente": "testo fisso: «v.» e la versione dell'integrazione",
     "sensor.ip": "testo fisso: l'IP configurato della VMC (scritto nel package all'installazione)",
 }
-
-# sensori IP di altre VMC (per «IP già in uso»): uno con lo stesso IP di un candidato
-INGRESSI = {"sensor.vmc_sala_ip", "sensor.vmc_cucina_ip"}
-EXTRA.setdefault("sensor.vmc_sala_ip", set()).update({"192.168.1.60", " 192.168.1.61 ", "10.0.0.7"})
-EXTRA.setdefault("sensor.vmc_cucina_ip", set()).update({"192.168.1.60", "192.168.1.62"})
-EXTRA.setdefault("input_text.vmc_master_ip_insert", set()).update({"192.168.1.60", "192.168.1.61", "10.0.0.7"})

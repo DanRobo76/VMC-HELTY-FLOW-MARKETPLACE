@@ -4,11 +4,14 @@ Campo «Cambia IP VMC (Riavvio di H.A.)» della scheda: gli intervalli non ammes
 rifiutano prima del riavvio con la stessa regola di ip_valido (sensore di verifica,
 automazione e script Cambia IP), prima del riavvio il servizio verifica_ip controlla che
 a quell'IP risponda la VMC, sotto il campo compare un avviso anche per l'IP non valido.
-Finestre dell'integrazione: il nome si legge sempre con due prove."""
+Finestre dell'integrazione: il nome si legge sempre con due prove.
+
+Dalla b46 il campo, il servizio vmc_master.verifica_ip e la loro automazione non ci sono
+più nella versione nativa (test_b46_ip.py): qui restano le prove del package della beta,
+con un servizio finto."""
 
 from __future__ import annotations
 
-import json
 import re
 import subprocess
 from datetime import timedelta
@@ -323,7 +326,7 @@ def test_descrizione_dell_automazione() -> None:
     assert "svuota il campo" not in descrizione
 
 
-# ------------------------------------------------------------------ servizio verifica_ip
+# ------------------------------------------------- servizio verifica_ip nel package della beta
 def test_servizio_protetto_da_per_vmc() -> None:
     assert rinomina("action: vmc_master.verifica_ip", "soggiorno") == "action: vmc_master.verifica_ip"
     for nome, ip in (("master", IP), ("soggiorno", "192.168.1.161")):
@@ -333,69 +336,6 @@ def test_servizio_protetto_da_per_vmc() -> None:
         assert f"states('sensor.vmc_{nome}_nome_status')" in pacchetto
         # nessun IP intero nel package oltre a quello della VMC (lo script Cambia IP li cambia tutti)
         assert set(re.findall(r"[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+", pacchetto)) == {ip}
-
-
-def test_servizio_e_traduzioni() -> None:
-    servizi = parse_yaml((CARTELLA / "services.yaml").read_text(encoding="utf-8"))
-    assert list(servizi) == ["verifica_ip"]
-    assert servizi["verifica_ip"]["fields"]["ip"]["required"] is True
-    assert servizi["verifica_ip"]["fields"]["nome"]["required"] is False
-    for lingua in ("it", "en"):
-        testi = json.loads((CARTELLA / "translations" / f"{lingua}.json").read_text(encoding="utf-8"))
-        servizio = testi["services"]["verifica_ip"]
-        assert servizio["name"] and servizio["description"]
-        assert set(servizio["fields"]) == {"ip", "nome"}
-
-
-@pytest.mark.parametrize(
-    ("letture", "atteso", "risposta"),
-    [
-        ([None, None], "Prova", {"risponde": False, "nome": "", "esito": "non_risponde"}),
-        ([None, "VMC Prova"], "Prova", {"risponde": True, "nome": "VMC Prova", "esito": "ok"}),
-        ([""], "Prova", {"risponde": True, "nome": "", "esito": "altro_dispositivo"}),
-        (["VMC Altra"], "Prova", {"risponde": True, "nome": "VMC Altra", "esito": "nome_diverso"}),
-        # nome di questa VMC non ancora letto: basta che risponda una VMC
-        (["VMC Altra"], "", {"risponde": True, "nome": "VMC Altra", "esito": "ok"}),
-        # stesso nome scritto in un altro modo, con gli asterischi della risposta VMNM
-        (["VMC_Prova"], "prova**", {"risponde": True, "nome": "VMC_Prova", "esito": "ok"}),
-    ],
-)
-async def test_servizio_verifica_ip(
-    hass: HomeAssistant, letture: list, atteso: str, risposta: dict
-) -> None:
-    assert await async_setup_component(hass, DOMAIN, {})
-    assert hass.services.supports_response(DOMAIN, "verifica_ip") is SupportsResponse.ONLY
-    with patch(NOME_VMC, AsyncMock(side_effect=letture)) as lettura:
-        ricevuta = await hass.services.async_call(
-            DOMAIN, "verifica_ip", {"ip": f" {NUOVO_IP} ", "nome": atteso}, blocking=True, return_response=True
-        )
-    assert ricevuta == risposta
-    assert [c.args for c in lettura.await_args_list] == [(NUOVO_IP,)] * len(letture)
-
-
-async def test_servizio_verifica_ip_senza_nome_e_ip_non_valido(hass: HomeAssistant) -> None:
-    assert await async_setup_component(hass, DOMAIN, {})
-    with patch(NOME_VMC, AsyncMock(return_value="VMC Altra")):
-        ricevuta = await hass.services.async_call(
-            DOMAIN, "verifica_ip", {"ip": NUOVO_IP}, blocking=True, return_response=True
-        )
-    assert ricevuta == {"risponde": True, "nome": "VMC Altra", "esito": "ok"}
-    for ip in ("127.0.0.1", "abc", "255.255.255.255"):
-        with patch(NOME_VMC, AsyncMock()) as lettura:
-            ricevuta = await hass.services.async_call(
-                DOMAIN, "verifica_ip", {"ip": ip, "nome": "Prova"}, blocking=True, return_response=True
-            )
-        assert ricevuta == {"risponde": False, "nome": "", "esito": "ip_non_valido"}
-        lettura.assert_not_awaited()
-
-
-async def test_servizio_uno_solo_per_tutte_le_vmc(hass: HomeAssistant) -> None:
-    for nome, ip in (("master", IP), ("soggiorno", "192.168.1.161")):
-        MockConfigEntry(domain=DOMAIN, unique_id=nome, data={"nome": nome, "host": ip}).add_to_hass(hass)
-    with patch(NOME_VMC, AsyncMock(return_value=None)):
-        assert await async_setup_component(hass, DOMAIN, {})
-        await hass.async_block_till_done()
-    assert list(hass.services.async_services_for_domain(DOMAIN)) == ["verifica_ip"]
 
 
 def test_esito_verifica_ip() -> None:

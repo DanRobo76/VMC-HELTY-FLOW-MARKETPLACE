@@ -4,7 +4,7 @@ Lo stesso banco di ``test_pacchetto_casuale`` (stessa sequenza casuale, stesso c
 degli eventi deterministico, stesse entità di comodo e servizi finti), con una
 differenza: da una parte Home Assistant con le integrazioni ``automation`` e ``script`` e
 tutti gli aiutanti del package; dall'altra il motore tradotto CON i valori interni
-(``traduci(..., interni=INTERNI)``) e la memoria interna al posto dei 68 aiutanti
+(``traduci(..., interni=INTERNI)``) e la memoria interna al posto dei 67 aiutanti
 interni, che non ci sono più nella macchina degli stati.
 
 La scheda non tocca i valori interni (non sono più entità): il generatore li toglie dai
@@ -135,9 +135,9 @@ VMC_SEME_MEMORIA = int(os.environ.get("VMC_SEME_MEMORIA", "1"))
 CHIAVE = CHIAVE_ARCHIVIO.format(nome=NOME_MASTER)
 DOMINI_INTERNI = ("input_boolean", "input_number", "input_text")
 # I sensori modello del package che leggono valori interni (domani sensori nativi sullo
-# StatoVMC): nel banco li leggono dalla memoria.
+# StatoVMC): nel banco li leggono dalla memoria (dalla b46 non il sensore di verifica del
+# campo «Cambia IP VMC»: il suo valore di esito non è più un valore interno, è tolto).
 SENSORI_CON_INTERNI = [
-    "sensor.vmc_master_verifica_ip_inserito",
     "sensor.vmc_master_velocita_registrata",
     "sensor.vmc_master_status_calcolo_aria_scambiata_totale",
     "sensor.vmc_master_tempo_mancante_ricambio",

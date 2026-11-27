@@ -19,7 +19,7 @@ from homeassistant.helpers.script_variables import ScriptVariables
 from .contesto import Contesto
 from .definizioni import Automazione, Comando, Script
 from .esecuzione import ComeScript, Modello, Sequenza
-from .interni import CambiaIp, ComandiVMC, Invia, ScriptInterni, ScriptInterno
+from .interni import ComandiVMC, Invia, ScriptInterni, ScriptInterno
 from .logiche import DOMINIO as DOMINIO_LOGICHE
 from .logiche import Logica
 from .memoria_interna import MemoriaInterna
@@ -116,7 +116,6 @@ class Motore:
         *,
         comandi: Callable[[Contesto], list[Comando]] | None = None,
         invia: Invia | None = None,
-        cambia_ip: CambiaIp | None = None,
         timer: Mapping[str, Mapping[str, Any] | None] | None = None,
         script_come_entita: ScriptComeEntita | None = None,
     ) -> None:
@@ -126,7 +125,7 @@ class Motore:
         Gli script restano dentro il motore (``ScriptInterni``, nessuna entità). Con
         ``comandi`` (fase 4: la funzione ``comandi`` del codice tradotto) i comandi di
         shell sono comandi del motore (``ComandiVMC``): vanno alla VMC con ``invia`` (il
-        client TCP) e il cambio d'indirizzo all'integrazione con ``cambia_ip``.
+        client TCP).
 
         ``timer`` (fase 4): la configurazione dei timer del motore (come la chiave
         ``timer:`` del package), per il codice tradotto con ``timer_motore``; senza, il
@@ -153,9 +152,7 @@ class Motore:
                     ScriptInterno(s.chiave, ComeScript(self._sequenza_script(s)))
                 )
         if comandi is not None:
-            self.c.comandi = ComandiVMC(
-                self.c, comandi(self.c), invia=invia, cambia_ip=cambia_ip
-            )
+            self.c.comandi = ComandiVMC(self.c, comandi(self.c), invia=invia)
         self.automazioni = [self._logica(a) for a in automazioni]
         # come le entità aggiunte una dopo l'altra: ognuna aggancia i trigger (o lo
         # rimanda all'avvio di Home Assistant) e scrive il primo stato

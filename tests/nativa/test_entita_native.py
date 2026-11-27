@@ -204,10 +204,10 @@ async def test_ritardo_black_out(hass: HomeAssistant, freezer) -> None:
 
 
 def test_tutte_le_chiavi_hanno_entita() -> None:
-    """crea_entita fa un'entità per ognuna delle 137 voci, nel dominio giusto."""
+    """crea_entita fa un'entità per ognuna delle 136 voci, nel dominio giusto."""
     stato = StatoVMC.__new__(StatoVMC)
     stato.nome = "master"
     sensori, binari = crea_entita(stato)
-    assert len(sensori) + len(binari) == len(SENSORI) == 137
+    assert len(sensori) + len(binari) == len(SENSORI) == 136
     assert {e.chiave for e in binari} == {k for k in SENSORI if k.startswith("binary_sensor.")}
     assert all(e.entity_id == f"{e.chiave.split('.')[0]}.vmc_master_{e.chiave.split('.', 1)[1]}" for e in sensori)

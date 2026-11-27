@@ -31,9 +31,9 @@ from .banco import (
 )
 
 ENTITA_PER_VMC = (
-    369  # 173 impostazioni + 137 sensori + 34 sensori dei timer + 25 pulsanti
+    367  # 172 impostazioni + 136 sensori + 34 sensori dei timer + 25 pulsanti
 )
-AUTOMAZIONI_PER_VMC = 14
+AUTOMAZIONI_PER_VMC = 13
 # voci del registro legate alla voce della VMC: entità native e automazioni del motore
 VOCI_PER_VMC = ENTITA_PER_VMC + AUTOMAZIONI_PER_VMC
 
@@ -93,9 +93,9 @@ async def test_una_vmc_si_avvia_si_ricarica_si_scarica_e_si_elimina(
     assert {v.entity_id for v in _entita(hass, master.entry_id)} == {
         v.entity_id for v in voci
     }
-    # gli stessi oggetti: i 121 sensori template sono ancora i sensori template (non i
+    # gli stessi oggetti: i 120 sensori template sono ancora i sensori template (non i
     # modelli della fase 2 al loro posto, con i template rifiutati per unique_id doppio)
-    assert len(master.runtime_data.vmc.template) == len(vmc_prima.template) == 121
+    assert len(master.runtime_data.vmc.template) == len(vmc_prima.template) == 120
     assert len(master.runtime_data.vmc.sensori) == len(vmc_prima.sensori)
     assert "does not generate unique IDs" not in caplog.text
     assert all(
@@ -135,7 +135,7 @@ async def test_una_vmc_si_avvia_si_ricarica_si_scarica_e_si_elimina(
 
 
 async def test_tre_vmc(hass: HomeAssistant, tmp_path: Path) -> None:
-    """Tre VMC: ognuna con le sue 369 entità, le sue 14 automazioni e il suo client.
+    """Tre VMC: ognuna con le sue 367 entità, le sue 13 automazioni e il suo client.
     Nella versione nativa non ci sono parti solo del master (nessuna voce ``solo_master``
     in tabelle.py; le sezioni Clona VMC e Installa VMC non sono nella scheda nativa)."""
     voci = [voce("master", 0), voce("cucina", 1), voce("bagno", 2)]
@@ -187,26 +187,6 @@ async def test_ip_cambiato_dall_ingranaggio_ricarica_la_vmc(
     assert master.runtime_data.vmc is not vmc_prima
     assert master.runtime_data.ip == "192.168.1.170"
     assert ClientFinto.istanze[-1].host == "192.168.1.170"
-
-
-async def test_ip_cambiato_dalla_scheda_vale_dal_riavvio(hass: HomeAssistant) -> None:
-    """Il comando «cambio IP» del motore: la voce prende il nuovo IP, la VMC non si
-    ricarica (il motore riavvia Home Assistant subito dopo, come la beta)."""
-    master, cucina = voce("master", 0), voce("cucina", 1)
-    await aggiungi_e_avvia(hass, [master, cucina])
-    vmc_prima = master.runtime_data.vmc
-    cambia_ip = vmc_prima._cambia_ip
-    await cambia_ip("192.168.1.170")
-    await hass.async_block_till_done()
-    assert master.data[CONF_HOST] == "192.168.1.170"
-    assert master.runtime_data.vmc is vmc_prima
-    assert master.runtime_data.ip_dalla_scheda == "192.168.1.170"
-    # un IP non valido o di un'altra VMC non si usa
-    for ip in ("192.168.1", "192.168.1.161"):
-        await cambia_ip(ip)
-        await hass.async_block_till_done()
-        assert master.data[CONF_HOST] == "192.168.1.170"
-    assert master.runtime_data.vmc is vmc_prima
 
 
 async def test_scheda_nativa(hass: HomeAssistant, hass_client) -> None:

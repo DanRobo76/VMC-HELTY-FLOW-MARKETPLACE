@@ -6,7 +6,7 @@ di oggi senza «vmc_<nome>_»):
 
 - ingressi: letture della VMC, sensori con memoria, impostazioni (gli helper di oggi),
   timer; li scrivono i coordinatori, il motore e le entità native;
-- calcolati: i 121 modelli (template di oggi), ricalcolati a ogni cambio di un ingresso,
+- calcolati: i 120 modelli (template di oggi), ricalcolati a ogni cambio di un ingresso,
   di un'entità esterna letta (sensori scelti dall'utente) e a ogni minuto (now()).
 
 Chi ascolta (entità native, motore) riceve le chiavi cambiate con valore vecchio e nuovo;

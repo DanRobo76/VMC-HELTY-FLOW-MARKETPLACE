@@ -36,6 +36,9 @@ I nomi «master/Master/MASTER» nelle stringhe si adattano a ogni VMC come fa
 - `ha.py`: il motore che lavora sulle entità di oggi (aiutanti e sensori del package),
   per il confronto con il simulatore; nella fase 4 si aggiunge quello sulle entità native.
 - `generato/`: codice generato (non si modifica a mano finché il traduttore è in uso).
+- `generato_fase4/`: il codice della fase 4, sulle entità native. Dalla b46 ha 13
+  automazioni: il traduttore toglie «Cambio IP VMC (Riavvio di H.A.)»
+  (`tests/nativa/motore/traduci_fase4.py`, `escluse`).
 
 ## Come si controlla
 

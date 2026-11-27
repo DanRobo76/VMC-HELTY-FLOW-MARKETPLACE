@@ -1,9 +1,9 @@
 SCHEDA «VMC MASTER» TRADOTTA AI NOMI DELLE ENTITÀ NATIVE (fase 4) - totali delle modifiche
 
-Righe della scheda master: 14208 -> 14155
-Modifiche: 2373
+Righe della scheda master: 14208 -> 13901
+Modifiche: 2393
 
-  1929  nome
+  1922  nome
            861  input_boolean -> binary_sensor [modello markdown]
            175  input_boolean -> switch [entity]
            169  input_boolean -> binary_sensor [condizione]
@@ -28,19 +28,19 @@ Modifiche: 2373
             10  input_number -> number [elenco]
             10  input_number -> number [entity]
              4  input_number -> sensor [modello markdown]
-             4  input_text -> text [entity]
              3  input_number -> number [condizione]
              3  input_text -> sensor [condizione]
-             3  input_text -> text [condizione]
-             2  input_text -> text [elenco]
              1  input_number -> sensor [elenco]
              1  input_text -> sensor [elenco]
-   120  elenco
+             1  input_text -> text [elenco]
+             1  input_text -> text [entity]
+   122  elenco
             38  script -> (tolta) [elenco]
-            35  input_text -> (tolta) [elenco]
+            36  input_text -> (tolta) [elenco]
             32  input_number -> (tolta) [elenco]
             14  automation -> (tolta) [elenco]
              1  input_boolean -> (tolta) [elenco]
+             1  sensor -> (tolta) [elenco]
     66  servizio
             48  input_boolean -> switch.toggle
             16  script -> button.press
@@ -49,13 +49,15 @@ Modifiche: 2373
     62  condizione timer
             58  state: active
              4  state: idle
-    57  testo
-            54  modello markdown
-             3  label
+    55  testo
+            55  modello markdown
     39  colore riga conto alla rovescia
             39  riga
     39  riga conto alla rovescia
             39  riga
+    27  riga tolta
+            24  riga condizionale
+             3  riga
     23  comando
             23  shell_command -> button.press
     20  esclusioni

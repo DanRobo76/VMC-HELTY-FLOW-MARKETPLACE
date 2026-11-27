@@ -11,7 +11,6 @@ che l'utente ha confermato la sua rimozione dalle Riparazioni (passaggio.py).
 
 from __future__ import annotations
 
-import asyncio
 import contextlib
 import importlib
 import logging
@@ -19,7 +18,7 @@ import re
 import threading
 from collections.abc import Mapping
 from dataclasses import dataclass, field
-from functools import lru_cache, partial
+from functools import lru_cache
 from http import HTTPStatus
 from pathlib import Path
 
@@ -28,7 +27,6 @@ from pathlib import Path
 from time import monotonic
 from typing import Any, Final
 
-import voluptuous as vol
 import yaml
 from aiohttp import web
 from homeassistant.components import persistent_notification
@@ -37,15 +35,7 @@ from homeassistant.components.http import HomeAssistantView, StaticPathConfig
 from homeassistant.components.lovelace import LOVELACE_DATA
 from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.const import Platform
-from homeassistant.core import (
-    CALLBACK_TYPE,
-    Event,
-    HomeAssistant,
-    ServiceCall,
-    ServiceResponse,
-    SupportsResponse,
-    callback,
-)
+from homeassistant.core import CALLBACK_TYPE, Event, HomeAssistant, callback
 from homeassistant.helpers import (
     config_validation as cv,
 )
@@ -125,14 +115,6 @@ DATI_FILTRO_PING = f"{DOMAIN}_filtro_ping"
 _RE_IP_NEL_LOG = re.compile(
     r"(?<![0-9.])([0-9]{1,3}(?:\.[0-9]{1,3}){3})(?![0-9]|\.[0-9])"
 )
-# Un solo cambio alla volta dell'IP scritto dalla scheda (VMC diverse insieme)
-DATI_BLOCCO_IP = f"{DOMAIN}_ip_scheda_blocco"
-# Servizio con risposta del campo «Cambia IP VMC» della scheda: prima del riavvio controlla
-# che a quell'IP risponda la VMC (uno solo per tutte le VMC: il motore passa IP e nome)
-SERVIZIO_VERIFICA_IP: Final = "verifica_ip"
-SCHEMA_VERIFICA_IP: Final = vol.Schema(
-    {vol.Required("ip"): cv.string, vol.Optional("nome", default=""): cv.string}
-)
 
 
 @dataclass
@@ -147,8 +129,6 @@ class DatiVoce:
     """La VMC nativa (VMCAssemblata), se e' partita."""
     piattaforme: dict[str, EntityPlatform] = field(default_factory=dict)
     """Le piattaforme della voce per dominio (le registra platform.py)."""
-    ip_dalla_scheda: str | None = None
-    """IP scritto dalla scheda: vale dal riavvio che il motore chiede subito dopo."""
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
@@ -160,13 +140,6 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     # Il numero di versione nell'indirizzo fa ricaricare la scheda dopo ogni aggiornamento
     await _registra_scheda(hass, str(integrazione.version))
     hass.http.register_view(VmcSchedaView())
-    hass.services.async_register(
-        DOMAIN,
-        SERVIZIO_VERIFICA_IP,
-        _async_verifica_ip,
-        schema=SCHEMA_VERIFICA_IP,
-        supports_response=SupportsResponse.ONLY,
-    )
     async_at_started(hass, _ripristina_wifi_server)
     await _async_togli_resti_della_beta(hass)
     if DATI_FILTRO_PING not in hass.data:
@@ -199,25 +172,6 @@ async def _async_togli_resti_della_beta(hass: HomeAssistant) -> None:
         if dominio == DOMAIN and issue_id.startswith(_AVVISI_DELLA_BETA):
             ir.async_delete_issue(hass, DOMAIN, issue_id)
     await Store(hass, 1, _ARCHIVIO_VMC_ELIMINATE_DELLA_BETA).async_remove()
-
-
-async def _async_verifica_ip(chiamata: ServiceCall) -> ServiceResponse:
-    """Servizio verifica_ip: legge il nome della VMC a quell'IP (porta 5001, due prove come
-    l'ingranaggio «Cambia l'IP della VMC»; se non risponde, guarda se a quell'IP c'e' un
-    altro apparecchio: porta 5001 e ping) senza cambiare nulla.
-
-    Risposta: «risponde» (a quell'IP risponde qualcosa), «nome» (nome della VMC, vuoto se
-    non e' una VMC) ed «esito» (config_flow.esito_verifica_ip, oppure «ip_non_valido»
-    senza nessuna prova se l'IP non e' valido per ip_valido)."""
-    ip = chiamata.data["ip"].strip()
-    if not config_flow.ip_valido(ip):
-        return {"risponde": False, "nome": "", "esito": "ip_non_valido"}
-    nome_letto = await config_flow.async_nome_vmc_due_prove(ip)
-    return {
-        "risponde": nome_letto is not None,
-        "nome": nome_letto or "",
-        "esito": config_flow.esito_verifica_ip(nome_letto, chiamata.data["nome"]),
-    }
 
 
 # Il file JavaScript della scheda si serve dalla cartella dell'integrazione (URL_FRONTEND,
@@ -532,16 +486,12 @@ async def _async_avvia_nativa(hass: HomeAssistant, entry: ConfigEntry) -> None:
     nome: str = entry.data[CONF_NOME]
     riaggiunta = await passaggio.async_memoria_di_una_vmc_eliminata(hass, nome)
     archivio = await passaggio.archivio(hass, nome).async_load() or {}
-    vmc = VMCAssemblata(
-        hass,
-        nome,
-        dati.ip,
-        cambia_ip=partial(_async_cambia_ip_dalla_scheda, hass, entry.entry_id),
-    )
+    vmc = VMCAssemblata(hass, nome, dati.ip)
     confermato = archivio.get("stato") == passaggio.CONFERMATO
     if confermato:
         vmc.stato.passati = passaggio.valori_passati(archivio, nome)
     dati.vmc = vmc
+    _togli_entita_tolte(hass, entry)
     await hass.config_entries.async_forward_entry_setups(entry, PIATTAFORME)
 
     async def aggiungi(dominio: str, entita: list[Entity]) -> None:
@@ -571,6 +521,35 @@ async def _async_avvia_nativa(hass: HomeAssistant, entry: ConfigEntry) -> None:
             )
 
         entry.async_on_unload(async_at_started(hass, _avviato))
+
+
+# Le entità della b44 e della b45 che la VMC non ha più dalla b46 (il campo «Cambia IP
+# VMC» della scheda, il sensore che lo controllava e l'automazione che cambiava l'IP e
+# riavviava Home Assistant: l'IP si cambia dall'ingranaggio della VMC). Dominio,
+# piattaforma e unique_id senza «vmc_‹nome›_».
+ENTITA_TOLTE: Final = (
+    ("text", DOMAIN, "ip_insert"),
+    ("sensor", DOMAIN, "verifica_ip_inserito"),
+    ("automation", "automation", "cambio_ip_vmc"),
+)
+
+
+@callback
+def _togli_entita_tolte(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Toglie dal registro le entità tolte (``ENTITA_TOLTE``) rimaste legate alla voce:
+    nessuno le aggiunge più, resterebbero «non disponibili». Quelle non legate alla voce
+    non sono della VMC: restano."""
+    registro = er.async_get(hass)
+    nome = entry.data[CONF_NOME]
+    for dominio, piattaforma, oggetto in ENTITA_TOLTE:
+        entity_id = registro.async_get_entity_id(
+            dominio, piattaforma, f"vmc_{nome}_{oggetto}"
+        )
+        if (
+            entity_id is not None
+            and registro.entities[entity_id].config_entry_id == entry.entry_id
+        ):
+            registro.async_remove(entity_id)
 
 
 # Il Profilo Inizializzazione automatico di una VMC nuova parte dopo i 140 s dell'avvio
@@ -701,96 +680,14 @@ async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
         )
 
 
-async def _async_cambia_ip_dalla_scheda(
-    hass: HomeAssistant, entry_id: str, ip: str
-) -> None:
-    """Il comando «cambio IP» del motore (campo «Cambia IP VMC» della scheda): la voce
-    prende il nuovo IP, che vale dal riavvio che il motore chiede subito dopo (come lo
-    script della beta, che cambiava l'IP nei file e poi riavviava). Un IP non valido o
-    gia' di un'altra VMC non si usa (lo dice una notifica)."""
-    entry = hass.config_entries.async_get_entry(entry_id)
-    if entry is None:
-        return
-    async with hass.data.setdefault(DATI_BLOCCO_IP, asyncio.Lock()):
-        nome = entry.data[CONF_NOME]
-        ip_ora = entry.data[CONF_HOST]
-        if ip == ip_ora:
-            return
-        altra = next(
-            (
-                voce.data.get(CONF_NOME)
-                for voce in hass.config_entries.async_entries(DOMAIN)
-                if voce.entry_id != entry.entry_id and voce.data.get(CONF_HOST) == ip
-            ),
-            None,
-        )
-        if not config_flow.ip_valido(ip) or altra is not None:
-            _segnala_ip_scheda_rifiutato(hass, nome, ip_ora, ip, altra)
-            return
-        await hass.async_add_executor_job(
-            prima_installazione.aggiorna_ip, hass.config.config_dir, ip_ora, ip
-        )
-        if isinstance(dati := getattr(entry, "runtime_data", None), DatiVoce):
-            dati.ip_dalla_scheda = ip
-        hass.config_entries.async_update_entry(
-            entry, data={**entry.data, CONF_HOST: ip}
-        )
-
-
 async def _async_aggiornata(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """IP cambiato dall'ingranaggio: la VMC riparte con il nuovo IP. Il solo titolo non
-    serve; l'IP scritto dalla scheda vale dal riavvio gia' chiesto dal motore."""
+    serve."""
     _aggiorna_ip_filtro_tcp(hass)
     dati: DatiVoce = entry.runtime_data
-    if entry.data[CONF_HOST] in (dati.ip, dati.ip_dalla_scheda):
+    if entry.data[CONF_HOST] == dati.ip:
         return
     await hass.config_entries.async_reload(entry.entry_id)
-
-
-@callback
-def _segnala_ip_scheda_rifiutato(
-    hass: HomeAssistant, nome: str, ip: str, ip_scheda: str, altra: str | None
-) -> None:
-    """Notifica: l'IP scritto nel campo «Cambia IP VMC» della scheda non si usa."""
-    if _italiano(hass):
-        motivo = (
-            f"è già usato dalla VMC {altra}"
-            if altra is not None
-            else (
-                "non è valido: servono quattro numeri da 0 a 255, senza zeri iniziali. "
-                "Non sono ammessi 0.x.x.x, 127.x.x.x, 169.254.x.x e gli indirizzi da 224.0.0.0 in su"
-            )
-        )
-        testo = (
-            f"L'IP {ip_scheda} scritto dalla scheda {motivo}.\n\n"
-            f"La VMC {nome} resta sull'IP {ip}.\n\n"
-            "Per cambiarlo:\n"
-            "1. Aprire Impostazioni → Dispositivi e servizi → VMC Master.\n"
-            f"2. Premere l'icona ingranaggio sulla riga della VMC {nome}.\n"
-            "3. Scegliere «Cambia l'IP della VMC»."
-        )
-        titolo = f"VMC Master: IP della VMC {nome} non cambiato"
-    else:
-        motivo = (
-            f"is already used by unit {altra}"
-            if altra is not None
-            else (
-                "is not valid: four numbers from 0 to 255 are needed, without leading zeros. "
-                "0.x.x.x, 127.x.x.x, 169.254.x.x and the addresses from 224.0.0.0 up are not allowed"
-            )
-        )
-        testo = (
-            f"The IP {ip_scheda} written from the card {motivo}.\n\n"
-            f"Unit {nome} keeps the IP {ip}.\n\n"
-            "To change it:\n"
-            "1. Open Settings → Devices & services → VMC Master.\n"
-            f"2. Press the gear icon on the row of unit {nome}.\n"
-            "3. Choose «Change the unit's IP»."
-        )
-        titolo = f"VMC Master: IP of unit {nome} not changed"
-    persistent_notification.async_create(
-        hass, testo, title=titolo, notification_id=f"{DOMAIN}_ip_scheda_{nome}"
-    )
 
 
 class _FiltroTcpVmc(logging.Filter):

@@ -111,12 +111,15 @@ async def test_cronologia_dei_sensori_continua(
                 await aggiungi_e_avvia(nativa, [])
                 righe_c = await _righe(nativa, "master")
 
-    # stessi metadata_id per i 137 sensori, con stati nuovi scritti dalla VMC nativa
+    # stessi metadata_id per i 137 sensori, con stati nuovi scritti dalla VMC nativa; il
+    # sensore che verificava l'IP della scheda non c'è più (b46): nessuno stato nuovo
+    tolto = "sensor.vmc_master_verifica_ip_inserito"
     assert {e: righe_c[e][0] for e in sensori_a} == {
         e: m for e, (m, _) in sensori_a.items()
     }
-    assert all(righe_c[e][1] > righe_b[e][1] for e in sensori_a)
+    assert all(righe_c[e][1] > righe_b[e][1] for e in sensori_a if e != tolto)
+    assert righe_c[tolto][1] == righe_b[tolto][1]
     # nessuna riga nuova «..._2»: le righe nuove sono solo entità native con il loro nome
     nuove = set(righe_c) - set(righe_b)
     assert nuove <= entity_id_attesi("master")
-    assert len(nuove) == 369 - 137
+    assert len(nuove) == 367 - 136

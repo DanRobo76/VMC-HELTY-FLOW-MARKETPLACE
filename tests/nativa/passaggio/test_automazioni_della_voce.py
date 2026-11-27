@@ -1,4 +1,4 @@
-"""Le 14 automazioni del motore e la voce della VMC (Home Assistant vero).
+"""Le 13 automazioni del motore e la voce della VMC (Home Assistant vero).
 
 Le automazioni del motore sono entità del componente ``automation``, con gli entity_id
 e gli unique_id della beta: la loro voce del registro è legata alla voce della VMC
