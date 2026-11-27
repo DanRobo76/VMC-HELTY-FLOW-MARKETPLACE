@@ -37,7 +37,7 @@ import uuid
 
 VERSION = "0.4.0"
 PORT = 5001
-ROOT = Path(__file__).resolve().parents[1] / ".vmc_master_installa_vmc"
+ROOT = Path(__file__).resolve().parents[2] / ".storage" / "vmc_master_installa_vmc"
 # Reti private 10/8, 172.16/12 e 192.168/16 scritte come numeri: lo script Cambia IP sostituisce ogni indirizzo scritto con i punti.
 PRIVATE = tuple(ipaddress.ip_network(n) for n in ((0x0A000000, 8), (0xAC100000, 12), (0xC0A80000, 16)))
 # Coda del pacchetto VMSL: IP 15 cifre, porta 05001, gateway 15, maschera 15, modalità.

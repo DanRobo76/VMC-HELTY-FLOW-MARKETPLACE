@@ -1,4 +1,4 @@
-"""Riparazioni: riavvio di Home Assistant dopo l'installazione o l'aggiornamento del package."""
+"""Riparazioni: passaggio dalla beta con la conferma dell'utente e riavvio di Home Assistant."""
 
 from __future__ import annotations
 
@@ -11,7 +11,13 @@ from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers import recorder
 
-from . import _italiano, _segnala_riavvio
+from . import (
+    ISSUE_PASSAGGIO,
+    ISSUE_RIAVVIO,
+    _italiano,
+    _segnala_riavvio,
+    async_conferma_passaggio,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -19,7 +25,9 @@ _LOGGER = logging.getLogger(__name__)
 class RiavvioFlow(RepairsFlow):
     """Chiede conferma e riavvia Home Assistant."""
 
-    async def async_step_init(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
         return await self.async_step_confirm()
 
     async def async_step_confirm(
@@ -57,6 +65,33 @@ class RiavvioFlow(RepairsFlow):
         )
 
 
+class PassaggioFlow(RiavvioFlow):
+    """Passaggio dalla beta: con Invia si tolgono le cartelle del package della beta e i
+    loro elementi del registro (i valori sono gia' salvati), poi si riavvia (secondo passo,
+    quello del riavvio). Se nessun package era caricato le VMC ripartono subito, native."""
+
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        return await self.async_step_conferma()
+
+    async def async_step_conferma(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        if user_input is None:
+            return self.async_show_form(step_id="conferma")
+        esiti = await async_conferma_passaggio(self.hass)
+        errori = [f"{esito.nome}: {esito.errore}" for esito in esiti if esito.errore]
+        if errori:
+            return self.async_abort(
+                reason="cartella_non_tolta",
+                description_placeholders={"errore": "\n".join(errori)},
+            )
+        if any(esito.riavvio for esito in esiti):
+            return await self.async_step_confirm()
+        return self.async_create_entry(data={})
+
+
 async def _async_riavvia(hass: HomeAssistant) -> None:
     """Riavvia Home Assistant; se il servizio rifiuta (per esempio la configurazione
     cambiata nel frattempo), lo scrive nel registro e rimette l'avviso di riavvio."""
@@ -70,6 +105,8 @@ async def _async_riavvia(hass: HomeAssistant) -> None:
 async def async_create_fix_flow(
     hass: HomeAssistant, issue_id: str, data: dict[str, Any] | None
 ) -> RepairsFlow:
-    if issue_id == "riavvio_necessario":
+    if issue_id == ISSUE_RIAVVIO:
         return RiavvioFlow()
+    if issue_id == ISSUE_PASSAGGIO:
+        return PassaggioFlow()
     return ConfirmRepairFlow()

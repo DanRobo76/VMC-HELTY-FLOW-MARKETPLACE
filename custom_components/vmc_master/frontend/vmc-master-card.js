@@ -100,7 +100,7 @@ function confrontaVersioni(a, b) {
   return x.beta === y.beta ? 0 : x.beta > y.beta ? 1 : -1;
 }
 
-// Versione piu' alta tra i sensori «Package Ver.» di tutte le VMC («v.9.0.0b34» -> «9.0.0b34»),
+// Versione piu' alta tra i sensori «Versione» (versione_corrente) di tutte le VMC («v.9.0.0b34» -> «9.0.0b34»),
 // "" se nessuna e' valida. Il package di una VMC disabilitata non si aggiorna piu' e resta
 // indietro: con la piu' alta non conta.
 function versionePiuAlta(stati) {
@@ -624,8 +624,134 @@ class VmcMasterCard extends HTMLElement {
   }
 }
 
+// Riga «conto alla rovescia» della scheda nativa (type: custom:vmc-master-conto-alla-rovescia).
+// Nella versione nativa i timer del package sono timer interni del motore; dove la scheda
+// mostra un conto alla rovescia c'e' un sensore con l'ora di fine, che vale l'ora di fine
+// (ISO 8601) mentre il timer gira e «unknown» quando e' fermo. La riga e' quella del timer di
+// Home Assistant (hui-timer-entity-row) con uno stato «timer» costruito dal sensore: stesso
+// conto alla rovescia («0:04:59»), stesso «Inattivo», stessi nome, icona e riga secondaria.
+const TIPO_CONTO = "vmc-master-conto-alla-rovescia";
+
+// Durata «H:MM:SS» di un numero di millisecondi (come gli attributi dei timer)
+function durataTimer(millisecondi) {
+  const secondi = Math.max(0, Math.round(millisecondi / 1000));
+  const due = (numero) => String(numero).padStart(2, "0");
+  return `${Math.floor(secondi / 3600)}:${due(Math.floor((secondi % 3600) / 60))}:${due(secondi % 60)}`;
+}
+
+// Stato «timer» (entity_id timer.<oggetto del sensore>) dal sensore con l'ora di fine:
+// «active» con finishes_at = ora di fine, «idle» con il sensore a «unknown», «unavailable»
+// come il sensore. undefined se il sensore non c'e' (la riga dice «entita' non trovata»).
+function statoTimer(idTimer, sensore) {
+  if (!sensore) {
+    return undefined;
+  }
+  const fine = Date.parse(sensore.state);
+  const disponibile = sensore.state !== "unavailable";
+  const attivo = disponibile && sensore.state !== "unknown" && !Number.isNaN(fine);
+  const { device_class: _classe, ...attributi } = sensore.attributes || {};
+  attributi.remaining = attivo ? durataTimer(fine - Date.parse(sensore.last_changed)) : "0:00:00";
+  if (attivo) {
+    attributi.finishes_at = new Date(fine).toISOString();
+  }
+  return {
+    entity_id: idTimer,
+    state: attivo ? "active" : disponibile ? "idle" : "unavailable",
+    attributes: attributi,
+    last_changed: sensore.last_changed,
+    last_updated: sensore.last_updated,
+    context: sensore.context,
+  };
+}
+
+class VmcMasterContoAllaRovescia extends HTMLElement {
+  constructor() {
+    super();
+    this._config = undefined;
+    this._hass = undefined;
+    this._riga = undefined; // hui-timer-entity-row
+    this._sensore = undefined; // ultimo stato del sensore visto
+    this._stato = undefined; // stato «timer» costruito da quello
+    // Il clic sulla riga apre le informazioni del sensore (il timer interno non e' un'entita')
+    this.addEventListener("hass-more-info", (evento) => {
+      if (this._config && evento.detail && evento.detail.entityId === this._idTimer) {
+        evento.stopImmediatePropagation();
+        this.dispatchEvent(
+          new CustomEvent("hass-more-info", {
+            detail: { entityId: this._config.entity },
+            bubbles: true,
+            composed: true,
+          })
+        );
+      }
+    });
+  }
+
+  setConfig(config) {
+    if (!config || typeof config.entity !== "string" || !config.entity.startsWith("sensor.")) {
+      throw new Error("Serve il sensore con l'ora di fine (entity: sensor.…)");
+    }
+    const { type: _tipo, ...riga } = config;
+    this._config = config;
+    this._idTimer = `timer.${config.entity.split(".")[1]}`;
+    this._configRiga = { ...riga, entity: this._idTimer };
+    this._sensore = undefined;
+    this._stato = undefined;
+    if (this._riga) {
+      this._riga.setConfig(this._configRiga);
+      this._passaHass();
+    } else {
+      this._crea();
+    }
+  }
+
+  set hass(hass) {
+    this._hass = hass;
+    this._passaHass();
+  }
+
+  get hass() {
+    return this._hass;
+  }
+
+  async _crea() {
+    const aiuti = await window.loadCardHelpers();
+    if (this._riga) {
+      return;
+    }
+    this._riga = aiuti.createRowElement(this._configRiga);
+    this._passaHass();
+    this.replaceChildren(this._riga);
+  }
+
+  _passaHass() {
+    if (this._riga && this._hass) {
+      this._riga.hass = this._hassRiga(this._hass);
+    }
+  }
+
+  // hass per la riga: gli stati di Home Assistant piu' lo stato «timer» del sensore (sempre
+  // lo stesso oggetto finche' il sensore non cambia, cosi' la riga si ridisegna solo allora)
+  _hassRiga(hass) {
+    const sensore = hass.states[this._config.entity];
+    if (sensore !== this._sensore || !this._stato) {
+      this._sensore = sensore;
+      this._stato = statoTimer(this._idTimer, sensore);
+    }
+    const stati = { ...hass.states };
+    if (this._stato) {
+      stati[this._idTimer] = this._stato;
+    }
+    return { ...hass, states: stati };
+  }
+}
+
 if (!customElements.get(TIPO)) {
   customElements.define(TIPO, VmcMasterCard);
+}
+
+if (!customElements.get(TIPO_CONTO)) {
+  customElements.define(TIPO_CONTO, VmcMasterContoAllaRovescia);
 }
 
 window.customCards = window.customCards || [];

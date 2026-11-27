@@ -17,7 +17,6 @@ import unicodedata
 from typing import Any
 
 import voluptuous as vol
-
 from homeassistant.components import persistent_notification
 from homeassistant.config_entries import (
     ConfigEntry,
@@ -26,9 +25,7 @@ from homeassistant.config_entries import (
     OptionsFlow,
 )
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.hassio import is_hassio
-from homeassistant.helpers.translation import async_get_translations
 from homeassistant.helpers.selector import (
     SelectOptionDict,
     SelectSelector,
@@ -38,6 +35,7 @@ from homeassistant.helpers.selector import (
     TextSelectorConfig,
     TextSelectorType,
 )
+from homeassistant.helpers.translation import async_get_translations
 
 from . import prima_installazione as pi
 from .const import (
@@ -51,13 +49,6 @@ from .const import (
     PORTA_VMC,
     TIMEOUT_VMC,
 )
-from .installatore import (
-    cartella_vmc,
-    installazione_manuale,
-    ip_nel_package,
-    leggi_marcatore,
-    nome_manuale_con_ip,
-)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -69,9 +60,6 @@ CONF_PASSWORD_CASA = "password_casa"
 # Password della rete Wi-Fi a cui e' collegato ora il server, se diversa da quella di casa
 CONF_PASSWORD_SERVER = "password_server"
 PASSWORD_VMC_FABBRICA = "12345678"
-
-# Avviso delle Riparazioni «VMC Master: riavviare Home Assistant» (stesso id di __init__.py)
-ISSUE_RIAVVIO = "riavvio_necessario"
 
 # Errori del motore che dicono che questo Home Assistant non puo' usare il Wi-Fi
 _SENZA_WIFI = {"no_wifi", "supervisor_unavailable"}
@@ -317,7 +305,7 @@ class VmcMasterConfigFlow(ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         errori: dict[str, str] = {}
-        nomi, ips = self._nomi_e_ip_in_uso()
+        _nomi, ips = self._nomi_e_ip_in_uso()
         if user_input is not None:
             ip = user_input[CONF_HOST].strip()
             if not ip_valido(ip):
@@ -330,22 +318,8 @@ class VmcMasterConfigFlow(ConfigFlow, domain=DOMAIN):
                 # risponde senza nome («»): non si sa se e' una VMC, il nome si scrive a mano
                 return await self._async_scegli_nome(ip, nome_vmc or "", bool(nome_vmc))
 
-        ip_predefinito = ""
-        if NOME_MASTER not in nomi and await self.hass.async_add_executor_job(
-            installazione_manuale, self.hass.config.config_dir, NOME_MASTER
-        ):
-            # Installazione manuale della release 8.6.0: propone l'IP gia' impostato
-            ip_trovato = await self.hass.async_add_executor_job(
-                ip_nel_package, self.hass.config.config_dir, NOME_MASTER
-            )
-            if ip_trovato and ip_valido(ip_trovato):
-                ip_predefinito = ip_trovato
         schema = vol.Schema(
-            {
-                vol.Required(
-                    CONF_HOST, default=(user_input or {}).get(CONF_HOST, ip_predefinito)
-                ): str
-            }
+            {vol.Required(CONF_HOST, default=(user_input or {}).get(CONF_HOST, "")): str}
         )
         return self.async_show_form(step_id="in_rete", data_schema=schema, errors=errori)
 
@@ -368,10 +342,7 @@ class VmcMasterConfigFlow(ConfigFlow, domain=DOMAIN):
         errori: dict[str, str] = {}
         nomi, _ips = self._nomi_e_ip_in_uso()
         ip = self._dati[CONF_HOST]
-        # VMC installata a mano con questo IP (migrazione): stesso nome della sua cartella
-        proposta = await self.hass.async_add_executor_job(
-            nome_manuale_con_ip, self.hass.config.config_dir, ip
-        ) or nome_da_vmc(self._nome_vmc)
+        proposta = nome_da_vmc(self._nome_vmc)
         nome = proposta if user_input is None else (user_input.get(CONF_NOME) or "").strip()
         if not NOME_RE.fullmatch(nome):
             errori[CONF_NOME] = "nome_non_valido"
@@ -405,33 +376,11 @@ class VmcMasterConfigFlow(ConfigFlow, domain=DOMAIN):
         await self.async_set_unique_id(nome)
         self._abort_if_unique_id_configured()
         self._dati = {CONF_NOME: nome, CONF_HOST: ip}
-        if await self.hass.async_add_executor_job(
-            installazione_manuale, self.hass.config.config_dir, nome
-        ):
-            return await self.async_step_migra()
         if raggiungibile is None:
             raggiungibile = await async_prova_vmc(ip)
         if raggiungibile:
             return await self._async_crea_voce()
         return await self.async_step_non_raggiungibile()
-
-    async def async_step_migra(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
-        """Trovata un'installazione manuale: la cartella va in backup e la sostituisce l'integrazione."""
-        if user_input is not None:
-            return await self._async_crea_voce()
-        ip_trovato = await self.hass.async_add_executor_job(
-            ip_nel_package, self.hass.config.config_dir, self._dati[CONF_NOME]
-        )
-        return self.async_show_form(
-            step_id="migra",
-            description_placeholders={
-                "nome": self._dati[CONF_NOME],
-                "ip": self._dati[CONF_HOST],
-                "ip_trovato": ip_trovato or "-",
-            },
-        )
 
     async def async_step_non_raggiungibile(
         self, user_input: dict[str, Any] | None = None
@@ -445,35 +394,11 @@ class VmcMasterConfigFlow(ConfigFlow, domain=DOMAIN):
         )
 
     async def _async_crea_voce(self) -> ConfigFlowResult:
-        """Crea la voce. Se dopo l'installazione del package serve un riavvio (avviso
-        «VMC Master: riavviare Home Assistant»), il messaggio finale dice come farlo."""
+        """Crea la voce: la VMC nativa parte subito, senza riavvio."""
         titolo = titolo_voce(self._nome_vmc, self._dati[CONF_NOME])
-        if await self._async_serve_riavvio(self._dati[CONF_NOME]):
-            return self.async_create_entry(
-                title=titolo,
-                data={**self._dati, CONF_TITOLO: titolo},
-                description="riavvio",
-                description_placeholders={"titolo": titolo},
-            )
         return self.async_create_entry(
             title=titolo, data={**self._dati, CONF_TITOLO: titolo}
         )
-
-    async def _async_serve_riavvio(self, nome: str) -> bool:
-        """True se il package della VMC verra' scritto da zero (file nuovi: Home Assistant
-        li carica solo dopo un riavvio) o se un riavvio e' gia' chiesto.
-
-        Package gia' scritto dall'integrazione (marcatore con md5): al massimo si ricarica."""
-        if ir.async_get(self.hass).async_get_issue(DOMAIN, ISSUE_RIAVVIO) is not None:
-            return True
-        config_dir = self.hass.config.config_dir
-
-        def _package_gia_installato() -> bool:
-            return (cartella_vmc(config_dir, nome) / f"vmc_{nome}.yaml").is_file() and isinstance(
-                leggi_marcatore(config_dir, nome).get("md5"), dict
-            )
-
-        return not await self.hass.async_add_executor_job(_package_gia_installato)
 
     # ---- VMC da installare: collegamento al Wi-Fi di casa ----------------------------
     async def async_step_da_installare(
@@ -909,7 +834,7 @@ class VmcMasterOptionsFlow(OptionsFlow):
 
     def _elimina_voce(self) -> None:
         """La voce si elimina appena la finestra si chiude (come «Elimina» del menu ⋮:
-        la cartella della VMC va in /config/vmc_master_backup e Home Assistant chiede il riavvio)."""
+        Home Assistant toglie le entita' della VMC con la voce)."""
         entry_id = self.config_entry.entry_id
         self.hass.async_create_task(
             self.hass.config_entries.async_remove(entry_id), f"{DOMAIN}_elimina_{entry_id}"

@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Add a Helty Flow unit",
-        "description": "**Is the unit already connected to the home Wi-Fi?**\n\nThe first unit is always called «master»; for the others the name is read from the unit. The integration installs the VMC Master package in the folder packages/vmc_helty_flow/‹name›: after restarting Home Assistant add the «VMC Master» card from the dashboard.",
+        "description": "**Is the unit already connected to the home Wi-Fi?**\n\nThe first unit is always called «master»; for the others the name is read from the unit. When the unit has been added, add the «VMC Master» card from the dashboard.",
         "menu_options": {
           "in_rete": "Yes, it is connected: I only enter the IP",
           "da_installare": "No, it must be set up from scratch (without the Air Guard app)",
@@ -22,14 +22,14 @@
       },
       "nome": {
         "title": "Unit name in the integration",
-        "description": "Name read from the unit at {ip}: «{nome_vmc}». In the integration it becomes «{proposta}».\n\nThis name is part of every entity name (sensor.vmc_‹name›_…) and of the package folder, and cannot be changed later without losing the history: confirm it with Submit or correct it (lowercase letters only, 1 to 10 characters; «master» is reserved for the first unit).",
+        "description": "Name read from the unit at {ip}: «{nome_vmc}». In the integration it becomes «{proposta}».\n\nThis name is part of every entity name (sensor.vmc_‹name›_…), and cannot be changed later without losing the history: confirm it with Submit or correct it (lowercase letters only, 1 to 10 characters; «master» is reserved for the first unit).",
         "data": {
           "nome": "Unit name"
         }
       },
       "nome_manuale": {
         "title": "Unit name in the integration",
-        "description": "The name cannot be read from the unit at {ip} (it does not answer or does not send its name): type it here.\n\nThis name is part of every entity name (sensor.vmc_‹name›_…) and of the package folder, and cannot be changed later without losing the history (lowercase letters only, 1 to 10 characters; «master» is reserved for the first unit).",
+        "description": "The name cannot be read from the unit at {ip} (it does not answer or does not send its name): type it here.\n\nThis name is part of every entity name (sensor.vmc_‹name›_…), and cannot be changed later without losing the history (lowercase letters only, 1 to 10 characters; «master» is reserved for the first unit).",
         "data": {
           "nome": "Unit name"
         }
@@ -37,10 +37,6 @@
       "non_raggiungibile": {
         "title": "Unit not reachable",
         "description": "The unit at {ip} does not answer on port 5001 or does not send its name.\n\nYou can add it anyway, for example if it is switched off now: press Submit. The IP can be changed later from the gear icon on the unit's row → «Change the unit's IP». If the unit is not on the home Wi-Fi yet, close this window, add it again («Add integration» for the first unit, «Add device» for the others) and choose «No, it must be set up from scratch»."
-      },
-      "migra": {
-        "title": "Manual installation found",
-        "description": "The folder packages/vmc_helty_flow/{nome} already contains a manual installation of unit {nome}.\n\n- IP entered: {ip}\n- IP in the manual installation: {ip_trovato}\n\nIf they differ, close this window and repeat with the right IP.\n\nIf you continue, the folder is moved to `/config/vmc_master_backup` and replaced by the integration package. Entity names stay the same, so the history is kept.\n\n1. Press Submit.\n2. Delete the automation pasted by hand (otherwise two identical automations run after the restart).\n3. Restart Home Assistant.\n4. Remove the old manual card from the dashboard."
       },
       "rete_vmc": {
         "title": "Connect the unit to the home Wi-Fi",
@@ -102,9 +98,6 @@
       "senza_supervisor": "Connecting a unit to the Wi-Fi from here needs Home Assistant OS (with the Supervisor) and a Wi-Fi adapter on the server. This Home Assistant has no Supervisor: connect the unit once with the Air Guard app, then add it again («Add integration» for the first unit, «Add device» for the others) and choose «Yes, it is connected».",
       "senza_wifi": "Home Assistant OS finds no Wi-Fi adapter on the server. You need a computer with built-in Wi-Fi or a recognised USB Wi-Fi dongle (Settings → System → Network). Otherwise connect the unit once with the Air Guard app, then add it again («Add integration» for the first unit, «Add device» for the others) and choose «Yes, it is connected».",
       "already_in_progress": "This unit is already being added in another window."
-    },
-    "create_entry": {
-      "riavvio": "**{titolo}** has been added.\n\nTo finish:\n1. open Settings;\n2. press «VMC Master: restart Home Assistant»;\n3. press Submit;\n4. add the card:\n   - press **Ctrl+F5**;\n   - on the dashboard (**Overview** is fine too) press **pencil → Add card → Browse all cards**;\n   - in the **Search cards** field type `vmc`;\n   - click **VMC Master**;\n   - pick the unit in the **VMC\\*** field;\n   - press **Save**, then **Done**."
     }
   },
   "options": {
@@ -119,14 +112,14 @@
       },
       "cambia_ip": {
         "title": "Change the unit's IP",
-        "description": "New IP address of the unit: {titolo} must answer there. The package is updated and Home Assistant asks to restart.",
+        "description": "New IP address of the unit: {titolo} must answer there. The unit restarts with the new IP.",
         "data": {
           "host": "Unit IP"
         }
       },
       "elimina": {
         "title": "Delete the unit",
-        "description": "Delete **{titolo}** only from Home Assistant or from the network too?\n\n- **Only from Home Assistant**: the unit stays on the home Wi-Fi. To add it again only the IP is needed («Yes, it is connected»).\n- **From the network too**: the unit leaves the home Wi-Fi and goes back to Access Point mode (its VMC_… network is visible again). To add it again: «No, it must be set up from scratch», or connect it first with the Air Guard app.\n\nIt is added again from «Add device» («Add integration» if no other unit is left).\n\nIn both cases the unit's folder goes to `/config/vmc_master_backup` and Home Assistant then needs a restart.",
+        "description": "Delete **{titolo}** only from Home Assistant or from the network too?\n\n- **Only from Home Assistant**: the unit stays on the home Wi-Fi. To add it again only the IP is needed («Yes, it is connected»).\n- **From the network too**: the unit leaves the home Wi-Fi and goes back to Access Point mode (its VMC_… network is visible again). To add it again: «No, it must be set up from scratch», or connect it first with the Air Guard app.\n\nIt is added again from «Add device» («Add integration» if no other unit is left).\n\nIn both cases the unit's entities are deleted with it.",
         "menu_options": {
           "elimina_solo_ha": "Only from Home Assistant (stays on the home network)",
           "elimina_dalla_rete": "From the network too (back to Access Point)"
@@ -155,8 +148,8 @@
       "ip_nome_diverso": "Unit «{nome_letto}» answers at this IP, not {titolo}. Check the IP. If the name was changed in the Air Guard app, press Submit again to save it."
     },
     "abort": {
-      "eliminata": "{titolo} has been deleted from Home Assistant and stays on the home network. To finish, restart Home Assistant.",
-      "eliminata_dalla_rete": "{titolo} is back in Access Point mode (its VMC_… network is visible again) and has been deleted from Home Assistant. To finish, restart Home Assistant."
+      "eliminata": "{titolo} has been deleted from Home Assistant and stays on the home network.",
+      "eliminata_dalla_rete": "{titolo} is back in Access Point mode (its VMC_… network is visible again) and has been deleted from Home Assistant."
     }
   },
   "issues": {
@@ -166,7 +159,7 @@
         "step": {
           "confirm": {
             "title": "Restart Home Assistant",
-            "description": "The VMC Master package files were installed or updated: a restart is needed to load them. Press Submit to restart now."
+            "description": "Home Assistant must restart to finish the VMC Master change. Press Submit to restart now."
           }
         },
         "abort": {
@@ -174,13 +167,44 @@
         }
       }
     },
-    "packages_non_abilitati": {
-      "title": "VMC Master: package of unit {nome} not loaded",
-      "description": "The unit's files are installed but Home Assistant does not load them. configuration.yaml must contain these lines:\n\n```yaml\nhomeassistant:\n  packages: !include_dir_named packages/\n```\n\nIf the `homeassistant:` line is already there, add only the `packages:` line right below it, indented by two spaces. Save and restart Home Assistant."
+    "passaggio_dalla_beta": {
+      "title": "VMC Master: finish the switch from the beta",
+      "description": "The units still run with the package written by the beta. Press Fix to finish.",
+      "fix_flow": {
+        "step": {
+          "conferma": {
+            "title": "Finish the switch from the beta",
+            "description": "The settings of the units have already been saved by the integration.\n\nPress Submit to delete these folders, written by the beta, and their old entities:\n\n{elenco}\n\nThe units start again with the same settings and the same sensors (if a Home Assistant restart is needed, the next step asks for it): their history continues. The «VMC Master» card updates by itself."
+          },
+          "confirm": {
+            "title": "Restart Home Assistant",
+            "description": "Done. Home Assistant must restart to start the units. Press Submit to restart now."
+          }
+        },
+        "abort": {
+          "cartella_non_tolta": "Some folders have not been deleted:\n\n{errore}\n\nDelete them by hand, then restart Home Assistant.",
+          "riavvio_non_riuscito": "Home Assistant did not restart:\n\n{errore}\n\nUsually the configuration is not valid. Check Settings → System → Logs, fix the error and press «Restart Home Assistant» in Repairs again."
+        }
+      }
     },
-    "voce_disabilitata": {
-      "title": "VMC Master: unit {nome} disabled but still active",
-      "description": "The entry **{titolo}** is disabled, but the unit's package stays in `/config/packages` and Home Assistant loads it at every start: entities and automation keep working.\n\nWhile disabled, the unit does not receive the integration updates and the «VMC Master» card is not shown.\n\n- To use it again: enable the entry.\n- To stop it: enable the entry, then gear icon → «Delete the unit»."
+    "impostazioni_rinominate": {
+      "title": "VMC Master: settings with a new name",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Settings with a new name",
+            "description": "The unit settings are new entities: the part after the dot stays the same, the part before changes (for example `input_boolean.` becomes `switch.`). The commands (`script.` and `shell_command.`) are buttons: instead of the service, use the `button.press` action on the button. The internal values are no longer entities (`-`).\n\nThese automations, scripts and dashboards of yours still use the old names:\n\n{elenco}\n\nReplace each old name with the new one. Then press Submit."
+          }
+        }
+      }
+    },
+    "installazione_manuale": {
+      "title": "VMC Master: unit {nome} installed by hand",
+      "description": "The folder `/config/packages/vmc_helty_flow/{nome}` contains a unit installed by hand, without the integration.\n\nThe integration does not touch it and does not start unit {nome} while it is there.\n\n1. Remove that installation following its own guide.\n2. Restart Home Assistant."
+    },
+    "package_della_beta_rimasto": {
+      "title": "VMC Master: package of unit {nome} still present",
+      "description": "Unit {nome} has been deleted, but its beta package is still in `/config/packages/vmc_helty_flow/{nome}` and Home Assistant loads it at every start.\n\n1. Delete that folder.\n2. Restart Home Assistant."
     }
   },
   "exceptions": {

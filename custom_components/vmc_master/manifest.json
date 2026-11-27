@@ -9,6 +9,7 @@
   ],
   "config_flow": true,
   "dependencies": [
+    "automation",
     "frontend",
     "http",
     "lovelace",
@@ -19,5 +20,5 @@
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/issues",
   "requirements": [],
-  "version": "9.0.0b42"
+  "version": "9.0.0b43"
 }

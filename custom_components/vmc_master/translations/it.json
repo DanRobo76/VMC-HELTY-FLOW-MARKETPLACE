@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Aggiungi una VMC Helty Flow",
-        "description": "**La VMC è già collegata al Wi-Fi di casa?**\n\nLa prima VMC si chiama sempre «master»; per le altre il nome si legge dalla VMC. L'integrazione installa il package VMC Master nella cartella packages/vmc_helty_flow/‹nome›: dopo il riavvio di Home Assistant aggiungere la scheda «VMC Master» dalla plancia.",
+        "description": "**La VMC è già collegata al Wi-Fi di casa?**\n\nLa prima VMC si chiama sempre «master»; per le altre il nome si legge dalla VMC. Dopo l'aggiunta, aggiungere la scheda «VMC Master» dalla plancia.",
         "menu_options": {
           "in_rete": "Sì, è già collegata: scrivo solo l'IP",
           "da_installare": "No, va installata da zero (senza l'App Air Guard)",
@@ -22,14 +22,14 @@
       },
       "nome": {
         "title": "Nome della VMC nell'integrazione",
-        "description": "Nome letto dalla VMC all'indirizzo {ip}: «{nome_vmc}». Nell'integrazione diventa «{proposta}».\n\nQuesto nome entra nei nomi di tutte le entità (sensor.vmc_‹nome›_…) e nella cartella del package, e dopo non si cambia senza perdere la cronologia: confermarlo con Invia oppure correggerlo (solo lettere minuscole, da 1 a 10 caratteri; «master» è riservato alla prima VMC).",
+        "description": "Nome letto dalla VMC all'indirizzo {ip}: «{nome_vmc}». Nell'integrazione diventa «{proposta}».\n\nQuesto nome entra nei nomi di tutte le entità (sensor.vmc_‹nome›_…), e dopo non si cambia senza perdere la cronologia: confermarlo con Invia oppure correggerlo (solo lettere minuscole, da 1 a 10 caratteri; «master» è riservato alla prima VMC).",
         "data": {
           "nome": "Nome VMC"
         }
       },
       "nome_manuale": {
         "title": "Nome della VMC nell'integrazione",
-        "description": "Il nome non si può leggere dalla VMC all'indirizzo {ip} (non risponde oppure non manda il suo nome): scriverlo qui.\n\nQuesto nome entra nei nomi di tutte le entità (sensor.vmc_‹nome›_…) e nella cartella del package, e dopo non si cambia senza perdere la cronologia (solo lettere minuscole, da 1 a 10 caratteri; «master» è riservato alla prima VMC).",
+        "description": "Il nome non si può leggere dalla VMC all'indirizzo {ip} (non risponde oppure non manda il suo nome): scriverlo qui.\n\nQuesto nome entra nei nomi di tutte le entità (sensor.vmc_‹nome›_…), e dopo non si cambia senza perdere la cronologia (solo lettere minuscole, da 1 a 10 caratteri; «master» è riservato alla prima VMC).",
         "data": {
           "nome": "Nome VMC"
         }
@@ -37,10 +37,6 @@
       "non_raggiungibile": {
         "title": "VMC non raggiungibile",
         "description": "La VMC all'indirizzo {ip} non risponde sulla porta 5001 oppure non manda il suo nome.\n\nSi può aggiungere comunque, per esempio se ora è spenta: premere Invia. L'IP si cambia più tardi dall'icona ingranaggio sulla riga della VMC → «Cambia l'IP della VMC». Se la VMC non è ancora collegata al Wi-Fi di casa, chiudere questa finestra, ripetere l'aggiunta («Aggiungi integrazione» per la prima VMC, «Aggiungi dispositivo» per le altre) e scegliere «No, va installata da zero»."
-      },
-      "migra": {
-        "title": "Installazione manuale trovata",
-        "description": "Nella cartella packages/vmc_helty_flow/{nome} c'è già un'installazione manuale della VMC {nome}.\n\n- IP scritto: {ip}\n- IP nell'installazione manuale: {ip_trovato}\n\nSe sono diversi, chiudere questa finestra e ripetere con l'IP giusto.\n\nContinuando, la cartella viene spostata in `/config/vmc_master_backup` e sostituita dal package dell'integrazione. I nomi delle entità restano uguali, quindi la cronologia si conserva.\n\n1. Premere Invia.\n2. Eliminare l'automazione incollata a mano (altrimenti dopo il riavvio girano due automazioni uguali).\n3. Riavviare Home Assistant.\n4. Togliere la vecchia scheda manuale dalla plancia."
       },
       "rete_vmc": {
         "title": "Collega la VMC al Wi-Fi di casa",
@@ -102,9 +98,6 @@
       "senza_supervisor": "Per collegare una VMC al Wi-Fi da qui servono Home Assistant OS (con il Supervisor) e una scheda Wi-Fi sul server. Questo Home Assistant non ha il Supervisor: collegare la VMC una volta con l'App Air Guard, poi ripetere l'aggiunta («Aggiungi integrazione» per la prima VMC, «Aggiungi dispositivo» per le altre) e scegliere «Sì, è già collegata».",
       "senza_wifi": "Home Assistant OS non trova una scheda Wi-Fi sul server. Serve un computer con il Wi-Fi integrato oppure una chiavetta USB Wi-Fi riconosciuta (Impostazioni → Sistema → Rete). In alternativa collegare la VMC una volta con l'App Air Guard, poi ripetere l'aggiunta («Aggiungi integrazione» per la prima VMC, «Aggiungi dispositivo» per le altre) e scegliere «Sì, è già collegata».",
       "already_in_progress": "L'aggiunta di questa VMC è già in corso in un'altra finestra."
-    },
-    "create_entry": {
-      "riavvio": "**{titolo}** è stata aggiunta.\n\nPer finire:\n1. aprire Impostazioni;\n2. premere «VMC Master: riavviare Home Assistant»;\n3. premere Invia;\n4. aggiungere la scheda:\n   - premere **Ctrl+F5**;\n   - nella plancia (va bene anche **Panoramica**) premere **matita → Aggiungi scheda → Sfoglia tutte le schede**;\n   - nel campo **Cerca schede** digitare `vmc`;\n   - cliccare su **VMC Master**;\n   - scegliere la VMC nel campo **VMC\\***;\n   - premere **Salva**, poi **Fatto**."
     }
   },
   "options": {
@@ -119,14 +112,14 @@
       },
       "cambia_ip": {
         "title": "Cambia l'IP della VMC",
-        "description": "Nuovo indirizzo IP della VMC: deve rispondere {titolo}. Il package viene aggiornato e Home Assistant chiede di riavviarsi.",
+        "description": "Nuovo indirizzo IP della VMC: deve rispondere {titolo}. La VMC riparte con il nuovo IP.",
         "data": {
           "host": "IP della VMC"
         }
       },
       "elimina": {
         "title": "Elimina la VMC",
-        "description": "Eliminare **{titolo}** solo da Home Assistant oppure anche dalla rete?\n\n- **Solo da Home Assistant**: la VMC resta collegata al Wi-Fi di casa. Per riaggiungerla basta l'IP («Sì, è già collegata»).\n- **Anche dalla rete**: la VMC lascia il Wi-Fi di casa e torna in Access Point (la sua rete VMC_… è di nuovo visibile). Per riaggiungerla: «No, va installata da zero», oppure collegarla prima con l'App Air Guard.\n\nSi riaggiunge da «Aggiungi dispositivo» («Aggiungi integrazione» se non restano altre VMC).\n\nIn tutti e due i casi la cartella della VMC va in `/config/vmc_master_backup` e poi serve un riavvio di Home Assistant.",
+        "description": "Eliminare **{titolo}** solo da Home Assistant oppure anche dalla rete?\n\n- **Solo da Home Assistant**: la VMC resta collegata al Wi-Fi di casa. Per riaggiungerla basta l'IP («Sì, è già collegata»).\n- **Anche dalla rete**: la VMC lascia il Wi-Fi di casa e torna in Access Point (la sua rete VMC_… è di nuovo visibile). Per riaggiungerla: «No, va installata da zero», oppure collegarla prima con l'App Air Guard.\n\nSi riaggiunge da «Aggiungi dispositivo» («Aggiungi integrazione» se non restano altre VMC).\n\nIn tutti e due i casi le entità della VMC si eliminano con lei.",
         "menu_options": {
           "elimina_solo_ha": "Solo da Home Assistant (resta sulla rete di casa)",
           "elimina_dalla_rete": "Anche dalla rete (torna in Access Point)"
@@ -155,8 +148,8 @@
       "ip_nome_diverso": "A questo IP risponde la VMC «{nome_letto}», non {titolo}. Controllare l'IP. Se il nome è stato cambiato nell'App Air Guard, premere di nuovo Invia per salvarlo."
     },
     "abort": {
-      "eliminata": "{titolo} è stata eliminata da Home Assistant e resta sulla rete di casa. Per completare, riavviare Home Assistant.",
-      "eliminata_dalla_rete": "{titolo} è tornata in Access Point (la sua rete VMC_… è di nuovo visibile) ed è stata eliminata da Home Assistant. Per completare, riavviare Home Assistant."
+      "eliminata": "{titolo} è stata eliminata da Home Assistant e resta sulla rete di casa.",
+      "eliminata_dalla_rete": "{titolo} è tornata in Access Point (la sua rete VMC_… è di nuovo visibile) ed è stata eliminata da Home Assistant."
     }
   },
   "issues": {
@@ -166,7 +159,7 @@
         "step": {
           "confirm": {
             "title": "Riavviare Home Assistant",
-            "description": "I file del package VMC Master sono stati installati o aggiornati: serve un riavvio per caricarli. Premere Invia per riavviare ora."
+            "description": "Per finire il cambio di VMC Master serve un riavvio di Home Assistant. Premere Invia per riavviare ora."
           }
         },
         "abort": {
@@ -174,13 +167,44 @@
         }
       }
     },
-    "packages_non_abilitati": {
-      "title": "VMC Master: package della VMC {nome} non caricati",
-      "description": "I file della VMC sono installati ma Home Assistant non li carica. Nel file configuration.yaml devono esserci queste righe:\n\n```yaml\nhomeassistant:\n  packages: !include_dir_named packages/\n```\n\nSe la riga `homeassistant:` c'è già, aggiungere solo la riga `packages:` subito sotto, con due spazi davanti. Salvare e riavviare Home Assistant."
+    "passaggio_dalla_beta": {
+      "title": "VMC Master: finire il passaggio dalla beta",
+      "description": "Le VMC funzionano ancora con il package scritto dalla beta. Premere Correggi per finire.",
+      "fix_flow": {
+        "step": {
+          "conferma": {
+            "title": "Finire il passaggio dalla beta",
+            "description": "Le impostazioni delle VMC sono già salvate dall'integrazione.\n\nPremere Invia per eliminare queste cartelle, scritte dalla beta, e le loro vecchie entità:\n\n{elenco}\n\nLe VMC ripartono con le stesse impostazioni e gli stessi sensori (se serve un riavvio di Home Assistant, lo chiede il passo seguente): la loro cronologia continua. La scheda «VMC Master» si aggiorna da sola."
+          },
+          "confirm": {
+            "title": "Riavviare Home Assistant",
+            "description": "Fatto. Per avviare le VMC serve un riavvio di Home Assistant. Premere Invia per riavviare ora."
+          }
+        },
+        "abort": {
+          "cartella_non_tolta": "Alcune cartelle non sono state eliminate:\n\n{errore}\n\nEliminarle a mano, poi riavviare Home Assistant.",
+          "riavvio_non_riuscito": "Home Assistant non si è riavviato:\n\n{errore}\n\nDi solito la configurazione non è valida. Controllare Impostazioni → Sistema → Registri, correggere l'errore e premere di nuovo «Riavviare Home Assistant» nelle Riparazioni."
+        }
+      }
     },
-    "voce_disabilitata": {
-      "title": "VMC Master: VMC {nome} disabilitata ma ancora attiva",
-      "description": "La voce **{titolo}** è disabilitata, ma il package della VMC resta in `/config/packages` e Home Assistant lo carica a ogni avvio: entità e automazione continuano a funzionare.\n\nDa disabilitata la VMC non riceve gli aggiornamenti dell'integrazione e la scheda «VMC Master» non viene mostrata.\n\n- Per usarla di nuovo: riabilitare la voce.\n- Per fermarla: riabilitare la voce, poi icona ingranaggio → «Elimina la VMC»."
+    "impostazioni_rinominate": {
+      "title": "VMC Master: impostazioni con un nome nuovo",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Impostazioni con un nome nuovo",
+            "description": "Le impostazioni delle VMC sono entità nuove: la parte dopo il punto resta uguale, cambia quella prima (per esempio `input_boolean.` diventa `switch.`). I comandi (`script.` e `shell_command.`) sono pulsanti: al posto del servizio si usa l'azione `button.press` sul pulsante. I valori interni non sono più entità (`-`).\n\nQueste tue automazioni, script e plance usano ancora i vecchi nomi:\n\n{elenco}\n\nSostituire ogni vecchio nome con quello nuovo. Poi premere Invia."
+          }
+        }
+      }
+    },
+    "installazione_manuale": {
+      "title": "VMC Master: VMC {nome} installata a mano",
+      "description": "Nella cartella `/config/packages/vmc_helty_flow/{nome}` c'è una VMC installata a mano, senza l'integrazione.\n\nL'integrazione non la tocca e non avvia la VMC {nome} finché c'è.\n\n1. Togliere quell'installazione seguendo la sua guida.\n2. Riavviare Home Assistant."
+    },
+    "package_della_beta_rimasto": {
+      "title": "VMC Master: package della VMC {nome} ancora presente",
+      "description": "La VMC {nome} è stata eliminata, ma il suo package della beta è ancora in `/config/packages/vmc_helty_flow/{nome}` e Home Assistant lo carica a ogni avvio.\n\n1. Eliminare quella cartella.\n2. Riavviare Home Assistant."
     }
   },
   "exceptions": {

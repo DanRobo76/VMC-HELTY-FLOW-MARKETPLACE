@@ -1,0 +1,184 @@
+"""I sensori template del package come entità di Home Assistant, con i modelli tradotti.
+
+Oggi i 121 sensori calcolati della VMC sono sensori template senza trigger:
+Home Assistant ricalcola ognuno quando cambia un'entità che il suo modello ha letto
+l'ultima volta (``async_track_template_result``) e lo scrive subito, durante la consegna
+dell'evento che l'ha fatto ricalcolare; un sensore che legge un altro sensore si
+ricalcola alla consegna del cambio di quello. Chi segue questi sensori (trigger
+``template`` e ``state`` delle automazioni, attese) vede quindi i cambi uno alla volta,
+in quest'ordine, con gli stati intermedi.
+
+``StatoVMC`` ricalcola invece tutti i modelli insieme e scrive tutti i cambi in fila: stessi
+valori finali, ma un altro ordine e nessuno stato intermedio, e le automazioni possono
+scattare in modo diverso (per esempio due trigger dell'Automazione VMC Master al posto di
+uno, e un comando in più alla VMC). Per avere gli stessi istanti e lo stesso ordine questi
+121 sensori sono le entità template di Home Assistant (``StateSensorEntity``,
+``StateBinarySensorEntity``) con la configurazione che Home Assistant valida dal package
+e i modelli tradotti in Python dal traduttore del motore (``ModelloHA``, che legge le
+entità di domani e i valori interni come il motore) al posto dei Template Jinja:
+``motore/generato_fase4/sensori.py``.
+
+Il sensore che legge due timer del motore (Velocità Registrata) li segue come il template
+di oggi segue i timer: le letture dei timer del motore si annotano nel ``RenderInfo`` e
+``AnnunciDeiTimer`` consegna i cambi dei timer a chi li segue, nel punto del bus in cui
+Home Assistant consegnerebbe il loro ``state_changed``.
+"""
+
+from __future__ import annotations
+
+from collections.abc import Callable
+from types import ModuleType
+from typing import Any
+
+from homeassistant.components.template.binary_sensor import StateBinarySensorEntity
+from homeassistant.components.template.sensor import StateSensorEntity
+from homeassistant.const import EVENT_STATE_CHANGED, EVENT_STATE_REPORTED
+from homeassistant.core import (
+    CALLBACK_TYPE,
+    Event,
+    EventOrigin,
+    HomeAssistant,
+    State,
+    callback,
+)
+from homeassistant.helpers.event import (
+    _TRACK_STATE_CHANGE_DATA,
+    _async_dispatch_entity_id_event,
+)
+
+from .motore.contesto import Contesto
+from .motore.timer import TimerDelMotore, TimerMotore
+
+_MARCHIO = "vmc_master_annuncio_timer"
+
+SensoriTemplate = tuple[list[StateSensorEntity], list[StateBinarySensorEntity]]
+
+
+def chiave_del_sensore(entity_id: str, nome: str) -> str:
+    """La chiave di StatoVMC di un sensore («sensor.vmc_<nome>_x» -> «sensor.x»)."""
+    dominio, _, oggetto = entity_id.partition(".")
+    return f"{dominio}.{oggetto.removeprefix(f'vmc_{nome}_')}"
+
+
+def crea_sensori_template(
+    hass: HomeAssistant, c: Contesto, codice: ModuleType, ip: str
+) -> SensoriTemplate:
+    """Le entità dei sensori template (sensori, sensori binari) nell'ordine del package,
+    dal codice tradotto ``codice`` (``generato_fase4.sensori``) per la VMC di ``c``
+    all'indirizzo ``ip`` (il sensore «IP configurato»; oggi l'integrazione lo scrive
+    nel package)."""
+    sensori: list[StateSensorEntity] = []
+    binari: list[StateBinarySensorEntity] = []
+    for entita in in_ordine(hass, c, codice, ip):
+        if isinstance(entita, StateSensorEntity):
+            sensori.append(entita)
+        else:
+            binari.append(entita)
+    return sensori, binari
+
+
+def in_ordine(
+    hass: HomeAssistant, c: Contesto, codice: ModuleType, ip: str
+) -> list[StateSensorEntity | StateBinarySensorEntity]:
+    """Le entità dei sensori template nell'ordine del package, sensori e sensori binari
+    insieme: l'ordine in cui oggi l'integrazione template le aggiunge e in cui, all'avvio,
+    ognuna comincia a seguire le entità che legge (chi segue prima un'entità si ricalcola
+    prima ai suoi cambi)."""
+    uscita: list[StateSensorEntity | StateBinarySensorEntity] = []
+    for dominio, config in codice.sensori(c, ip):
+        if dominio == "sensor":
+            uscita.append(StateSensorEntity(hass, config, config.get("unique_id")))
+        else:
+            uscita.append(
+                StateBinarySensorEntity(hass, config, config.get("unique_id"))
+            )
+    return uscita
+
+
+def a_gruppi(
+    entita: list[StateSensorEntity | StateBinarySensorEntity],
+) -> list[tuple[str, list[Any]]]:
+    """Le entità in ordine, a gruppi consecutivi dello stesso dominio («sensor»,
+    «binary_sensor»): per aggiungerle a Home Assistant senza cambiare l'ordine."""
+    gruppi: list[tuple[str, list[Any]]] = []
+    for una in entita:
+        dominio = "sensor" if isinstance(una, StateSensorEntity) else "binary_sensor"
+        if not gruppi or gruppi[-1][0] != dominio:
+            gruppi.append((dominio, []))
+        gruppi[-1][1].append(una)
+    return gruppi
+
+
+class AnnunciDeiTimer:
+    """I cambi dei timer del motore a chi li segue come entità.
+
+    Un timer del motore non è nella macchina degli stati: oggi ogni sua scrittura è un
+    ``state_changed`` che Home Assistant consegna a chi segue il timer
+    (``async_track_state_change_event``: il sensore template che lo legge). Qui ogni
+    scrittura si annuncia con un evento ``state_reported`` con un marchio (entity_id vuoto:
+    nessun ascoltatore di un'entità lo prende), che il bus consegna nello stesso punto in
+    cui consegnerebbe ``state_changed`` (anche durante la consegna di un altro evento,
+    in coda); alla consegna il cambio va prima agli ``osservatori`` (chi ascolta il bus
+    prima dei tracker, per esempio la traccia del simulatore) e poi a chi segue il timer.
+    Come la memoria interna per i valori interni.
+    """
+
+    def __init__(self, hass: HomeAssistant, timer: TimerDelMotore) -> None:
+        self.hass = hass
+        self._vecchi: dict[str, State | None] = {
+            entity_id: t.stato_ha for entity_id, t in timer.timer.items()
+        }
+        self._osservatori: list[Callable[[Event[Any]], None]] = []
+        self._annulla: list[CALLBACK_TYPE] = [
+            timer.ascolta(self._scritto),
+            hass.bus.async_listen(
+                EVENT_STATE_REPORTED,
+                self._consegna,
+                event_filter=callback(lambda dati: _MARCHIO in dati),
+            ),
+        ]
+
+    @callback
+    def osserva(self, funzione: Callable[[Event[Any]], None]) -> CALLBACK_TYPE:
+        """``funzione(evento state_changed)`` a ogni cambio, prima di chi segue il timer;
+        restituisce come smettere."""
+        self._osservatori.append(funzione)
+
+        @callback
+        def smetti() -> None:
+            self._osservatori.remove(funzione)
+
+        return smetti
+
+    @callback
+    def ferma(self) -> None:
+        for annulla in self._annulla:
+            annulla()
+        self._annulla.clear()
+
+    @callback
+    def _scritto(self, timer: TimerMotore) -> None:
+        nuovo = timer.stato_ha
+        assert nuovo is not None
+        vecchio = self._vecchi.get(timer.entity_id)
+        self._vecchi[timer.entity_id] = nuovo
+        self.hass.bus.async_fire_internal(
+            EVENT_STATE_REPORTED,
+            {"entity_id": "", _MARCHIO: (timer.entity_id, vecchio, nuovo)},
+            context=nuovo.context,
+        )
+
+    @callback
+    def _consegna(self, evento: Event[Any]) -> None:
+        entity_id, vecchio, nuovo = evento.data[_MARCHIO]
+        cambio: Event[Any] = Event(
+            EVENT_STATE_CHANGED,
+            {"entity_id": entity_id, "old_state": vecchio, "new_state": nuovo},
+            EventOrigin.local,
+            evento.time_fired_timestamp,
+            evento.context,
+        )
+        for funzione in list(self._osservatori):
+            funzione(cambio)
+        if (seguiti := self.hass.data.get(_TRACK_STATE_CHANGE_DATA)) is not None:
+            _async_dispatch_entity_id_event(self.hass, seguiti.callbacks, cambio)

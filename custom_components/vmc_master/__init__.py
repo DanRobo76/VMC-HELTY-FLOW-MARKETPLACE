@@ -1,35 +1,41 @@
 """Integrazione VMC Master per VMC Helty Flow Plus/Elite.
 
-Ogni voce di configurazione e' una VMC (nome + IP). Per ogni VMC l'integrazione
-installa e aggiorna il package della release 8.6.0 in packages/vmc_helty_flow/<nome>
-e serve la scheda «VMC Master», che si aggiunge dalla plancia senza incollare codice.
+Ogni voce di configurazione e' una VMC (nome + IP). Per ogni VMC l'integrazione crea le
+entita' native (impostazioni, sensori, pulsanti) e il motore che fa quello che faceva il
+package della beta (nativa/assemblaggio.py), e serve la scheda «VMC Master», che si
+aggiunge dalla plancia senza incollare codice. Nessun file in /config/packages.
+
+Chi arriva dalla beta ha ancora il package scritto dalla beta: la VMC nativa parte dopo
+che l'utente ha confermato la sua rimozione dalle Riparazioni (passaggio.py).
 """
 
 from __future__ import annotations
 
 import asyncio
 import contextlib
-import json
 import logging
-import sys
 import re
 import threading
-import time
-from functools import lru_cache
+from collections.abc import Mapping
+from dataclasses import dataclass, field
+from functools import lru_cache, partial
 from http import HTTPStatus
 from pathlib import Path
+
+# non «import time»: la piattaforma time.py, importata, diventa l'attributo «time» del
+# pacchetto, cioè di questo modulo, e prenderebbe il posto del modulo time
+from time import monotonic
 from typing import Any, Final
 
 import voluptuous as vol
 import yaml
 from aiohttp import web
-
 from homeassistant.components import persistent_notification
 from homeassistant.components.frontend import add_extra_js_url
 from homeassistant.components.http import HomeAssistantView, StaticPathConfig
 from homeassistant.components.lovelace import LOVELACE_DATA
 from homeassistant.config_entries import ConfigEntry, ConfigEntryState
-from homeassistant.const import EVENT_HOMEASSISTANT_STOP
+from homeassistant.const import Platform
 from homeassistant.core import (
     Event,
     HomeAssistant,
@@ -38,42 +44,34 @@ from homeassistant.core import (
     SupportsResponse,
     callback,
 )
-from homeassistant.exceptions import ConfigEntryError
 from homeassistant.helpers import (
     config_validation as cv,
+)
+from homeassistant.helpers import (
     entity_registry as er,
+)
+from homeassistant.helpers import (
     issue_registry as ir,
 )
+from homeassistant.helpers.entity import Entity
+from homeassistant.helpers.entity_platform import EntityPlatform
 from homeassistant.helpers.http import KEY_HASS
 from homeassistant.helpers.start import async_at_started
 from homeassistant.helpers.storage import Store
 from homeassistant.helpers.typing import ConfigType
 from homeassistant.loader import async_get_integration
 
+from . import config_flow, passaggio, prima_installazione
 from .const import (
     CONF_HOST,
     CONF_NOME,
     CONF_TITOLO,
     DOMAIN,
-    ENTITA_FINESTRA_CLONA,
-    ENTITA_PRIMA_INSTALLAZIONE,
     FILE_SCHEDA,
     FILE_SCHEDA_JS,
-    NOME_MASTER,
-    NOME_RE,
+    REPOSITORY,
     URL_FRONTEND,
-)
-from . import config_flow, prima_installazione
-from .installatore import (
-    _leggi,
-    _rimetti_ip,
-    _scrivi,
-    cartella_vmc,
-    genera_file,
-    installa,
-    ip_nel_package,
-    leggi_marcatore,
-    sposta_in_backup,
+    URL_REPOSITORY,
 )
 from .trasforma import adatta_link_repository, per_vmc
 
@@ -83,18 +81,35 @@ CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 _CARTELLA = Path(__file__).parent
 
+# Le piattaforme delle entita' native di una VMC (le entita' le aggiunge l'assemblaggio)
+PIATTAFORME: Final = (
+    Platform.BINARY_SENSOR,
+    Platform.BUTTON,
+    Platform.NUMBER,
+    Platform.SELECT,
+    Platform.SENSOR,
+    Platform.SWITCH,
+    Platform.TEXT,
+    Platform.TIME,
+)
+# Scheda della VMC nativa (scheda della beta tradotta con i nomi delle entita' native)
+FILE_SCHEDA_NATIVA: Final = "scheda_nativa.txt"
+
 ISSUE_RIAVVIO = "riavvio_necessario"
 # Riparazione del Marketplace di Home Assistant che chiede il riavvio dopo un'installazione
 # o un aggiornamento: quando c'e' lei, quella della VMC non serve (ne resta una sola)
 DOMINIO_MARKETPLACE = "marketplace"
 PREFISSO_RIAVVIO_MARKETPLACE = "restart_required_"
-ISSUE_PACKAGES = "packages_non_abilitati"
-ISSUE_DISABILITATA = "voce_disabilitata"
-DATI_RICARICHE = f"{DOMAIN}_ricariche"
-# Nomi delle VMC eliminate: al prossimo avvio si tolgono dal registro le loro entita'
-CHIAVE_ELIMINATE = f"{DOMAIN}.vmc_eliminate"
-DATI_ELIMINATE = f"{DOMAIN}_eliminate"
-DATI_BLOCCO_ELIMINATE = f"{DOMAIN}_eliminate_blocco"
+# Passaggio dalla beta: una riparazione per tutte le VMC con il package della beta
+ISSUE_PASSAGGIO: Final = "passaggio_dalla_beta"
+# Dopo il passaggio: dove l'utente usa ancora i vecchi nomi delle impostazioni
+ISSUE_RINOMINATE: Final = "impostazioni_rinominate"
+URL_NOMI_NATIVI: Final = "https://github.com/DanRobo76/VMC-HELTY-FLOW-NATIVA/blob/claude/project-thread-ni3xq9/NOMI_NATIVI.md"
+# Installazione fatta a mano in /config/packages/vmc_helty_flow/<nome>: non si tocca
+ISSUE_MANUALE: Final = "installazione_manuale"
+# VMC eliminata con il package della beta ancora in /config/packages
+ISSUE_RIMASTO: Final = "package_della_beta_rimasto"
+DATI_IN_ATTESA: Final = f"{DOMAIN}_in_attesa"
 # Errori dei sensori TCP con la VMC spenta: al massimo uno ogni 30 minuti per ogni VMC
 LOGGER_TCP = "homeassistant.components.tcp.entity"
 INTERVALLO_LOG_TCP = 30 * 60
@@ -103,56 +118,33 @@ DATI_FILTRO_TCP = f"{DOMAIN}_filtro_tcp"
 LOGGER_COMMAND_LINE = "homeassistant.components.command_line"
 DURATA_FILTRO_PING = 120
 DATI_FILTRO_PING = f"{DOMAIN}_filtro_ping"
-_RE_IP_NEL_LOG = re.compile(r"(?<![0-9.])([0-9]{1,3}(?:\.[0-9]{1,3}){3})(?![0-9]|\.[0-9])")
-# Un solo controllo alla volta dell'IP scritto dalla scheda (voci avviate in parallelo)
+_RE_IP_NEL_LOG = re.compile(
+    r"(?<![0-9.])([0-9]{1,3}(?:\.[0-9]{1,3}){3})(?![0-9]|\.[0-9])"
+)
+# Un solo cambio alla volta dell'IP scritto dalla scheda (VMC diverse insieme)
 DATI_BLOCCO_IP = f"{DOMAIN}_ip_scheda_blocco"
 # Servizio con risposta del campo «Cambia IP VMC» della scheda: prima del riavvio controlla
-# che a quell'IP risponda la VMC (uno solo per tutte le VMC: il package passa IP e nome)
+# che a quell'IP risponda la VMC (uno solo per tutte le VMC: il motore passa IP e nome)
 SERVIZIO_VERIFICA_IP: Final = "verifica_ip"
 SCHEMA_VERIFICA_IP: Final = vol.Schema(
     {vol.Required("ip"): cv.string, vol.Optional("nome", default=""): cv.string}
 )
 
-# Domini YAML in cui l'unique_id di un'entita' e' la sua chiave (piattaforma = dominio)
-DOMINI_CON_CHIAVE = (
-    "counter",
-    "input_boolean",
-    "input_button",
-    "input_datetime",
-    "input_number",
-    "input_select",
-    "input_text",
-    "schedule",
-    "script",
-    "timer",
-)
-# Integrazioni con un elenco di blocchi {dominio: entita'} (piattaforma = integrazione)
-INTEGRAZIONI_A_BLOCCHI = ("command_line", "rest", "template")
 
+@dataclass
+class DatiVoce:
+    """Cosa tiene una voce caricata (entry.runtime_data)."""
 
-class _CaricatoreYaml(getattr(yaml, "CSafeLoader", yaml.SafeLoader)):  # type: ignore[misc]
-    """Legge i file del package; i tag di Home Assistant (!secret, !include...) valgono None."""
-
-
-_CaricatoreYaml.add_multi_constructor("!", lambda _loader, _suffisso, _nodo: None)
-
-# Ordine delle ricariche: prima aiutanti e sensori, per ultime script e automazioni che li usano
-ORDINE_RICARICHE = (
-    "homeassistant.reload_core_config",
-    "input_boolean.reload",
-    "input_datetime.reload",
-    "input_number.reload",
-    "input_select.reload",
-    "input_text.reload",
-    "timer.reload",
-    "command_line.reload",
-    "rest.reload",
-    "template.reload",
-    "script.reload",
-    "automation.reload",
-)
-# Automazione YAML «Riallineamento Allerte al Riavvio» del package di ogni VMC (id = unique_id)
-_RIALLINEAMENTO_RE = re.compile(r"^vmc_(.+)_riallineamento_allerte_al_riavvio$")
+    situazione: str
+    """passaggio.NATIVA, IN_ATTESA o MANUALE."""
+    ip: str
+    """L'IP con cui e' partita la VMC (la voce si ricarica se cambia)."""
+    vmc: Any = None
+    """La VMC nativa (VMCAssemblata), se e' partita."""
+    piattaforme: dict[str, EntityPlatform] = field(default_factory=dict)
+    """Le piattaforme della voce per dominio (le registra platform.py)."""
+    ip_dalla_scheda: str | None = None
+    """IP scritto dalla scheda: vale dal riavvio che il motore chiede subito dopo."""
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
@@ -172,24 +164,37 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         supports_response=SupportsResponse.ONLY,
     )
     async_at_started(hass, _ripristina_wifi_server)
-    async_at_started(hass, _togli_entita_vmc_eliminate)
+    await _async_togli_resti_della_beta(hass)
     if DATI_FILTRO_PING not in hass.data:
         filtro_ping = hass.data[DATI_FILTRO_PING] = _FiltroPingAvvio(hass)
         logging.getLogger(LOGGER_COMMAND_LINE).addFilter(filtro_ping)
 
-    async def _alla_fermata(_evento: Event) -> None:
-        await _prepara_aggiornamento(hass, str(integrazione.version))
-
-    hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, _alla_fermata)
-
     @callback
     def _riparazione_cambiata(evento: Event) -> None:
         # Il Marketplace chiede il riavvio dopo la VMC: si toglie quella della VMC
-        if evento.data["domain"] == DOMINIO_MARKETPLACE and _riavvio_chiesto_dal_marketplace(hass):
+        if evento.data[
+            "domain"
+        ] == DOMINIO_MARKETPLACE and _riavvio_chiesto_dal_marketplace(hass):
             ir.async_delete_issue(hass, DOMAIN, ISSUE_RIAVVIO)
 
-    hass.bus.async_listen(ir.EVENT_REPAIRS_ISSUE_REGISTRY_UPDATED, _riparazione_cambiata)
+    hass.bus.async_listen(
+        ir.EVENT_REPAIRS_ISSUE_REGISTRY_UPDATED, _riparazione_cambiata
+    )
     return True
+
+
+# Avvisi della beta che la versione nativa non crea più («voce_disabilitata_‹nome›» la
+# beta lo salvava: resterebbe nelle Riparazioni senza testo) e l'elenco delle VMC
+# eliminate della sua pulizia automatica del registro
+_AVVISI_DELLA_BETA: Final = ("packages_non_abilitati", "voce_disabilitata_")
+_ARCHIVIO_VMC_ELIMINATE_DELLA_BETA: Final = "vmc_master.vmc_eliminate"
+
+
+async def _async_togli_resti_della_beta(hass: HomeAssistant) -> None:
+    for dominio, issue_id in list(ir.async_get(hass).issues):
+        if dominio == DOMAIN and issue_id.startswith(_AVVISI_DELLA_BETA):
+            ir.async_delete_issue(hass, DOMAIN, issue_id)
+    await Store(hass, 1, _ARCHIVIO_VMC_ELIMINATE_DELLA_BETA).async_remove()
 
 
 async def _async_verifica_ip(chiamata: ServiceCall) -> ServiceResponse:
@@ -210,174 +215,111 @@ async def _async_verifica_ip(chiamata: ServiceCall) -> ServiceResponse:
     }
 
 
-# Copia della scheda in <config>/www/vmc_master: Home Assistant serve /local appena parte il
-# frontend, prima che l'integrazione venga avviata. Una pagina aperta (o ricaricata) mentre
-# Home Assistant si avvia riceve gli indirizzi «extra_module_url» di quel momento, senza la
-# scheda, e il frontend non li richiede piu' fino al ricaricamento della pagina: la risorsa
-# della plancia (/local/...) invece c'e' gia' e si carica all'apertura della plancia.
-CARTELLA_WWW_SCHEDA: Final = "vmc_master"
-URL_LOCALE_SCHEDA: Final = f"/local/{CARTELLA_WWW_SCHEDA}/{FILE_SCHEDA_JS}"
+# Il file JavaScript della scheda si serve dalla cartella dell'integrazione (URL_FRONTEND,
+# percorso statico registrato in async_setup, prima che il server http accetti richieste):
+# nessuna copia in /config. Lo caricano «extra_module_url» e la risorsa delle plance.
+URL_SCHEDA: Final = f"{URL_FRONTEND}/{FILE_SCHEDA_JS}"
+DATI_URL_SCHEDA: Final = f"{DOMAIN}_url_scheda"
+# La beta copiava il file in <config>/www/vmc_master e la risorsa delle plance puntava a
+# /local/vmc_master/...: finche' una VMC aspetta il passaggio copia e risorsa restano come
+# le ha lasciate la beta; con il passaggio confermato la risorsa passa all'indirizzo
+# dell'integrazione e la copia si toglie, come la cartella del package.
+CARTELLA_WWW_DELLA_BETA: Final = "vmc_master"
+URL_LOCALE_DELLA_BETA: Final = f"/local/{CARTELLA_WWW_DELLA_BETA}/{FILE_SCHEDA_JS}"
 
 
-def _copia_scheda_in_www(config_dir: str) -> None:
-    """Copia il file JavaScript della scheda in www/vmc_master (solo se e' cambiato)."""
-    cartella = Path(config_dir) / "www" / CARTELLA_WWW_SCHEDA
-    cartella.mkdir(parents=True, exist_ok=True)
-    destinazione = cartella / FILE_SCHEDA_JS
-    dati = (_CARTELLA / "frontend" / FILE_SCHEDA_JS).read_bytes()
-    if destinazione.is_file() and destinazione.read_bytes() == dati:
-        return
-    temporaneo = destinazione.with_suffix(".tmp")
-    temporaneo.write_bytes(dati)
-    temporaneo.replace(destinazione)
-
-
-def _local_servito(hass: HomeAssistant) -> bool:
-    """True se /local (cartella www) e' servito: il frontend lo registra all'avvio solo se
-    www esisteva gia'."""
-    return any(
-        getattr(risorsa, "canonical", None) == "/local"
-        for risorsa in hass.http.app.router.resources()
-    )
-
-
-async def _registra_risorsa_plancia(hass: HomeAssistant, url: str) -> None:
-    """Risorsa «module» delle plance (solo risorse in modalita' storage): una sola voce
-    /local/vmc_master/vmc-master-card.js con la versione installata."""
+async def _risorse_plance(hass: HomeAssistant) -> Any | None:
+    """Le risorse delle plance, se sono in modalita' storage (caricate); altrimenti None
+    (in modalita' YAML le risorse le scrive l'utente)."""
     dati = hass.data.get(LOVELACE_DATA)
     if dati is None or getattr(dati, "resource_mode", None) != "storage":
+        return None
+    await dati.resources.async_get_info()  # carica le risorse salvate
+    return dati.resources
+
+
+def _indirizzo(voce: Mapping[str, Any]) -> str:
+    return str(voce.get("url", "")).split("?", 1)[0]
+
+
+async def _registra_risorsa_plancia(
+    hass: HomeAssistant, url: str, *, anche_della_beta: bool = False
+) -> None:
+    """Una sola risorsa «module» della scheda con l'indirizzo ``url`` (versione
+    installata). Una risorsa della beta (/local/vmc_master/...) resta com'e', se non con
+    ``anche_della_beta`` (passaggio confermato): allora diventa questa, stessa voce."""
+    risorse = await _risorse_plance(hass)
+    if risorse is None:
         return
-    risorse = dati.resources
-    await risorse.async_get_info()  # carica le risorse salvate
-    nostre = [
+    della_beta = [
         voce
         for voce in risorse.async_items()
-        if str(voce.get("url", "")).split("?", 1)[0] == URL_LOCALE_SCHEDA
+        if _indirizzo(voce) == URL_LOCALE_DELLA_BETA
+    ]
+    if della_beta and not anche_della_beta:
+        return
+    nostre = della_beta + [
+        voce for voce in risorse.async_items() if _indirizzo(voce) == URL_SCHEDA
     ]
     if not nostre:
         await risorse.async_create_item({"res_type": "module", "url": url})
         return
     if nostre[0].get("url") != url or nostre[0].get("type") != "module":
-        await risorse.async_update_item(nostre[0]["id"], {"res_type": "module", "url": url})
+        await risorse.async_update_item(
+            nostre[0]["id"], {"res_type": "module", "url": url}
+        )
     for doppia in nostre[1:]:
         await risorse.async_delete_item(doppia["id"])
 
 
-def _togli_scheda_da_www(config_dir: str) -> None:
-    """Toglie la copia della scheda da www/vmc_master; la cartella solo se resta vuota."""
-    cartella = Path(config_dir) / "www" / CARTELLA_WWW_SCHEDA
+def _togli_copia_della_beta(config_dir: str) -> None:
+    """Toglie la copia della scheda che la beta scriveva in www/vmc_master; la cartella
+    solo se resta vuota (altri file dell'utente restano)."""
+    cartella = Path(config_dir) / "www" / CARTELLA_WWW_DELLA_BETA
     for nome_file in (FILE_SCHEDA_JS, f"{Path(FILE_SCHEDA_JS).stem}.tmp"):
         (cartella / nome_file).unlink(missing_ok=True)
     with contextlib.suppress(OSError):
         cartella.rmdir()
 
 
-async def _togli_scheda_da_www_e_plance(hass: HomeAssistant) -> None:
-    """Ultima VMC eliminata: via la risorsa delle plance e la copia della scheda in www."""
-    dati = hass.data.get(LOVELACE_DATA)
+async def _scheda_dopo_il_passaggio(hass: HomeAssistant) -> None:
+    """Passaggio confermato: la risorsa della beta passa all'indirizzo dell'integrazione e
+    la copia della beta in www si toglie."""
     try:
-        if dati is not None and getattr(dati, "resource_mode", None) == "storage":
-            risorse = dati.resources
-            await risorse.async_get_info()
-            for voce in list(risorse.async_items()):
-                if str(voce.get("url", "")).split("?", 1)[0] == URL_LOCALE_SCHEDA:
-                    await risorse.async_delete_item(voce["id"])
-        await hass.async_add_executor_job(_togli_scheda_da_www, hass.config.config_dir)
-    except Exception:  # noqa: BLE001 - l'eliminazione della VMC continua comunque
-        _LOGGER.exception("Scheda VMC Master non tolta da www o dalle risorse delle plance")
+        await _registra_risorsa_plancia(
+            hass, hass.data[DATI_URL_SCHEDA], anche_della_beta=True
+        )
+        await hass.async_add_executor_job(
+            _togli_copia_della_beta, hass.config.config_dir
+        )
+    except Exception:
+        _LOGGER.exception("Scheda della beta non tolta da www o dalle risorse")
+
+
+async def _togli_risorse_plancia(hass: HomeAssistant) -> None:
+    """Ultima VMC eliminata: via le risorse della scheda (della beta e nativa). In /config
+    non si tocca nulla."""
+    try:
+        risorse = await _risorse_plance(hass)
+        for voce in list(risorse.async_items()) if risorse is not None else ():
+            if _indirizzo(voce) in (URL_SCHEDA, URL_LOCALE_DELLA_BETA):
+                await risorse.async_delete_item(voce["id"])
+    except Exception:
+        _LOGGER.exception("Scheda VMC Master non tolta dalle risorse delle plance")
 
 
 async def _registra_scheda(hass: HomeAssistant, versione: str) -> None:
-    """File JavaScript della scheda per il frontend.
-
-    Con /local servito: stesso indirizzo /local/... per «extra_module_url» e per la risorsa
-    delle plance (il browser lo carica una volta sola). Senza /local (cartella www creata
-    adesso): indirizzo dell'integrazione; la risorsa si aggiunge al prossimo avvio."""
-    url_integrazione = f"{URL_FRONTEND}/{FILE_SCHEDA_JS}?v={versione}"
+    """File JavaScript della scheda per il frontend: «extra_module_url» e risorsa delle
+    plance con l'indirizzo dell'integrazione (la risorsa della beta resta fino al
+    passaggio confermato)."""
+    url = hass.data[DATI_URL_SCHEDA] = f"{URL_SCHEDA}?v={versione}"
+    add_extra_js_url(hass, url)
     try:
-        await hass.async_add_executor_job(_copia_scheda_in_www, hass.config.config_dir)
-    except OSError as errore:
-        _LOGGER.warning("Scheda VMC Master non copiata in www: %s", errore)
-        add_extra_js_url(hass, url_integrazione)
-        return
-    if not _local_servito(hass):
-        add_extra_js_url(hass, url_integrazione)
-        return
-    url_locale = f"{URL_LOCALE_SCHEDA}?v={versione}"
-    add_extra_js_url(hass, url_locale)
-    try:
-        await _registra_risorsa_plancia(hass, url_locale)
-    except Exception:  # noqa: BLE001 - la scheda resta comunque caricata da extra_module_url
-        _LOGGER.exception("Risorsa della plancia per la scheda VMC Master non registrata")
-
-
-# Programma del processo separato: carica i moduli della versione su disco senza il loro
-# __init__.py (che importa Home Assistant) e avvia prepara.main
-_PROGRAMMA_PREPARA = (
-    "import importlib, sys, types\n"
-    "p = types.ModuleType('vmc_master_aggiornata'); p.__path__ = [sys.argv[1]]\n"
-    "sys.modules['vmc_master_aggiornata'] = p\n"
-    "sys.exit(importlib.import_module('vmc_master_aggiornata.prepara').main(sys.argv[2:]))\n"
-)
-TIMEOUT_PREPARA = 60
-
-
-def _versione_su_disco() -> str | None:
-    """Versione dell'integrazione su disco, se ha il modulo che prepara i package."""
-    if not (_CARTELLA / "prepara.py").is_file():
-        return None
-    try:
-        return str(json.loads((_CARTELLA / "manifest.json").read_text(encoding="utf-8"))["version"])
-    except (OSError, ValueError, KeyError):
-        return None
-
-
-async def _prepara_aggiornamento(hass: HomeAssistant, versione: str) -> None:
-    """Home Assistant si ferma con una versione nuova gia' su disco (aggiornamento
-    scaricato): i package si scrivono adesso con la versione nuova, cosi' al riavvio
-    Home Assistant li legge gia' aggiornati e non chiede un secondo riavvio."""
-    su_disco = await hass.async_add_executor_job(_versione_su_disco)
-    if su_disco is None or su_disco == versione:
-        return
-    voci = [
-        [voce.data[CONF_NOME], voce.data[CONF_HOST]]
-        for voce in hass.config_entries.async_entries(DOMAIN)
-        if voce.state is ConfigEntryState.LOADED
-    ]
-    if not voci:
-        return
-    try:
-        processo = await asyncio.create_subprocess_exec(
-            sys.executable,
-            "-I",
-            "-c",
-            _PROGRAMMA_PREPARA,
-            str(_CARTELLA),
-            hass.config.config_dir,
-            json.dumps(voci),
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
+        await _registra_risorsa_plancia(hass, url)
+    except Exception:
+        _LOGGER.exception(
+            "Risorsa della plancia per la scheda VMC Master non registrata"
         )
-    except OSError as errore:
-        _LOGGER.warning("Package non preparati per la versione %s: %s", su_disco, errore)
-        return
-    try:
-        uscita, errori = await asyncio.wait_for(processo.communicate(), TIMEOUT_PREPARA)
-    except TimeoutError as errore:
-        processo.kill()  # le scritture sono atomiche: ogni file resta vecchio o nuovo
-        await processo.wait()
-        _LOGGER.warning("Package non preparati per la versione %s: %s", su_disco, errore)
-        return
-    if processo.returncode:
-        _LOGGER.warning(
-            "Package non preparati per la versione %s: %s",
-            su_disco,
-            errori.decode(errors="replace").strip()[-500:],
-        )
-        return
-    _LOGGER.info(
-        "Package preparati per la versione %s: %s", su_disco, uscita.decode(errors="replace").strip()
-    )
 
 
 def _italiano(hass: HomeAssistant) -> bool:
@@ -390,12 +332,18 @@ async def _ripristina_wifi_server(hass: HomeAssistant) -> None:
     del server si riporta alla rete di prima (come faceva l'avvio della Finestra
     Prima Installazione VMC della release 8.6.0)."""
     config_dir = hass.config.config_dir
-    if not await hass.async_add_executor_job(prima_installazione.ripristino_in_sospeso, config_dir):
+    if not await hass.async_add_executor_job(
+        prima_installazione.ripristino_in_sospeso, config_dir
+    ):
         return
     try:
-        await hass.async_add_executor_job(prima_installazione.esegui, config_dir, "recover")
+        await hass.async_add_executor_job(
+            prima_installazione.esegui, config_dir, "recover"
+        )
     except prima_installazione.Failure as errore:
-        _LOGGER.warning("Ripristino del Wi-Fi del server non riuscito: %s", errore.message)
+        _LOGGER.warning(
+            "Ripristino del Wi-Fi del server non riuscito: %s", errore.message
+        )
         messaggio = await config_flow.async_messaggio_errore(hass, errore)
         if _italiano(hass):
             testo = (
@@ -417,150 +365,231 @@ async def _ripristina_wifi_server(hass: HomeAssistant) -> None:
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Installa o aggiorna il package della VMC."""
-    integrazione = await async_get_integration(hass, DOMAIN)
-    config_dir = hass.config.config_dir
+    """Avvia la VMC nativa; con il package della beta ancora presente aspetta la conferma
+    del passaggio (la VMC continua con il package)."""
     nome: str = entry.data[CONF_NOME]
-    ip: str = entry.data[CONF_HOST]
-
-    # voce di nuovo abilitata: l'avviso «voce disabilitata» non serve piu'
-    ir.async_delete_issue(hass, DOMAIN, f"{ISSUE_DISABILITATA}_{nome}")
-
-    try:
-        ip = await _adotta_ip_della_scheda(hass, entry, config_dir, nome, ip)
-        esito = await hass.async_add_executor_job(
-            installa, config_dir, nome, ip, str(integrazione.version)
-        )
-    except OSError as errore:
-        # disco pieno o file non scrivibili: i file scritti restano quelli di prima
-        if _italiano(hass):
-            messaggio = (
-                f"File del package della VMC {nome} non scritti ({errore}): i file di prima "
-                "sono intatti. Controllare lo spazio libero sul disco, poi riavviare Home Assistant."
-            )
-        else:
-            messaggio = (
-                f"Package files of unit {nome} not written ({errore}): the previous files are "
-                "intact. Check the free disk space, then restart Home Assistant."
-            )
-        raise ConfigEntryError(messaggio) from errore
-    if esito.backup is not None:
-        # la 8.6.0 chiama «Automazione VMC Master» la principale e «Automazione VMC ‹nome›» le clonate
-        nome_automazione = "Master" if nome == NOME_MASTER else nome
-        if _italiano(hass):
-            testo = (
-                f"La precedente installazione manuale della VMC {nome} è stata spostata in "
-                f"`{esito.backup}`.\n\n"
-                "Al suo posto c'è il package dell'integrazione: stessi nomi delle entità, "
-                "la cronologia resta.\n\n"
-                "Cosa fare:\n"
-                "1. Aprire Impostazioni → Automazioni e scenari.\n"
-                f"2. Eliminare l'automazione incollata a mano «Automazione VMC {nome_automazione}». "
-                "Va fatto PRIMA di riavviare, altrimenti dopo il riavvio girano due automazioni uguali.\n"
-                "3. Riavviare Home Assistant.\n"
-                "4. Togliere dalla plancia la vecchia scheda manuale.\n"
-                "5. Aggiungere dalla plancia la scheda «VMC Master»."
-            )
-            titolo = f"VMC Master: VMC {nome} passata all'integrazione"
-        else:
-            testo = (
-                f"The previous manual installation of unit {nome} has been moved to "
-                f"`{esito.backup}`.\n\n"
-                "It has been replaced by the integration package: same entity names, "
-                "the history is kept.\n\n"
-                "What to do:\n"
-                "1. Open Settings → Automations & scenes.\n"
-                f"2. Delete the automation pasted by hand «Automazione VMC {nome_automazione}». "
-                "Do it BEFORE restarting, otherwise two identical automations run after the restart.\n"
-                "3. Restart Home Assistant.\n"
-                "4. Remove the old manual card from the dashboard.\n"
-                "5. Add the «VMC Master» card from the dashboard."
-            )
-            titolo = f"VMC Master: unit {nome} moved to the integration"
-        persistent_notification.async_create(
-            hass, testo, title=titolo, notification_id=f"{DOMAIN}_migrazione_{nome}"
-        )
-    if esito.backup_modificati is not None:
-        elenco = "\n".join(f"- `{nome_file}`" for nome_file in esito.file_modificati)
-        copia = f"/config/{esito.backup_modificati.relative_to(config_dir).as_posix()}"
-        if _italiano(hass):
-            testo = (
-                f"Questi file del package della VMC {nome} erano stati modificati a mano:\n\n"
-                f"{elenco}\n\n"
-                "I file del package sono scritti dall'integrazione e non vanno modificati: "
-                f"la versione modificata è stata salvata in `{copia}` e al suo "
-                "posto è stata rimessa quella dell'integrazione. Le impostazioni si cambiano "
-                "dalla scheda «VMC Master»."
-            )
-            titolo = f"VMC Master: file della VMC {nome} modificati a mano"
-        else:
-            testo = (
-                f"These package files of unit {nome} had been edited by hand:\n\n"
-                f"{elenco}\n\n"
-                "The package files are written by the integration and must not be edited: "
-                f"the edited version has been saved in `{copia}` and replaced by the "
-                "integration's one. Settings are changed from the «VMC Master» card."
-            )
-            titolo = f"VMC Master: files of unit {nome} edited by hand"
-        persistent_notification.async_create(
-            hass, testo, title=titolo, notification_id=f"{DOMAIN}_modificati_{nome}"
-        )
-    if esito.riavvio_necessario:
-        _segnala_riavvio(hass)
-    else:
-        if esito.ricariche:
-            # Aggiornamento dell'integrazione: Home Assistant ha gia' letto i package
-            # all'avvio, le parti cambiate si ricaricano senza chiedere un altro riavvio
-            _ricarica_dopo_avvio(hass, entry, esito.ricariche)
-        _controlla_packages_dopo_avvio(hass, entry, nome)
-
-    _aggiorna_titolo_dopo_avvio(hass, entry)
-    # IP con cui e' stato installato il package: la voce si ricarica solo se cambia
-    entry.runtime_data = ip
-    entry.async_on_unload(entry.add_update_listener(_async_aggiornata))
+    dati = entry.runtime_data = DatiVoce(passaggio.NATIVA, entry.data[CONF_HOST])
     _installa_filtro_tcp(hass)
+    _aggiorna_titolo_dopo_avvio(hass, entry)
+    entry.async_on_unload(entry.add_update_listener(_async_aggiornata))
+    ir.async_delete_issue(hass, DOMAIN, f"{ISSUE_RIMASTO}_{nome}")
+    dati.situazione = await _async_situazione(hass, nome)
+    if dati.situazione == passaggio.MANUALE:
+        ir.async_create_issue(
+            hass,
+            DOMAIN,
+            f"{ISSUE_MANUALE}_{nome}",
+            is_fixable=False,
+            is_persistent=False,
+            severity=ir.IssueSeverity.ERROR,
+            translation_key=ISSUE_MANUALE,
+            translation_placeholders={"nome": nome},
+        )
+        return True
+    ir.async_delete_issue(hass, DOMAIN, f"{ISSUE_MANUALE}_{nome}")
+    if dati.situazione == passaggio.IN_ATTESA:
+        _aspetta_il_passaggio(hass, entry)
+        return True
+    await _async_avvia_nativa(hass, entry)
     return True
 
 
-async def _adotta_ip_della_scheda(
-    hass: HomeAssistant, entry: ConfigEntry, config_dir: str, nome: str, ip: str
-) -> str:
-    """IP cambiato dal campo «Cambia IP VMC» della scheda: vale quello del package, solo se
-    e' valido e non e' gia' di un'altra VMC. Restituisce l'IP con cui installare.
-
-    Home Assistant avvia insieme le voci dello stesso dominio: controllo e aggiornamento
-    della voce stanno in un'unica sezione protetta, cosi' due VMC non prendono lo stesso IP."""
-    async with hass.data.setdefault(DATI_BLOCCO_IP, asyncio.Lock()):
-        marcatore = await hass.async_add_executor_job(leggi_marcatore, config_dir, nome)
-        ip_file = await hass.async_add_executor_job(ip_nel_package, config_dir, nome)
-        if not (marcatore and ip == marcatore.get("ip") and ip_file and ip_file != ip):
-            return ip
-        altra = next(
-            (
-                voce.data.get(CONF_NOME)
-                for voce in hass.config_entries.async_entries(DOMAIN)
-                if voce.entry_id != entry.entry_id and voce.data.get(CONF_HOST) == ip_file
-            ),
-            None,
+async def _async_situazione(hass: HomeAssistant, nome: str) -> str:
+    """NATIVA, IN_ATTESA (cartella della beta, o suoi elementi ancora nel registro) o
+    MANUALE (cartella senza il marcatore della beta)."""
+    config_dir = hass.config.config_dir
+    cartella = await hass.async_add_executor_job(
+        passaggio.esamina_cartella, config_dir, nome
+    )
+    if cartella == "manuale":
+        return passaggio.MANUALE
+    if cartella == "beta":
+        return passaggio.IN_ATTESA
+    if passaggio.possibili_voci_della_beta(hass, nome):
+        id_package = await hass.async_add_executor_job(
+            passaggio.id_del_package, config_dir, nome
         )
-        if config_flow.ip_valido(ip_file) and altra is None:
-            await hass.async_add_executor_job(
-                prima_installazione.aggiorna_ip, config_dir, ip, ip_file
+        if passaggio.voci_del_package(hass, id_package, anche_automazioni=False):
+            return passaggio.IN_ATTESA
+    return passaggio.NATIVA
+
+
+@callback
+def _aspetta_il_passaggio(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Package della beta ancora presente: ad avvio finito (aiutanti del package tutti
+    caricati) si leggono e si salvano i suoi valori, poi la riparazione chiede la conferma."""
+    nome: str = entry.data[CONF_NOME]
+    in_attesa: dict[str, str] = hass.data.setdefault(DATI_IN_ATTESA, {})
+    in_attesa[nome] = entry.entry_id
+
+    @callback
+    def _non_piu_in_attesa() -> None:
+        if in_attesa.get(nome) == entry.entry_id:
+            del in_attesa[nome]
+            segnala_passaggio(hass)
+
+    entry.async_on_unload(_non_piu_in_attesa)
+
+    async def _leggi() -> None:
+        letti = passaggio.leggi_valori(hass, nome)
+        await passaggio.async_salva_letti(hass, nome, letti)
+        segnala_passaggio(hass)
+
+    @callback
+    def _avviato(_hass: HomeAssistant) -> None:
+        entry.async_create_background_task(hass, _leggi(), f"{DOMAIN}_passaggio_{nome}")
+
+    entry.async_on_unload(async_at_started(hass, _avviato))
+
+
+@callback
+def segnala_passaggio(hass: HomeAssistant) -> None:
+    """Una riparazione per tutte le VMC in attesa del passaggio (nessuna: la si toglie)."""
+    in_attesa: dict[str, str] = hass.data.get(DATI_IN_ATTESA, {})
+    if not in_attesa:
+        ir.async_delete_issue(hass, DOMAIN, ISSUE_PASSAGGIO)
+        return
+    elenco = "\n".join(
+        f"- `/config/packages/vmc_helty_flow/{nome}`" for nome in sorted(in_attesa)
+    )
+    ir.async_create_issue(
+        hass,
+        DOMAIN,
+        ISSUE_PASSAGGIO,
+        is_fixable=True,
+        is_persistent=False,
+        severity=ir.IssueSeverity.WARNING,
+        translation_key=ISSUE_PASSAGGIO,
+        translation_placeholders={"elenco": elenco},
+    )
+
+
+async def async_conferma_passaggio(
+    hass: HomeAssistant,
+) -> list[passaggio.EsitoConferma]:
+    """Il passaggio confermato dall'utente per tutte le VMC in attesa (la riparazione, o le
+    prove, chiamano questo). Se un package era caricato chiede il riavvio; altrimenti le
+    VMC ripartono subito, native."""
+    tutte: dict[str, str] = hass.data.get(DATI_IN_ATTESA, {})
+    in_attesa = dict(tutte)
+    esiti = [await passaggio.async_conferma(hass, nome) for nome in sorted(in_attesa)]
+    for esito in esiti:
+        if esito.errore is None:
+            tutte.pop(esito.nome, None)
+    segnala_passaggio(hass)
+    if any(esito.errore is None for esito in esiti):
+        await _scheda_dopo_il_passaggio(hass)
+    riferimenti = [r for esito in esiti for r in esito.riferimenti]
+    if riferimenti:
+        ir.async_create_issue(
+            hass,
+            DOMAIN,
+            ISSUE_RINOMINATE,
+            is_fixable=True,
+            is_persistent=True,
+            # l'elenco completo dei nomi vecchi e nuovi (NOMI_NATIVI.md, guida)
+            learn_more_url=URL_NOMI_NATIVI,
+            severity=ir.IssueSeverity.WARNING,
+            translation_key=ISSUE_RINOMINATE,
+            translation_placeholders={
+                "elenco": "\n".join(
+                    f"- {dove}: `{vecchio}` → `{nuovo or '-'}`"
+                    for dove, vecchio, nuovo in riferimenti
+                )
+            },
+        )
+    if any(esito.riavvio for esito in esiti):
+        _segnala_riavvio(hass)
+    else:
+        for nome, entry_id in in_attesa.items():
+            if not any(e.nome == nome and e.errore for e in esiti):
+                hass.config_entries.async_schedule_reload(entry_id)
+    return esiti
+
+
+async def _async_avvia_nativa(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """La VMC nativa della voce: piattaforme, poi tutte le parti nell'ordine
+    dell'assemblaggio. Dopo il passaggio dalla beta parte con i valori della beta."""
+    from .nativa.assemblaggio import VMCAssemblata  # il motore si carica solo qui
+
+    dati: DatiVoce = entry.runtime_data
+    nome: str = entry.data[CONF_NOME]
+    await passaggio.async_memoria_di_una_vmc_eliminata(hass, nome)
+    archivio = await passaggio.archivio(hass, nome).async_load() or {}
+    vmc = VMCAssemblata(
+        hass,
+        nome,
+        dati.ip,
+        cambia_ip=partial(_async_cambia_ip_dalla_scheda, hass, entry.entry_id),
+    )
+    confermato = archivio.get("stato") == passaggio.CONFERMATO
+    if confermato:
+        vmc.stato.passati = passaggio.valori_passati(archivio, nome)
+    dati.vmc = vmc
+    await hass.config_entries.async_forward_entry_setups(entry, PIATTAFORME)
+
+    async def aggiungi(dominio: str, entita: list[Entity]) -> None:
+        await dati.piattaforme[dominio].async_add_entities(entita)
+
+    try:
+        await vmc.avvia(aggiungi)
+    except BaseException:
+        await _async_ferma_nativa(hass, entry)
+        raise
+    _lega_automazioni_alla_voce(hass, entry, vmc)
+    if confermato:
+
+        @callback
+        def _avviato(_hass: HomeAssistant) -> None:
+            # Home Assistant conserva gli stati delle entita' native appena avviato
+            entry.async_create_background_task(
+                hass,
+                passaggio.async_applicato(hass, nome, archivio),
+                f"{DOMAIN}_applicato_{nome}",
             )
-            hass.config_entries.async_update_entry(entry, data={**entry.data, CONF_HOST: ip_file})
-            return ip_file
-        # si rimette l'IP di prima: i file tornano quelli scritti dall'integrazione
-        await hass.async_add_executor_job(_rimetti_ip_nel_package, config_dir, nome, ip_file, ip)
-        _segnala_ip_scheda_rifiutato(hass, nome, ip, ip_file, altra)
-        _segnala_riavvio(hass)  # Home Assistant ha gia' caricato il package con l'IP rifiutato
-        return ip
+
+        entry.async_on_unload(async_at_started(hass, _avviato))
+
+
+@callback
+def _lega_automazioni_alla_voce(
+    hass: HomeAssistant, entry: ConfigEntry, vmc: Any
+) -> None:
+    """Le automazioni del motore sono entita' del componente automation (stesso
+    unique_id, quindi stessa voce del registro, delle automazioni della beta: area,
+    etichette e categoria dell'utente restano). La loro voce del registro si lega alla
+    voce della VMC, cosi' Home Assistant le toglie quando la VMC si elimina (e le
+    disabilita con lei). Il componente automation, quando la aggiunge, toglie il legame
+    (piattaforma senza voce): si rimette dopo ogni avvio."""
+    registro = er.async_get(hass)
+    # anche quelle disattivate dall'utente (voce del registro senza entita')
+    registrate = [
+        a.entity_id for a in vmc.motore.automazioni if a.entity_id in registro.entities
+    ]
+    for entity_id in registrate:  # gia' legata: nessun cambio (async_update_entity)
+        registro.async_update_entity(entity_id, config_entry_id=entry.entry_id)
+
+
+async def _async_ferma_nativa(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Ferma la VMC nativa e toglie le sue entita' (le automazioni del motore sono nel
+    componente automation: si tolgono da li', la voce del registro resta)."""
+    dati: DatiVoce = entry.runtime_data
+    vmc, dati.vmc = dati.vmc, None
+    if vmc is None:
+        return True
+    # i valori interni di adesso (una ricarica non perde gli ultimi cambi)
+    await vmc.memoria.async_salva()
+    await vmc.ferma()
+    for automazione in list(vmc.motore.automazioni):
+        if automazione.hass is not None:
+            await automazione.async_remove()
+    caricate = [p for p in PIATTAFORME if p in dati.piattaforme]
+    return await hass.config_entries.async_unload_platforms(entry, caricate)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Niente da scaricare: il package resta caricato fino al prossimo riavvio.
-
-    Una voce disabilitata non ferma il package (resta in /config/packages e si carica a ogni
-    avvio) e non lo aggiorna piu': lo dice un avviso, la scheda non viene piu' servita."""
+    """Ferma la VMC nativa (niente da fermare se aspetta il passaggio: il package della
+    beta resta caricato fino al riavvio)."""
     if not any(
         voce.state is ConfigEntryState.LOADED
         for voce in hass.config_entries.async_entries(DOMAIN)
@@ -569,205 +598,83 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         _togli_filtro_tcp(hass)  # ultima VMC scaricata
     else:
         _aggiorna_ip_filtro_tcp(hass)
-    if entry.disabled_by is not None:
-        nome = entry.data[CONF_NOME]
-        ir.async_create_issue(
-            hass,
-            DOMAIN,
-            f"{ISSUE_DISABILITATA}_{nome}",
-            is_fixable=False,
-            is_persistent=True,
-            severity=ir.IssueSeverity.WARNING,
-            translation_key=ISSUE_DISABILITATA,
-            translation_placeholders={"nome": nome, "titolo": entry.title},
-        )
-    return True
+    return await _async_ferma_nativa(hass, entry)
 
 
 async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    """VMC eliminata: la sua cartella va in /config/vmc_master_backup e serve un riavvio.
-
-    Le entita' del package della VMC escono subito dal registro (la cartella e' gia' nel
-    backup, quindi al riavvio non tornano), anche quando e' l'ultima VMC e l'integrazione
-    non si avviera' piu'. Si tolgono solo quelle del package (unique_id letti dai file
-    spostati nel backup): le entita' create dall'utente restano, anche se si chiamano
-    «vmc_‹nome›_…». Se qualcuna resta, il nome si ricorda e si toglie al riavvio."""
+    """VMC eliminata: le sue entita' native le toglie Home Assistant con la voce; qui si
+    tolgono i suoi archivi e i suoi avvisi. Il registro delle entita' e /config non si
+    toccano: se c'e' ancora il package della beta lo dice un avviso."""
     nome = entry.data[CONF_NOME]
     if not any(
-        voce.entry_id != entry.entry_id for voce in hass.config_entries.async_entries(DOMAIN)
+        voce.entry_id != entry.entry_id
+        for voce in hass.config_entries.async_entries(DOMAIN)
     ):
-        await _togli_scheda_da_www_e_plance(hass)  # ultima VMC: la scheda non serve piu'
-    destinazione = await hass.async_add_executor_job(
-        sposta_in_backup, hass.config.config_dir, nome
-    )
-    ir.async_delete_issue(hass, DOMAIN, f"{ISSUE_PACKAGES}_{nome}")
-    ir.async_delete_issue(hass, DOMAIN, f"{ISSUE_DISABILITATA}_{nome}")
-    id_package = None
-    if destinazione is not None:
-        _segnala_riavvio(hass)
-        id_package = await hass.async_add_executor_job(_id_del_package, destinazione)
-    if id_package is None:
-        # cartella assente o file non leggibili: gli id del package scritto dall'integrazione
-        id_package = await hass.async_add_executor_job(_id_del_package_generato, nome)
-    if id_package is not None and _togli_entita_della_vmc(
-        hass, nome, id_package, anche_fornite=destinazione is not None
+        await _togli_risorse_plancia(hass)  # ultima VMC: la scheda non serve piu'
+    ir.async_delete_issue(hass, DOMAIN, f"{ISSUE_MANUALE}_{nome}")
+    await passaggio.async_togli_archivi(hass, nome)
+    if (
+        await hass.async_add_executor_job(
+            passaggio.esamina_cartella, hass.config.config_dir, nome
+        )
+        == "beta"
     ):
+        ir.async_create_issue(
+            hass,
+            DOMAIN,
+            f"{ISSUE_RIMASTO}_{nome}",
+            is_fixable=False,
+            is_persistent=True,
+            severity=ir.IssueSeverity.WARNING,
+            translation_key=ISSUE_RIMASTO,
+            translation_placeholders={"nome": nome},
+        )
+
+
+async def _async_cambia_ip_dalla_scheda(
+    hass: HomeAssistant, entry_id: str, ip: str
+) -> None:
+    """Il comando «cambio IP» del motore (campo «Cambia IP VMC» della scheda): la voce
+    prende il nuovo IP, che vale dal riavvio che il motore chiede subito dopo (come lo
+    script della beta, che cambiava l'IP nei file e poi riavviava). Un IP non valido o
+    gia' di un'altra VMC non si usa (lo dice una notifica)."""
+    entry = hass.config_entries.async_get_entry(entry_id)
+    if entry is None:
         return
-    async with _blocco_eliminate(hass):
-        store = _store_eliminate(hass)
-        dati = await store.async_load() or {}
-        nomi = [n for n in dati.get("nomi", []) if isinstance(n, str)]
-        if nome not in nomi:
-            await store.async_save({"nomi": [*nomi, nome]})
-
-
-def _store_eliminate(hass: HomeAssistant) -> Store[dict[str, Any]]:
-    if DATI_ELIMINATE not in hass.data:
-        hass.data[DATI_ELIMINATE] = Store(hass, 1, CHIAVE_ELIMINATE)
-    return hass.data[DATI_ELIMINATE]
-
-
-def _blocco_eliminate(hass: HomeAssistant) -> asyncio.Lock:
-    """Un solo accesso alla volta all'elenco delle VMC eliminate (due VMC eliminate insieme)."""
-    return hass.data.setdefault(DATI_BLOCCO_ELIMINATE, asyncio.Lock())
-
-
-async def _togli_entita_vmc_eliminate(hass: HomeAssistant) -> None:
-    """Dopo il riavvio che segue «Elimina la VMC» si tolgono dal registro le entita'
-    del package della VMC eliminata non piu' fornite, solo se nessuna VMC con quel nome
-    e' stata aggiunta di nuovo. Il nome si dimentica quando non resta piu' niente da togliere."""
-    async with _blocco_eliminate(hass):
-        store = _store_eliminate(hass)
-        dati = await store.async_load() or {}
-        nomi = [n for n in dati.get("nomi", []) if isinstance(n, str) and NOME_RE.fullmatch(n)]
-        if not nomi:
+    async with hass.data.setdefault(DATI_BLOCCO_IP, asyncio.Lock()):
+        nome = entry.data[CONF_NOME]
+        ip_ora = entry.data[CONF_HOST]
+        if ip == ip_ora:
             return
-        presenti = {voce.data.get(CONF_NOME) for voce in hass.config_entries.async_entries(DOMAIN)}
-        rimasti: list[str] = []
-        for nome in nomi:
-            if nome in presenti:
-                continue  # aggiunta di nuovo: le entita' sono di nuovo sue
-            if await hass.async_add_executor_job(cartella_vmc(hass.config.config_dir, nome).is_dir):
-                rimasti.append(nome)  # cartella del package di nuovo presente: non si tocca niente
-                continue
-            id_package = await hass.async_add_executor_job(_id_del_package_generato, nome)
-            if id_package is None or not _togli_entita_della_vmc(hass, nome, id_package):
-                rimasti.append(nome)  # entita' ancora fornite (nessun riavvio dopo l'eliminazione)
-        if rimasti != dati.get("nomi"):
-            await store.async_save({"nomi": rimasti})
+        altra = next(
+            (
+                voce.data.get(CONF_NOME)
+                for voce in hass.config_entries.async_entries(DOMAIN)
+                if voce.entry_id != entry.entry_id and voce.data.get(CONF_HOST) == ip
+            ),
+            None,
+        )
+        if not config_flow.ip_valido(ip) or altra is not None:
+            _segnala_ip_scheda_rifiutato(hass, nome, ip_ora, ip, altra)
+            return
+        await hass.async_add_executor_job(
+            prima_installazione.aggiorna_ip, hass.config.config_dir, ip_ora, ip
+        )
+        if isinstance(dati := getattr(entry, "runtime_data", None), DatiVoce):
+            dati.ip_dalla_scheda = ip
+        hass.config_entries.async_update_entry(
+            entry, data={**entry.data, CONF_HOST: ip}
+        )
 
 
-def _come_lista(valore: object) -> list:
-    return valore if isinstance(valore, list) else [valore]
-
-
-def _id_della_configurazione(configurazione: object, id_package: set[tuple[str, str, str]]) -> None:
-    """Aggiunge gli id delle entita' di un file YAML come (dominio, piattaforma, unique_id),
-    come li salva il registro delle entita' (anche per le entita' rinominate dall'utente)."""
-    if not isinstance(configurazione, dict):
+async def _async_aggiornata(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """IP cambiato dall'ingranaggio: la VMC riparte con il nuovo IP. Il solo titolo non
+    serve; l'IP scritto dalla scheda vale dal riavvio gia' chiesto dal motore."""
+    _aggiorna_ip_filtro_tcp(hass)
+    dati: DatiVoce = entry.runtime_data
+    if entry.data[CONF_HOST] in (dati.ip, dati.ip_dalla_scheda):
         return
-    for dominio, valore in configurazione.items():
-        if dominio == "automation":
-            for automazione in _come_lista(valore):
-                if isinstance(automazione, dict) and automazione.get("id") is not None:
-                    id_package.add(("automation", "automation", str(automazione["id"])))
-        elif dominio in DOMINI_CON_CHIAVE:
-            if isinstance(valore, dict):
-                id_package.update((dominio, dominio, str(chiave)) for chiave in valore)
-        elif dominio in INTEGRAZIONI_A_BLOCCHI:
-            for blocco in _come_lista(valore):
-                if not isinstance(blocco, dict):
-                    continue
-                prefisso = blocco.get("unique_id") if dominio == "template" else None
-                for dominio_entita, entita in blocco.items():
-                    for voce in _come_lista(entita):
-                        if isinstance(voce, dict) and voce.get("unique_id") is not None:
-                            unique_id = str(voce["unique_id"])
-                            if prefisso is not None:
-                                unique_id = f"{prefisso}-{unique_id}"
-                            id_package.add((str(dominio_entita), dominio, unique_id))
-        else:
-            # piattaforme in elenco (sensor: - platform: rest ... unique_id: ...)
-            for voce in _come_lista(valore):
-                if isinstance(voce, dict) and voce.get("platform") and voce.get("unique_id") is not None:
-                    id_package.add((dominio, str(voce["platform"]), str(voce["unique_id"])))
-
-
-def _id_del_package(cartella: Path) -> set[tuple[str, str, str]] | None:
-    """Id delle entita' dei file YAML di un package (cartella appena spostata nel backup).
-    None se non ci sono file YAML o non si possono leggere."""
-    id_package: set[tuple[str, str, str]] = set()
-    try:
-        file_yaml = sorted(percorso for percorso in cartella.glob("*.yaml") if percorso.is_file())
-        if not file_yaml:
-            return None
-        for percorso in file_yaml:
-            with open(percorso, encoding="utf-8") as file:
-                _id_della_configurazione(yaml.load(file, Loader=_CaricatoreYaml), id_package)
-    except (OSError, UnicodeDecodeError, yaml.YAMLError) as errore:
-        _LOGGER.warning("File del package in %s non leggibili: %s", cartella, errore)
-        return None
-    return id_package
-
-
-def _id_del_package_generato(nome: str) -> set[tuple[str, str, str]] | None:
-    """Id delle entita' del package che l'integrazione scrive per la VMC (gli unique_id
-    non dipendono dall'IP). None se i file dell'integrazione non si possono leggere."""
-    id_package: set[tuple[str, str, str]] = set()
-    try:
-        for nome_file, testo in genera_file(nome, "0.0.0.0", "0").items():
-            if nome_file.endswith(".yaml"):
-                _id_della_configurazione(yaml.load(testo, Loader=_CaricatoreYaml), id_package)
-    except (OSError, UnicodeDecodeError, yaml.YAMLError) as errore:
-        _LOGGER.warning("Package della VMC %s non leggibile: %s", nome, errore)
-        return None
-    return id_package
-
-
-@callback
-def _togli_entita_della_vmc(
-    hass: HomeAssistant,
-    nome: str,
-    id_package: set[tuple[str, str, str]],
-    anche_fornite: bool = False,
-) -> bool:
-    """Toglie dal registro le entita' del package della VMC non piu' fornite, o tutte con
-    anche_fornite (VMC appena eliminata, cartella gia' nel backup). False se qualcuna resta.
-
-    Si confrontano dominio, piattaforma e unique_id con gli id del package: non si tocca
-    niente creato dall'utente (automazioni, aiutanti, sensori YAML), anche se il suo
-    entity_id comincia con «vmc_‹nome›_», e si trovano anche le entita' rinominate."""
-    registro = er.async_get(hass)
-    da_togliere = [
-        voce.entity_id
-        for voce in list(registro.entities.values())
-        if voce.config_entry_id is None  # entita' dei package YAML
-        and (voce.domain, voce.platform, voce.unique_id) in id_package
-    ]
-    tutte = True
-    for entity_id in da_togliere:
-        stato = hass.states.get(entity_id)
-        if anche_fornite or stato is None or stato.attributes.get("restored"):
-            registro.async_remove(entity_id)
-        else:
-            tutte = False
-    if da_togliere:
-        _LOGGER.info("VMC %s eliminata: entita' del package tolte dal registro se non piu' fornite", nome)
-    return tutte
-
-
-def _rimetti_ip_nel_package(config_dir: str, nome: str, ip_scheda: str, ip: str) -> None:
-    """IP della scheda rifiutato: nei file cambiati dallo script «Cambia IP VMC» torna l'IP
-    di prima, cosi' i file sono di nuovo quelli scritti dall'integrazione."""
-    cartella = cartella_vmc(config_dir, nome)
-    for nome_file in (f"vmc_{nome}.yaml", f"vmc_{nome}_script_cambio_nome.sh"):
-        percorso = cartella / nome_file
-        if not percorso.is_file():
-            continue
-        testo = _leggi(percorso)
-        nuovo = _rimetti_ip(testo, ip_scheda, ip)
-        if nuovo != testo:
-            _scrivi(percorso, nuovo)  # scrittura atomica, stessi fine riga e permessi
+    await hass.config_entries.async_reload(entry.entry_id)
 
 
 @callback
@@ -827,7 +734,7 @@ class _FiltroTcpVmc(logging.Filter):
         self.ips: frozenset[str] = frozenset()
         self._ultimo: dict[str, float] = {}
         self._blocco = threading.Lock()
-        self._ora = time.monotonic
+        self._ora = monotonic
 
     def filter(self, record: logging.LogRecord) -> bool:
         ips = self.ips
@@ -858,7 +765,7 @@ class _FiltroPingAvvio(logging.Filter):
     def __init__(self, hass: HomeAssistant) -> None:
         super().__init__()
         self._hass = hass
-        self._ora = time.monotonic
+        self._ora = monotonic
         self._fine = self._ora() + DURATA_FILTRO_PING
 
     def filter(self, record: logging.LogRecord) -> bool:
@@ -905,13 +812,6 @@ def _togli_filtro_tcp(hass: HomeAssistant) -> None:
         logging.getLogger(LOGGER_TCP).removeFilter(filtro)
 
 
-async def _async_aggiornata(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    # IP cambiato dall'ingranaggio: si aggiorna il package. Il solo titolo non serve.
-    _aggiorna_ip_filtro_tcp(hass)
-    if entry.data[CONF_HOST] != entry.runtime_data:
-        await hass.config_entries.async_reload(entry.entry_id)
-
-
 @callback
 def _aggiorna_titolo_dopo_avvio(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Titolo della voce = nome della VMC (quello dell'App Air Guard), anche per le VMC
@@ -936,7 +836,9 @@ def _aggiorna_titolo_dopo_avvio(hass: HomeAssistant, entry: ConfigEntry) -> None
 
     @callback
     def _avvia(_hass: HomeAssistant) -> None:
-        entry.async_create_background_task(hass, _aggiorna(), f"{DOMAIN}_titolo_{entry.entry_id}")
+        entry.async_create_background_task(
+            hass, _aggiorna(), f"{DOMAIN}_titolo_{entry.entry_id}"
+        )
 
     entry.async_on_unload(async_at_started(hass, _avvia))
 
@@ -972,131 +874,21 @@ def _segnala_riavvio(hass: HomeAssistant) -> None:
     ir.async_ignore_issue(hass, DOMAIN, ISSUE_RIAVVIO, False)
 
 
-@callback
-def _ricarica_dopo_avvio(hass: HomeAssistant, entry: ConfigEntry, servizi: set[str]) -> None:
-    """Ricarica le parti cambiate del package appena Home Assistant e' avviato.
-
-    Con piu' VMC le ricariche si fanno una volta sola per tutte."""
-    in_attesa: set[str] = hass.data.setdefault(DATI_RICARICHE, set())
-    in_attesa.update(servizi)
-
-    @callback
-    def _avviato(_hass: HomeAssistant) -> None:
-        if not in_attesa:
-            return  # gia' fatte insieme a un'altra VMC
-        da_fare = sorted(in_attesa, key=ORDINE_RICARICHE.index)
-        in_attesa.clear()
-        hass.async_create_task(_async_ricarica(hass, da_fare))
-
-    entry.async_on_unload(async_at_started(hass, _avviato))
+@lru_cache(maxsize=2)
+def _leggi_scheda(file: str) -> str:
+    # newline="" mantiene i CRLF del file
+    with open(_CARTELLA / file, encoding="utf-8", newline="") as testo:
+        return testo.read()
 
 
-async def _async_ricarica(hass: HomeAssistant, servizi: list[str]) -> None:
-    for servizio in servizi:
-        dominio, nome_servizio = servizio.split(".")
-        try:
-            await hass.services.async_call(dominio, nome_servizio, blocking=True)
-        except Exception:  # noqa: BLE001 - qualunque errore: si torna al riavvio
-            _LOGGER.exception("Ricarica %s non riuscita: serve un riavvio", servizio)
-            _segnala_riavvio(hass)
-            return
-    _LOGGER.info("Package delle VMC aggiornato senza riavvio: %s", ", ".join(servizi))
-    if "automation.reload" in servizi:
-        await _async_riprendi_riallineamento(hass)
-
-
-async def _async_riprendi_riallineamento(hass: HomeAssistant) -> None:
-    """Fa ripartire il riallineamento delle allerte fermato dalla ricarica delle automazioni.
-
-    automation.reload ricrea le automazioni il cui YAML e' cambiato e ferma quelle in corso.
-    Il riallineamento partito all'avvio di Home Assistant, se cambiato, si fermerebbe con la
-    fase diversa da 0, cioe' con inizi e fini delle allerte sospesi fino al riavvio
-    successivo. Riparte da capo, come dopo un riavvio, solo se e' fermo nelle fasi 1-3."""
-    registro = er.async_get(hass)
-    for voce in list(registro.entities.values()):
-        if voce.domain != "automation" or voce.platform != "automation":
-            continue
-        trovato = _RIALLINEAMENTO_RE.match(voce.unique_id)
-        if trovato is None:
-            continue
-        automazione = hass.states.get(voce.entity_id)
-        fase = hass.states.get(
-            f"input_number.vmc_{trovato.group(1)}_fase_riallineamento_al_riavvio"
-        )
-        if automazione is None or fase is None:
-            continue
-        try:
-            # fasi 1-3: allerte ancora sospese; con la fase 4 sono gia' tutte attive
-            sospese = 1 <= float(fase.state) <= 3
-        except ValueError:
-            continue  # fase non ancora letta: nessun riallineamento in corso da riprendere
-        if not sospese or automazione.attributes.get("current", 0):
-            continue  # nessuna allerta sospesa, oppure riallineamento non cambiato e in corso
-        _LOGGER.info(
-            "Riallineamento delle allerte ripartito dopo la ricarica delle automazioni: %s",
-            voce.entity_id,
-        )
-        # blocking=False: l'automazione dura 200 s, la ricarica non la aspetta
-        await hass.services.async_call(
-            "automation",
-            "trigger",
-            {"entity_id": voce.entity_id, "skip_condition": True},
-            blocking=False,
-        )
-
-
-@callback
-def _controlla_packages_dopo_avvio(hass: HomeAssistant, entry: ConfigEntry, nome: str) -> None:
-    """File gia' installati ma entita' assenti: i package non sono abilitati."""
-
-    @callback
-    def _controlla(_hass: HomeAssistant) -> None:
-        # un avviso per ogni VMC: una VMC caricata non cancella l'avviso di un'altra
-        ir.async_delete_issue(hass, DOMAIN, ISSUE_PACKAGES)  # avviso unico fino alla 9.0.0b18
-        if hass.states.get(f"sensor.vmc_{nome}_status_ip") is None:
-            ir.async_create_issue(
-                hass,
-                DOMAIN,
-                f"{ISSUE_PACKAGES}_{nome}",
-                is_fixable=False,
-                is_persistent=False,
-                severity=ir.IssueSeverity.ERROR,
-                translation_key=ISSUE_PACKAGES,
-                translation_placeholders={"nome": nome},
-                learn_more_url="https://www.home-assistant.io/docs/configuration/packages/",
-            )
-        else:
-            ir.async_delete_issue(hass, DOMAIN, f"{ISSUE_PACKAGES}_{nome}")
-            if nome == NOME_MASTER:
-                _togli_entita_non_piu_fornite(hass)
-
-    entry.async_on_unload(async_at_started(hass, _controlla))
-
-
-@callback
-def _togli_entita_non_piu_fornite(hass: HomeAssistant) -> None:
-    """Dopo la migrazione della Master 8.6.0 (o l'aggiornamento dell'integrazione) le
-    entita' della Finestra Clona e della Finestra Prima Installazione VMC non sono piu'
-    fornite: si tolgono dal registro, solo se nessuno le fornisce."""
-    registro = er.async_get(hass)
-    for entity_id in (*ENTITA_FINESTRA_CLONA, *ENTITA_PRIMA_INSTALLAZIONE):
-        if registro.async_get(entity_id) is None:
-            continue
-        stato = hass.states.get(entity_id)
-        if stato is None or stato.attributes.get("restored"):
-            registro.async_remove(entity_id)
-
-
-@lru_cache(maxsize=1)
-def _leggi_scheda_master() -> str:
-    # newline="" mantiene i CRLF del file, come gli script della release 8.6.0
-    with open(_CARTELLA / "package" / FILE_SCHEDA, encoding="utf-8", newline="") as file:
-        return file.read()
-
-
-@lru_cache(maxsize=16)
-def _configurazione_scheda(nome: str, ip: str) -> dict[str, Any]:
-    return yaml.safe_load(adatta_link_repository(per_vmc(_leggi_scheda_master(), nome, ip)))
+@lru_cache(maxsize=32)
+def _configurazione_scheda(nome: str, ip: str, nativa: bool = True) -> dict[str, Any]:
+    """La scheda della VMC: quella nativa, oppure quella della beta finche' la VMC aspetta
+    il passaggio (le entita' sono ancora quelle del package)."""
+    file = f"nativa/{FILE_SCHEDA_NATIVA}" if nativa else f"package/{FILE_SCHEDA}"
+    return yaml.safe_load(
+        adatta_link_repository(per_vmc(_leggi_scheda(file), nome, ip), REPOSITORY)
+    )
 
 
 class VmcSchedaView(HomeAssistantView):
@@ -1112,10 +904,12 @@ class VmcSchedaView(HomeAssistantView):
         if voce is None or voce.domain != DOMAIN:
             return self.json_message("VMC non trovata", HTTPStatus.NOT_FOUND)
         if voce.disabled_by is not None:
-            # il package della voce disabilitata non si aggiorna piu': la scheda della
-            # versione installata potrebbe non corrispondere
             return self.json_message("VMC disabilitata", HTTPStatus.CONFLICT)
+        dati = getattr(voce, "runtime_data", None)
+        nativa = not (
+            isinstance(dati, DatiVoce) and dati.situazione != passaggio.NATIVA
+        )
         configurazione = await hass.async_add_executor_job(
-            _configurazione_scheda, voce.data[CONF_NOME], voce.data[CONF_HOST]
+            _configurazione_scheda, voce.data[CONF_NOME], voce.data[CONF_HOST], nativa
         )
         return self.json(configurazione)
