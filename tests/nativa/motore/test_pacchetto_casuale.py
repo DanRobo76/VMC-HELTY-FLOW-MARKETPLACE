@@ -7,7 +7,8 @@ stesso processo, con lo stesso orologio fermo:
 1. con le integrazioni ``automation`` e ``script`` di Home Assistant che leggono i file
    del package come li scrive l'integrazione per la Master (``installatore.genera_file``)
    e come li legge Home Assistant (``parse_yaml``);
-2. con il motore tradotto (``Motore(hass).avvia()``, il codice di ``generato/``).
+2. con il motore tradotto (il codice di ``generato/``: le automazioni come logiche
+   dell'integrazione, gli script come entità ``script`` con ``fase3.MotoreFase3``).
 
 Il resto del package è lo stesso nelle due corse: gli aiutanti veri (``input_*`` e
 ``timer``, con stati ripristinati a caso all'avvio), i sensori modello veri
@@ -25,19 +26,25 @@ cambio.
 Gli eventi: cambi degli aiutanti come dalla scheda (con un utente, a volte più tocchi
 nello stesso istante), letture della VMC (stato di ventilazione, CO2, VOC, umidità,
 temperature, ``unavailable``, Black-Out e ripartenza, telecomando), sensori esterni,
-script e comandi di velocità chiamati dalla scheda, timer, ``automation.trigger`` e il
-tempo che passa (pochi decimi di secondo o salti di molti minuti, che attraversano i
-trigger a orario). Il tempo avanza da un timer all'altro (un microsecondo dopo l'istante
-in cui scade, come con un orologio vero). Se nello stesso istante arrivano più di
-``LIMITE_ISTANTE`` eventi (automazioni che si richiamano a vicenda senza fine) il banco
-spegne e riaccende tutte le automazioni, come farebbe un utente, e la sequenza continua:
-anche il motore deve entrare nel ciclo allo stesso evento.
+script e comandi di velocità chiamati dalla scheda, timer e il tempo che passa (pochi
+decimi di secondo o salti di molti minuti, che attraversano i trigger a orario). Il
+tempo avanza da un timer all'altro (un microsecondo dopo l'istante in cui scade, come
+con un orologio vero). Se nello stesso istante arrivano più di ``LIMITE_ISTANTE`` eventi
+(automazioni che si richiamano a vicenda senza fine) la corsa finisce lì: anche il
+motore deve entrare nel ciclo allo stesso evento. (Fino alla 9.0.0b45 il banco spegneva
+e riaccendeva tutte le automazioni, come un utente, e la sequenza continuava: le logiche
+del motore non hanno ``automation.turn_off`` e ``automation.turn_on``, né
+``automation.trigger``, che non è più tra i passi.)
 
-Si confrontano, in quest'ordine: le chiamate ai servizi finti, i cambi di stato di
-tutte le entità, stato e attributi finali di automazioni e script (``last_triggered``,
-``current``...), le notifiche persistenti e infine il registro completo degli eventi;
-i contesti diventano numeri d'ordine (si confronta chi ha causato cosa). Il rapporto di
-copertura (automazioni e script avviati, con i conteggi esatti) si stampa e, con
+Gli stati delle logiche del motore (``automation.*``, fuori dalla macchina degli stati)
+entrano nel registro nel punto del bus dei loro state_changed
+(``fase3.osserva_logiche``). Si confrontano, in quest'ordine: le chiamate ai servizi
+finti, i cambi di stato di tutte le entità e delle logiche, stato e attributi finali di
+automazioni e script (``last_triggered``, ``current``...), le notifiche persistenti e
+infine il registro completo degli eventi, senza ``automation_triggered`` (le logiche non
+lo hanno); i contesti diventano numeri d'ordine (si confronta chi ha causato cosa). Il
+rapporto di copertura (automazioni avviate, dagli ``automation_triggered`` di Home
+Assistant, e script avviati, con i conteggi esatti) si stampa e, con
 ``VMC_RAPPORTO=<file>``, si scrive in JSON.
 
     VMC_PASSI=2000 VMC_SEME=7 pytest tests/nativa/motore/test_pacchetto_casuale.py -s
@@ -107,6 +114,7 @@ from custom_components.vmc_master.nativa.motore.definizioni import (
 from custom_components.vmc_master.nativa.motore.ha import Motore
 from custom_components.vmc_master.nativa.motore.interni import nome_valido
 from custom_components.vmc_master.nativa.motore.memoria_interna import MemoriaInterna
+from custom_components.vmc_master.nativa.motore.stati_logiche import stati_logiche
 from custom_components.vmc_master.nativa.motore.timer import (
     EVENTI_TIMER,
     bus_del_motore,
@@ -122,6 +130,7 @@ from .banco_memoria import (
     senza_interni,
     servizi_misti,
 )
+from .fase3 import MotoreFase3, osserva_logiche, personalizzato
 from .test_avvio_motore import _ripristina
 from .test_semantica import _carica, _gira
 from .traduci import (
@@ -421,7 +430,6 @@ class Generatore:
         self.orari = sorted(pkg["input_datetime"])
         self.timer = sorted(pkg["timer"])
         self.script = sorted(pkg["script"])
-        self.automazioni = list(_automazioni())
 
     # --- valori -----------------------------------------------------------------------
 
@@ -536,7 +544,6 @@ class Generatore:
             (6, self.passo_comando),
             (8, self.passo_script),
             (2, self.passo_timer),
-            (1, self.passo_automazione),
         ]
         pesi = [p for p, _ in tipi]
         while len(prova.passi) < passi:
@@ -780,15 +787,6 @@ class Generatore:
         if servizio == "start" and r.random() < 0.7:
             dati["duration"] = r.choice([1, 2, 5, 10, 30, 70])
         return ("servizio", "timer", servizio, dati)
-
-    def passo_automazione(self, _adesso: datetime) -> tuple[Any, ...]:
-        r = self.rng
-        entita = r.choice(self.automazioni)
-        servizio = r.choice(["trigger", "trigger", "turn_off", "turn_on"])
-        dati: dict[str, Any] = {"entity_id": entita}
-        if servizio == "trigger":
-            dati["skip_condition"] = r.choice([True, False])
-        return ("chiama", "automation", servizio, dati, False)
 
 
 # --- una corsa ---------------------------------------------------------------------------
@@ -1082,6 +1080,8 @@ async def _corsa_ciclo(
     ritmo = Ritmo()
     con_timer_del_motore = motore and timer_motore
     esito["tolti"] = Counter()
+    avviate: list[tuple[str, str]] = []
+    esito["automazioni_avviate"] = avviate
     m: Motore | None = None
     # fase 4, memoria interna: lo smistatore scrive nello stesso registro
     smistatore: Smistatore | None = None
@@ -1103,6 +1103,13 @@ async def _corsa_ciclo(
         @callback
         def annota(evento: Event) -> None:
             if not annota_attivo:
+                return
+            if evento.event_type == "automation_triggered":
+                # solo con Home Assistant (le logiche del motore non hanno l'evento):
+                # fuori dal registro, per il rapporto di copertura
+                avviate.append(
+                    (evento.data["entity_id"], str(evento.data.get("source")))
+                )
                 return
             if timer_motore and _del_package(evento):
                 # con i timer del motore: nella corsa di Home Assistant i cambi di stato
@@ -1144,6 +1151,7 @@ async def _corsa_ciclo(
             )
 
         hass.bus.async_listen(MATCH_ALL, annota)
+        smetti = osserva_logiche(hass, annota) if motore else None
         assert await async_setup_component(hass, "homeassistant", {})
         assert await async_setup_component(hass, "persistent_notification", {})
         for dominio in AIUTANTI:
@@ -1338,7 +1346,9 @@ async def _corsa_ciclo(
                 )
             if memoria_interna is not None:
                 assert modelli_entita_con_memoria(hass, memoria_interna)
-            m = Motore(hass, memoria=memoria_interna)
+            # il codice di generato/ (senza comandi) con gli script come entità
+            fase3 = getattr(codice, "comandi", None) is None
+            m = (MotoreFase3 if fase3 else Motore)(hass, memoria=memoria_interna)
             await m.avvia(crea=codice.crea, **argomenti)
             if m.c.comandi is not None:
 
@@ -1398,7 +1408,8 @@ async def _corsa_ciclo(
                     bus_del_motore(hass).async_listen(tipo, evento_del_motore)
         elif motore:
             assert not memoria, "con la memoria interna serve il codice tradotto"
-            await Motore(hass).avvia()
+            m = MotoreFase3(hass)
+            await m.avvia()
         else:
             assert await async_setup_component(
                 hass, "script", {"script": pkg["script"]}
@@ -1508,22 +1519,6 @@ async def _corsa_ciclo(
                     leggi(SENSORI)
             await _lavora(hass, ritmo)
 
-        async def interrompi_ciclo() -> None:
-            """Un ciclo senza fine: come un utente che spegne e riaccende tutte le
-            automazioni (le esecuzioni in corso e in coda si fermano), poi la sequenza
-            continua. Se il ciclo riparte nello stesso istante la corsa finisce lì."""
-            istante = norma(ritmo.istante)
-            registro.append((istante, "ciclo infinito", ritmo.eventi))
-            if istante in esito["cicli_infiniti"]:
-                raise CicloInfinito(ritmo.istante)
-            esito["cicli_infiniti"].append(istante)
-            ritmo.eventi = 0
-            for servizio in ("turn_off", "turn_on"):
-                await hass.services.async_call(
-                    "automation", servizio, {"entity_id": "all"}, blocking=True
-                )
-            await _lavora(hass, ritmo)
-
         async def esegui() -> None:
             registro.append(("avvio",))
             avvio = asyncio.ensure_future(hass.async_start())
@@ -1532,27 +1527,30 @@ async def _corsa_ciclo(
             registro.append(("avviato",))
 
             for indice, passo in enumerate(prova.passi):
-                try:
-                    await passo_singolo(indice, passo)
-                except CicloInfinito:
-                    await interrompi_ciclo()
+                await passo_singolo(indice, passo)
             # coda: le esecuzioni in corso finiscono (o restano in attesa) per un minuto
             esito["fermate"] += await _avanza(hass, freezer, 60_000_000, ritmo)
 
         try:
             await esegui()
         except CicloInfinito:
-            # un ciclo che non si ferma (all'avvio, nella coda o di nuovo nello stesso
-            # istante): Home Assistant e il motore devono fermarsi allo stesso evento e
-            # si confronta quello che è successo fino a lì
+            # un ciclo senza fine (le logiche del motore non si spengono e riaccendono
+            # come le automazioni): Home Assistant e il motore devono fermarsi allo stesso
+            # evento e si confronta quello che è successo fino a lì
+            esito["cicli_infiniti"].append(norma(ritmo.istante))
             esito["corsa_interrotta"] = norma(ritmo.istante)
             registro.append((norma(ritmo.istante), "corsa interrotta", ritmo.eventi))
         registro.append(("fine",))
         annota_attivo = False
 
+        logiche = [
+            s
+            for s in (personalizzato(hass, v) for v in stati_logiche(hass).stati.values())
+            if s is not None
+        ]
         esito["stati"] = sorted(
             (s.entity_id, s.state, norma(dict(s.attributes)), norma(s.last_changed))
-            for s in hass.states.async_all()
+            for s in [*hass.states.async_all(), *logiche]
             if not (timer_motore and s.entity_id.startswith("timer.vmc_master_"))
             and not (fedeli and s.entity_id.startswith("script."))
             and s.entity_id not in interni
@@ -1605,13 +1603,16 @@ async def _corsa_ciclo(
         esito["notifiche_finali"] = norma(
             {k: dict(v) for k, v in pn._async_get_or_create_notifications(hass).items()}
         )
-        await hass.services.async_call(
-            "automation", "turn_off", {"entity_id": "all"}, blocking=True
-        )
-        if m is not None and m.c.interni is not None:
-            for interno in m.c.interni.script.values():
-                await interno.ferma()
+        if m is not None:
+            # le logiche si fermano (e con loro gli script interni)
+            assert smetti is not None
+            smetti()
+            await m.ferma()
         else:
+            await hass.services.async_call(
+                "automation", "turn_off", {"entity_id": "all"}, blocking=True
+            )
+        if m is None or m.c.interni is None:
             await hass.services.async_call(
                 "script", "turn_off", {"entity_id": "all"}, blocking=True
             )
@@ -1666,19 +1667,17 @@ def _confronta(atteso: list[Any], ottenuto: list[Any], cosa: str) -> str | None:
 
 
 def copertura(esito: dict[str, Any]) -> dict[str, Any]:
-    """Automazioni e script avviati (eventi automation_triggered e script_started) e
-    trigger diversi dell'Automazione VMC Master."""
+    """Automazioni e script avviati (eventi automation_triggered della corsa di Home
+    Assistant e script_started) e trigger diversi dell'Automazione VMC Master."""
     automazioni: Counter[str] = Counter()
     script: Counter[str] = Counter()
     trigger_principale: Counter[str] = Counter()
+    for entita, origine in esito["automazioni_avviate"]:
+        automazioni[entita] += 1
+        if entita == AUTOMAZIONE_VMC:
+            trigger_principale[origine] += 1
     for voce in esito["registro"]:
-        if len(voce) < 3:
-            continue
-        if voce[1] == "automation_triggered":
-            automazioni[voce[2]["entity_id"]] += 1
-            if voce[2]["entity_id"] == "automation.automazione_vmc_master":
-                trigger_principale[str(voce[2].get("source"))] += 1
-        elif voce[1] == "script_started":
+        if len(voce) > 2 and voce[1] == "script_started":
             script[voce[2]["entity_id"]] += 1
     tutte = _automazioni()
     tutti = [f"script.{s}" for s in _package()["script"]]
@@ -1723,8 +1722,8 @@ def _stampa_copertura(prova: Prova, dati: dict[str, Any]) -> None:
     )
     if dati["cicli_infiniti"]:
         print(
-            f"CICLI INFINITI (più di {LIMITE_ISTANTE} eventi nello stesso istante, "
-            f"automazioni spente e riaccese) a {dati['cicli_infiniti']} s"
+            f"CICLO INFINITO (più di {LIMITE_ISTANTE} eventi nello stesso istante) "
+            f"a {dati['cicli_infiniti']} s"
         )
     if dati["corsa_interrotta"] is not None:
         print(f"CORSA INTERROTTA a {dati['corsa_interrotta']} s")

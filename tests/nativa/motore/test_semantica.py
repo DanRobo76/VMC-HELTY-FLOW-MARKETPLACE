@@ -1819,6 +1819,19 @@ def _norma(valore: Any) -> Any:
     return valore
 
 
+def della_pulizia(evento: Event) -> bool:
+    """Un evento delle automazioni alla pulizia di una prova: con Home Assistant
+    ``automation.turn_off`` e lo stato ``off`` delle entità, con il motore lo stato delle
+    logiche che si fermano (``Motore.ferma``, che lo toglie). Non si confronta: le logiche
+    non hanno ``automation.turn_off``."""
+    dati = evento.data
+    if evento.event_type == EVENT_CALL_SERVICE:
+        return dati["domain"] == "automation"
+    return evento.event_type == EVENT_STATE_CHANGED and dati["entity_id"].startswith(
+        "automation."
+    )
+
+
 async def _gira(hass: HomeAssistant) -> None:
     """Il ciclo degli eventi lavora finché ha qualcosa di pronto (senza aspettare): come
     asyncio, un timer è dovuto se scade prima di ``time() + clock_resolution``."""

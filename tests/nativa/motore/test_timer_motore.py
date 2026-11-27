@@ -33,7 +33,6 @@ import pytest
 from freezegun.api import FrozenDateTimeFactory
 from homeassistant.const import EVENT_STATE_CHANGED
 from homeassistant.core import Context, Event, HomeAssistant, State, callback
-from homeassistant.core_config import async_process_ha_core_config
 from homeassistant.exceptions import HomeAssistantError, TemplateError
 from homeassistant.setup import async_setup_component
 from homeassistant.util import dt as dt_util
@@ -62,9 +61,8 @@ CONFIGURAZIONE: dict[str, Any] = {
     "t3": None,
     "t4": {"duration": "00:01:10", "restore": False, "name": "Quarto"},
 }
-PERSONALIZZATI: dict[str, Any] = {
-    "timer.t2": {"friendly_name": "Secondo", "icon": "mdi:clock", "zona": "cucina"}
-}
+# Niente attributi personalizzati («homeassistant: customize:»): i timer del motore non sono
+# entità e non li hanno (il package personalizza solo le icone delle automazioni)
 TIMER = [f"timer.{oggetto}" for oggetto in CONFIGURAZIONE]
 ATTRIBUTI = (
     "duration",
@@ -76,7 +74,6 @@ ATTRIBUTI = (
     "friendly_name",
     "icon",
     "finished_at",
-    "zona",
 )
 UTENTE_SCONOSCIUTO = "0123456789abcdef0123456789abcdef"
 
@@ -264,8 +261,6 @@ async def _corsa(
             registro.append(_norma(voce, contesti))
 
         assert await async_setup_component(hass, "homeassistant", {})
-        # gli attributi personalizzati (``homeassistant: customize:``)
-        await async_process_ha_core_config(hass, {"customize": PERSONALIZZATI})
         c = Contesto(hass)
         if motore:
             timer = TimerDelMotore(c, CONFIGURAZIONE)

@@ -64,6 +64,7 @@ from .test_semantica import (
     _carica,
     _gira,
     _norma,
+    della_pulizia,
     moduli,  # noqa: F401
 )
 from .traduci import leggi_package, traduci_configurazione
@@ -724,8 +725,12 @@ async def _corsa(
         if prova["ripristino"]:
             _ripristina(hass, prova["ripristino"])
 
+        pulizia = False
+
         @callback
         def annota(evento: Event) -> None:
+            if pulizia and della_pulizia(evento):
+                return
             if evento.event_type in DI_SETUP:
                 di_setup.append((evento.event_type, _norma(dict(evento.data))))
                 return
@@ -742,16 +747,12 @@ async def _corsa(
                 )
             )
 
-        smetti = [hass.bus.async_listen(MATCH_ALL, annota)]
+        hass.bus.async_listen(MATCH_ALL, annota)
         if motore:
             # gli stati delle logiche (le automazioni del motore) non sono nella macchina
             # degli stati: entrano nel registro nel punto del bus di state_changed
-            smetti.append(
-                stati_logiche(hass).osserva(
-                    callback(
-                        lambda e: annota(e) if e.event_type == EVENT_STATE_CHANGED else None
-                    )
-                )
+            stati_logiche(hass).osserva(
+                callback(lambda e: annota(e) if e.event_type == EVENT_STATE_CHANGED else None)
             )
         assert await async_setup_component(hass, "homeassistant", {})
         for dominio, voci in AIUTANTI.items():
@@ -873,11 +874,10 @@ async def _corsa(
         )
         descrizioni = await async_get_all_descriptions(hass)
         esito["descrizioni"] = _norma(descrizioni.get("script", {}))
-        # la pulizia della prova non si confronta: con Home Assistant spegne le automazioni
-        # (automation.turn_off), con il motore ferma le logiche
-        for togli in smetti:
-            togli()
         if hass.state is CoreState.running:
+            # con Home Assistant spegne le automazioni (automation.turn_off), con il motore
+            # ferma le logiche: i loro stati non si confrontano
+            pulizia = True
             if m is not None:
                 await m.ferma()
             await hass.services.async_call(

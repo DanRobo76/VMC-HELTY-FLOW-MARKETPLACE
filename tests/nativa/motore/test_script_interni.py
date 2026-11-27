@@ -36,7 +36,6 @@ import probatio
 import pytest
 import yaml
 from freezegun.api import FrozenDateTimeFactory
-from homeassistant.components.automation import AutomationEntity
 from homeassistant.const import EVENT_CALL_SERVICE, EVENT_STATE_CHANGED, MATCH_ALL
 from homeassistant.core import (
     Context,
@@ -56,6 +55,7 @@ from pytest_homeassistant_custom_component.common import (
 from custom_components.vmc_master.nativa.client import ErroreVMC
 from custom_components.vmc_master.nativa.motore import generato
 from custom_components.vmc_master.nativa.motore.ha import Motore
+from custom_components.vmc_master.nativa.motore.stati_logiche import stati_logiche
 from custom_components.vmc_master.nativa.pulsanti import PulsanteVMC
 from custom_components.vmc_master.nativa.tabelle import PULSANTI
 
@@ -900,6 +900,12 @@ async def _corsa(
             fine.append((_norma(dt_util.utcnow()), indice))
 
         togli = hass.bus.async_listen(MATCH_ALL, annota)
+        if motore:
+            # gli stati delle logiche (le automazioni del motore) non sono nella macchina
+            # degli stati: entrano nel registro nel punto del bus di state_changed
+            smetti = stati_logiche(hass).osserva(
+                callback(lambda e: annota(e) if e.event_type == EVENT_STATE_CHANGED else None)
+            )
         for indice, passo in enumerate(passi):
             if passo[0] in ("servizio", "scheda"):
                 dominio, nome_servizio = passo[1].split(".")
@@ -928,14 +934,14 @@ async def _corsa(
                 await _avanza(hass, freezer, passo[1])
         togli()
         assert all(compito.done() for compito in compiti)
-        await hass.services.async_call(
-            "automation", "turn_off", {"entity_id": "all"}, blocking=True
-        )
         if m is not None:
-            assert m.c.interni is not None
-            for interno in m.c.interni.script.values():
-                await interno.ferma()
+            smetti()
+            # le logiche si staccano, poi gli script del motore si fermano
+            await m.ferma()
         else:
+            await hass.services.async_call(
+                "automation", "turn_off", {"entity_id": "all"}, blocking=True
+            )
             await hass.services.async_call(
                 "script", "turn_off", {"entity_id": "all"}, blocking=True
             )
@@ -1127,12 +1133,15 @@ async def test_casi_limite(
 
     # se gli altri trigger dell'automazione non si agganciano, si stacca anche il suo
     # aggancio dei comandi
-    async def guasto(self: Any) -> None:
+    async def guasto(*argomenti: Any, **chiavi: Any) -> None:
         raise RuntimeError("trigger guasto")
 
-    monkeypatch.setattr(AutomationEntity, "_async_attach_triggers", guasto)
+    monkeypatch.setattr(
+        "custom_components.vmc_master.nativa.motore.logiche.inizializza_attivazioni",
+        guasto,
+    )
     with pytest.raises(RuntimeError, match="trigger guasto"):
-        await m.automazioni[0]._async_attach_triggers()
+        await m.automazioni[0]._aggancia()
     assert len(comandi._ascoltatori) == ascoltatori
 
     # un indirizzo valido senza modo di cambiarlo è un errore (nessun cambio perso in

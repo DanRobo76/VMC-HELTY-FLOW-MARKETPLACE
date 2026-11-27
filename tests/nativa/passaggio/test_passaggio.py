@@ -25,8 +25,13 @@ Conto delle 342 voci del package (``DOMANI``), esatto:
   (12 pulsanti, 4 interni).
 
 Più i 10 sensori con memoria (stato e lettura di prima dell'interruzione portati), le 14
-automazioni (stessa voce del registro e stesso stato) e i 137 sensori con lo stesso
-entity_id.
+automazioni (logiche del motore con gli entity_id della beta e lo stesso stato, senza
+voce del registro) e i 137 sensori con lo stesso entity_id.
+
+Le automazioni del package della beta della prova sono spente (``initial_state: false``,
+``banco.configurazione_package``) e fino alla 9.0.0b45 il motore le riprendeva spente;
+dalla 9.0.0b46 le logiche girano sempre: nella VMC nativa dopo il passaggio la prova le
+avvia senza trigger (``banco.logiche_spente``), così i valori portati restano come sono.
 """
 
 from __future__ import annotations
@@ -60,6 +65,7 @@ from custom_components.vmc_master.nativa.motore.memoria_interna import (
     CHIAVE_ARCHIVIO as CHIAVE_MEMORIA_INTERNA,
 )
 from custom_components.vmc_master.nativa.motore.memoria_interna import INTERNI
+from custom_components.vmc_master.nativa.motore.stati_logiche import stati_logiche
 from custom_components.vmc_master.nativa.tabelle import DOMANI
 
 from .banco import (
@@ -74,6 +80,7 @@ from .banco import (
     file_scritti,
     imposta_valori_diversi,
     istanza_nuova,
+    logiche_spente,
     riavvio,
     scrivi_package_beta,
     senza_rete,
@@ -225,9 +232,10 @@ async def test_passaggio_di_una_vmc(
         )
         assert (len(confermato["memorie"]), confermato["non_letti"]) == (10, [])
 
-        # C: dopo il riavvio
+        # C: dopo il riavvio (le logiche senza trigger, come le automazioni della beta)
         async with riavvio(beta, [master], config_dir) as nativa:
-            await aggiungi_e_avvia(nativa, [])
+            with logiche_spente():
+                await aggiungi_e_avvia(nativa, [])
             voce_c = nativa.config_entries.async_get_entry(master.entry_id)
             assert voce_c.state is ConfigEntryState.LOADED
             assert voce_c.runtime_data.situazione == passaggio.NATIVA
@@ -246,10 +254,9 @@ async def test_passaggio_di_una_vmc(
                     if DOMANI[k] != "interna"
                 }
                 | set(sensori_b)
-                | automazioni_attese("master")
             )
             assert native == attese
-            assert len(native) == 369 + 14
+            assert len(native) == 369
             assert {e for e in sensori_b if e in native} == set(sensori_b)
 
             # i 241 aiutanti: stesso valore di B
@@ -274,14 +281,17 @@ async def test_passaggio_di_una_vmc(
                 == 10
             )
 
-            # le 14 automazioni: stessa voce del registro (ripresa da HA) e stesso stato
+            # le 14 automazioni: logiche con gli entity_id della beta e lo stesso stato,
+            # senza voce del registro (quelle della beta tolte con la conferma) e senza
+            # entità
             automazioni_c = {
-                e.entity_id: (e.id, nativa.states.get(e.entity_id).state)
-                for e in registro_c.entities.values()
-                if e.domain == "automation"
+                e: s.state for e, s in stati_logiche(nativa).stati.items()
             }
-            assert automazioni_c == automazioni_b
+            assert automazioni_c == {e: s for e, (_, s) in automazioni_b.items()}
             assert len(automazioni_c) == 14
+            assert set(automazioni_c) == automazioni_attese("master")
+            assert [e for e in automazioni_c if registro_c.async_get(e)] == []
+            assert nativa.states.async_entity_ids("automation") == []
 
             # i 34 timer: tutti fermi, anche i 4 attivi in B
             assert {
@@ -476,7 +486,9 @@ async def test_passaggio_di_tre_vmc(
                 assert await async_setup_component(
                     nativa, "automation", {"automation": [AUTOMAZIONE_PERSONALE]}
                 )
-                await aggiungi_e_avvia(nativa, [])
+                # le logiche senza trigger, come le automazioni della beta
+                with logiche_spente():
+                    await aggiungi_e_avvia(nativa, [])
                 registro = er.async_get(nativa)
                 for una, nome in zip(voci, nomi, strict=True):
                     voce_c = nativa.config_entries.async_get_entry(una.entry_id)
@@ -505,7 +517,7 @@ async def test_passaggio_di_tre_vmc(
                 assert nuova.runtime_data.situazione == passaggio.NATIVA
                 assert (
                     len(er.async_entries_for_config_entry(registro, nuova.entry_id))
-                    == 369 + 14
+                    == 369
                 )
                 assert (
                     ir.async_get(nativa).async_get_issue(DOMAIN, ISSUE_PASSAGGIO)
@@ -557,7 +569,11 @@ async def test_cartella_gia_tolta_con_voci_rimaste(
             10,
         )
 
-        passo = await conferma_dalla_riparazione(beta)
+        # la VMC nativa parte con la conferma: le logiche senza trigger, come le
+        # automazioni della beta
+        with logiche_spente():
+            passo = await conferma_dalla_riparazione(beta)
+            await beta.async_block_till_done()
 
         assert passo["type"] == "create_entry"  # niente riavvio
         assert ir.async_get(beta).async_get_issue(DOMAIN, ISSUE_RIAVVIO) is None

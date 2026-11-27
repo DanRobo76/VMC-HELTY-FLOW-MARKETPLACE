@@ -1,8 +1,9 @@
 """Casi rari del passaggio e della VMC nativa (Home Assistant vero): cartella della beta
-che non si toglie, VMC in attesa eliminata, avvio del motore che non riesce,
-automazione del motore disattivata dall'utente, aiutante dell'utente con il prefisso
-della VMC, cambio d'IP dalla scheda per una voce non avviata, scheda di una VMC
-disattivata, dati salvati non validi."""
+che non si toglie, VMC in attesa eliminata, avvio del motore che non riesce, aiutante
+dell'utente con il prefisso della VMC, cambio d'IP dalla scheda per una voce non
+avviata, scheda di una VMC disattivata, dati salvati non validi. (L'automazione del
+motore disattivata dall'utente nel registro delle entità non c'è più: dalla 9.0.0b46 le
+automazioni del motore sono logiche senza entità, test_b45_pagina_automazione.py.)"""
 
 from __future__ import annotations
 
@@ -26,14 +27,11 @@ from custom_components.vmc_master.passaggio import DOMANI
 
 from .banco import (
     aggiungi_e_avvia,
-    automazioni_attese,
     conferma_dalla_riparazione,
     scrivi_package_beta,
     senza_rete,
     voce,
 )
-
-AUTOMAZIONE = "automation.vmc_master_esclusivita_finestre_opzioni"
 
 
 @pytest.fixture(autouse=True)
@@ -109,27 +107,6 @@ async def test_avvio_del_motore_che_non_riesce(hass: HomeAssistant) -> None:
         await aggiungi_e_avvia(hass, [master])
     assert master.state is ConfigEntryState.SETUP_ERROR
     assert master.runtime_data.vmc is None
-
-
-@pytest.mark.parametrize("expected_lingering_timers", [True])
-async def test_automazione_del_motore_disattivata(hass: HomeAssistant) -> None:
-    """Un'automazione del motore disattivata dall'utente: non gira, resta legata alla
-    voce della VMC (si toglie con lei) e la VMC si ricarica senza errori."""
-    master = voce("master")
-    await aggiungi_e_avvia(hass, [master])
-    registro = er.async_get(hass)
-    registro.async_update_entity(AUTOMAZIONE, disabled_by=er.RegistryEntryDisabler.USER)
-    for _ in range(
-        2
-    ):  # la seconda ricarica ferma un motore con l'automazione non aggiunta
-        assert await hass.config_entries.async_reload(master.entry_id)
-        await hass.async_block_till_done()
-        assert hass.states.get(AUTOMAZIONE) is None
-        assert registro.async_get(AUTOMAZIONE).config_entry_id == master.entry_id
-    assert master.state is ConfigEntryState.LOADED
-    assert await hass.config_entries.async_remove(master.entry_id)
-    await hass.async_block_till_done()
-    assert [e for e in automazioni_attese("master") if registro.async_get(e)] == []
 
 
 async def test_cambio_ip_dalla_scheda_casi_rari(hass: HomeAssistant) -> None:

@@ -24,7 +24,9 @@ from homeassistant.components.script.config import ScriptConfig
 from homeassistant.components.script.const import DOMAIN as DOMINIO_SCRIPT
 from homeassistant.components.script.entity import ScriptEntity
 from homeassistant.components.trace import TRACE_CONFIG_SCHEMA
-from homeassistant.core import HomeAssistant
+from homeassistant.const import EVENT_STATE_CHANGED
+from homeassistant.core import CALLBACK_TYPE, Event, HomeAssistant, State, callback
+from homeassistant.core_config import DATA_CUSTOMIZE
 from homeassistant.helpers.entity_component import EntityComponent
 from homeassistant.helpers.typing import ConfigType
 from homeassistant.setup import async_setup_component
@@ -33,6 +35,7 @@ from custom_components.vmc_master.nativa.motore.contesto import Contesto
 from custom_components.vmc_master.nativa.motore.definizioni import Automazione, Script
 from custom_components.vmc_master.nativa.motore.esecuzione import ComeScript, Sequenza
 from custom_components.vmc_master.nativa.motore.ha import Motore, ScriptComeEntita
+from custom_components.vmc_master.nativa.motore.stati_logiche import stati_logiche
 
 
 def _tracce() -> dict[str, Any]:
@@ -145,3 +148,53 @@ class MotoreFase3(Motore):
         await super().avvia(
             crea, script_come_entita=script_come_entita(configurazione), **argomenti
         )
+
+
+def personalizzato(hass: HomeAssistant, stato: State | None) -> State | None:
+    """Lo stato di una logica del motore (non è nella macchina degli stati) come Home
+    Assistant scrive quello di un'entità: con gli attributi di «homeassistant: customize»
+    (le icone delle automazioni del package), che nessun modello legge."""
+    personalizza = hass.data.get(DATA_CUSTOMIZE)
+    if stato is None or personalizza is None:
+        return stato
+    if not (extra := personalizza.get(stato.entity_id)):
+        return stato
+    return State(
+        stato.entity_id,
+        stato.state,
+        {**stato.attributes, **extra},
+        stato.last_changed,
+        stato.last_reported,
+        stato.last_updated,
+        stato.context,
+    )
+
+
+def osserva_logiche(
+    hass: HomeAssistant, annota: Callable[[Event[Any]], None]
+) -> CALLBACK_TYPE:
+    """Gli stati delle logiche nel registro di una prova, nel punto del bus dei loro
+    state_changed, come quelli delle entità per un ascoltatore di ``MATCH_ALL`` (che non
+    riceve gli state_reported) e con gli attributi di «homeassistant: customize»
+    (``personalizzato``). Restituisce la funzione che smette di osservare."""
+
+    @callback
+    def annota_logica(evento: Event[Any]) -> None:
+        if evento.event_type != EVENT_STATE_CHANGED:
+            return
+        dati = {
+            **evento.data,
+            "old_state": personalizzato(hass, evento.data["old_state"]),
+            "new_state": personalizzato(hass, evento.data["new_state"]),
+        }
+        annota(
+            Event(
+                evento.event_type,
+                dati,
+                evento.origin,
+                evento.time_fired_timestamp,
+                evento.context,
+            )
+        )
+
+    return stati_logiche(hass).osserva(annota_logica)

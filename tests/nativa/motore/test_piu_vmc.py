@@ -74,8 +74,10 @@ from pytest_homeassistant_custom_component.common import (
 from custom_components.vmc_master.const import NOME_MASTER, NOME_RE
 from custom_components.vmc_master.installatore import genera_file
 from custom_components.vmc_master.nativa.motore.ha import Motore
+from custom_components.vmc_master.nativa.motore.stati_logiche import stati_logiche
 from custom_components.vmc_master.trasforma import rinomina
 
+from .fase3 import MotoreFase3, osserva_logiche, personalizzato
 from .test_avvio_motore import _registro_entita
 from .test_semantica import PASSO, _gira
 from .traduci import _Caricatore, leggi_package
@@ -100,10 +102,11 @@ AIUTANTI = (
     "input_datetime",
     "timer",
 )
+# Senza ``automation_triggered``: le automazioni del motore sono logiche dell'integrazione,
+# senza l'evento (l'istante in cui partono è nel loro stato: ``last_triggered``, ``current``)
 EVENTI = {
     EVENT_STATE_CHANGED,
     EVENT_CALL_SERVICE,
-    "automation_triggered",
     "script_started",
     "timer.started",
     "timer.finished",
@@ -396,6 +399,15 @@ async def _avanza(
         await _gira(hass)
 
 
+def _stati(hass: HomeAssistant, *domini: str) -> list[Any]:
+    """Gli stati (di ``domini``, o tutti) con quelli delle logiche del motore."""
+    stati = [
+        *hass.states.async_all(domini or None),
+        *(personalizzato(hass, s) for s in stati_logiche(hass).stati.values()),
+    ]
+    return sorted((s.entity_id, s.state, _norma(dict(s.attributes))) for s in stati)
+
+
 async def _corsa(freezer: FrozenDateTimeFactory, *, motore: bool) -> dict[str, Any]:
     freezer.move_to(INIZIO)
     registro: list[Any] = []
@@ -510,9 +522,11 @@ async def _corsa(freezer: FrozenDateTimeFactory, *, motore: bool) -> dict[str, A
         for nome in NOMI:
             modelli += _file(nome)["package"]["template"]
         assert await async_setup_component(hass, "template", {"template": modelli})
+        motori: list[Motore] = []
         if motore:
             for nome in NOMI:
-                await Motore(hass, nome).avvia()
+                motori.append(MotoreFase3(hass, nome))
+                await motori[-1].avvia()
         else:
             script: dict[str, Any] = {}
             automazioni: list[Any] = []
@@ -528,6 +542,7 @@ async def _corsa(freezer: FrozenDateTimeFactory, *, motore: bool) -> dict[str, A
             )
         await hass.async_block_till_done()
         esito["entita"] = _registro_entita(hass)
+        esito["logiche"] = {a.entity_id for m in motori for a in m.automazioni}
         # le descrizioni dei servizi script.<chiave> (async_set_service_schema degli script)
         esito["descrizioni"] = sorted(
             (servizio, _norma(descrizione))
@@ -536,10 +551,7 @@ async def _corsa(freezer: FrozenDateTimeFactory, *, motore: bool) -> dict[str, A
             ].items()
             if dominio == "script"
         )
-        esito["iniziali"] = sorted(
-            (s.entity_id, s.state, _norma(dict(s.attributes)))
-            for s in hass.states.async_all(("automation", "script"))
-        )
+        esito["iniziali"] = _stati(hass, "automation", "script")
 
         @callback
         def annota(evento: Event) -> None:
@@ -559,6 +571,8 @@ async def _corsa(freezer: FrozenDateTimeFactory, *, motore: bool) -> dict[str, A
             )
 
         togli = hass.bus.async_listen(MATCH_ALL, annota)
+
+        smetti = osserva_logiche(hass, annota)
         avvio = asyncio.ensure_future(hass.async_start())
         for _ in range(100_000):
             await _gira(hass)
@@ -590,10 +604,10 @@ async def _corsa(freezer: FrozenDateTimeFactory, *, motore: bool) -> dict[str, A
             else:
                 await _avanza(hass, freezer, passo[1])
         togli()
-        esito["finali"] = sorted(
-            (s.entity_id, s.state, _norma(dict(s.attributes)))
-            for s in hass.states.async_all()
-        )
+        smetti()
+        esito["finali"] = _stati(hass)
+        for m in motori:
+            await m.ferma()
         for dominio in ("automation", "script", "timer"):
             await hass.services.async_call(
                 dominio,
@@ -686,7 +700,15 @@ async def test_tre_vmc_come_home_assistant(freezer: FrozenDateTimeFactory) -> No
     ):
         assert chiamate[servizio_atteso], servizio_atteso
     assert chiamate["shell_command.vmc_masterino_velocita_3"] == 2
-    _confronta(atteso["entita"], ottenuto["entita"], "registri delle entità")
+    # le automazioni del motore sono logiche, senza voci nel registro delle entità
+    automazioni = {voce[0] for voce in atteso["entita"] if voce[0].startswith("automation.")}
+    assert len(automazioni) == 3 * 14
+    assert ottenuto["logiche"] == automazioni
+    _confronta(
+        [voce for voce in atteso["entita"] if voce[0] not in automazioni],
+        ottenuto["entita"],
+        "registri delle entità",
+    )
     _confronta(
         atteso["descrizioni"], ottenuto["descrizioni"], "descrizioni dei servizi"
     )
