@@ -17,10 +17,11 @@ simulatore. Il motore dell'integrazione nativa (``nativa/assemblaggio.py``) usa 
 
 Il modulo ``sensori.py`` ha in più i sensori template del package (sezione ``template:``
 senza trigger) con la configurazione che Home Assistant valida e i modelli tradotti al
-posto dei Template: l'assemblaggio ne fa entità ``StateSensorEntity`` e
-``StateBinarySensorEntity`` di Home Assistant, così i sensori si ricalcolano negli stessi
-istanti e nello stesso ordine dei sensori template di oggi (ognuno segue le entità che il
-suo modello ha letto l'ultima volta, timer del motore compresi).
+posto dei Template: l'assemblaggio ne fa entità ``SensoreModello`` e ``BinarioModello``
+dell'integrazione (come i sensori template di Home Assistant), così i sensori si
+ricalcolano negli stessi istanti e nello stesso ordine dei sensori template di oggi
+(ognuno segue le entità che il suo modello ha letto l'ultima volta, timer del motore
+compresi).
 
 Si rigenera con ``VMC_RIGENERA=1 pytest tests/nativa/motore/test_traduzione_fase4.py``.
 """

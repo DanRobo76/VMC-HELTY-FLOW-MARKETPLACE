@@ -88,8 +88,10 @@ def test_integrazioni_importate_nel_manifest() -> None:
     manifest = json.loads((CC / "manifest.json").read_text(encoding="utf-8"))
     dichiarate = set(manifest.get("dependencies", [])) | set(manifest.get("after_dependencies", []))
     importate = _integrazioni_importate()
-    # la lettura trova davvero gli import (le tre del 27-11-2026 comprese)
-    assert {"logger", "template", "trace", "sensor"} <= set(importate)
+    # la lettura trova davvero gli import (logger e trace del 27-11-2026 compresi); dalla
+    # b46 nessun modulo importa l'integrazione template (sensori_modello.py)
+    assert {"logger", "trace", "sensor"} <= set(importate)
+    assert "template" not in importate
     mancanti = {
         nome: sorted(file)
         for nome, file in importate.items()
@@ -99,7 +101,9 @@ def test_integrazioni_importate_nel_manifest() -> None:
 
 
 def test_after_dependencies_senza_doppioni() -> None:
-    """after_dependencies: solo le tre integrazioni importate, mai ripetute fra le dependencies."""
+    """after_dependencies: le integrazioni importate (logger, trace) e template, mai ripetute fra
+    le dependencies. Template non è più importata dalla b46: nel manifest resta l'ordine di avvio
+    dopo l'integrazione template (il package della beta) che c'era dalla b44."""
     manifest = json.loads((CC / "manifest.json").read_text(encoding="utf-8"))
     assert manifest["after_dependencies"] == ["logger", "template", "trace"]
     assert not set(manifest["after_dependencies"]) & set(manifest["dependencies"])

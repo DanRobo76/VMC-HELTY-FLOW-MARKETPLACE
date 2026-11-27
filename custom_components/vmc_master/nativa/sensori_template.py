@@ -1,4 +1,4 @@
-"""I sensori template del package come entità di Home Assistant, con i modelli tradotti.
+"""I sensori template del package come entità dell'integrazione, con i modelli tradotti.
 
 Oggi i 121 sensori calcolati della VMC sono sensori template senza trigger:
 Home Assistant ricalcola ognuno quando cambia un'entità che il suo modello ha letto
@@ -12,11 +12,13 @@ in quest'ordine, con gli stati intermedi.
 valori finali, ma un altro ordine e nessuno stato intermedio, e le automazioni possono
 scattare in modo diverso (per esempio due trigger dell'Automazione VMC Master al posto di
 uno, e un comando in più alla VMC). Per avere gli stessi istanti e lo stesso ordine questi
-121 sensori sono le entità template di Home Assistant (``StateSensorEntity``,
-``StateBinarySensorEntity``) con la configurazione che Home Assistant valida dal package
-e i modelli tradotti in Python dal traduttore del motore (``ModelloHA``, che legge le
-entità di domani e i valori interni come il motore) al posto dei Template Jinja:
-``motore/generato_fase4/sensori.py``.
+121 sensori sono entità dell'integrazione che si comportano come le entità template di
+Home Assistant (``SensoreModello``, ``BinarioModello``: sensori_modello.py), con la
+configurazione del package e i modelli tradotti in Python dal traduttore del motore
+(``ModelloHA``, che legge le entità di domani e i valori interni come il motore) al posto
+dei Template Jinja: ``motore/generato_fase4/sensori.py``. I modelli si seguono con
+``segui`` (la firma di ``async_track_template_result``, di norma quella di Home
+Assistant).
 
 Il sensore che legge due timer del motore (Velocità Registrata) li segue come il template
 di oggi segue i timer: le letture dei timer del motore si annotano nel ``RenderInfo`` e
@@ -26,12 +28,11 @@ Home Assistant consegnerebbe il loro ``state_changed``.
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from types import ModuleType
 from typing import Any
 
-from homeassistant.components.template.binary_sensor import StateBinarySensorEntity
-from homeassistant.components.template.sensor import StateSensorEntity
+from homeassistant.components.sensor import SensorEntity
 from homeassistant.const import EVENT_STATE_CHANGED, EVENT_STATE_REPORTED
 from homeassistant.core import (
     CALLBACK_TYPE,
@@ -41,17 +42,20 @@ from homeassistant.core import (
     State,
     callback,
 )
+from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.event import (
     _TRACK_STATE_CHANGE_DATA,
     _async_dispatch_entity_id_event,
+    async_track_template_result,
 )
 
 from .motore.contesto import Contesto
 from .motore.timer import TimerDelMotore, TimerMotore
+from .sensori_modello import BinarioModello, Seguire, SensoreModello
 
 _MARCHIO = "vmc_master_annuncio_timer"
 
-SensoriTemplate = tuple[list[StateSensorEntity], list[StateBinarySensorEntity]]
+SensoriTemplate = tuple[list[SensoreModello], list[BinarioModello]]
 
 
 def chiave_del_sensore(entity_id: str, nome: str) -> str:
@@ -61,16 +65,21 @@ def chiave_del_sensore(entity_id: str, nome: str) -> str:
 
 
 def crea_sensori_template(
-    hass: HomeAssistant, c: Contesto, codice: ModuleType, ip: str
+    hass: HomeAssistant,
+    c: Contesto,
+    codice: ModuleType,
+    ip: str,
+    *,
+    segui: Seguire = async_track_template_result,
 ) -> SensoriTemplate:
     """Le entità dei sensori template (sensori, sensori binari) nell'ordine del package,
     dal codice tradotto ``codice`` (``generato_fase4.sensori``) per la VMC di ``c``
     all'indirizzo ``ip`` (il sensore «IP configurato»; oggi l'integrazione lo scrive
-    nel package)."""
-    sensori: list[StateSensorEntity] = []
-    binari: list[StateBinarySensorEntity] = []
-    for entita in in_ordine(hass, c, codice, ip):
-        if isinstance(entita, StateSensorEntity):
+    nel package); ``segui`` è come seguono i loro modelli."""
+    sensori: list[SensoreModello] = []
+    binari: list[BinarioModello] = []
+    for entita in in_ordine(hass, c, codice, ip, segui=segui):
+        if isinstance(entita, SensoreModello):
             sensori.append(entita)
         else:
             binari.append(entita)
@@ -78,31 +87,36 @@ def crea_sensori_template(
 
 
 def in_ordine(
-    hass: HomeAssistant, c: Contesto, codice: ModuleType, ip: str
-) -> list[StateSensorEntity | StateBinarySensorEntity]:
+    hass: HomeAssistant,
+    c: Contesto,
+    codice: ModuleType,
+    ip: str,
+    *,
+    segui: Seguire = async_track_template_result,
+) -> list[SensoreModello | BinarioModello]:
     """Le entità dei sensori template nell'ordine del package, sensori e sensori binari
     insieme: l'ordine in cui oggi l'integrazione template le aggiunge e in cui, all'avvio,
     ognuna comincia a seguire le entità che legge (chi segue prima un'entità si ricalcola
-    prima ai suoi cambi)."""
-    uscita: list[StateSensorEntity | StateBinarySensorEntity] = []
+    prima ai suoi cambi). ``segui`` è come seguono i loro modelli (la firma di
+    ``async_track_template_result``)."""
+    uscita: list[SensoreModello | BinarioModello] = []
     for dominio, config in codice.sensori(c, ip):
         if dominio == "sensor":
-            uscita.append(StateSensorEntity(hass, config, config.get("unique_id")))
+            classe: type[SensoreModello | BinarioModello] = SensoreModello
+        elif dominio == "binary_sensor":
+            classe = BinarioModello
         else:
-            uscita.append(
-                StateBinarySensorEntity(hass, config, config.get("unique_id"))
-            )
+            raise ValueError(f"dominio di un sensore template non gestito: {dominio}")
+        uscita.append(classe(hass, config, config.get("unique_id"), segui=segui))
     return uscita
 
 
-def a_gruppi(
-    entita: list[StateSensorEntity | StateBinarySensorEntity],
-) -> list[tuple[str, list[Any]]]:
+def a_gruppi(entita: Sequence[Entity]) -> list[tuple[str, list[Any]]]:
     """Le entità in ordine, a gruppi consecutivi dello stesso dominio («sensor»,
     «binary_sensor»): per aggiungerle a Home Assistant senza cambiare l'ordine."""
     gruppi: list[tuple[str, list[Any]]] = []
     for una in entita:
-        dominio = "sensor" if isinstance(una, StateSensorEntity) else "binary_sensor"
+        dominio = "sensor" if isinstance(una, SensorEntity) else "binary_sensor"
         if not gruppi or gruppi[-1][0] != dominio:
             gruppi.append((dominio, []))
         gruppi[-1][1].append(una)
