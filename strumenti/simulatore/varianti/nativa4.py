@@ -430,6 +430,19 @@ async def servizio(hass, dominio, nome, dati, blocking, contesto):
         else:
             await _come_task(vmc.c.comandi.esegui(nome, dati, {}, contesto), blocking)
         return True
+    if dominio == 'automation' and nome == 'trigger':
+        # «Esegui azioni» di un'automazione dall'interfaccia (automation.trigger, famiglia M). Dalla b46
+        # le automazioni del package sono logiche dell'integrazione senza entità: l'utente non lo può più
+        # fare. Il simulatore fa scattare la logica come il servizio di Home Assistant
+        # (automation.trigger_service_handler: async_trigger con le variabili, trigger senza
+        # piattaforma, skip_condition, contesto della chiamata), per confrontarne le azioni con il
+        # package; la mappa toglie la chiamata del lato A (motivo «esegui_azioni»).
+        logica = next((x for x in vmc.motore.automazioni if x.entity_id == dati.get('entity_id')), None)
+        if logica is None:
+            raise RuntimeError(f'automation.trigger su una logica che non c\'è: {dati}')
+        variabili = {**dati.get('variables', {}), 'trigger': {'platform': None}}
+        await _come_task(logica.scatta(variabili, contesto, dati.get('skip_condition', True)), blocking)
+        return True
     if dominio not in AIUTANTI:
         return False
     entita = dati.get('entity_id')

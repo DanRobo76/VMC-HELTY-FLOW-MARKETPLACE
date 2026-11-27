@@ -65,6 +65,8 @@ MOTIVI = {
     'chiamata_nativa': "chiamata dell'utente a un'entita' nativa: oggi va a un aiutante e la traccia non la registra",
     'find': "comando di shell «find ... sed» sui file .sh: domani non c'e'",
     'tolta': "voce tolta (b46: campo «Cambia IP VMC» della scheda e chi lo serve): domani non c'e'",
+    'esegui_azioni': ("«Esegui azioni» di un'automazione dall'interfaccia (automation.trigger): dalla b46 la logica "
+                      "non ha entita' e l'utente non lo puo' fare; il lato B la fa scattare come il servizio"),
 }
 # Le voci tolte che non sono nella fase 1 (tabelle.TOLTE): il sensore e l'automazione del campo.
 TOLTE_FUORI_DALLA_FASE_1 = frozenset({'sensor.vmc_master_verifica_ip_inserito',
@@ -73,6 +75,8 @@ TOLTE_FUORI_DALLA_FASE_1 = frozenset({'sensor.vmc_master_verifica_ip_inserito',
 MOTIVI_CAMBIATE = {
     'update_interni': ("homeassistant.update_entity con valori interni tra le entita': tolti dai dati "
                        "(domani il motore li toglie dalla chiamata e li riscrive lui: voce MR uguale)"),
+    'tolte_dai_dati': ("elenco di entita' di una chiamata con voci tolte (b46, campo «Cambia IP VMC»): tolte "
+                       "dall'elenco (recorder.purge_entities della Pulizia Cronologia)"),
 }
 TIPI_MOTORE = {'MS': "cambio di stato nel motore (timer, valore interno)",
                'MR': "scrittura senza cambio nel motore (timer, valore interno)"}
@@ -146,6 +150,9 @@ class Mappa:
             if isinstance(elenco, list) and any(x in self.interni for x in elenco):
                 self.cambiate[(lato, 'update_interni', tipo)] += 1
                 e = [x for x in elenco if x not in self.interni]
+        if isinstance(e, list) and any(x in self.voci_tolte for x in e):
+            self.cambiate[(lato, 'tolte_dai_dati', tipo)] += 1
+            e = [x for x in e if x not in self.voci_tolte]
         if isinstance(e, str):
             dati['entity_id'] = self.visibili.get(e, e)
         elif isinstance(e, list):
@@ -191,6 +198,9 @@ class Mappa:
             bersagli = [bersagli] if isinstance(bersagli, str) else (bersagli or [])
             if bersagli and all(b in self.voci_tolte for b in bersagli):
                 return self._togli(lato, 'tolta', k)
+            if lato == 'A' and (v[2], v[3]) == ('automation', 'trigger') and bersagli \
+                    and all(tracce.entita_vmc(b) for b in bersagli):
+                return self._togli(lato, 'esegui_azioni', k)
             if lato == 'A':
                 return v[:4] + [self._dati(v[4], (v[2], v[3]), lato, k)] + v[5:]
             if v[2] in DOMINI_NATIVI:
