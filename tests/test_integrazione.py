@@ -629,7 +629,8 @@ def test_readme_marketplace_e_github() -> None:
     ha già aggiunto il repository e non vede i passi per farlo."""
     marketplace = (RADICE / "README.md").read_text(encoding="utf-8")
     github = (RADICE / ".github" / "README.md").read_text(encoding="utf-8")
-    for testo in ("2. **Aggiungere il repository**:", "2. **Add the repository**:",
+    for testo in ("> [!IMPORTANT]\n> **1. Aggiungere il repository** (primo passo):",
+                  "> [!IMPORTANT]\n> **1. Add the repository** (first step):",
                   "3. **Installare**: cercare **VMC Master** nel Marketplace e premere **Installa**.",
                   "3. **Install**: search for **VMC Master** in the Marketplace and press **Install**.",
                   "6. **Una volta per ogni VMC**, nel pannello **Opzioni** della scheda:",
@@ -638,10 +639,22 @@ def test_readme_marketplace_e_github() -> None:
                   "**VMC nuova** (senza l'App Air Guard", "**New unit** (without the Air Guard app",
                   "Dopo l'installazione tutto si regola", "After installation everything is set"):
         assert testo in github and testo not in marketplace, testo
-    # versione nativa: configuration.yaml serve solo per le Notifiche Audio (righe tts)
-    for testo in ("1. **Solo per le Notifiche Audio, modificare `configuration.yaml`** (una volta sola):",
-                  "1. **Only for audio notifications, edit `configuration.yaml`** (once):"):
-        assert testo in marketplace and testo in github, testo
+    # versione nativa: configuration.yaml serve solo per le Notifiche Audio (righe tts); b45:
+    # prima si verifica se le righe ci sono, si aggiungono solo se mancano. Su GitHub è il
+    # punto 2, dopo il riquadro «Aggiungere il repository»
+    for testo in ("**Solo per le Notifiche Audio, controllare `configuration.yaml`** (una volta sola):",
+                  "**Only for audio notifications, check `configuration.yaml`** (once):"):
+        assert f"\n1. {testo}" in marketplace and f"\n2. {testo}" in github, testo
+    for testo in ("   - verificare se sono già presenti le righe:",
+                  "   - se sono presenti, chiudere il file senza modificarlo;",
+                  "   - se mancano, aggiungerle in fondo al file e salvare con l'icona del **dischetto**.",
+                  "   - check whether these lines are already present:",
+                  "   - if they are present, close the file without changing it;",
+                  "   - if they are missing, add them at the end of the file and save with the **disk** icon."):
+        assert marketplace.count(testo) == 1 and github.count(testo) == 1, testo
+    for testo in ("aggiungere in fondo:", "add at the end:", "modificare `configuration.yaml`",
+                  "edit `configuration.yaml`"):
+        assert testo not in marketplace and testo not in github, testo
     for testo in ("2. **Installare**: cercare il pulsante **Installa** in alto a destra, premerlo e seguire le indicazioni a schermo.",
                   "2. **Install**: look for the **Install** button at the top right, press it and follow the on-screen instructions.",
                   "Per ogni VMC nel pannello **Opzioni** della scheda:",

@@ -27,7 +27,7 @@
 
 <p align="center">
   <strong>La tua ventilazione meccanica controllata in Home Assistant.</strong><br>
-  Integrazione per VMC Helty Flow Plus / Elite: si installa dal Marketplace di Home Assistant e ogni VMC si aggiunge con il suo IP.
+  Integrazione per VMC Helty Flow Plus / Elite.
 </p>
 
 <p align="center">
@@ -48,7 +48,7 @@
 
 | <sub>Funzione</sub> | <sub>Vantaggio</sub> |
 |---|---|
-| <sub>**Installazione dal Marketplace**</sub> | <sub>Nessun file da copiare e nessuna riga da aggiungere a `configuration.yaml` (solo due per le Notifiche Audio); gli aggiornamenti arrivano dal Marketplace</sub> |
+| <sub>**Installazione dal Marketplace**</sub> | <sub>Nessun file da copiare e nessuna riga da aggiungere a `configuration.yaml` (solo due per le Notifiche Audio, se mancano); gli aggiornamenti arrivano dal Marketplace</sub> |
 | <sub>**Logiche con priorità**</sub> | <sub>Congelamento, Δ temperatura, inquinanti, punto di rugiada, Free Cooling / Free Heating, umidità e black-out gestiti in un ordine preciso, con ripresa automatica</sub> |
 | <sub>**Controllo del punto di rugiada**</sub> | <sub>La VMC si arresta quando porterebbe in casa umidità dall'esterno</sub> |
 | <sub>**Free Cooling / Free Heating**</sub> | <sub>Nessun raffrescamento o riscaldamento indesiderato nei mesi programmati; aria calda o fresca gratuita quando conviene</sub> |
@@ -163,11 +163,18 @@ actions:
 <details>
 <summary><strong>Installazione</strong></summary>
 
-1. **Solo per le Notifiche Audio, modificare `configuration.yaml`** (una volta sola):
+> [!IMPORTANT]
+> **1. Aggiungere il repository** (primo passo):
+> - aprire *Impostazioni → Marketplace → ⋮ → Repository personalizzate → Aggiungi dal collegamento*;
+> - incollare `https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER`;
+> - premere **Aggiungi**, poi **Continue**;
+> - seguire le indicazioni di Home Assistant, autorizzando HACS.
+
+2. **Solo per le Notifiche Audio, controllare `configuration.yaml`** (una volta sola):
    - installare l'app **File editor**: *Impostazioni → Applicazioni → Installa app → File editor → Installa*;
    - premere **Avvia**, poi **Apri l'interfaccia web**;
    - premere l'icona della **cartella** in alto a sinistra e scegliere `configuration.yaml`;
-   - aggiungere in fondo:
+   - verificare se sono già presenti le righe:
 
      ```yaml
      tts:
@@ -175,12 +182,8 @@ actions:
      ```
 
      Servono proprio queste righe: aggiungere Google Translate solo da *Impostazioni → Dispositivi e servizi* non basta e le Notifiche Audio resterebbero mute;
-   - salvare con l'icona del **dischetto**.
-2. **Aggiungere il repository**:
-   - aprire *Impostazioni → Marketplace → ⋮ → Repository personalizzate → Aggiungi dal collegamento*;
-   - incollare `https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER`;
-   - premere **Aggiungi**, poi **Continue**;
-   - seguire le indicazioni di Home Assistant, autorizzando HACS.
+   - se sono presenti, chiudere il file senza modificarlo;
+   - se mancano, aggiungerle in fondo al file e salvare con l'icona del **dischetto**.
 3. **Installare**: cercare **VMC Master** nel Marketplace e premere **Installa**.
 4. **Aggiungere la VMC**: *Impostazioni → Dispositivi e servizi → pulsante «Aggiungi integrazione» in basso a destra → VMC Master*.
    - VMC nuova, mai collegata: vedere **VMC nuova** qui sotto.
@@ -355,7 +358,7 @@ Ogni pulsante chiede conferma con il popup «Vuoi Procedere?». Per i dettagli a
 
 <p align="center">
   <strong>Your mechanical ventilation, controlled in Home Assistant.</strong><br>
-  Integration for Helty Flow Plus / Elite MVHR units: install it from the Home Assistant Marketplace and add each unit with its IP.
+  Integration for Helty Flow Plus / Elite MVHR units.
 </p>
 
 <p align="center">
@@ -384,7 +387,7 @@ Ogni pulsante chiede conferma con il popup «Vuoi Procedere?». Per i dettagli a
 
 | <sub>Function</sub> | <sub>Advantage</sub> |
 |---|---|
-| <sub>**Marketplace install**</sub> | <sub>No files to copy and no lines to add to `configuration.yaml` (only two for audio notifications); updates come from the Marketplace</sub> |
+| <sub>**Marketplace install**</sub> | <sub>No files to copy and no lines to add to `configuration.yaml` (only two for audio notifications, if missing); updates come from the Marketplace</sub> |
 | <sub>**Prioritized logic**</sub> | <sub>Freezing, temperature Δ, pollutants, dew point, Free Cooling / Free Heating, humidity and power failure handled in a precise order, with automatic recovery</sub> |
 | <sub>**Dew point control**</sub> | <sub>The unit stops when it would bring outdoor humidity indoors</sub> |
 | <sub>**Free Cooling / Free Heating**</sub> | <sub>No unwanted cooling or heating in the scheduled months; free warm or cool air when it pays off</sub> |
@@ -498,11 +501,18 @@ actions:
 <details>
 <summary><strong>Installation</strong></summary>
 
-1. **Only for audio notifications, edit `configuration.yaml`** (once):
+> [!IMPORTANT]
+> **1. Add the repository** (first step):
+> - open *Settings → Marketplace → ⋮ → Custom repositories → Add from link*;
+> - paste `https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER`;
+> - press **Add**, then **Continue**;
+> - follow Home Assistant's instructions, authorizing HACS.
+
+2. **Only for audio notifications, check `configuration.yaml`** (once):
    - install the **File editor** app: *Settings → Apps → Install app → File editor → Install*;
    - press **Start**, then **Open web UI**;
    - press the **folder** icon at the top left and choose `configuration.yaml`;
-   - add at the end:
+   - check whether these lines are already present:
 
      ```yaml
      tts:
@@ -510,12 +520,8 @@ actions:
      ```
 
      These exact lines are needed: adding Google Translate only from *Settings → Devices & services* is not enough and the audio notifications stay silent;
-   - save with the **disk** icon.
-2. **Add the repository**:
-   - open *Settings → Marketplace → ⋮ → Custom repositories → Add from link*;
-   - paste `https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER`;
-   - press **Add**, then **Continue**;
-   - follow Home Assistant's instructions, authorizing HACS.
+   - if they are present, close the file without changing it;
+   - if they are missing, add them at the end of the file and save with the **disk** icon.
 3. **Install**: search for **VMC Master** in the Marketplace and press **Install**.
 4. **Add the unit**: *Settings → Devices & services → «Add integration» button at the bottom right → VMC Master*.
    - New unit, never connected: see **New unit** below.

@@ -127,17 +127,18 @@ actions:
 <details>
 <summary><strong>Installazione</strong></summary>
 
-1. **Solo per le Notifiche Audio, modificare `configuration.yaml`** (una volta sola):
+1. **Solo per le Notifiche Audio, controllare `configuration.yaml`** (una volta sola):
    - installare l'app **File editor**: *Impostazioni → Applicazioni → Installa app → File editor → Installa*;
    - premere **Avvia**, poi **Apri l'interfaccia web**;
    - premere l'icona della **cartella** in alto a sinistra e scegliere `configuration.yaml`;
-   - aggiungere in fondo:
+   - verificare se sono già presenti le righe:
 
      ```yaml
      tts:
        - platform: google_translate
      ```
-   - salvare con l'icona del **dischetto**.
+   - se sono presenti, chiudere il file senza modificarlo;
+   - se mancano, aggiungerle in fondo al file e salvare con l'icona del **dischetto**.
 2. **Installare**: cercare il pulsante **Installa** in alto a destra, premerlo e seguire le indicazioni a schermo.
 3. **Aggiungere la scheda**:
    - premere **Ctrl+F5**;
@@ -332,17 +333,18 @@ actions:
 <details>
 <summary><strong>Installation</strong></summary>
 
-1. **Only for audio notifications, edit `configuration.yaml`** (once):
+1. **Only for audio notifications, check `configuration.yaml`** (once):
    - install the **File editor** app: *Settings → Apps → Install app → File editor → Install*;
    - press **Start**, then **Open web UI**;
    - press the **folder** icon at the top left and choose `configuration.yaml`;
-   - add at the end:
+   - check whether these lines are already present:
 
      ```yaml
      tts:
        - platform: google_translate
      ```
-   - save with the **disk** icon.
+   - if they are present, close the file without changing it;
+   - if they are missing, add them at the end of the file and save with the **disk** icon.
 2. **Install**: look for the **Install** button at the top right, press it and follow the on-screen instructions.
 3. **Add the card**:
    - press **Ctrl+F5**;
