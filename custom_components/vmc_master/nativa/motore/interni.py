@@ -12,8 +12,8 @@ con le regole di ``ScriptEntity`` per i modi in cui il package lo usa:
 - ``script.turn_off`` (``async_turn_off``): ``ScriptInterno.ferma``.
 
 Stesse modalità (single, restart, queued, parallel con il massimo), stesse variabili e
-campi, stessa pila contro le ricorsioni (``script_stack_cv``), stesso registro di Home
-Assistant per fermare gli script alla chiusura (``ComeScript``). Manca ciò che
+campi, stessa pila contro le ricorsioni (``script_stack_cv``), stesse regole di Home Assistant
+per fermare gli script alla chiusura (``chiusura.RegistroSequenze``). Manca ciò che
 dell'entità si vede fuori: lo stato ``script.<chiave>`` e i suoi ``state_changed``,
 l'evento ``script_started``, la traccia, ``this`` (nessun modello del package lo legge) e
 ``last_triggered`` ripreso dopo un riavvio (nessuno lo legge).
@@ -44,8 +44,6 @@ from collections.abc import Awaitable, Callable, Iterable, Mapping
 from typing import TYPE_CHECKING, Any
 
 import probatio
-from homeassistant.components.script.const import ATTR_VARIABLES
-from homeassistant.components.script.services import SCRIPT_TURN_ONOFF_SCHEMA
 from homeassistant.const import (
     ATTR_DOMAIN,
     ATTR_ENTITY_ID,
@@ -75,7 +73,7 @@ from .definizioni import COMANDO_IP, COMANDO_NESSUNO, COMANDO_NOME, COMANDO_VMC,
 
 if TYPE_CHECKING:
     from .contesto import Contesto
-    from .ha import ComeScript
+    from .esecuzione import ComeScript
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -84,6 +82,13 @@ DOMINIO_COMANDI = "shell_command"
 ACCENDI = "turn_on"
 SPEGNI = "turn_off"
 INVERTI = "toggle"
+ATTR_VARIABLES = "variables"
+
+# Lo schema di ``script.turn_on``, ``turn_off`` e ``toggle`` (come lo registra
+# l'integrazione script di Home Assistant: homeassistant/components/script/services.py).
+SCHEMA_ACCENDI_SPEGNI = cv.make_entity_service_schema(
+    {probatio.Optional(ATTR_VARIABLES): {str: cv.match_all}}
+)
 
 # Il segno che il traduttore mette su un trigger ``event`` di una chiamata di un comando:
 # Home Assistant non lo aggancia (``enabled: False``, ma la posizione conta ancora per
@@ -229,7 +234,7 @@ class ScriptInterni:
                 "Script does not support 'response_variable' for service "
                 f"'script.{servizio}' which does not support response data."
             )
-        validati = SCRIPT_TURN_ONOFF_SCHEMA(dati_servizio)
+        validati = SCHEMA_ACCENDI_SPEGNI(dati_servizio)
         voluti = set(validati[ATTR_ENTITY_ID])
         # come async_extract_entities: nell'ordine delle entità, ognuna una volta
         scelti = [s for s in self.script.values() if s.entity_id in voluti]

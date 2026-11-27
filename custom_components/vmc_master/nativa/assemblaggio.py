@@ -14,8 +14,8 @@ template, tcp, ping e rest):
   archivio (``Store``) e i loro cambi anche in ``StatoVMC`` (i sensori che li leggono);
 - il motore (motore/ha.py) con il codice tradotto con tutte le opzioni della fase 4
   (``motore/generato_fase4/``: mappa dei nomi, script e comandi di shell dentro il
-  motore, timer del motore, valori interni nella memoria): le automazioni restano
-  entità ``automation``; il motore legge le entità visibili dalla macchina degli stati
+  motore, timer del motore, valori interni nella memoria): le automazioni sono logiche
+  dell'integrazione, senza entità (motore/logiche.py); il motore legge le entità visibili dalla macchina degli stati
   con i nomi di domani; scrive le impostazioni (e i valori interni insieme a loro) con
   ``ScritturaComandi`` (i servizi degli aiutanti di oggi); manda i comandi alla VMC con
   ``ClientVMC``;
@@ -32,7 +32,7 @@ from __future__ import annotations
 
 import importlib
 import logging
-from collections.abc import Awaitable, Callable, Mapping
+from collections.abc import Awaitable, Callable
 from datetime import timedelta
 from types import ModuleType
 from typing import Any
@@ -179,16 +179,10 @@ class VMCAssemblata:
         uscita.setdefault("button", []).extend(self.pulsanti)
         return uscita
 
-    async def avvia(
-        self,
-        aggiungi: Aggiungi,
-        configurazione: Mapping[str, Any] | None = None,
-    ) -> None:
+    async def avvia(self, aggiungi: Aggiungi) -> None:
         """Avvia la VMC: impostazioni, letture e sensori, motore, timer e pulsanti.
 
-        ``aggiungi(dominio, entità)`` aggiunge le entità a Home Assistant;
-        ``configurazione`` è quella di Home Assistant (per avviare l'integrazione
-        ``automation`` se non c'è già).
+        ``aggiungi(dominio, entità)`` aggiunge le entità a Home Assistant.
         """
         # i valori interni e le impostazioni prima di tutto: i loro valori (iniziali o
         # ripristinati, come gli aiutanti all'avvio) sono gli ingressi dei modelli
@@ -198,13 +192,12 @@ class VMCAssemblata:
         await self.vmc.avvia()
         await aggiungi("sensor", list(self.sensori))
         await aggiungi("binary_sensor", list(self.binari))
-        # il motore: le impostazioni native per le scritture, poi automazioni, script,
+        # il motore: le impostazioni native per le scritture, poi logiche, script,
         # comandi e timer
         self.c.scrittura = self.scrittura
         codice = self.codice
         await self.motore.avvia(
             codice.crea,
-            configurazione,
             comandi=codice.comandi,
             invia=self.client.comanda,
             cambia_ip=self._cambia_ip,
@@ -228,11 +221,11 @@ class VMCAssemblata:
         await aggiungi("button", list(self.pulsanti))
 
     async def ferma(self) -> None:
-        """Ferma letture, motore (script e timer) e collegamenti."""
+        """Ferma letture, motore (logiche, script e timer) e collegamenti."""
         for annulla in self._annulla:
             annulla()
         self._annulla.clear()
-        await self.motore.scarica_interni()
+        await self.motore.ferma()
         if self.c.timer is not None:
             self.c.timer.ferma()
         self.vmc.ferma()

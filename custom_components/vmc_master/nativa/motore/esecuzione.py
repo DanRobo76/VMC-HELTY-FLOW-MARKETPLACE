@@ -41,11 +41,10 @@ from homeassistant.exceptions import (
 )
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import entity_registry as er
-from homeassistant.helpers.script import (
-    DATA_NEW_SCRIPT_RUNS_NOT_ALLOWED,
-    script_stack_cv,
-)
+from homeassistant.helpers.script import script_stack_cv
 from homeassistant.util.async_ import create_eager_task
+
+from .chiusura import registro_sequenze
 
 if TYPE_CHECKING:
     from .contesto import Contesto
@@ -169,9 +168,10 @@ def rendi_variabili(
 class Sequenza:
     """Una sequenza di primo livello con la sua modalita' (come Script).
 
-    ``al_cambio`` e' l'ascoltatore dei cambiamenti (come change_listener: l'entita'
-    automazione o script scrive il proprio stato). Lo mette l'entita' quando nasce
-    (AutomationEntity e ScriptEntity, attraverso ``ComeScript``), prima di ogni avvio.
+    ``al_cambio`` e' l'ascoltatore dei cambiamenti (come change_listener: la logica
+    scrive il proprio stato interno, lo script interno sveglia chi aspetta il suo primo
+    cambiamento). Lo mette chi usa la sequenza quando nasce (``logiche.Logica``,
+    ``ComeScript``), prima di ogni avvio.
     """
 
     def __init__(
@@ -233,9 +233,9 @@ class Sequenza:
     ) -> None:
         """Come Script.async_run di primo livello: un errore arriva al chiamante.
 
-        Il contesto c'e' sempre: AutomationEntity passa quello del trigger, ScriptEntity
-        quello della chiamata del servizio."""
-        if DATA_NEW_SCRIPT_RUNS_NOT_ALLOWED in self.hass.data:
+        Il contesto c'e' sempre: la logica passa quello del trigger, lo script quello
+        della chiamata del servizio."""
+        if registro_sequenze(self.hass).vietate:
             _LOGGER.info(
                 "%s: Home Assistant is shutting down, starting script blocked",
                 self.nome,
@@ -312,6 +312,80 @@ class Sequenza:
                 self.cambiato()
 
         await asyncio.shield(create_eager_task(_aspetta()))
+
+
+class ComeScript:
+    """La parte di ``Script`` di Home Assistant che usa uno script del package
+    (``interni.ScriptInterno``), sopra una ``Sequenza`` del motore.
+
+    Come ogni ``Script`` di primo livello si iscrive nel registro delle sequenze
+    (``chiusura.RegistroSequenze``): alla chiusura di Home Assistant le esecuzioni in corso
+    si fermano e, 60 secondi dopo, non ne partono più, con le regole degli script di Home
+    Assistant.
+    """
+
+    def __init__(self, sequenza: Sequenza) -> None:
+        self.sequenza = sequenza
+        self.name = sequenza.nome
+        self._scaricato = False
+        self._togli = registro_sequenze(sequenza.hass).iscrivi(sequenza)
+
+    def _al_cambio(self, ascoltatore: Callable[[], None]) -> None:
+        self.sequenza.al_cambio = ascoltatore
+
+    # come Script.change_listener: lo scrive chi usa lo script, nessuno lo legge
+    change_listener = property(fset=_al_cambio)
+
+    @property
+    def is_running(self) -> bool:
+        return self.sequenza.in_corso
+
+    @property
+    def runs(self) -> int:
+        return len(self.sequenza.esecuzioni)
+
+    @property
+    def script_mode(self) -> str:
+        return self.sequenza.modo
+
+    @property
+    def max_runs(self) -> int:
+        return self.sequenza.massimo
+
+    @property
+    def supports_max(self) -> bool:
+        return self.sequenza.con_massimo
+
+    @property
+    def last_triggered(self) -> Any:
+        return self.sequenza.ultimo_avvio
+
+    @property
+    def last_action(self) -> str | None:
+        return self.sequenza.ultima_azione
+
+    async def async_run(
+        self,
+        run_variables: Mapping[str, Any] | None = None,
+        context: Context | None = None,
+        started_action: Callable[..., Any] | None = None,
+    ) -> None:
+        """Come Script.async_run (nessuno script del package restituisce dati)."""
+        if self._scaricato:
+            raise RuntimeError(
+                f"Cannot run script '{self.name}' after it has been unloaded"
+            )
+        await self.sequenza.esegui(run_variables, context, started_action)  # type: ignore[arg-type]
+
+    async def async_stop(self, update_state: bool = True, spare: Any = None) -> None:
+        await self.sequenza.ferma(aggiorna=update_state)
+
+    async def async_unload(self) -> None:
+        """Come Script.async_unload: niente più esecuzioni, si fermano quelle in corso
+        e lo script esce dal registro delle sequenze. Si chiama una volta sola."""
+        self._scaricato = True
+        await self.sequenza.ferma()
+        self._togli()
 
 
 class SequenzaAnnidata:
@@ -843,7 +917,7 @@ async def _annidata(
     piu' di ``massimo`` esecuzioni, e nessuna con ``single``, ``queued`` e ``restart``,
     che ne hanno una sola alla volta nel corpo."""
     sequenza = annidata.sequenza
-    if DATA_NEW_SCRIPT_RUNS_NOT_ALLOWED in sequenza.hass.data:
+    if registro_sequenze(sequenza.hass).vietate:
         _LOGGER.info(
             "%s: Home Assistant is shutting down, starting script blocked",
             sequenza.nome,

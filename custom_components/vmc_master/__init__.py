@@ -552,7 +552,7 @@ async def _async_avvia_nativa(hass: HomeAssistant, entry: ConfigEntry) -> None:
     except BaseException:
         await _async_ferma_nativa(hass, entry)
         raise
-    _lega_automazioni_alla_voce(hass, entry, vmc)
+    _togli_le_automazioni_di_prima(hass, entry)
     if entry.data.get(CONF_DA_INIZIALIZZARE):
         if riaggiunta or confermato:
             # VMC riaggiunta con la sua memoria, o passata dalla beta: tiene i suoi valori
@@ -633,27 +633,19 @@ def _inizializza_una_volta(
 
 
 @callback
-def _lega_automazioni_alla_voce(
-    hass: HomeAssistant, entry: ConfigEntry, vmc: Any
-) -> None:
-    """Le automazioni del motore sono entita' del componente automation (stesso
-    unique_id, quindi stessa voce del registro, delle automazioni della beta: area,
-    etichette e categoria dell'utente restano). La loro voce del registro si lega alla
-    voce della VMC, cosi' Home Assistant le toglie quando la VMC si elimina (e le
-    disabilita con lei). Il componente automation, quando la aggiunge, toglie il legame
-    (piattaforma senza voce): si rimette dopo ogni avvio."""
+def _togli_le_automazioni_di_prima(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Fino alla 9.0.0b45 le automazioni del motore erano entita' del componente
+    automation, con la voce del registro legata alla voce della VMC. Ora sono logiche
+    dell'integrazione, senza entita': le loro voci del registro (rimaste senza entita')
+    si tolgono."""
     registro = er.async_get(hass)
-    # anche quelle disattivate dall'utente (voce del registro senza entita')
-    registrate = [
-        a.entity_id for a in vmc.motore.automazioni if a.entity_id in registro.entities
-    ]
-    for entity_id in registrate:  # gia' legata: nessun cambio (async_update_entity)
-        registro.async_update_entity(entity_id, config_entry_id=entry.entry_id)
+    for voce in er.async_entries_for_config_entry(registro, entry.entry_id):
+        if voce.platform == "automation":
+            registro.async_remove(voce.entity_id)
 
 
 async def _async_ferma_nativa(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Ferma la VMC nativa e toglie le sue entita' (le automazioni del motore sono nel
-    componente automation: si tolgono da li', la voce del registro resta)."""
+    """Ferma la VMC nativa (motore compreso) e toglie le sue entita'."""
     dati: DatiVoce = entry.runtime_data
     vmc, dati.vmc = dati.vmc, None
     if vmc is None:
@@ -661,9 +653,6 @@ async def _async_ferma_nativa(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # i valori interni di adesso (una ricarica non perde gli ultimi cambi)
     await vmc.memoria.async_salva()
     await vmc.ferma()
-    for automazione in list(vmc.motore.automazioni):
-        if automazione.hass is not None:
-            await automazione.async_remove()
     caricate = [p for p in PIATTAFORME if p in dati.piattaforme]
     return await hass.config_entries.async_unload_platforms(entry, caricate)
 

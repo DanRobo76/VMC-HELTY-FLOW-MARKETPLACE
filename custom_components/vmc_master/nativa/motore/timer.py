@@ -12,7 +12,7 @@ Home Assistant. Nell'integrazione nativa diventano timer interni del motore:
   ricevono gli ascoltatori (i sensori con l'istante di fine, StatoVMC);
 - i suoi eventi non vanno sul bus di Home Assistant ma su ``BusDelMotore`` (uno per
   ``hass``, per i timer di tutte le VMC, come il bus per tutti i timer di oggi), che li
-  consegna ai trigger evento del motore (``TRIGGER``, ``inizializza_trigger``) con le
+  consegna ai trigger evento del motore (``TRIGGER``, ``attacca_trigger_timer``) con le
   regole del bus (stesso evento, stesso contesto, eventi lanciati durante una consegna
   messi in coda);
 - i servizi (``timer.start``, ``pause``, ``cancel``, ``finish``, ``change``) li chiama il
@@ -22,7 +22,9 @@ Home Assistant. Nell'integrazione nativa diventano timer interni del motore:
   senza l'evento ``call_service``;
 - le letture dei modelli (``states``, ``is_state``, ``state_attr`` di un timer) passano da
   ``TimerDelMotore`` (``c.timer``), che risponde per i timer del motore e lascia a Home
-  Assistant tutto il resto.
+  Assistant tutto il resto;
+- chi segue un timer del motore (i sensori template che lo leggono) lo segue con
+  ``seguire.CambiInterni``: ``TimerDelMotore`` è una sorgente di valori interni.
 
 Il traduttore scrive queste forme solo se glielo si chiede (``traduci.traduzione(...,
 timer_motore=True)``); senza, il codice generato è quello di sempre.
@@ -33,16 +35,14 @@ Nessun timer del package ha ``restore: true`` (dopo un riavvio ripartono tutti d
 
 from __future__ import annotations
 
-import asyncio
 import logging
 import time
 from collections import deque
-from collections.abc import Callable, Iterable, Mapping
+from collections.abc import Callable, Mapping
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Any
 
 import probatio
-from homeassistant.components.homeassistant.triggers import event as trigger_evento
 from homeassistant.components.timer import CONFIG_SCHEMA as SCHEMA_TIMER
 from homeassistant.components.timer.const import (
     ATTR_FINISHED_AT,
@@ -64,11 +64,8 @@ from homeassistant.components.timer.const import (
 from homeassistant.components.timer.const import (
     DOMAIN as DOMINIO_TIMER,
 )
-from homeassistant.components.timer.entity import _format_timedelta
 from homeassistant.const import (
     ATTR_ENTITY_ID,
-    CONF_ALIAS,
-    CONF_ENABLED,
     CONF_ICON,
     CONF_ID,
     CONF_NAME,
@@ -87,7 +84,6 @@ from homeassistant.core import (
     callback,
     get_hassjob_callable_job_type,
 )
-from homeassistant.core_config import DATA_CUSTOMIZE
 from homeassistant.exceptions import (
     HomeAssistantError,
     ServiceNotFound,
@@ -99,21 +95,15 @@ from homeassistant.helpers.entity import CONTEXT_RECENT_TIME_SECONDS
 from homeassistant.helpers.event import async_track_point_in_utc_time
 from homeassistant.helpers.service import entity_service_call
 from homeassistant.helpers.template.render_info import render_info_cv
-from homeassistant.helpers.template.states import _SENTINEL, TemplateState
+from homeassistant.helpers.template.states import TemplateState
 from homeassistant.helpers.translation import async_get_translations
-from homeassistant.helpers.trigger import (
-    TriggerData,
-    TriggerInfo,
-    _async_attach_trigger_cls,
-    _async_get_trigger_platform,
-    _async_is_legacy_trigger,
-    _trigger_action_wrapper,
-    get_relative_description_key,
-)
+from homeassistant.helpers.trigger import TriggerInfo
 from homeassistant.util import dt as dt_util
-from homeassistant.util.async_ import create_eager_task
 from homeassistant.util.hass_dict import HassKey
 from homeassistant.util.ulid import ulid_at_time
+
+from .attivazioni import aggancia_evento
+from .seguire import cambi_interni
 
 if TYPE_CHECKING:
     from .contesto import Contesto
@@ -127,8 +117,20 @@ Assistant, lo esegue ``Contesto.chiama_servizio``."""
 
 TRIGGER = "motore_timer"
 """Il trigger evento dei timer nel codice tradotto con ``timer_motore``
-(``{'trigger': 'motore_timer', 'event_type': [...]}``): un trigger ``event`` di Home
-Assistant che ascolta anche il bus dei timer del motore (``inizializza_trigger``)."""
+(``{'trigger': 'motore_timer', 'event_type': [...]}``): un trigger ``event`` che ascolta
+anche il bus dei timer del motore (``attacca_trigger_timer``)."""
+
+_NON_DATO = object()
+"""``rounded`` non dato a ``states()`` (come il valore predefinito di Home Assistant)."""
+
+
+def durata_testo(delta: timedelta) -> str:
+    """Una durata come la scrive il timer di Home Assistant negli attributi
+    (``H:MM:SS``, homeassistant/components/timer/entity.py)."""
+    total_seconds = delta.total_seconds()
+    hours, remainder = divmod(total_seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    return f"{int(hours)}:{int(minutes):02}:{int(seconds):02}"
 
 EVENTI_TIMER = frozenset(
     {
@@ -227,18 +229,14 @@ class TimerMotore:
     def extra_state_attributes(self) -> dict[str, Any]:
         """Come ``Timer.extra_state_attributes``."""
         attrs: dict[str, Any] = {
-            TimerEntityStateAttribute.DURATION: _format_timedelta(
-                self._running_duration
-            ),
+            TimerEntityStateAttribute.DURATION: durata_testo(self._running_duration),
             TimerEntityStateAttribute.EDITABLE: self.editable,
             TimerEntityStateAttribute.LAST_TRANSITION: self._last_transition,
         }
         if self._end is not None:
             attrs[TimerEntityStateAttribute.FINISHES_AT] = self._end.isoformat()
         if self._remaining is not None:
-            attrs[TimerEntityStateAttribute.REMAINING] = _format_timedelta(
-                self._remaining
-            )
+            attrs[TimerEntityStateAttribute.REMAINING] = durata_testo(self._remaining)
         # niente «restore»: Home Assistant lo aggiunge solo se vero, e nessun timer del
         # package lo chiede (rifiutato nel costruttore)
         return attrs
@@ -272,8 +270,6 @@ class TimerMotore:
             attributi[EntityStateAttribute.ICON] = icona
         if nome := self.name:
             attributi[EntityStateAttribute.FRIENDLY_NAME] = nome
-        if custom := self.hass.data.get(DATA_CUSTOMIZE, {}).get(self.entity_id):
-            attributi |= custom
         if (
             self._context_set is not None
             and time_now - self._context_set > CONTEXT_RECENT_TIME_SECONDS
@@ -469,6 +465,8 @@ class TimerDelMotore:
         self.bus = bus_del_motore(hass)
         self._ascoltatori_timer: dict[str | None, list[Ascoltatore]] = {}
         self._testi_errori: dict[str, str] = {}
+        # chi segue un timer del motore lo segue da qui (prima di ogni iscrizione)
+        self._togli_sorgente: CALLBACK_TYPE | None = cambi_interni(hass).aggiungi(self)
         # come l'aggiunta delle entità: la prima scrittura, idle, senza eventi
         for timer in self.timer.values():
             timer.async_write_ha_state()
@@ -483,21 +481,31 @@ class TimerDelMotore:
         )
 
     def errore(self, chiave: str, entity_id: str) -> ServiceValidationError:
-        """L'errore di un servizio dei timer, uguale a quello di Home Assistant: stessi
-        argomenti, stessa traduzione e lo stesso testo."""
+        """L'errore di un servizio dei timer, uguale a quello di Home Assistant: stessa
+        traduzione e lo stesso testo (quello che ``async_get_exception_message`` calcola
+        dalle traduzioni dell'integrazione ``timer``)."""
         segnaposto = {"entity_id": entity_id}
-        errore = ServiceValidationError(
+        testo = self._testi_errori.get(
+            f"component.{DOMINIO_TIMER}.exceptions.{chiave}.message"
+        )
+        argomenti = (testo.rstrip(".").format(**segnaposto),) if testo else ()
+        return ServiceValidationError(
+            *argomenti,
             translation_domain=DOMINIO_TIMER,
             translation_key=chiave,
             translation_placeholders=segnaposto,
         )
-        testo = self._testi_errori.get(
-            f"component.{DOMINIO_TIMER}.exceptions.{chiave}.message"
-        )
-        if testo:
-            # come async_get_exception_message (il testo che str(errore) calcolerebbe)
-            errore._message = testo.rstrip(".").format(**segnaposto)
-        return errore
+
+    # --- la sorgente di CambiInterni ----------------------------------------------------------
+
+    def contiene(self, entity_id: str) -> bool:
+        """Se ``entity_id`` è un timer del motore."""
+        return entity_id in self.timer
+
+    def stato(self, entity_id: str) -> State | None:
+        """Lo stato di un timer del motore (quello che Home Assistant terrebbe)."""
+        timer = self.timer.get(entity_id)
+        return None if timer is None else timer.stato_ha
 
     # --- ascolto ----------------------------------------------------------------------------
 
@@ -533,6 +541,9 @@ class TimerDelMotore:
     def ferma(self) -> None:
         for timer in self.timer.values():
             timer.ferma()
+        if self._togli_sorgente is not None:
+            self._togli_sorgente()
+            self._togli_sorgente = None
 
     # --- servizi ----------------------------------------------------------------------------
 
@@ -573,7 +584,7 @@ class TimerDelMotore:
     def states(
         self,
         entity_id: Any,
-        rounded: bool | object = _SENTINEL,
+        rounded: bool | object = _NON_DATO,
         with_unit: bool = False,
     ) -> str:
         """``states(entity_id)`` (come ``AllStates.__call__``).
@@ -582,11 +593,12 @@ class TimerDelMotore:
         c'è): un sensore template che legge un timer lo segue, e i cambi dei timer del
         motore gli arrivano con ``sensori_template.AnnunciDeiTimer``. I trigger e le
         attese non leggono mai i timer del motore (lo controlla il traduttore)."""
+        if rounded is _NON_DATO:
+            # come Home Assistant: senza ``rounded`` vale ``with_unit``
+            rounded = with_unit
         if (timer := self._letto(entity_id)) is None:
             return self.c.states(entity_id, rounded, with_unit)  # type: ignore[no-any-return]
         stato = TemplateState(self.hass, timer.stato_ha, collect=True)  # type: ignore[arg-type]
-        if rounded is _SENTINEL:
-            rounded = with_unit
         if rounded or with_unit:
             return stato.format_state(rounded, with_unit)  # type: ignore[arg-type]
         return stato.state
@@ -744,36 +756,19 @@ def bus_del_motore(hass: HomeAssistant) -> BusDelMotore:
 # --- il trigger evento dei timer -------------------------------------------------------------
 
 
-class _HassDelMotore:
-    """Quello che il trigger ``event`` di Home Assistant usa di ``hass``, con il bus dei
-    timer del motore al posto del bus di Home Assistant."""
-
-    def __init__(self, hass: HomeAssistant) -> None:
-        self.loop = hass.loop
-        self.async_run_hass_job = hass.async_run_hass_job
-        self.bus = bus_del_motore(hass)
-
-
-async def _attacca_trigger_timer(
+async def attacca_trigger_timer(
     hass: HomeAssistant,
     conf: Mapping[str, Any],
     action: Callable[..., Any],
     info: TriggerInfo,
-    platform: Any,
 ) -> CALLBACK_TYPE:
-    """Il trigger ``event`` di Home Assistant (lo stesso codice) due volte: sul bus di
-    Home Assistant, come lo attacca Home Assistant (``platform``: la piattaforma dei
-    trigger ``event``), per gli eventi dei timer che restano entità; poi sul bus dei
-    timer del motore."""
+    """Il trigger ``TRIGGER`` (``motore_timer``): un trigger ``event`` (lo stesso codice,
+    ``attivazioni.aggancia_evento``) due volte: sul bus di Home Assistant, per gli eventi
+    dei timer che restano entità; poi sul bus dei timer del motore."""
     conf_evento = {**conf, CONF_PLATFORM: "event"}
     togli = [
-        await platform.async_attach_trigger(hass, conf_evento, action, info),
-        await trigger_evento.async_attach_trigger(
-            _HassDelMotore(hass),  # type: ignore[arg-type]
-            conf_evento,
-            action,
-            info,
-        ),
+        await aggancia_evento(hass, conf_evento, action, info),
+        await aggancia_evento(hass, conf_evento, action, info, bus=bus_del_motore(hass)),
     ]
 
     @callback
@@ -782,109 +777,3 @@ async def _attacca_trigger_timer(
             una()
 
     return togli_tutto
-
-
-def ha_trigger_timer(configurazioni: Iterable[Mapping[str, Any]]) -> bool:
-    """Ci sono trigger dei timer del motore?"""
-    return any(conf.get(CONF_PLATFORM) == TRIGGER for conf in configurazioni)
-
-
-async def inizializza_trigger(
-    hass: HomeAssistant,
-    trigger_config: list[Mapping[str, Any]],
-    action: Callable[..., Any],
-    domain: str,
-    name: str,
-    log_cb: Callable[..., Any],
-    variables: Any = None,
-    *,
-    did_not_trigger: Any = None,
-) -> CALLBACK_TYPE | None:
-    """``helpers.trigger.async_initialize_triggers`` (le stesse righe) con i trigger dei
-    timer del motore (``TRIGGER``): stessi id, indici e ordine degli altri trigger."""
-    triggers: list[asyncio.Task[CALLBACK_TYPE]] = []
-    for idx, conf in enumerate(trigger_config):
-        if CONF_ENABLED in conf:
-            enabled = conf[CONF_ENABLED]
-            if hasattr(enabled, "async_render"):
-                try:
-                    enabled = enabled.async_render(variables, limited=True)
-                except TemplateError as err:
-                    log_cb(logging.ERROR, f"Error rendering enabled template: {err}")
-                    continue
-            if not enabled:
-                continue
-
-        trigger_key: str = conf[CONF_PLATFORM]
-        # un trigger dei timer del motore è un trigger «event» di Home Assistant
-        timer_del_motore = trigger_key == TRIGGER
-        if timer_del_motore:
-            trigger_key = "event"
-        platform_domain, platform = await _async_get_trigger_platform(hass, trigger_key)
-        trigger_id = conf.get(CONF_ID, f"{idx}")
-        trigger_idx = f"{idx}"
-        trigger_alias = conf.get(CONF_ALIAS)
-        trigger_data = TriggerData(id=trigger_id, idx=trigger_idx, alias=trigger_alias)
-        info = TriggerInfo(
-            domain=domain,
-            name=name,
-            variables=variables,
-            trigger_data=trigger_data,
-        )
-
-        if not await _async_is_legacy_trigger(hass, platform, trigger_key):
-            if timer_del_motore:
-                raise HomeAssistantError("il trigger event non è più un trigger legacy")
-            trigger_descriptors = await platform.async_get_triggers(hass)
-            relative_trigger_key = get_relative_description_key(
-                platform_domain, trigger_key
-            )
-            trigger_cls = trigger_descriptors[relative_trigger_key]
-            coro = _async_attach_trigger_cls(
-                hass,
-                trigger_cls,
-                trigger_key,
-                conf,  # type: ignore[arg-type]
-                action,
-                info,
-                did_not_trigger,
-            )
-        else:
-            action_wrapper = _trigger_action_wrapper(hass, action, conf)  # type: ignore[arg-type]
-            if timer_del_motore:
-                coro = _attacca_trigger_timer(
-                    hass, conf, action_wrapper, info, platform
-                )
-            else:
-                coro = platform.async_attach_trigger(hass, conf, action_wrapper, info)
-
-        triggers.append(create_eager_task(coro))
-
-    attach_results = await asyncio.gather(*triggers, return_exceptions=True)
-    removes: list[Callable[[], None]] = []
-
-    for result in attach_results:
-        if isinstance(result, HomeAssistantError):
-            log_cb(logging.ERROR, f"Got error '{result}' when setting up triggers for")
-        elif isinstance(result, Exception):
-            log_cb(logging.ERROR, "Error setting up trigger", exc_info=result)
-        elif isinstance(result, BaseException):
-            raise result from None
-        elif result is None:
-            log_cb(  # type: ignore[unreachable]
-                logging.ERROR, "Unknown error while setting up trigger (empty result)"
-            )
-        else:
-            removes.append(result)
-
-    if not removes:
-        return None
-
-    log_cb(logging.INFO, "Initialized trigger")
-
-    @callback
-    def remove_triggers() -> None:
-        for remove in removes:
-            remove()
-
-    return remove_triggers
