@@ -274,6 +274,24 @@ def configurazione_package(cartelle: Iterable[Path]) -> dict[str, Any]:
     return config
 
 
+def _senza_ora_delle_medie(blocco: dict[str, Any]) -> dict[str, Any]:
+    """Il blocco delle medie (azione ``recorder.get_statistics``) senza il trigger
+    ``time_pattern`` del minuto 5: senza recorder nelle prove l'azione non c'è e il blocco,
+    al minuto 5 dell'orologio vero, lascia un'eccezione che fa fallire la prova solo se
+    gira in quel minuto. Le medie le scrive la prova (``dai_valori_alle_memorie``); gli
+    altri blocchi restano come sono."""
+    azioni = blocco.get("actions") or blocco.get("action") or []
+    if not any(a.get("action") == "recorder.get_statistics" for a in azioni):
+        return blocco
+    trigger = [
+        t
+        for t in blocco.get("triggers") or blocco.get("trigger") or []
+        if (t.get("trigger") or t.get("platform")) != "time_pattern"
+    ]
+    chiave = "triggers" if "triggers" in blocco else "trigger"
+    return {**blocco, chiave: trigger}
+
+
 async def carica_package(
     hass: HomeAssistant,
     cartelle: Iterable[Path],
@@ -286,6 +304,8 @@ async def carica_package(
     vanno in rete. ``automazioni_personali`` e ``script_personali``: quelli dell'utente
     (automations.yaml, scripts.yaml)."""
     config = configurazione_package(cartelle)
+    if not hass.services.has_service("recorder", "get_statistics"):
+        config["template"] = [_senza_ora_delle_medie(b) for b in config["template"]]
     for dominio in DOMINI_AIUTANTI:
         assert await async_setup_component(hass, dominio, {dominio: config[dominio]})
     assert await async_setup_component(
