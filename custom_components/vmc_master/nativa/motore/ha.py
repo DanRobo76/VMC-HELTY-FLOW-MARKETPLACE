@@ -201,6 +201,39 @@ class CondizioniAutomazione:
         """Niente da liberare."""
 
 
+# La pagina di un'automazione (Impostazioni → Automazioni e scenari) chiede la sua
+# configurazione a Home Assistant (``automation/config``, cioè ``raw_config``): con None la
+# pagina non si apre mai e gira all'infinito. Le automazioni del motore non hanno YAML: la
+# pagina mostra il nome e la descrizione, senza attivazioni, condizioni e azioni (sono nel
+# codice dell'integrazione), in sola lettura come ogni automazione fuori da automations.yaml;
+# con l'id il pulsante «Tracce» della pagina apre l'elenco delle esecuzioni.
+NOTA_CONFIGURAZIONE = (
+    "Automazione dell'integrazione VMC Master: attivazioni, condizioni e azioni sono nel "
+    "codice dell'integrazione, perciò qui risultano vuote e non si modificano (Migra ne "
+    "farebbe solo una copia vuota)."
+)
+
+
+def configurazione_mostrata(
+    id_: str | None, alias: str, descrizione: str | None
+) -> dict[str, Any]:
+    """La configurazione che la pagina dell'automazione mostra (``raw_config``)."""
+    testo = (
+        f"{NOTA_CONFIGURAZIONE}\n\n{descrizione}"
+        if descrizione
+        else NOTA_CONFIGURAZIONE
+    )
+    mostrata: dict[str, Any] = {"id": id_} if id_ is not None else {}
+    return {
+        **mostrata,
+        "alias": alias,
+        "description": testo,
+        "triggers": [],
+        "conditions": [],
+        "actions": [],
+    }
+
+
 class AutomazioneMotore(AutomationEntity):
     """Un'automazione del package con il motore tradotto."""
 
@@ -287,9 +320,11 @@ class ScriptMotore(ScriptEntity):
 def _voce_ricaricata(entita: Any) -> tuple[Any, Any] | None:
     """La voce della configurazione riletta che corrisponde a un'entità del motore
     (None per le altre entità): per un'automazione stesso id e stesso nome, per uno
-    script stessa chiave; raw_config None, come l'entità."""
+    script stessa chiave; raw_config quello dell'entità (per un'automazione la
+    configurazione mostrata dalla sua pagina, per uno script None)."""
     if isinstance(entita, AutomazioneMotore):
         voce = AutomationConfig({CONF_ALIAS: entita.name})
+        voce.raw_config = entita.raw_config
         if entita.unique_id is not None:
             voce[CONF_ID] = entita.unique_id
         return None, voce
@@ -391,7 +426,7 @@ class Motore:
             a.stato_iniziale,
             variabili,
             None,
-            None,
+            configurazione_mostrata(a.id, a.alias, a.descrizione),
             None,
             _tracce(),
         )

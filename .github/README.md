@@ -27,7 +27,7 @@
 
 <p align="center">
   <strong>La tua ventilazione meccanica controllata in Home Assistant.</strong><br>
-  Integrazione per VMC Helty Flow Plus / Elite: si installa dal Marketplace di Home Assistant e ogni VMC si aggiunge con il suo IP.
+  Integrazione per VMC Helty Flow Plus / Elite.
 </p>
 
 <p align="center">
@@ -48,7 +48,7 @@
 
 | <sub>Funzione</sub> | <sub>Vantaggio</sub> |
 |---|---|
-| <sub>**Installazione dal Marketplace**</sub> | <sub>Nessun file da copiare e nessuna riga da aggiungere a `configuration.yaml` (solo due per le Notifiche Audio); gli aggiornamenti arrivano dal Marketplace</sub> |
+| <sub>**Installazione dal Marketplace**</sub> | <sub>Nessun file da copiare e nessuna riga da aggiungere a `configuration.yaml` (solo due per le Notifiche Audio, se mancano); gli aggiornamenti arrivano dal Marketplace</sub> |
 | <sub>**Logiche con priorità**</sub> | <sub>Congelamento, Δ temperatura, inquinanti, punto di rugiada, Free Cooling / Free Heating, umidità e black-out gestiti in un ordine preciso, con ripresa automatica</sub> |
 | <sub>**Controllo del punto di rugiada**</sub> | <sub>La VMC si arresta quando porterebbe in casa umidità dall'esterno</sub> |
 | <sub>**Free Cooling / Free Heating**</sub> | <sub>Nessun raffrescamento o riscaldamento indesiderato nei mesi programmati; aria calda o fresca gratuita quando conviene</sub> |
@@ -163,11 +163,19 @@ actions:
 <details>
 <summary><strong>Installazione</strong></summary>
 
-1. **Solo per le Notifiche Audio, modificare `configuration.yaml`** (una volta sola):
+| 📌 **1. Aggiungere il repository** (primo passo) |
+|---|
+| aprire *Impostazioni → Marketplace → ⋮ → Repository personalizzate → Aggiungi dal collegamento* |
+| incollare `https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER` |
+| premere **Aggiungi**, poi **Continue** |
+| seguire le indicazioni di Home Assistant, autorizzando HACS |
+
+2. **Installare**: cercare **VMC Master** nel Marketplace e premere **Installa**.
+3. **Notifiche Audio**: si suggerisce di verificare che `configuration.yaml` contenga la stringa `tts:` (una volta sola):
    - installare l'app **File editor**: *Impostazioni → Applicazioni → Installa app → File editor → Installa*;
    - premere **Avvia**, poi **Apri l'interfaccia web**;
    - premere l'icona della **cartella** in alto a sinistra e scegliere `configuration.yaml`;
-   - aggiungere in fondo:
+   - se sono già presenti le righe seguenti, chiudere il file senza modificarlo:
 
      ```yaml
      tts:
@@ -175,13 +183,7 @@ actions:
      ```
 
      Servono proprio queste righe: aggiungere Google Translate solo da *Impostazioni → Dispositivi e servizi* non basta e le Notifiche Audio resterebbero mute;
-   - salvare con l'icona del **dischetto**.
-2. **Aggiungere il repository**:
-   - aprire *Impostazioni → Marketplace → ⋮ → Repository personalizzate → Aggiungi dal collegamento*;
-   - incollare `https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER`;
-   - premere **Aggiungi**, poi **Continue**;
-   - seguire le indicazioni di Home Assistant, autorizzando HACS.
-3. **Installare**: cercare **VMC Master** nel Marketplace e premere **Installa**.
+   - in caso di assenza, per le Notifiche Audio aggiungerle in fondo al file e salvare con l'icona del **dischetto**.
 4. **Aggiungere la VMC**: *Impostazioni → Dispositivi e servizi → pulsante «Aggiungi integrazione» in basso a destra → VMC Master*.
    - VMC nuova, mai collegata: vedere **VMC nuova** qui sotto.
    - VMC già collegata al Wi-Fi di casa:
@@ -206,8 +208,6 @@ actions:
 6. **Una volta per ogni VMC**, nel pannello **Opzioni** della scheda:
    - premere **Sensori Opzionati** (icona chip di memoria);
    - scegliere i sensori.
-
-   Il **Profilo Inizializzazione** parte da solo, una volta, 140 s dopo l'aggiunta di una VMC nuova (se la VMC è spenta, quando si accende).
 
 **Altre VMC**: ripetere il punto 4.
 
@@ -247,73 +247,6 @@ Per controllare subito se c'è una nuova versione: pagina di VMC Master **⋮ �
 
 Se subito dopo un riavvio di Home Assistant la scheda mostra «Custom element doesn't exist», ricaricare la pagina.
 
-</details>
-
-<details>
-<summary><strong>Passaggio dalla beta</strong></summary>
-
-Per chi ha una beta che scrive i file in `/config/packages`.
-
-**Prima**: fare un backup di Home Assistant (*Impostazioni → Sistema → Backup*).
-
-**Passaggio**, una volta sola per tutte le VMC:
-1. quando il Marketplace segnala la nuova versione, premere **Aggiorna**;
-2. riavviare Home Assistant;
-3. in *Impostazioni → Riparazioni* aprire **«VMC Master: finire il passaggio dalla beta»** e premere **Invia**;
-4. premere di nuovo **Invia** per riavviare Home Assistant.
-
-Le impostazioni restano.
-
-La scheda si aggiorna da sola.
-
-Nel Marketplace il repository ora si chiama VMC-HELTY-FLOW-MASTER: non serve fare niente.
-
-**Cosa cambia**
-- In `/config/packages` non restano file della VMC.
-- La riga `packages:` aggiunta in `configuration.yaml` per la beta non serve più: può restare.
-- I sensori tengono nome e cronologia.
-- Le impostazioni cambiano dominio: cambia solo la parte prima del punto. Esempio: `input_boolean.vmc_‹nome›_opzioni_accendi_spegni_vmc_vs_calendario` diventa `switch.vmc_‹nome›_opzioni_accendi_spegni_vmc_vs_calendario`.
-- La cronologia delle impostazioni riparte da zero.
-- I timer diventano sensori con l'ora di fine: lo stato è `unknown` quando il timer è fermo.
-- I servizi `shell_command.vmc_‹nome›_…` diventano pulsanti: tabella in *Funzionalità complete*.
-- Automazioni, script e plance personali con i vecchi nomi vanno aggiornati.
-
-<!-- inizio riepilogo dei nomi (generato da tests/nativa/genera_elenco_nomi.py) -->
-
-| <sub>Oggi</sub> | <sub>Versione nativa</sub> | <sub>Quante</sub> |
-|---|---|---:|
-| <sub>`input_boolean`</sub> | <sub>`binary_sensor`</sub> | <sub>77</sub> |
-| <sub>`input_boolean`</sub> | <sub>`switch`</sub> | <sub>37</sub> |
-| <sub>`input_datetime`</sub> | <sub>`time`</sub> | <sub>30</sub> |
-| <sub>`input_number`</sub> | <sub>`number`</sub> | <sub>10</sub> |
-| <sub>`input_number`</sub> | <sub>`sensor`</sub> | <sub>1</sub> |
-| <sub>`input_select`</sub> | <sub>`select`</sub> | <sub>14</sub> |
-| <sub>`input_select`</sub> | <sub>`sensor`</sub> | <sub>1</sub> |
-| <sub>`input_text`</sub> | <sub>`sensor`</sub> | <sub>1</sub> |
-| <sub>`input_text`</sub> | <sub>`text`</sub> | <sub>2</sub> |
-| <sub>`timer`</sub> | <sub>`sensor` (ora di fine)</sub> | <sub>34</sub> |
-| <sub>`script`</sub> | <sub>`button`</sub> | <sub>13</sub> |
-| <sub>`shell_command`</sub> | <sub>`button`</sub> | <sub>12</sub> |
-| <sub>`input_boolean`</sub> | <sub>non più entità</sub> | <sub>1</sub> |
-| <sub>`input_number`</sub> | <sub>non più entità</sub> | <sub>32</sub> |
-| <sub>`input_text`</sub> | <sub>non più entità</sub> | <sub>35</sub> |
-| <sub>`script`</sub> | <sub>non più entità</sub> | <sub>38</sub> |
-| <sub>`shell_command`</sub> | <sub>non più entità</sub> | <sub>4</sub> |
-
-<!-- fine riepilogo dei nomi -->
-
-Elenco completo, voce per voce: **[Nomi cambiati](https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER/blob/main/NOMI_NATIVI.md)**.
-
-**Se un sensore o un sensore binario ha «_2» in fondo al nome** (es. `sensor.vmc_‹nome›_status_ip_2`):
-1. aprire *Impostazioni → Dispositivi e servizi → Entità*;
-2. cercare il nome senza «_2»;
-3. aprire la vecchia entità, quella con stato **Non fornito**;
-4. ingranaggio → **Elimina**;
-5. aprire l'entità con «_2»;
-6. ingranaggio → nel campo **ID entità** togliere «_2»;
-7. premere **Aggiorna**.
-
-La cronologia di prima continua.
 </details>
 
 <details>
@@ -424,7 +357,7 @@ Ogni pulsante chiede conferma con il popup «Vuoi Procedere?». Per i dettagli a
 
 <p align="center">
   <strong>Your mechanical ventilation, controlled in Home Assistant.</strong><br>
-  Integration for Helty Flow Plus / Elite MVHR units: install it from the Home Assistant Marketplace and add each unit with its IP.
+  Integration for Helty Flow Plus / Elite MVHR units.
 </p>
 
 <p align="center">
@@ -453,7 +386,7 @@ Ogni pulsante chiede conferma con il popup «Vuoi Procedere?». Per i dettagli a
 
 | <sub>Function</sub> | <sub>Advantage</sub> |
 |---|---|
-| <sub>**Marketplace install**</sub> | <sub>No files to copy and no lines to add to `configuration.yaml` (only two for audio notifications); updates come from the Marketplace</sub> |
+| <sub>**Marketplace install**</sub> | <sub>No files to copy and no lines to add to `configuration.yaml` (only two for audio notifications, if missing); updates come from the Marketplace</sub> |
 | <sub>**Prioritized logic**</sub> | <sub>Freezing, temperature Δ, pollutants, dew point, Free Cooling / Free Heating, humidity and power failure handled in a precise order, with automatic recovery</sub> |
 | <sub>**Dew point control**</sub> | <sub>The unit stops when it would bring outdoor humidity indoors</sub> |
 | <sub>**Free Cooling / Free Heating**</sub> | <sub>No unwanted cooling or heating in the scheduled months; free warm or cool air when it pays off</sub> |
@@ -567,11 +500,19 @@ actions:
 <details>
 <summary><strong>Installation</strong></summary>
 
-1. **Only for audio notifications, edit `configuration.yaml`** (once):
+| 📌 **1. Add the repository** (first step) |
+|---|
+| open *Settings → Marketplace → ⋮ → Custom repositories → Add from link* |
+| paste `https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER` |
+| press **Add**, then **Continue** |
+| follow Home Assistant's instructions, authorizing HACS |
+
+2. **Install**: search for **VMC Master** in the Marketplace and press **Install**.
+3. **Audio notifications**: it is recommended to check that `configuration.yaml` contains the `tts:` string (once):
    - install the **File editor** app: *Settings → Apps → Install app → File editor → Install*;
    - press **Start**, then **Open web UI**;
    - press the **folder** icon at the top left and choose `configuration.yaml`;
-   - add at the end:
+   - if the following lines are already present, close the file without changing it:
 
      ```yaml
      tts:
@@ -579,13 +520,7 @@ actions:
      ```
 
      These exact lines are needed: adding Google Translate only from *Settings → Devices & services* is not enough and the audio notifications stay silent;
-   - save with the **disk** icon.
-2. **Add the repository**:
-   - open *Settings → Marketplace → ⋮ → Custom repositories → Add from link*;
-   - paste `https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER`;
-   - press **Add**, then **Continue**;
-   - follow Home Assistant's instructions, authorizing HACS.
-3. **Install**: search for **VMC Master** in the Marketplace and press **Install**.
+   - if they are missing, add them at the end of the file for audio notifications and save with the **disk** icon.
 4. **Add the unit**: *Settings → Devices & services → «Add integration» button at the bottom right → VMC Master*.
    - New unit, never connected: see **New unit** below.
    - Unit already on the home Wi-Fi:
@@ -610,8 +545,6 @@ actions:
 6. **Once per unit**, in the card's **Opzioni** panel:
    - press **Sensori Opzionati** (memory chip icon);
    - pick the sensors.
-
-   The **Profilo Inizializzazione** runs by itself, once, 140 s after a new unit is added (if the unit is off, when it is switched on).
 
 **More units**: repeat step 4.
 
@@ -651,73 +584,6 @@ To check at once for a new version: VMC Master page **⋮ → Refresh informatio
 
 If the card shows «Custom element doesn't exist» right after a Home Assistant restart, reload the page.
 
-</details>
-
-<details>
-<summary><strong>Switching from the beta</strong></summary>
-
-For those with a beta that writes files to `/config/packages`.
-
-**First**: make a Home Assistant backup (*Settings → System → Backups*).
-
-**Switch**, once for all units:
-1. when the Marketplace shows the new version, press **Update**;
-2. restart Home Assistant;
-3. in *Settings → Repairs* open **«VMC Master: finish the switch from the beta»** and press **Submit**;
-4. press **Submit** again to restart Home Assistant.
-
-Settings are kept.
-
-The card updates by itself.
-
-In the Marketplace the repository is now called VMC-HELTY-FLOW-MASTER: nothing to do.
-
-**What changes**
-- No unit files are left in `/config/packages`.
-- The `packages:` line added to `configuration.yaml` for the beta is no longer needed: it can stay.
-- Sensors keep their name and history.
-- Settings change domain: only the part before the dot changes. Example: `input_boolean.vmc_‹name›_opzioni_accendi_spegni_vmc_vs_calendario` becomes `switch.vmc_‹name›_opzioni_accendi_spegni_vmc_vs_calendario`.
-- Settings history starts again from zero.
-- Timers become end-time sensors: the state is `unknown` while the timer is stopped.
-- The `shell_command.vmc_‹name›_…` services become buttons: table in *Full feature list*.
-- Your own automations, scripts and dashboards that use the old names must be updated.
-
-<!-- inizio riepilogo dei nomi (generato da tests/nativa/genera_elenco_nomi.py) -->
-
-| <sub>Today</sub> | <sub>Native version</sub> | <sub>How many</sub> |
-|---|---|---:|
-| <sub>`input_boolean`</sub> | <sub>`binary_sensor`</sub> | <sub>77</sub> |
-| <sub>`input_boolean`</sub> | <sub>`switch`</sub> | <sub>37</sub> |
-| <sub>`input_datetime`</sub> | <sub>`time`</sub> | <sub>30</sub> |
-| <sub>`input_number`</sub> | <sub>`number`</sub> | <sub>10</sub> |
-| <sub>`input_number`</sub> | <sub>`sensor`</sub> | <sub>1</sub> |
-| <sub>`input_select`</sub> | <sub>`select`</sub> | <sub>14</sub> |
-| <sub>`input_select`</sub> | <sub>`sensor`</sub> | <sub>1</sub> |
-| <sub>`input_text`</sub> | <sub>`sensor`</sub> | <sub>1</sub> |
-| <sub>`input_text`</sub> | <sub>`text`</sub> | <sub>2</sub> |
-| <sub>`timer`</sub> | <sub>`sensor` (end time)</sub> | <sub>34</sub> |
-| <sub>`script`</sub> | <sub>`button`</sub> | <sub>13</sub> |
-| <sub>`shell_command`</sub> | <sub>`button`</sub> | <sub>12</sub> |
-| <sub>`input_boolean`</sub> | <sub>no longer an entity</sub> | <sub>1</sub> |
-| <sub>`input_number`</sub> | <sub>no longer an entity</sub> | <sub>32</sub> |
-| <sub>`input_text`</sub> | <sub>no longer an entity</sub> | <sub>35</sub> |
-| <sub>`script`</sub> | <sub>no longer an entity</sub> | <sub>38</sub> |
-| <sub>`shell_command`</sub> | <sub>no longer an entity</sub> | <sub>4</sub> |
-
-<!-- fine riepilogo dei nomi -->
-
-Full list, item by item: **[Changed names](https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER/blob/main/NOMI_NATIVI.md)**.
-
-**If a sensor or binary sensor has «_2» at the end of its name** (e.g. `sensor.vmc_‹name›_status_ip_2`):
-1. open *Settings → Devices & services → Entities*;
-2. search for the name without «_2»;
-3. open the old entity, the one with status **Not provided**;
-4. gear → **Delete**;
-5. open the entity with «_2»;
-6. gear → in the **Entity ID** field remove «_2»;
-7. press **Update**.
-
-The earlier history continues.
 </details>
 
 <details>
