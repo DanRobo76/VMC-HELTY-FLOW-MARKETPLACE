@@ -23,8 +23,8 @@ Comandi
 Ogni ``shell_command`` del package è un ``Comando`` di ``ComandiVMC``. Chi lo chiama non
 cambia: ``shell_command.<nome>`` arriva qui dal contesto del motore
 (``Contesto.chiama_servizio``) e dai pulsanti. Al posto di ``printf ... | nc`` e dei file
-.sh il comando va alla VMC con il client TCP (``invia``); il cambio d'indirizzo va
-all'integrazione (``cambia_ip``).
+.sh il comando va alla VMC con il client TCP (``invia``). Il comando che scriveva l'IP
+nei file non c'è (b46): l'IP si cambia solo dall'ingranaggio della VMC.
 
 Le automazioni del package che ascoltano le chiamate dei comandi (trigger ``event`` su
 ``call_service`` con ``domain: shell_command``) restano le stesse: ``ComandiVMC`` è il
@@ -71,7 +71,7 @@ from homeassistant.helpers.template import Template
 from homeassistant.util.async_ import create_eager_task
 
 from ..client import ErroreVMC
-from .definizioni import COMANDO_IP, COMANDO_NESSUNO, COMANDO_NOME, COMANDO_VMC, Comando
+from .definizioni import COMANDO_NESSUNO, COMANDO_NOME, COMANDO_VMC, Comando
 
 if TYPE_CHECKING:
     from .contesto import Contesto
@@ -93,12 +93,8 @@ AGGANCIO = "aggancio_comandi"
 # Come vmc_<nome>_script_cambio_nome.sh (con LC_ALL=C): da 1 a 10 tra lettere senza
 # accenti, cifre, «_» e «-».
 _NOME_VALIDO = re.compile(r"[A-Za-z0-9_-]{1,10}")
-# Come vmc_<nome>_script_cambio_ip.sh: 4 numeri da 0 a 255 senza zeri iniziali.
-_OTTETTO = r"(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])"
-_IP_VALIDO = re.compile(rf"({_OTTETTO}\.){{3}}{_OTTETTO}")
 
 Invia = Callable[[str], Awaitable[Any]]
-CambiaIp = Callable[[str], Awaitable[Any]]
 
 
 # --- script ----------------------------------------------------------------------------
@@ -265,18 +261,6 @@ def nome_valido(argomenti: list[str]) -> str | None:
     return nome if _NOME_VALIDO.fullmatch(nome) else None
 
 
-def ip_valido(argomenti: list[str]) -> str | None:
-    """L'indirizzo che vmc_<nome>_script_cambio_ip.sh accetta (un solo argomento, 4
-    numeri da 0 a 255 senza zeri iniziali, non 0.x, 127.x, 169.254.x, da 224.x in su),
-    o None."""
-    if len(argomenti) != 1 or not _IP_VALIDO.fullmatch(ip := argomenti[0]):
-        return None
-    primo, secondo = (int(n) for n in ip.split(".")[:2])
-    if primo in (0, 127) or primo >= 224 or (primo == 169 and secondo == 254):
-        return None
-    return ip
-
-
 class ComandiVMC:
     """I comandi di shell del package di una VMC, con l'aggancio per chi li ascolta."""
 
@@ -286,13 +270,11 @@ class ComandiVMC:
         comandi: Iterable[Comando],
         *,
         invia: Invia | None = None,
-        cambia_ip: CambiaIp | None = None,
     ) -> None:
         self.c = c
         self.hass = c.hass
         self.comandi = {comando.nome: comando for comando in comandi}
         self.invia = invia
-        self.cambia_ip = cambia_ip
         self._ascoltatori: list[
             tuple[HassJob[[Event], Any], Callable[[Mapping[str, Any]], bool] | None]
         ] = []
@@ -438,10 +420,9 @@ class ComandiVMC:
         """``shell_command.<nome>`` (come ``ServiceRegistry.async_call`` e il servizio
         di ``shell_command``): prima chi ascolta, poi il comando.
 
-        Come lo shell_command, un comando che la VMC non riceve o un nome o un indirizzo
-        non validi finiscono nel registro senza errore per chi chiama; un errore nel
-        modello degli argomenti arriva a chi chiama, e così un motore senza ``invia``
-        (o senza ``cambia_ip`` per un indirizzo valido)."""
+        Come lo shell_command, un comando che la VMC non riceve o un nome non valido
+        finiscono nel registro senza errore per chi chiama; un errore nel modello degli
+        argomenti arriva a chi chiama, e così un motore senza ``invia``."""
         comando = self.comandi[nome]
         dati_servizio = dict(dati)
         if bersaglio:
@@ -458,15 +439,6 @@ class ComandiVMC:
                 _LOGGER.error("%s: nome non valido, nulla inviato alla VMC", nome)
             else:
                 uscita, riuscito = await self._invia(nome, f"VMNM {nuovo}")
-        elif comando.tipo == COMANDO_IP:
-            ip = ip_valido(self._argomenti(comando, dati_servizio))
-            if ip is None:
-                riuscito = False
-                _LOGGER.error("%s: indirizzo IP non valido, nulla cambiato", nome)
-            elif self.cambia_ip is None:
-                raise HomeAssistantError(f"{nome}: nessun modo di cambiare l'indirizzo")
-            else:
-                await self.cambia_ip(ip)
         elif comando.tipo != COMANDO_NESSUNO:
             raise HomeAssistantError(f"{nome}: comando di tipo sconosciuto {comando}")
         if not risposta:

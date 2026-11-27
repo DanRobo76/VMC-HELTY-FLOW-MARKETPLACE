@@ -210,14 +210,6 @@ def k0049(c, V):
     return C.stato(c, V, [c.N('binary_sensor.vmc_master_avvio_home_assistant_in_corso_per_audio')], ['off'])
 
 
-def k0050(c, V):
-    return C.modello(c, M.m0063, V)
-
-
-def k0051(c, V):
-    return C.modello(c, M.m0064, V)
-
-
 def k0052(c, V):
     return C.modello(c, M.m0074, V)
 

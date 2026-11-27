@@ -11,10 +11,12 @@ from .genera_elenco_nomi import (
     PAGINA,
     README,
     SEGNAPOSTO,
+    TOLTA,
     gruppi,
     pagina,
     riepiloghi_nel_testo,
     voci,
+    voci_tolte,
 )
 
 RIGENERA = (
@@ -39,12 +41,14 @@ def test_readme_senza_passaggio_dalla_beta(percorso) -> None:
 
 
 def test_conteggi() -> None:
-    """342 voci: 173 impostazioni che cambiano dominio, 34 timer che diventano sensori,
-    25 pulsanti (13 script e 12 comandi), 110 interne (68 valori e 38 script, cioè le 106
-    del solo elenco «Pulisci cronologia», più 4 comandi di shell)."""
+    """342 voci: 172 impostazioni che cambiano dominio, 34 timer che diventano sensori,
+    25 pulsanti (13 script e 12 comandi), 108 interne (67 valori e 38 script, cioè le 105
+    del solo elenco «Pulisci cronologia», più 3 comandi di shell), 3 tolte; con le tolte
+    anche un sensore e un'automazione, che non sono fra le 342 (b46: il campo «Cambia IP
+    VMC» e chi lo serve)."""
     tutte = voci()
     assert len(tutte) == 342
-    impostazioni, timer, pulsanti, interne = (g.voci for g in gruppi(tutte))
+    impostazioni, timer, pulsanti, interne, tolte = (g.voci for g in gruppi(tutte))
     assert Counter((v.dominio, v.domani) for v in impostazioni) == {
         ("input_boolean", "switch"): 37,
         ("input_boolean", "binary_sensor"): 77,
@@ -52,34 +56,54 @@ def test_conteggi() -> None:
         ("input_number", "sensor"): 1,
         ("input_select", "select"): 14,
         ("input_select", "sensor"): 1,
-        ("input_text", "text"): 2,
+        ("input_text", "text"): 1,
         ("input_text", "sensor"): 1,
         ("input_datetime", "time"): 30,
     }
-    assert len(impostazioni) == 173
+    assert len(impostazioni) == 172
     assert Counter((v.dominio, v.domani) for v in timer) == {("timer", "sensor"): 34}
     assert Counter(v.dominio for v in pulsanti) == {"script": 13, "shell_command": 12}
     assert Counter(v.dominio for v in interne) == {
         "input_number": 32,
-        "input_text": 35,
+        "input_text": 34,
         "input_boolean": 1,
         "script": 38,
-        "shell_command": 4,
+        "shell_command": 3,
     }
     valori = [v for v in interne if v.dominio not in ("script", "shell_command")]
     script = [v for v in interne if v.dominio == "script"]
     assert (len(valori), len(script), len(valori) + len(script), len(interne)) == (
-        68,
+        67,
         38,
-        106,
-        110,
+        105,
+        108,
     )
+    assert sum(v.tolta for v in tutte) == 3
+    assert sorted(v.oggi_per_vmc("zeta") for v in tolte) == [
+        "automation.vmc_zeta_cambio_ip_vmc_riavvio_di_h_a",
+        "input_text.vmc_zeta_ip_insert",
+        "input_text.vmc_zeta_ip_insert_esito",
+        "sensor.vmc_zeta_verifica_ip_inserito",
+        "shell_command.vmc_zeta_aggiorna_indirizzo_ip",
+    ]
+    assert all(v.domani == TOLTA and v.domani_per_vmc("zeta") is None for v in tolte)
+
+
+def test_voci_tolte_tutte_in_tabelle() -> None:
+    """Una voce tolta della fase 1 che non è in tabelle.TOLTE ferma il generatore."""
+    tutte = voci()
+    voce = next(v for v in tutte if v.interna)
+    finta = type(voce)(voce.chiave, TOLTA, voce.nome)
+    with pytest.raises(ValueError, match="TOLTE"):
+        voci_tolte([*tutte, finta])
 
 
 def test_ogni_voce_in_un_solo_gruppo() -> None:
-    """I gruppi coprono tutte le voci, ognuna una volta sola."""
+    """I gruppi coprono tutte le voci, ognuna una volta sola (con le tolte che non sono
+    nella fase 1)."""
     chiavi = [v.chiave for g in gruppi() for v in g.voci]
-    assert sorted(chiavi) == sorted(v.chiave for v in voci())
+    tutte = {v.chiave for v in voci()} | {v.chiave for v in voci_tolte()}
+    assert sorted(chiavi) == sorted(tutte)
 
 
 def test_stesso_oggetto_dopo_il_punto() -> None:
@@ -87,7 +111,7 @@ def test_stesso_oggetto_dopo_il_punto() -> None:
     for voce in voci():
         oggi, domani = voce.per_vmc("zeta")
         assert oggi == f"{voce.dominio}.vmc_zeta_{voce.oggetto}"
-        if voce.domani == INTERNA:
+        if voce.domani in (INTERNA, TOLTA):
             assert domani is None
         else:
             assert domani == f"{voce.domani}.vmc_zeta_{voce.oggetto}"

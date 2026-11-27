@@ -1058,7 +1058,7 @@ async def _corsa_ciclo(
     ``esito["tolti"]``). ``codice`` è il codice del motore tradotto con gli script e i
     comandi dentro il motore (``comandi=``), anche insieme a ``timer_motore``.
 
-    Con ``memoria`` (fase 4) i 68 valori interni sono fuori dal registro: i loro cambi
+    Con ``memoria`` (fase 4) i 67 valori interni sono fuori dal registro: i loro cambi
     di stato e le chiamate con soli valori interni vanno in ``interni`` e
     ``chiamate_interne`` (``banco_memoria.Smistatore``), ``homeassistant.update_entity``
     è senza di loro; con il motore ``codice`` è tradotto anche con ``interni=INTERNI`` e
@@ -1330,12 +1330,7 @@ async def _corsa_ciclo(
                         raise ErroreVMC("VMC spenta")
                     return ""
 
-                async def cambia_ip(_ip: str) -> None:
-                    """L'indirizzo nuovo all'integrazione: niente da fare qui."""
-
-                argomenti.update(
-                    comandi=codice.comandi, invia=invia, cambia_ip=cambia_ip
-                )
+                argomenti.update(comandi=codice.comandi, invia=invia)
             if memoria_interna is not None:
                 assert modelli_entita_con_memoria(hass, memoria_interna)
             m = Motore(hass, memoria=memoria_interna)

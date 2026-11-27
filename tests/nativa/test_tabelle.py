@@ -16,11 +16,11 @@ def test_tabelle_aggiornate() -> None:
 
 
 def test_conteggi() -> None:
-    """137 sensori (121 modelli, 10 con memoria, 4 letture, ping, versione) e 275 helper."""
+    """136 sensori (120 modelli, 10 con memoria, 4 letture, ping, versione) e 273 helper."""
     tipi: dict[str, int] = {}
     for voce in tabelle.SENSORI.values():
         tipi[voce["tipo"]] = tipi.get(voce["tipo"], 0) + 1
-    assert tipi == {"modello": 121, "memoria": 10, "lettura": 4, "ping": 1, "versione": 1}
+    assert tipi == {"modello": 120, "memoria": 10, "lettura": 4, "ping": 1, "versione": 1}
     domini: dict[str, int] = {}
     for chiave in tabelle.IMPOSTAZIONI:
         dominio = chiave.split(".")[0]
@@ -29,7 +29,7 @@ def test_conteggi() -> None:
         "input_boolean": 115,
         "input_number": 43,
         "input_select": 15,
-        "input_text": 38,
+        "input_text": 36,
         "input_datetime": 30,
         "timer": 34,
     }
@@ -60,8 +60,9 @@ def test_memoria() -> None:
 
 def test_domani() -> None:
     """DOMANI: la colonna «Domani» della fase 1 per le 342 voci del package (aiutanti,
-    script e shell_command): 173 impostazioni visibili, 34 timer come sensori, 25
-    pulsanti, 110 interne."""
+    script e shell_command): 172 impostazioni visibili, 34 timer come sensori, 25
+    pulsanti, 108 interne e 3 tolte (b46: il campo dell'IP, il suo esito e il comando che
+    scriveva l'IP)."""
     coppie: dict[tuple[str, str], int] = {}
     for chiave, dominio in tabelle.DOMANI.items():
         coppia = (chiave.split(".")[0], dominio)
@@ -76,13 +77,15 @@ def test_domani() -> None:
         ("input_number", "sensor"): 1,
         ("input_select", "select"): 14,
         ("input_select", "sensor"): 1,
-        ("input_text", "interna"): 35,
+        ("input_text", "interna"): 34,
         ("input_text", "sensor"): 1,
-        ("input_text", "text"): 2,
+        ("input_text", "text"): 1,
+        ("input_text", "tolta"): 2,
         ("script", "button"): 13,
         ("script", "interna"): 38,
         ("shell_command", "button"): 12,
-        ("shell_command", "interna"): 4,
+        ("shell_command", "interna"): 3,
+        ("shell_command", "tolta"): 1,
         ("timer", "sensor"): 34,
     }
     assert set(tabelle.IMPOSTAZIONI) <= set(tabelle.DOMANI)

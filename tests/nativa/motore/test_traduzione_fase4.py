@@ -38,7 +38,8 @@ async def test_codice_generato_fase4_aggiornato(hass: HomeAssistant) -> None:
 
 
 def test_mappa_della_fase_4() -> None:
-    """La mappa: i 173 aiutanti visibili, stesso oggetto, nessun servizio cambiato."""
+    """La mappa: i 172 aiutanti visibili (dalla b46 senza il campo «Cambia IP VMC»),
+    stesso oggetto, nessun servizio cambiato."""
     mappa = mappa_fase4()
     domini: dict[str, int] = {}
     for vecchia, nuova in mappa.entita.items():
@@ -54,7 +55,7 @@ def test_mappa_della_fase_4() -> None:
         "input_select -> select": 14,
         "input_select -> sensor": 1,
         "input_text -> sensor": 1,
-        "input_text -> text": 2,
+        "input_text -> text": 1,
     }
-    assert sum(domini.values()) == 173
+    assert sum(domini.values()) == 172
     assert not mappa.servizi

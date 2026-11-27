@@ -100,9 +100,15 @@ riga;colonna;tipo;posto;prima;dopo
 545;13;riga conto alla rovescia;riga;timer.vmc_master_countdown_script_agg_sensori;sensor.vmc_master_countdown_script_agg_sensori
 545;21;nome;entity;timer.vmc_master_countdown_script_agg_sensori;sensor.vmc_master_countdown_script_agg_sensori
 554;19;nome;entity;input_boolean.vmc_master_notifica_status_vmc;switch.vmc_master_notifica_status_vmc
-556;19;nome;entity;input_text.vmc_master_ip_insert;text.vmc_master_ip_insert
-574;23;nome;condizione;input_text.vmc_master_ip_insert;text.vmc_master_ip_insert
-586;21;testo;label;IP già usato da un'altra VMC del Package:;IP già usato da un'altra VMC dell'integrazione:
+556;1;riga tolta;riga;input_text.vmc_master_ip_insert;
+558;1;riga tolta;riga condizionale;sensor.vmc_master_verifica_ip_inserito;
+579;1;riga tolta;riga condizionale;sensor.vmc_master_verifica_ip_inserito;
+587;1;riga tolta;riga condizionale;sensor.vmc_master_verifica_ip_inserito;
+595;1;riga tolta;riga condizionale;sensor.vmc_master_verifica_ip_inserito;
+603;1;riga tolta;riga condizionale;sensor.vmc_master_verifica_ip_inserito;
+611;1;riga tolta;riga condizionale;sensor.vmc_master_verifica_ip_inserito;
+619;1;riga tolta;riga condizionale;sensor.vmc_master_verifica_ip_inserito;
+627;1;riga tolta;riga condizionale;sensor.vmc_master_verifica_ip_inserito;
 636;19;nome;entity;script.vmc_master_bottone_panico;button.vmc_master_bottone_panico
 640;29;servizio;perform_action;script.turn_on;button.press
 642;26;nome;entity_id;script.vmc_master_bottone_panico;button.vmc_master_bottone_panico
@@ -1582,9 +1588,15 @@ riga;colonna;tipo;posto;prima;dopo
 10512;31;nome;entity;timer.vmc_master_lettura_nome;sensor.vmc_master_lettura_nome
 10521;27;nome;condizione;input_boolean.vmc_master_opzioni_interruttore_calendario;switch.vmc_master_opzioni_interruttore_calendario
 10558;27;nome;condizione;input_boolean.vmc_master_opzioni_offset_sensori;switch.vmc_master_opzioni_offset_sensori
-10570;29;nome;entity;input_text.vmc_master_ip_insert;text.vmc_master_ip_insert
-10588;33;nome;condizione;input_text.vmc_master_ip_insert;text.vmc_master_ip_insert
-10600;31;testo;label;IP già usato da un'altra VMC del Package:;IP già usato da un'altra VMC dell'integrazione:
+10570;1;riga tolta;riga;input_text.vmc_master_ip_insert;
+10572;1;riga tolta;riga condizionale;sensor.vmc_master_verifica_ip_inserito;
+10593;1;riga tolta;riga condizionale;sensor.vmc_master_verifica_ip_inserito;
+10601;1;riga tolta;riga condizionale;sensor.vmc_master_verifica_ip_inserito;
+10609;1;riga tolta;riga condizionale;sensor.vmc_master_verifica_ip_inserito;
+10617;1;riga tolta;riga condizionale;sensor.vmc_master_verifica_ip_inserito;
+10625;1;riga tolta;riga condizionale;sensor.vmc_master_verifica_ip_inserito;
+10633;1;riga tolta;riga condizionale;sensor.vmc_master_verifica_ip_inserito;
+10641;1;riga tolta;riga condizionale;sensor.vmc_master_verifica_ip_inserito;
 10649;29;nome;entity;input_text.vmc_master_nome_da_inserire;text.vmc_master_nome_da_inserire
 10651;29;nome;entity;input_number.vmc_master_volume_da_inserire;number.vmc_master_volume_da_inserire
 10653;29;nome;entity;input_boolean.vmc_master_opzioni_accendi_spegni_avvisi;switch.vmc_master_opzioni_accendi_spegni_avvisi
@@ -1629,8 +1641,9 @@ riga;colonna;tipo;posto;prima;dopo
 10749;1;elenco;elenco;automation.vmc_master_audio_allerte_e_stato;
 10750;1;elenco;elenco;automation.vmc_master_riallineamento_allerte_al_riavvio;
 10751;1;elenco;elenco;automation.vmc_master_cambio_ip_vmc_riavvio_di_h_a;
+10767;1;elenco;elenco;sensor.vmc_master_verifica_ip_inserito;
 10873;28;nome;elenco;input_text.vmc_master_nome_da_inserire;text.vmc_master_nome_da_inserire
-10874;28;nome;elenco;input_text.vmc_master_ip_insert;text.vmc_master_ip_insert
+10874;1;elenco;elenco;input_text.vmc_master_ip_insert;
 10875;1;elenco;elenco;input_text.vmc_master_ip_insert_esito;
 10876;1;elenco;elenco;input_text.vmc_master_last_temp_external_entity;
 10877;1;elenco;elenco;input_text.vmc_master_last_temp_internal_entity;
@@ -2109,8 +2122,9 @@ riga;colonna;tipo;posto;prima;dopo
 12708;19;testo;modello markdown;<strong>Nota Countdown degli Script</strong>;<strong>Nota Countdown dei Pulsanti</strong>
 12710;19;testo;modello markdown;Mentre gira uno script che dura qualche secondo,;Mentre è in corso un'operazione che dura qualche secondo,
 12713;32;testo;modello markdown;se l'automazione finisce prima gli eventi in coda), Profilo Inizializzazione 10 s, Reset Filtro 5 s. Alla fine dello script la riga scompare. Gli altri script durano al massimo pochi secondi;se l'integrazione finisce prima gli eventi in coda), Profilo Inizializzazione 10 s, Reset Filtro 5 s. Alla fine dell'operazione la riga scompare. Le altre operazioni durano al massimo pochi secondi
-12809;74;testo;modello markdown;Questo controllo vede solo le VMC già attive: una VMC appena aggiunta, in attesa del riavvio di Home Assistant, non viene vista. In quel caso, dopo il riavvio l'integrazione rimette l'IP di prima e lo segnala. Poi l'integrazione controlla;Poi l'integrazione controlla
-12817;38;testo;modello markdown;Altrimenti l'IP viene aggiornato in tutti i file del Package e dopo 2 secondi Home Assistant si riavvia. Il riavvio parte anche se l'Automazione VMC Master sta eseguendo altri eventi.;Altrimenti l'integrazione salva il nuovo IP e dopo 2 secondi Home Assistant si riavvia. Il riavvio parte anche se l'integrazione sta eseguendo altri eventi.
+12755;19;testo;modello markdown;si è appena avviato (per esempio dopo Cambia IP VMC), prima;si è appena avviato, prima
+12803;19;testo;modello markdown;<strong>Nota Cambia IP VMC (Riavvio di H.A.)</strong>;<strong>Nota Cambia IP VMC</strong>
+12805;19;testo;modello markdown;Il campo cambia l'IP con cui Home Assistant comunica con la VMC sulla porta 5001. Sono ammessi quattro numeri da 0 a 255 separati da punti, senza zeri iniziali. Non sono ammessi 0.x.x.x, 127.x.x.x, 169.254.x.x e gli indirizzi da 224.x.x.x in su. L'IP non deve essere già usato da un'altra VMC. Questo controllo vede solo le VMC già attive: una VMC appena aggiunta, in attesa del riavvio di Home Assistant, non viene vista. In quel caso, dopo il riavvio l'integrazione rimette l'IP di prima e lo segnala. Poi l'integrazione controlla che a quell'IP risponda la VMC con il suo nome. Se il nome della VMC non è ancora stato letto, basta che risponda una VMC. Se un controllo non va bene, non cambia nulla e sotto il campo compare il motivo. Altrimenti l'IP viene aggiornato in tutti i file del Package e dopo 2 secondi Home Assistant si riavvia. Il riavvio parte anche se l'Automazione VMC Master sta eseguendo altri eventi. Il campo non chiede conferma: verificare l'IP prima di scriverlo. Per salvare un IP a cui la VMC non risponde: Impostazioni → Dispositivi e servizi, nella pagina dell'integrazione, icona ingranaggio sulla riga della VMC → «Cambia l'IP della VMC».;L'IP della VMC si cambia da *Impostazioni → Dispositivi e servizi → VMC Master → ⚙️ → Cambia l'IP della VMC*.
 12838;19;testo;modello markdown;correttamente alle automazioni e/o comandi.;correttamente alle logiche automatiche e/o ai comandi.
 12841;19;testo;modello markdown;attende che l'automazione termini l'azione in corso;attende che l'integrazione termini l'azione in corso
 12842;49;testo;modello markdown;Inizializza tutte le Variabili Booleane su [False];Inizializza tutte le Spie e tutti gli Interruttori su Off
@@ -2365,9 +2379,15 @@ Riporta i 24 Tempi di Attesa dell'Automazione ai Valori Originali. È compreso n
 13707;41;testo;modello markdown;Il Package confronta il Punto di Rugiada Interno;L'integrazione confronta il Punto di Rugiada Interno
 14085;33;testo;modello markdown;che leggono le spie e le allerte dell'automazione. Servono solo all'interfaccia: non comandano la VMC e non registrano storico.;che leggono le spie e le allerte dell'integrazione. Servono solo all'interfaccia: non comandano la VMC.
 14096;27;nome;condizione;input_boolean.vmc_master_opzioni_offset_sensori;switch.vmc_master_opzioni_offset_sensori
-14108;29;nome;entity;input_text.vmc_master_ip_insert;text.vmc_master_ip_insert
-14126;33;nome;condizione;input_text.vmc_master_ip_insert;text.vmc_master_ip_insert
-14138;31;testo;label;IP già usato da un'altra VMC del Package:;IP già usato da un'altra VMC dell'integrazione:
+14108;1;riga tolta;riga;input_text.vmc_master_ip_insert;
+14110;1;riga tolta;riga condizionale;sensor.vmc_master_verifica_ip_inserito;
+14131;1;riga tolta;riga condizionale;sensor.vmc_master_verifica_ip_inserito;
+14139;1;riga tolta;riga condizionale;sensor.vmc_master_verifica_ip_inserito;
+14147;1;riga tolta;riga condizionale;sensor.vmc_master_verifica_ip_inserito;
+14155;1;riga tolta;riga condizionale;sensor.vmc_master_verifica_ip_inserito;
+14163;1;riga tolta;riga condizionale;sensor.vmc_master_verifica_ip_inserito;
+14171;1;riga tolta;riga condizionale;sensor.vmc_master_verifica_ip_inserito;
+14179;1;riga tolta;riga condizionale;sensor.vmc_master_verifica_ip_inserito;
 14188;29;nome;entity;script.vmc_master_upgrade_sensors;button.vmc_master_upgrade_sensors
 14192;39;servizio;perform_action;script.turn_on;button.press
 14194;36;nome;entity_id;script.vmc_master_upgrade_sensors;button.vmc_master_upgrade_sensors

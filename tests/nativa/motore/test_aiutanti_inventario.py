@@ -61,7 +61,10 @@ async def test_le_voci_sono_quelle_della_fase_1(hass: HomeAssistant) -> None:
         "shell_command": 16,
     }
     interne = [r for r in fase1.values() if r["Domani"].startswith("interna")]
-    assert len(interne) == 110  # con le 14 automazioni fanno le 124 voci «interne»
+    # con le 13 automazioni del motore fanno le 121 voci «interne»; dalla b46 3 voci sono
+    # tolte (il campo «Cambia IP VMC», il suo esito e il comando che scriveva l'IP)
+    assert len(interne) == 108
+    assert sum(r["Domani"] == "tolta" for r in fase1.values()) == 3
 
 
 async def test_i_conti_tornano_con_il_testo(hass: HomeAssistant) -> None:

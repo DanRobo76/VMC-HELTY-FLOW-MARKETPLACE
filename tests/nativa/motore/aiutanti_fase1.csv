@@ -195,8 +195,8 @@ N.;Tipo oggi;Entità oggi;Nome;Uso nella scheda;Scritta da automazioni o script;
 194;input_text;input_text.vmc_master_countdown_umidita_avvio;Avvio Allerta Umidità - Trigger in Attesa;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
 195;input_text;input_text.vmc_master_countdown_umidita_fine;Fine Allerta Umidità - Trigger in Attesa;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
 196;input_text;input_text.vmc_master_countdown_umidita_memoria;Memorizzazione Velocità (Umidità) - Trigger in Attesa;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
-197;input_text;input_text.vmc_master_ip_insert;Cambia IP VMC (Riavvio di H.A.);comandata dalla scheda;no;riparte vuoto;sì;text.vmc_master_ip_insert
-198;input_text;input_text.vmc_master_ip_insert_esito;Esito Verifica VMC al Nuovo IP;solo elenco Pulisci cronologia;sì;riparte vuoto;sì;interna (stato del motore)
+197;input_text;input_text.vmc_master_ip_insert;Cambia IP VMC (Riavvio di H.A.);comandata dalla scheda;no;riparte vuoto;sì;tolta
+198;input_text;input_text.vmc_master_ip_insert_esito;Esito Verifica VMC al Nuovo IP;solo elenco Pulisci cronologia;sì;riparte vuoto;sì;tolta
 199;input_text;input_text.vmc_master_last_co2_internal_entity;Ultima Entità CO₂ interna Selezionata;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
 200;input_text;input_text.vmc_master_last_humidity_external_entity;Ultima Entità Umidità esterna Selezionata;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
 201;input_text;input_text.vmc_master_last_humidity_internal_entity;Ultima Entità Umidità interna Selezionata;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
@@ -325,7 +325,7 @@ N.;Tipo oggi;Entità oggi;Nome;Uso nella scheda;Scritta da automazioni o script;
 324;script;script.vmc_master_reset_filtro_vmc;VMC Master - Reset Filtro;comandata dalla scheda;no;;sì;button.vmc_master_reset_filtro_vmc
 325;script;script.vmc_master_ripristina_tempi_attesa;VMC Master - Ripristina Tempi di Attesa Originali;solo elenco Pulisci cronologia;sì;;sì;interna (stato del motore)
 326;script;script.vmc_master_upgrade_sensors;VMC Master - Agg. Sensori;comandata dalla scheda;sì;;sì;button.vmc_master_upgrade_sensors
-327;shell_command;shell_command.vmc_master_aggiorna_indirizzo_ip;;non usata dalla scheda;sì;;no;interna (stato del motore)
+327;shell_command;shell_command.vmc_master_aggiorna_indirizzo_ip;;non usata dalla scheda;sì;;no;tolta
 328;shell_command;shell_command.vmc_master_cambia_nome;;non usata dalla scheda;sì;;no;interna (stato del motore)
 329;shell_command;shell_command.vmc_master_freecooling;;comandata dalla scheda;sì;;no;button.vmc_master_freecooling
 330;shell_command;shell_command.vmc_master_iperventilazione;;comandata dalla scheda;sì;;no;button.vmc_master_iperventilazione

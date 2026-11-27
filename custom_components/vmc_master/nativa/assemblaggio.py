@@ -4,13 +4,13 @@ Qui si mettono insieme le parti delle fasi 2, 3 e 4 per una VMC, al posto di tut
 package di oggi (aiutanti, timer, script, comandi di shell, automazioni, sensori
 template, tcp, ping e rest):
 
-- ``VMCNativa`` (vmc.py): coordinatori delle letture e ``StatoVMC``, con i 121 modelli;
-- le 137 entità dei sensori: 121 sensori template di Home Assistant con i modelli
+- ``VMCNativa`` (vmc.py): coordinatori delle letture e ``StatoVMC``, con i 120 modelli;
+- le 136 entità dei sensori: 120 sensori template di Home Assistant con i modelli
   tradotti (sensori_template.py: stessi istanti e stesso ordine dei sensori template di
   oggi; i cambi dei timer del motore arrivano a chi li legge con ``AnnunciDeiTimer``),
   gli altri 16 (letture, sensori con memoria) viste su ``StatoVMC`` (entita.py);
-- le 173 impostazioni native (comandi.py), viste su ``StatoVMC``;
-- la memoria interna (motore/memoria_interna.py): i 68 valori interni, con il loro
+- le 172 impostazioni native (comandi.py), viste su ``StatoVMC``;
+- la memoria interna (motore/memoria_interna.py): i 67 valori interni, con il loro
   archivio (``Store``) e i loro cambi anche in ``StatoVMC`` (i sensori che li leggono);
 - il motore (motore/ha.py) con il codice tradotto con tutte le opzioni della fase 4
   (``motore/generato_fase4/``: mappa dei nomi, script e comandi di shell dentro il
@@ -46,7 +46,6 @@ from .client import ClientVMC
 from .comandi import ComandoVMC, ScritturaComandi, crea_comandi
 from .entita import crea_entita, nome_visibile
 from .motore.ha import Motore
-from .motore.interni import CambiaIp
 from .motore.memoria_interna import MemoriaInterna
 from .pulsanti import PulsanteVMC, crea_pulsanti
 from .sensori_template import (
@@ -97,7 +96,6 @@ class VMCAssemblata:
         *,
         client: ClientVMC | None = None,
         prova_ping: Callable[[str], Any] | None = None,
-        cambia_ip: CambiaIp | None = None,
         codice: ModuleType | None = None,
         codice_sensori: ModuleType | None = None,
         versione: bool = True,
@@ -105,12 +103,11 @@ class VMCAssemblata:
         """Le parti della VMC ``nome`` all'indirizzo ``host``.
 
         ``client`` e ``prova_ping`` (facoltativi) sostituiscono il collegamento TCP e il
-        ping veri (prove, simulatore); ``cambia_ip`` è come l'integrazione cambia
-        l'indirizzo della VMC (comando «cambio IP» della scheda); ``codice`` è il codice
-        tradotto (di norma ``generato_fase4``) e ``codice_sensori`` quello dei sensori
-        template (di norma ``generato_fase4.sensori``); con ``versione`` False la lettura della
-        versione su GitHub non c'è (nessun sensore e nessuna lettura: come nel
-        simulatore, che non va in rete).
+        ping veri (prove, simulatore); ``codice`` è il codice tradotto (di norma
+        ``generato_fase4``) e ``codice_sensori`` quello dei sensori template (di norma
+        ``generato_fase4.sensori``); con ``versione`` False la lettura della versione su
+        GitHub non c'è (nessun sensore e nessuna lettura: come nel simulatore, che non va
+        in rete).
         """
         self.hass = hass
         self.nome = nome
@@ -129,7 +126,6 @@ class VMCAssemblata:
         self.motore = Motore(hass, nome, memoria=self.memoria)
         self.c = self.motore.c
         self._codice = codice
-        self._cambia_ip = cambia_ip
         self._versione = versione
         if codice_sensori is None:
             codice_sensori = importlib.import_module(CODICE_SENSORI)
@@ -207,7 +203,6 @@ class VMCAssemblata:
             configurazione,
             comandi=codice.comandi,
             invia=self.client.comanda,
-            cambia_ip=self._cambia_ip,
             timer=configurazione_timer(self.nome),
         )
         # i sensori template dopo il motore: i loro modelli leggono anche dai timer del

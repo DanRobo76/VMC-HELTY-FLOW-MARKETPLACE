@@ -3,10 +3,10 @@
 - I 13 comandi ``printf '<comando>\\n' | timeout 5 nc -w 3 IP 5001`` girano davvero con
   ``sh`` e un ``nc`` finto che annota i byte ricevuti; il client del motore
   (``ClientVMC.comanda``) manda gli stessi byte a una VMC finta in TCP.
-- Il cambio del nome e il cambio dell'IP: i file .sh del package girano davvero con bash
-  su molti testi; il motore (``nome_valido``, ``ip_valido`` e ``ComandiVMC``) decide come
-  loro se e cosa mandare alla VMC, e il nome valido arriva alla VMC con gli stessi byte
-  di ``echo "VMNM <nome>" | nc``.
+- Il cambio del nome: il file .sh del package gira davvero con bash su molti testi; il
+  motore (``nome_valido`` e ``ComandiVMC``) decide come lui se e cosa mandare alla VMC, e
+  il nome valido arriva alla VMC con gli stessi byte di ``echo "VMNM <nome>" | nc``. Dalla
+  b46 il motore non ha il cambio dell'IP (l'IP si cambia dall'ingranaggio della VMC).
 """
 
 from __future__ import annotations
@@ -30,11 +30,7 @@ from custom_components.vmc_master.nativa.motore.definizioni import (
     Comando,
 )
 from custom_components.vmc_master.nativa.motore.esecuzione import Modello
-from custom_components.vmc_master.nativa.motore.interni import (
-    ComandiVMC,
-    ip_valido,
-    nome_valido,
-)
+from custom_components.vmc_master.nativa.motore.interni import ComandiVMC, nome_valido
 
 from ..test_client import VmcFinta
 from .traduci import PACKAGE, _comando, leggi_comandi
@@ -44,15 +40,6 @@ NOMI = [
     "a-b_c", "-n", "-e", "--", "a\tb", "a;b", "a$b", "`id`", "$(id)", "x'y", "*",
     "a*", "?", "[a]", "Z9", "_", "abc\n", "UPPER", "lower12", "a.b", "a/b",
 ]  # fmt: skip
-INDIRIZZI = [
-    "192.168.1.50", "10.0.0.300", "127.0.0.1", "", "169.254.1.1", "0.1.2.3", "224.0.0.1",
-    "192.168.01.5", "8.8.8.8", "169.253.0.1", "169.255.0.1", "223.255.255.255",
-    "255.255.255.255", "1.2.3", "1.2.3.4.5", "1.2.3.4 ", "a.b.c.d", "001.2.3.4",
-    "1.2.3.04", "250.250.250.250", "256.1.1.1", "1.1.1.256", "09.1.1.1", "9.9.9.9",
-    "126.255.255.255", "128.0.0.0", "1.2.3.4\n5.6.7.8", "1..2.3", "100.100.100.100",
-]  # fmt: skip
-
-
 class Shell:
     """Comandi e file .sh veri con un ``nc`` finto che annota i byte ricevuti."""
 
@@ -141,48 +128,6 @@ async def test_cambio_nome_come_il_file_sh(
     assert codice == 0
     await ClientVMC("127.0.0.1", vmc.porta).comanda(f"VMNM {nuovo}")
     assert vmc.ricevuti == [ricevuto]
-
-
-def _cambio_ip(shell: Shell, argomenti: list[str]) -> str | None:
-    """Il file .sh vero dell'IP sui file di una cartella di prova: l'indirizzo scritto,
-    o None se non ha cambiato nulla."""
-    testo = (PACKAGE / "vmc_master_script_cambio_ip.sh").read_text("utf-8")
-    cartella_package = "/config/packages/vmc_helty_flow/master/"
-    yaml = shell.cartella / "vmc.yaml"
-    nome = shell.cartella / "nome.sh"
-    testo = testo.replace(cartella_package + "vmc_master.yaml", str(yaml)).replace(
-        cartella_package + "vmc_master_script_cambio_nome.sh", str(nome)
-    )
-    file = shell.cartella / "cambio_ip.sh"
-    file.write_text(testo, encoding="utf-8")
-    yaml.write_text("host: 10.9.8.7\n", encoding="utf-8")
-    nome.write_text("nc -w 3 10.9.8.7 5001\n", encoding="utf-8")
-    codice, _ = shell.esegui(["bash", str(file), *argomenti])
-    scritto = yaml.read_text("utf-8")
-    if scritto == "host: 10.9.8.7\n":
-        assert codice != 0
-        return None
-    assert codice == 0
-    assert nome.read_text("utf-8") == scritto.replace("host: ", "nc -w 3 ").replace(
-        "\n", " 5001\n"
-    )
-    return scritto.removeprefix("host: ").strip()
-
-
-@pytest.mark.parametrize("valore", INDIRIZZI)
-def test_cambio_ip_come_il_file_sh(shell: Shell, valore: str) -> None:
-    """Il motore accetta un indirizzo quando lo accetta il file .sh (argomenti divisi
-    come li divide shell_command)."""
-    reso = f"/percorso/cambio_ip.sh   {valore}".strip()
-    argomenti = shlex.split(reso)[1:]
-    assert ip_valido(argomenti) == _cambio_ip(shell, argomenti)
-
-
-def test_cambio_ip_con_piu_argomenti(shell: Shell) -> None:
-    assert ip_valido(["1.2.3.4", "5.6.7.8"]) is None
-    assert _cambio_ip(shell, ["1.2.3.4", "5.6.7.8"]) is None
-    assert ip_valido([]) is None
-    assert _cambio_ip(shell, []) is None
 
 
 async def test_comandi_errori_e_risposta(hass: HomeAssistant) -> None:

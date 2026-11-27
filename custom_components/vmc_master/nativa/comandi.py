@@ -549,7 +549,7 @@ _CLASSI: dict[tuple[str, str], type[ComandoVMC]] = {
 
 
 def crea_comandi(stato: StatoVMC) -> dict[str, list[ComandoVMC]]:
-    """Le 173 entità delle impostazioni visibili della VMC, per dominio di domani."""
+    """Le 172 entità delle impostazioni visibili della VMC, per dominio di domani."""
     entita: dict[str, list[ComandoVMC]] = {}
     for chiave in chiavi_comandi():
         dominio = DOMANI[chiave]

@@ -31,7 +31,10 @@ Il traduttore parte dalla scheda della VMC Master senza le due sezioni
   ``state: idle`` -> ``state: unknown`` (il sensore vale l'ora di fine mentre il timer
   interno gira, ``unknown`` quando è fermo, vedi ``CONTO_ALLA_ROVESCIA``);
 - ``elenco``: dall'elenco di «Pulisci cronologia» escono le voci che domani non sono
-  entità (aiutanti e script interni del motore, automazioni del motore);
+  entità (aiutanti e script interni del motore, automazioni del motore, voci tolte);
+- ``riga tolta``: escono le righe di una voce tolta (b46: il campo «Cambia IP VMC», che
+  domani non c'è) e le righe ``conditional`` con una condizione su una voce tolta; l'IP si
+  cambia dall'ingranaggio della VMC;
 - ``chiave tipi``: nel modello che conta le voci dell'elenco per tipo, le chiavi dei
   domini di oggi diventano quelle di domani;
 - ``esclusioni``: dal modello di «Pulisci cronologia» esce il ramo per le entità escluse dal
@@ -129,11 +132,6 @@ class Testo:
 # script: c'è l'integrazione, con spie (sensori binari), interruttori e pulsanti.
 TESTI = (
     Testo(
-        "IP già usato da un'altra VMC del Package:",
-        "IP già usato da un'altra VMC dell'integrazione:",
-        3,
-    ),
-    Testo(
         "il package usa la sonda della VMC", "l'integrazione usa la sonda della VMC", 2
     ),
     Testo("'Interruttori (input_boolean)'", "'Interruttori'"),
@@ -224,12 +222,34 @@ TESTI = (
         " s, Reset Filtro 5 s. Alla fine dell'operazione la riga scompare. Le altre"
         " operazioni durano al massimo pochi secondi",
     ),
+    # b46: il campo «Cambia IP VMC» non c'è più (riga tolta): la sua nota dice solo dove
+    # si cambia l'IP
     Testo(
-        "Altrimenti l'IP viene aggiornato in tutti i file del Package e dopo 2 secondi"
-        " Home Assistant si riavvia. Il riavvio parte anche se l'Automazione VMC Master"
-        " sta eseguendo altri eventi.",
-        "Altrimenti l'integrazione salva il nuovo IP e dopo 2 secondi Home Assistant si"
-        " riavvia. Il riavvio parte anche se l'integrazione sta eseguendo altri eventi.",
+        "<strong>Nota Cambia IP VMC (Riavvio di H.A.)</strong>",
+        "<strong>Nota Cambia IP VMC</strong>",
+    ),
+    Testo(
+        "Il campo cambia l'IP con cui Home Assistant comunica con la VMC sulla porta 5001."
+        " Sono ammessi quattro numeri da 0 a 255 separati da punti, senza zeri iniziali."
+        " Non sono ammessi 0.x.x.x, 127.x.x.x, 169.254.x.x e gli indirizzi da 224.x.x.x"
+        " in su. L'IP non deve essere già usato da un'altra VMC. Questo controllo vede"
+        " solo le VMC già attive: una VMC appena aggiunta, in attesa del riavvio di Home"
+        " Assistant, non viene vista. In quel caso, dopo il riavvio l'integrazione rimette"
+        " l'IP di prima e lo segnala. Poi l'integrazione controlla che a quell'IP risponda"
+        " la VMC con il suo nome. Se il nome della VMC non è ancora stato letto, basta che"
+        " risponda una VMC. Se un controllo non va bene, non cambia nulla e sotto il campo"
+        " compare il motivo. Altrimenti l'IP viene aggiornato in tutti i file del Package"
+        " e dopo 2 secondi Home Assistant si riavvia. Il riavvio parte anche se"
+        " l'Automazione VMC Master sta eseguendo altri eventi. Il campo non chiede"
+        " conferma: verificare l'IP prima di scriverlo. Per salvare un IP a cui la VMC non"
+        " risponde: Impostazioni → Dispositivi e servizi, nella pagina dell'integrazione,"
+        " icona ingranaggio sulla riga della VMC → «Cambia l'IP della VMC».",
+        "L'IP della VMC si cambia da *Impostazioni → Dispositivi e servizi → VMC Master →"
+        " ⚙️ → Cambia l'IP della VMC*.",
+    ),
+    Testo(
+        "si è appena avviato (per esempio dopo Cambia IP VMC), prima",
+        "si è appena avviato, prima",
     ),
     Testo(
         "correttamente alle automazioni e/o comandi.",
@@ -269,13 +289,6 @@ TESTI = (
         " Valori Originali. È compreso nel Profilo Inizializzazione e parte da solo a ogni"
         " avvio di Home Assistant.",
         "(10 s). Non riavvia Home Assistant.",
-    ),
-    # una VMC aggiunta parte subito, senza riavvio: il controllo dell'IP le vede tutte
-    Testo(
-        "Questo controllo vede solo le VMC già attive: una VMC appena aggiunta, in attesa del"
-        " riavvio di Home Assistant, non viene vista. In quel caso, dopo il riavvio"
-        " l'integrazione rimette l'IP di prima e lo segnala. Poi l'integrazione controlla",
-        "Poi l'integrazione controlla",
     ),
     Testo(
         "<summary><b>16 Booleans ON</b></summary>",
@@ -409,8 +422,13 @@ def _leggi_csv(percorso: Path) -> list[dict[str, str]]:
         return list(csv.DictReader(flusso, delimiter=";"))
 
 
+TOLTA = "tolta"
+"""Una voce che domani non c'è più (b46: il campo «Cambia IP VMC» e chi lo serve)."""
+
+
 def mappa_fase_1() -> dict[str, str | None]:
-    """Entità di oggi -> entità di domani (``None``: domani non è un'entità).
+    """Entità di oggi -> entità di domani (``None``: domani non è un'entità, interna o
+    tolta).
 
     Aiutanti, script e comandi di shell dalla colonna «Domani» di ``aiutanti_fase1.csv``;
     sensori, sensori binari e automazioni dalla tabella di traduzione della scheda della
@@ -420,7 +438,8 @@ def mappa_fase_1() -> dict[str, str | None]:
     mappa: dict[str, str | None] = {}
     for riga in _leggi_csv(FASE_1):
         domani = riga["Domani"]
-        mappa[riga["Entità oggi"]] = None if domani.startswith("interna") else domani
+        interna = domani.startswith("interna") or domani == TOLTA
+        mappa[riga["Entità oggi"]] = None if interna else domani
     for riga in _leggi_csv(TRADUZIONE_FASE_1):
         oggi, diventa = riga["Entità nella scheda oggi"], riga["Diventa"]
         domani = None if "(tolta dalla scheda)" in diventa else diventa
@@ -430,18 +449,32 @@ def mappa_fase_1() -> dict[str, str | None]:
     return mappa
 
 
+def tolte_fase_1() -> frozenset[str]:
+    """Le voci di oggi tolte (b46): «tolta» nella colonna «Domani» di ``aiutanti_fase1.csv``
+    o nella colonna «Diventa» di ``traduzione_scheda.csv``."""
+    tolte = {r["Entità oggi"] for r in _leggi_csv(FASE_1) if r["Domani"] == TOLTA}
+    tolte |= {
+        r["Entità nella scheda oggi"]
+        for r in _leggi_csv(TRADUZIONE_FASE_1)
+        if r["Diventa"].startswith(f"{TOLTA} ")
+    }
+    return frozenset(tolte)
+
+
 @dataclass
 class Mappa:
-    """Nomi di oggi -> nomi di domani."""
+    """Nomi di oggi -> nomi di domani; ``tolte``: le voci tolte (le loro righe escono)."""
 
     entita: dict[str, str | None]
+    tolte: frozenset[str] = frozenset()
 
     def frammento(self, nome: str) -> str:
-        """Il pezzo di nome ``nome`` (inizio di più entità) con il dominio di domani."""
+        """Il pezzo di nome ``nome`` (inizio di più entità) con il dominio di domani (le
+        voci tolte non contano: domani non ci sono)."""
         _dominio, oggetto = nome.split(".", 1)
         domani = set()
         for vecchia, nuova in self.entita.items():
-            if not vecchia.startswith(nome):
+            if not vecchia.startswith(nome) or vecchia in self.tolte:
                 continue
             if nuova is None or nuova.split(".", 1)[1] != vecchia.split(".", 1)[1]:
                 raise NonTraducibile(
@@ -578,8 +611,11 @@ class _Traduttore:
                 )
             self._antenati.pop()
         elif isinstance(nodo, yaml.SequenceNode):
-            for v in nodo.value:
-                self._visita(v, chiave, padre)
+            for i, v in enumerate(nodo.value):
+                if (tolta := self._riga_tolta(v)) is not None:
+                    self._togli_riga(nodo, i, *tolta)
+                else:
+                    self._visita(v, chiave, padre)
         elif isinstance(nodo, yaml.ScalarNode) and isinstance(nodo.value, str):
             self._testi(nodo, _posto(chiave, padre))
             if _INIZIO_ELENCO in nodo.value:
@@ -587,6 +623,42 @@ class _Traduttore:
                 self._esclusioni(nodo, _posto(chiave, padre))
             if _INIZIO_TIPI in nodo.value:
                 self._tipi(nodo)
+
+    def _riga_tolta(self, nodo: yaml.Node) -> tuple[str, str] | None:
+        """(posto, voce tolta) se ``nodo`` è la riga di una voce tolta o una riga
+        ``conditional`` con una condizione su una voce tolta."""
+        if not isinstance(nodo, yaml.MappingNode):
+            return None
+        coppie = {k.value: v for k, v in nodo.value if isinstance(k, yaml.ScalarNode)}
+        entita = coppie.get("entity")
+        if isinstance(entita, yaml.ScalarNode) and entita.value in self.mappa.tolte:
+            return "riga", entita.value
+        tipo, condizioni = coppie.get("type"), coppie.get("conditions")
+        if (
+            isinstance(tipo, yaml.ScalarNode)
+            and tipo.value == "conditional"
+            and isinstance(condizioni, yaml.SequenceNode)
+        ):
+            for condizione in condizioni.value:
+                tolta = self._riga_tolta(condizione)
+                if tolta is not None:
+                    return "riga condizionale", tolta[1]
+        return None
+
+    def _togli_riga(self, elenco: yaml.SequenceNode, i: int, posto: str, voce: str) -> None:
+        """Toglie la voce ``i`` di ``elenco``: dall'inizio della sua riga («- ») all'inizio
+        della riga della voce che segue (mai l'ultima: niente da indovinare dopo)."""
+        nodo = elenco.value[i]
+        inizio = self.testo.rfind("\n", 0, nodo.start_mark.index) + 1
+        if self.testo[inizio : nodo.start_mark.index].strip() != "-":
+            raise NonTraducibile(f"riga {nodo.start_mark.line + 1}: riga tolta non in un elenco")
+        if i + 1 == len(elenco.value):
+            raise NonTraducibile(f"riga {nodo.start_mark.line + 1}: riga tolta in fondo")
+        seguente = elenco.value[i + 1].start_mark.index
+        fine = self.testo.rfind("\n", 0, seguente) + 1
+        if self.testo[fine:seguente].strip() != "-":
+            raise NonTraducibile(f"riga {nodo.start_mark.line + 1}: riga dopo non prevista")
+        self._taglio(inizio, fine, "", (inizio, "riga tolta", posto, voce, ""))
 
     def _azione(self, coppie: dict[str, tuple[yaml.Node, yaml.Node]]) -> None:
         if "perform_action" not in coppie:
@@ -1068,7 +1140,7 @@ def traduci(
     aggiornare i testi, con ``commenti=()`` senza toccare l'intestazione)."""
     return _Traduttore(
         scheda_master() if testo is None else testo,
-        mappa or Mappa(mappa_fase_1()),
+        mappa or Mappa(mappa_fase_1(), tolte_fase_1()),
         testi,
         commenti,
     ).traduci()

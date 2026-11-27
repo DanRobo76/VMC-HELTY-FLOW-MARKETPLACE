@@ -1,6 +1,6 @@
 """La memoria interna del motore come gli aiutanti di oggi (fase 4).
 
-Home Assistant è l'oracolo: le stesse operazioni girano una volta con i 68 aiutanti del
+Home Assistant è l'oracolo: le stesse operazioni girano una volta con i 67 aiutanti del
 package (``input_number``, ``input_text``, ``input_boolean`` con la configurazione del
 package) e una volta con ``MemoriaInterna``, con lo stesso orologio fermo. Si
 confrontano:
@@ -76,7 +76,7 @@ IDS = [_entity_id(c) for c in INTERNI]
 
 
 def _configurazione() -> dict[str, dict[str, Any]]:
-    """Gli aiutanti dei 68 valori come li scrive il package (stesso ordine)."""
+    """Gli aiutanti dei 67 valori come li scrive il package (stesso ordine)."""
     config: dict[str, dict[str, Any]] = {d: {} for d in DOMINI}
     for chiave in INTERNI:
         dominio, oggetto = chiave.split(".", 1)
@@ -88,8 +88,8 @@ def _configurazione() -> dict[str, dict[str, Any]]:
 
 
 def test_interni_sono_quelli_della_fase_1() -> None:
-    """I 68 valori interni sono quelli della colonna «Domani» della fase 1, con lo stesso
-    comportamento dopo un riavvio: 63 conservano il valore, 5 ripartono vuoti (sono
+    """I 67 valori interni sono quelli della colonna «Domani» della fase 1, con lo stesso
+    comportamento dopo un riavvio: 63 conservano il valore, 4 ripartono vuoti (sono
     quelli con ``initial`` nel package)."""
     with FASE_1.open(encoding="utf-8-sig", newline="") as flusso:
         righe = [
@@ -99,14 +99,14 @@ def test_interni_sono_quelli_della_fase_1() -> None:
             and r["Tipo oggi"].startswith("input_")
         ]
     assert sorted(r["Entità oggi"] for r in righe) == sorted(IDS)
-    assert len(IDS) == len(set(IDS)) == 68
+    assert len(IDS) == len(set(IDS)) == 67
     per_dominio = {d: sum(1 for c in INTERNI if c.startswith(d)) for d in DOMINI}
-    assert per_dominio == {"input_boolean": 1, "input_number": 32, "input_text": 35}
+    assert per_dominio == {"input_boolean": 1, "input_number": 32, "input_text": 34}
     vuoti = sorted(_entity_id(c) for c in INTERNI if "initial" in IMPOSTAZIONI[c])
     assert vuoti == sorted(
         r["Entità oggi"] for r in righe if r["Dopo un riavvio"] == "riparte vuoto"
     )
-    assert len(vuoti) == 5
+    assert len(vuoti) == 4
 
 
 # --- il banco ------------------------------------------------------------------------------
@@ -446,12 +446,11 @@ async def test_scritture_come_gli_aiutanti(
 
 async def test_stato_vmc_riceve_i_valori(hass: HomeAssistant) -> None:
     """La memoria scrive i valori nello StatoVMC (all'avvio e a ogni cambio): i sensori
-    nativi che li leggono (aria scambiata, tempo mancante, IP inserito, Black-Out)."""
+    nativi che li leggono (aria scambiata, tempo mancante, Black-Out)."""
     stato = StatoVMC(hass, "master")
     m = MemoriaInterna(hass, stato=stato)
     m.ripristina({"input_number.attesa_blackout_rilevazione": 45.0})
     assert stato.stato("input_number.attesa_blackout_rilevazione") == "45.0"
-    assert stato.stato("input_text.ip_insert_esito") == ""
     assert stato.stato("input_text.tempo_mancante_reset") == "unknown"
     await m.async_chiama(
         "input_text",
@@ -473,7 +472,7 @@ async def test_altra_vmc(hass: HomeAssistant) -> None:
     assert stato is not None
     assert stato.attributes["friendly_name"] == "Aria Scambiata a Velocità 4"
     assert "input_number.vmc_master_aria_scambiata_v4" not in m
-    assert len(m.entity_ids) == 68
+    assert len(m.entity_ids) == 67
 
 
 # --- archivio ---------------------------------------------------------------------------------

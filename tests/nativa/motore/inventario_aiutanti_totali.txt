@@ -6,7 +6,7 @@ Le voci
       77  input_boolean -> binary_sensor
       38  script -> interna
       37  input_boolean -> switch
-      35  input_text -> interna
+      34  input_text -> interna
       34  timer -> sensor
       32  input_number -> interna
       30  input_datetime -> time
@@ -14,12 +14,14 @@ Le voci
       13  script -> button
       12  shell_command -> button
       10  input_number -> number
-       4  shell_command -> interna
-       2  input_text -> text
+       3  shell_command -> interna
+       2  input_text -> tolta
        1  input_boolean -> interna
        1  input_number -> sensor
        1  input_select -> sensor
        1  input_text -> sensor
+       1  input_text -> text
+       1  shell_command -> tolta
   mai toccate da automazioni e script: 2
           input_select.vmc_master_entita_escluse_recorder -> sensor.vmc_master_entita_escluse_recorder
           script.vmc_master_pulisci_cronologia_entita -> button.vmc_master_pulisci_cronologia_entita
@@ -397,7 +399,7 @@ Per tipo di oggi e dominio di domani
     condizioni di stato: 0
     condizioni a modello che le leggono: 0
     servizi chiamati: 0
-  input_text -> interna: 35 voci
+  input_text -> interna: 34 voci
     voci:
           11  lette in un modello
            2  soggetto di un trigger di stato
@@ -406,7 +408,7 @@ Per tipo di oggi e dominio di domani
            0  lette da un'attesa (wait_template)
            1  in una condizione di stato
           10  lette da una condizione a modello
-          35  scritte da un servizio
+          34  scritte da un servizio
            0  id costante altrove
           22  indicabili da un nome composto
            0  mai toccate
@@ -422,9 +424,9 @@ Per tipo di oggi e dominio di domani
     attese che le leggono: 0
     condizioni di stato: 1  (state=reset=1)
     condizioni a modello che le leggono: 19
-    servizi chiamati: 73
-          35  recorder.purge_entities [keep_days=<costante>]
-          21  input_text.set_value [value=<modello>]
+    servizi chiamati: 70
+          34  recorder.purge_entities [keep_days=<costante>]
+          19  input_text.set_value [value=<modello>]
           14  homeassistant.update_entity [(senza dati)]
            3  input_text.set_value [value=<costante>]
     nomi composti che possono indicarle: 66
@@ -457,32 +459,56 @@ Per tipo di oggi e dominio di domani
          136  input_text.set_value [value=<costante>]
          135  input_text.set_value [value=<modello>]
            1  recorder.purge_entities [keep_days=<costante>]
-  input_text -> text: 2 voci
+  input_text -> text: 1 voci
     voci:
-           2  lette in un modello
-           1  soggetto di un trigger di stato
+           1  lette in un modello
+           0  soggetto di un trigger di stato
            1  lette da un trigger a modello
-           2  in un trigger (di stato o a modello)
+           1  in un trigger (di stato o a modello)
            0  lette da un'attesa (wait_template)
            0  in una condizione di stato
-           2  lette da una condizione a modello
+           1  lette da una condizione a modello
+           1  scritte da un servizio
+           0  id costante altrove
+           0  indicabili da un nome composto
+           0  mai toccate
+    letture: 2  (states()=2)
+      per posizione: condizione=1; trigger=1
+      usi del valore letto:
+             2  states() is match
+    trigger di stato: 0
+    trigger a modello che le leggono: 1
+    attese che le leggono: 0
+    condizioni di stato: 0
+    condizioni a modello che le leggono: 1
+    servizi chiamati: 2
+           1  input_text.set_value [value=<costante>]
+           1  recorder.purge_entities [keep_days=<costante>]
+  input_text -> tolta: 2 voci
+    voci:
+           1  lette in un modello
+           1  soggetto di un trigger di stato
+           0  lette da un trigger a modello
+           1  in un trigger (di stato o a modello)
+           0  lette da un'attesa (wait_template)
+           0  in una condizione di stato
+           1  lette da una condizione a modello
            2  scritte da un servizio
            0  id costante altrove
            0  indicabili da un nome composto
            0  mai toccate
-    letture: 4  (states()=4)
-      per posizione: azioni=1; condizione=2; trigger=1
+    letture: 2  (states()=2)
+      per posizione: azioni=1; condizione=1
       usi del valore letto:
-             2  states() is match
              2  states() | trim
     trigger di stato: 1  ((qualsiasi cambio)=1)
-    trigger a modello che le leggono: 1
+    trigger a modello che le leggono: 0
     attese che le leggono: 0
     condizioni di stato: 0
-    condizioni a modello che le leggono: 2
-    servizi chiamati: 3
+    condizioni a modello che le leggono: 1
+    servizi chiamati: 4
+           2  input_text.set_value [value=<modello>]
            2  recorder.purge_entities [keep_days=<costante>]
-           1  input_text.set_value [value=<costante>]
   script -> button: 13 voci
     voci:
            0  lette in un modello
@@ -560,7 +586,7 @@ Per tipo di oggi e dominio di domani
            8  variabili: in una lista
     nomi composti che possono indicarle: 48
     trigger a evento che le guardano: 17
-  shell_command -> interna: 4 voci
+  shell_command -> interna: 3 voci
     voci:
            0  lette in un modello
            0  soggetto di un trigger di stato
@@ -569,9 +595,9 @@ Per tipo di oggi e dominio di domani
            0  lette da un'attesa (wait_template)
            0  in una condizione di stato
            0  lette da una condizione a modello
-           4  scritte da un servizio
+           3  scritte da un servizio
            0  id costante altrove
-           4  indicabili da un nome composto
+           3  indicabili da un nome composto
            0  mai toccate
     letture: 0  ()
       per posizione: 
@@ -580,10 +606,32 @@ Per tipo di oggi e dominio di domani
     attese che le leggono: 0
     condizioni di stato: 0
     condizioni a modello che le leggono: 0
-    servizi chiamati: 5
+    servizi chiamati: 4
            4  shell_command.<nome> (chiamata diretta) [(senza dati)]
+    nomi composti che possono indicarle: 12
+  shell_command -> tolta: 1 voci
+    voci:
+           0  lette in un modello
+           0  soggetto di un trigger di stato
+           0  lette da un trigger a modello
+           0  in un trigger (di stato o a modello)
+           0  lette da un'attesa (wait_template)
+           0  in una condizione di stato
+           0  lette da una condizione a modello
+           1  scritte da un servizio
+           0  id costante altrove
+           1  indicabili da un nome composto
+           0  mai toccate
+    letture: 0  ()
+      per posizione: 
+    trigger di stato: 0
+    trigger a modello che le leggono: 0
+    attese che le leggono: 0
+    condizioni di stato: 0
+    condizioni a modello che le leggono: 0
+    servizi chiamati: 1
            1  shell_command.<nome> (chiamata diretta) [ip=<modello>]
-    nomi composti che possono indicarle: 16
+    nomi composti che possono indicarle: 4
   timer -> sensor: 34 voci
     voci:
            0  lette in un modello
@@ -715,7 +763,7 @@ Entity_id e nomi di servizio dinamici
       79  input_datetime.vmc_master_spegnimento_…_2: 7 entità possibili (stesso inizio e fine); domani: time=7
        1  input_number.vmc_master_attesa_…: 24 entità possibili (stesso inizio e fine); domani: interna=24
        3  input_text.vmc_master_countdown_…: 22 entità possibili (stesso inizio e fine); domani: interna=22
-       4  shell_command.vmc_master_…: 16 entità possibili (stesso inizio e fine); domani: button=12; interna=4
+       4  shell_command.vmc_master_…: 16 entità possibili (stesso inizio e fine); domani: button=12; interna=3; tolta=1
        2  timer.vmc_master_countdown_…: 29 entità possibili (stesso inizio e fine); domani: sensor=29
        2  timer.vmc_master_lettura_…: 5 entità possibili (stesso inizio e fine); domani: sensor=5
   testi con «master» che non sono un entity_id intero, per classe:

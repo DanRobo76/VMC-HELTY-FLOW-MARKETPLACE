@@ -1,4 +1,4 @@
-"""La memoria interna del motore (fase 4): i 68 valori con stato che non sono entità.
+"""La memoria interna del motore (fase 4): i 67 valori con stato che non sono entità.
 
 Oggi 68 aiutanti del package (32 ``input_number``, 35 ``input_text``, 1
 ``input_boolean``) servono solo alle automazioni: contatori dell'aria scambiata, tempi
@@ -7,6 +7,8 @@ escludere le proprie entità dal registro di Home Assistant (e un contatore dell
 cambia ogni secondo mentre la VMC gira): domani questi valori non sono entità e stanno
 qui, una memoria per VMC, salvata con ``Store``. Le chiavi sono quelle di ``StatoVMC``
 (l'entity_id di oggi senza «vmc_<nome>_», per esempio ``input_number.attesa_avvisi``).
+Dalla b46 i valori sono 67: l'esito della verifica del campo «Cambia IP VMC» della scheda
+non c'è più, con il campo (``tabelle.TOLTE``).
 
 Le regole sono quelle degli aiutanti di oggi (Home Assistant 2026.11):
 
@@ -92,7 +94,7 @@ if TYPE_CHECKING:
 
 _LOGGER = logging.getLogger(__name__)
 
-# I 68 valori interni (colonna «Domani» della fase 1: «interna (stato del motore)»),
+# I 67 valori interni (colonna «Domani» della fase 1: «interna (stato del motore)»),
 # per dominio e nell'ordine del package: l'ordine conta per le scritture a più
 # bersagli, che Home Assistant esegue nell'ordine dell'insieme dei bersagli costruito
 # dall'elenco delle entità del dominio.
@@ -130,7 +132,6 @@ INTERNI: tuple[str, ...] = (
     "input_number.attesa_delta_avvio",
     "input_number.attesa_delta_fine",
     "input_number.attesa_delta_memoria",
-    "input_text.ip_insert_esito",
     "input_text.last_temp_external_entity",
     "input_text.last_temp_internal_entity",
     "input_text.last_humidity_external_entity",

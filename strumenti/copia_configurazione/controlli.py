@@ -362,7 +362,7 @@ _ID_ATTESI: set[str] = {nuovo_id(k, n) for k in (*VISIBILI, *TIMER) for n in NOM
 }
 _ID_LEGITTIMI: set[str] = (
     _ID_ATTESI
-    | {nuovo_id(k, n) for k in DOMANI if DOMANI[k] != "interna" for n in NOMI}
+    | {nuovo_id(k, n) for k in DOMANI if DOMANI[k] not in ("interna", "tolta") for n in NOMI}
     | {vecchio_id(k, n) for k in DOMANI for n in NOMI}
 )
 """Gli entity_id che finiscono con «_2» per nome (la seconda fascia del Calendario:
@@ -482,7 +482,7 @@ def controlla_impostazioni(
     a: Mapping[str, Any] | None,
     scritte: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Ogni impostazione visibile (173 per VMC) nel suo nuovo dominio con il valore
+    """Ogni impostazione visibile (172 per VMC) nel suo nuovo dominio con il valore
     dell'ultima fermata con il vecchio package caricato (``ultima_con_il_package``)."""
     nome = "impostazioni visibili portate nel nuovo dominio"
     if not (p0 and r and p and a):
@@ -642,9 +642,9 @@ def controlla_interni(
     fa: Mapping[str, Any] | None,
     confermata: bool = True,
 ) -> dict[str, Any]:
-    """I 68 valori interni per VMC nella memoria del motore alla fermata finale, contro
+    """I 67 valori interni per VMC nella memoria del motore alla fermata finale, contro
     l'ultima fermata con il vecchio package caricato."""
-    nome = "68 valori interni nella memoria del motore"
+    nome = "67 valori interni nella memoria del motore"
     if not confermata:
         return non_eseguibile(nome, "la conferma della riparazione")
     if not (ultima and fa):
@@ -698,7 +698,7 @@ def controlla_interni(
         "input_text.countdown_‹attesa› con un testo che l'automazione delle attese scrive "
         "dopo ogni riavvio (fase 2 del riallineamento, dopo l'istantanea R).",
         {
-            "valori (68 per 3 VMC)": len(INTERNI) * len(NOMI),
+            "valori (67 per 3 VMC)": len(INTERNI) * len(NOMI),
             "diversi dal valore iniziale prima del passaggio": non_predefiniti,
             **dict(sorted(esiti.items())),
         },
@@ -1075,7 +1075,13 @@ def controlla_automazioni(
     nome = "automazioni con gli stessi entity_id"
     if not (a and p):
         return non_eseguibile(nome, "l'istantanea A_dopo")
-    prima = sorted(e for e in p["stati"] if e.startswith("automation.") and vmc_di(e))
+    # l'automazione «Cambio IP VMC (Riavvio di H.A.)» della beta non c'è più (b46)
+    tolte = {vecchio_id(k, n) for k in TABELLE.TOLTE for n in NOMI}
+    prima = sorted(
+        e
+        for e in p["stati"]
+        if e.startswith("automation.") and vmc_di(e) and e not in tolte
+    )
     mancanti = [e for e in prima if e not in a["stati"]]
     spente = [
         e
@@ -1085,8 +1091,9 @@ def controlla_automazioni(
     return controllo(
         nome,
         "passato" if not mancanti and not spente else "fallito",
-        "Le 14 automazioni di ogni VMC restano entità «automation» con lo stesso "
-        "entity_id e lo stesso stato (accesa / spenta).",
+        "Le 13 automazioni di ogni VMC restano entità «automation» con lo stesso "
+        "entity_id e lo stesso stato (accesa / spenta). La quattordicesima della beta, "
+        "«Cambio IP VMC (Riavvio di H.A.)», non c'è più.",
         {
             "prima": len(prima),
             "mancanti dopo": len(mancanti),

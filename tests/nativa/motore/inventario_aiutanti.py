@@ -1292,7 +1292,10 @@ dati, bersagli e nomi dei servizi, ripetizioni)."""
 
 
 def classe_domani(domani: str) -> str:
-    """Il dominio di domani («interna» per lo stato del motore)."""
+    """Il dominio di domani («interna» per lo stato del motore, «tolta» per una voce che
+    la versione nativa non ha più, dalla b46)."""
+    if domani == "tolta":
+        return domani
     return domani.split(".", 1)[0] if "." in domani else "interna"
 
 

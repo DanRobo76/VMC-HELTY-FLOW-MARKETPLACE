@@ -2,7 +2,7 @@
 con la memoria interna.
 
 Le due corse si confrontano evento per evento, tranne quelli che con la memoria non ci
-sono più perché i 68 valori non sono entità:
+sono più perché i 67 valori non sono entità:
 
 - ``state_changed`` di un valore interno: si confronta con il cambio della memoria
   (``MemoriaInterna.ascolta_cambi``: stesso istante, stessi stati, stesso contesto,

@@ -119,7 +119,7 @@ def _da_json(dati: Any) -> Any:
 
 def entity_id_attesi(nome: str) -> set[str]:
     """Gli entity_id delle entità native di una VMC, come devono essere (niente «_2»): i
-    137 sensori con l'entity_id di oggi; impostazioni, sensori dei timer e pulsanti con
+    136 sensori con l'entity_id di oggi; impostazioni, sensori dei timer e pulsanti con
     l'oggetto di oggi e il dominio di domani."""
     from custom_components.vmc_master.nativa.tabelle import (
         DOMANI,
@@ -128,19 +128,18 @@ def entity_id_attesi(nome: str) -> set[str]:
 
     attesi = {f"{k.split('.', 1)[0]}.vmc_{nome}_{k.split('.', 1)[1]}" for k in SENSORI}
     for chiave, dominio in DOMANI.items():
-        if dominio != "interna":
+        if dominio not in ("interna", "tolta"):
             attesi.add(f"{dominio}.vmc_{nome}_{chiave.split('.', 1)[1]}")
     return attesi
 
 
-# Le 14 automazioni del motore (nel componente automation, con gli entity_id della beta):
+# Le 13 automazioni del motore (nel componente automation, con gli entity_id della beta):
 # la loro voce del registro è legata alla voce della VMC
 AUTOMAZIONI_DEL_MOTORE = (
     "aggiorna_aria_scambiata_e_gestisci_countdown",
     "riepilogo_audio_avvio",
     "audio_allerte_e_stato",
     "riallineamento_allerte_al_riavvio",
-    "cambio_ip_vmc_riavvio_di_h_a",
     "countdown_attese_automazione",
     "countdown_letture_vmc",
     "registro_comandi_e_scelte",
@@ -153,14 +152,14 @@ AUTOMAZIONI_DEL_MOTORE = (
 
 
 def automazioni_attese(nome: str) -> set[str]:
-    """Gli entity_id delle 14 automazioni del motore della VMC."""
+    """Gli entity_id delle 13 automazioni del motore della VMC."""
     return {f"automation.vmc_{nome}_{a}" for a in AUTOMAZIONI_DEL_MOTORE} | {
         f"automation.automazione_vmc_{nome}"
     }
 
 
 def voci_attese(nome: str) -> set[str]:
-    """Le voci del registro legate alla voce della VMC: le 369 entità native e le 14
+    """Le voci del registro legate alla voce della VMC: le 367 entità native e le 13
     automazioni del motore."""
     return entity_id_attesi(nome) | automazioni_attese(nome)
 
