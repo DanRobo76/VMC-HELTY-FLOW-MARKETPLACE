@@ -5,8 +5,7 @@ proprietario del 27-11-2026, che si poteva aggiungere con «Aggiungi comunque».
 risponde niente, la VMC è spenta o l'IP è sbagliato.
 
 Stesso controllo in tutte le finestre che leggono il nome a un IP (in_rete, ip_fisso,
-cambia_ip) e nel servizio verifica_ip del campo «Cambia IP VMC» della scheda: lo fa
-async_nome_vmc_due_prove."""
+cambia_ip): lo fa async_nome_vmc_due_prove."""
 
 from __future__ import annotations
 
@@ -18,7 +17,6 @@ import pytest
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
-from homeassistant.setup import async_setup_component
 
 from custom_components.vmc_master import config_flow
 from custom_components.vmc_master.const import DOMAIN
@@ -249,31 +247,3 @@ async def test_cambia_ip_con_un_apparecchio_che_non_e_una_vmc(hass: HomeAssistan
             assert risultato["type"] is FlowResultType.FORM
             assert risultato["errors"] == {"host": "ip_altro_dispositivo"}
     assert voce.data["host"] == "192.168.1.161"
-
-
-@pytest.mark.parametrize(
-    ("presente", "risposta"),
-    [
-        (True, {"risponde": True, "nome": "", "esito": "altro_dispositivo"}),
-        (False, {"risponde": False, "nome": "", "esito": "non_risponde"}),
-    ],
-)
-async def test_servizio_verifica_ip(
-    hass: HomeAssistant, presente: bool, risposta: dict
-) -> None:
-    """Campo «Cambia IP VMC» della scheda: sotto il campo «Non è una VMC» per il router,
-    «VMC non risponde» se non risponde niente."""
-    assert await async_setup_component(hass, DOMAIN, {})
-    with patch(NOME_VMC, AsyncMock(return_value=None)), patch(
-        PRESENTE, AsyncMock(return_value=presente)
-    ):
-        assert (
-            await hass.services.async_call(
-                DOMAIN,
-                "verifica_ip",
-                {"ip": IP, "nome": ""},
-                blocking=True,
-                return_response=True,
-            )
-            == risposta
-        )

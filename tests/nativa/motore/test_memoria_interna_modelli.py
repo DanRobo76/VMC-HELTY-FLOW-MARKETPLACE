@@ -1,7 +1,7 @@
 """I modelli del package leggono i valori interni dalla memoria come dagli aiutanti.
 
 Lo stesso banco di ``test_modelli_motore`` (ogni modello delle automazioni e degli script
-del package, a caso e mirato), con una differenza: il motore non trova i 68 valori interni
+del package, a caso e mirato), con una differenza: il motore non trova i 67 valori interni
 nella macchina degli stati ma solo nella vista della memoria interna
 (``HassConMemoria``/``StatiConMemoria``), con gli stessi oggetti ``State``. Home
 Assistant li legge dalla macchina degli stati. Si confrontano testo, risultato,

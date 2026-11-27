@@ -41,7 +41,6 @@ from custom_components.vmc_master.const import NOME_MASTER
 from custom_components.vmc_master.installatore import automazione_come_package
 from custom_components.vmc_master.nativa.motore import jinja as J
 from custom_components.vmc_master.nativa.motore.definizioni import (
-    COMANDO_IP,
     COMANDO_NESSUNO,
     COMANDO_NOME,
     COMANDO_VMC,
@@ -627,7 +626,10 @@ def _comando(riga: str) -> tuple[str, str, str | None]:
     if trovato := _COMANDO_VMC.fullmatch(riga):
         return COMANDO_VMC, trovato.group(1), None
     if trovato := _COMANDO_SH.fullmatch(riga):
-        tipo = COMANDO_NOME if trovato.group(2) == "nome" else COMANDO_IP
+        # il file che scriveva l'IP nei file del package (b46): per Home Assistant nessun
+        # effetto, come il «find ... sed»; il motore nativo non lo ha
+        # (``traduci_fase4.escluse``), il package lo chiama ancora
+        tipo = COMANDO_NOME if trovato.group(2) == "nome" else COMANDO_NESSUNO
         return tipo, "", trovato.group(3)
     if _COMANDO_RITORNI.fullmatch(riga):
         return COMANDO_NESSUNO, "", None
@@ -709,15 +711,22 @@ def _in_parti(blocchi: list[str]) -> list[list[str]]:
     return parti
 
 
-def _moduli_modelli(jinja: Traduttore) -> dict[str, str]:
+def _moduli_modelli(
+    jinja: Traduttore, tolti: frozenset[str] = frozenset()
+) -> dict[str, str]:
     """``modelli_NN.py`` con le funzioni dei modelli e ``modelli.py``, che le importa tutte
     e dà a ognuna il suo ``sorgente``.
 
     I testi dei modelli (``mNNNN.sorgente``, per i messaggi d'errore e come testo dei
     ``Template``) sono 1,3 MB, ma si ripetono molto: in ``modelli.py`` stanno compressi
     (zlib e base64, circa 60 kB) e si scompattano una volta all'import.
+
+    ``tolti`` (fase 4): i modelli che escono dal codice (``traduci_fase4.escluse``). Le
+    parti si dividono come se ci fossero e gli altri modelli tengono il loro numero: il
+    codice cambia solo dove si toglie. Il testo di un modello tolto è vuoto.
     """
     testi = {nome: testo for testo, nome in jinja.funzioni.items()}
+    testi.update(dict.fromkeys(tolti & testi.keys(), ""))
     funzioni = []
     for numero, blocco in enumerate(jinja.codice, 1):
         nome = f"m{numero:04d}"
@@ -727,7 +736,10 @@ def _moduli_modelli(jinja: Traduttore) -> dict[str, str]:
         if "\x00" in testi[nome]:
             raise NonTraducibile(f"modello {nome} con \\x00")
         funzioni.append(codice)
-    parti = _in_parti(funzioni)
+    parti = [
+        [f for f in parte if re.match(r"def (m\d{4})\(", f).group(1) not in tolti]
+        for parte in _in_parti(funzioni)
+    ]
     moduli = {}
     for numero, parte in enumerate(parti, 1):
         titolo = f"Modelli Jinja del package, tradotti in Python (parte {numero} di {len(parti)})."
@@ -748,11 +760,19 @@ def _moduli_modelli(jinja: Traduttore) -> dict[str, str]:
     righe = "".join(
         f'    "{compressi[i : i + 96]}"\n' for i in range(0, len(compressi), 96)
     )
+    # con modelli tolti il loro testo è vuoto e non c'è la loro funzione
+    assegna = (
+        "        spazio[f'm{numero:04d}'].sorgente = testo\n"
+        if not tolti
+        else "        if testo:\n"
+        "            spazio[f'm{numero:04d}'].sorgente = testo\n"
+    )
     moduli["modelli.py"] = (
         INTESTAZIONE.format(titolo="Modelli Jinja del package, tradotti in Python.")
         + "\nimport base64\nimport zlib\n\n"
         + "".join(f"from .{m[:-3]} import *\n" for m in moduli)
-        + "\n# Il testo di ogni modello, compresso: i testi da m0001 in poi, separati da \\x00.\n"
+        + "\n# Il testo di ogni modello, compresso: i testi da m0001 in poi, separati da \\x00"
+        + (".\n" if not tolti else " (vuoto: modello tolto).\n")
         + _INIZIO_SORGENTI
         + righe
         + ")\n\n\n"
@@ -760,19 +780,26 @@ def _moduli_modelli(jinja: Traduttore) -> dict[str, str]:
         + "    testi = zlib.decompress(base64.b64decode(_SORGENTI)).decode('utf-8')\n"
         + "    spazio = globals()\n"
         + "    for numero, testo in enumerate(testi.split('\\x00'), 1):\n"
-        + "        spazio[f'm{numero:04d}'].sorgente = testo\n\n\n"
+        + assegna
+        + "\n\n"
         + "_sorgenti()\n"
         + "del _sorgenti, _SORGENTI\n"
     )
     return moduli
 
 
-def _moduli_motore(g: Generatore, motore: str) -> dict[str, str]:
+def _moduli_motore(
+    g: Generatore, motore: str, tolti: frozenset[str] = frozenset()
+) -> dict[str, str]:
     """``motore_NN.py`` con le condizioni e le sequenze e ``motore.py`` con ``crea``.
 
     Ogni modulo importa dagli altri i nomi che usa: una condizione usa solo condizioni
     scritte prima (le sue parti), una sequenza solo condizioni e sequenze scritte dopo (le
     sue sequenze annidate), quindi gli import non fanno mai un giro.
+
+    ``tolti`` (fase 4): le condizioni e le sequenze che escono dal codice
+    (``traduci_fase4.escluse``; ``motore`` è già senza le loro automazioni e i loro
+    comandi). Le parti si dividono come se ci fossero e le altre tengono il loro numero.
     """
     prima, separatore, crea = motore.partition("\n\n\ndef crea(c):\n")
     if not separatore:
@@ -780,11 +807,14 @@ def _moduli_motore(g: Generatore, motore: str) -> dict[str, str]:
     # i valori interni (fase 4), se ci sono, restano in motore.py prima di crea
     _, con_interni, interni = prima.partition(_INIZIO_INTERNI)
     importa_motore = _importa_motore(g)
-    parti = _in_parti(g.condizioni) + _in_parti(g.sequenze)
+    parti = [
+        [b for b in parte if _nome_blocco(b) not in tolti]
+        for parte in _in_parti(g.condizioni) + _in_parti(g.sequenze)
+    ]
     dove = {}
     for numero, parte in enumerate(parti, 1):
         for blocco in parte:
-            dove[re.match(r"(?:async )?def ([ks]\d{4})\(", blocco).group(1)] = numero
+            dove[_nome_blocco(blocco)] = numero
 
     def importa(codice: str, numero: int | None) -> str:
         usati: dict[int, set[str]] = {}
@@ -828,6 +858,11 @@ def _moduli_motore(g: Generatore, motore: str) -> dict[str, str]:
         + crea
     )
     return moduli
+
+
+def _nome_blocco(blocco: str) -> str:
+    """Il nome della condizione (``kNNNN``) o della sequenza (``sNNNN``) di un blocco."""
+    return re.match(r"(?:async )?def ([ks]\d{4})\(", blocco).group(1)
 
 
 def _entita_costanti(valore: Any) -> list[str]:

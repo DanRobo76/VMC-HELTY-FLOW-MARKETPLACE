@@ -87,9 +87,11 @@ di stato in ritardo); i campi dell'oracolo restano quelli fino alla fine.
 non sono più quelle del package: prima del confronto le voci dei due lati passano dalla mappa dei nomi
 (`mappa.py`, dalla colonna «Domani» della fase 1): entity_id di oggi → di domani, attributi che solo
 l'aiutante ha, timer e valori interni come voci `MS`/`MR` («nel motore»), comandi di shell nelle forme
-`tcp: <comando>`, `ping <ip>`, `tcp: VMNM <nome>`, `cambio ip <ip>`. Le voci che la mappa toglie (o
+`tcp: <comando>`, `ping <ip>`, `tcp: VMNM <nome>`. Le voci che la mappa toglie (o
 cambia) si contano per tipo, lato e motivo e il rapporto le elenca con i numeri esatti in cima; nessuna
-tolleranza oltre a quelle scritte in `mappa.py`. Esempio (giro completo, A riusato da un giro finito):
+tolleranza oltre a quelle scritte in `mappa.py`. Dalla b46 il campo «Cambia IP VMC» non c'è più nella
+versione nativa: la mappa toglie dal lato A le sue voci (motivo `tolta`) e gli scenari `IP` della
+famiglia M provano solo il lato A. Esempio (giro completo, A riusato da un giro finito):
 
     VMC_RADICE=<repository> python differenziale.py <uscita> '@<uscita>/scenari.ids' 0 3 \
         --variante varianti.nativa4 --cfg <cfg_base> --coda 60 \

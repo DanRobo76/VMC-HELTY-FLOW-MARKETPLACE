@@ -6,9 +6,10 @@ lettura con la configurazione data dal motore (``automation/config``) e la loro 
 registro era legata alla voce della VMC. Dalla 9.0.0b46 sono logiche dell'integrazione,
 senza entità: dopo l'avvio nativo non c'è nessuna entità ``automation`` della VMC (né la
 pagina da aprire) e ``_togli_le_automazioni_di_prima`` toglie le voci del registro
-rimaste dalla b45 (piattaforma ``automation``, legate alla voce della VMC); le voci delle
-entità native e le automazioni dell'utente (senza voce di configurazione, anche con un
-nome da VMC) restano.
+rimaste dalla b45 (piattaforma ``automation``, legate alla voce della VMC: anche quella
+di «Cambio IP VMC (Riavvio di H.A.)», che dalla 9.0.0b46 non c'è più, 13 automazioni);
+le voci delle entità native e le automazioni dell'utente (senza voce di configurazione,
+anche con un nome da VMC) restano.
 
 Home Assistant vero, VMC finta (nessuna rete)."""
 
@@ -25,25 +26,29 @@ from .banco import aggiungi_e_avvia, automazioni_attese, senza_rete, voce, voci_
 async def test_nessuna_entita_e_voci_della_b45_tolte(hass: HomeAssistant) -> None:
     """Le voci delle 14 automazioni della b45, legate alla voce della VMC, si tolgono
     all'avvio nativo; l'automazione dell'utente resta com'era; nessuna entità
-    ``automation`` della VMC, le 14 logiche avviate con gli entity_id di prima."""
+    ``automation`` della VMC, le 13 logiche avviate con gli entity_id di prima."""
     with senza_rete():
         una = voce("master")
         una.add_to_hass(hass)
         registro = er.async_get(hass)
         attese = automazioni_attese("master")
-        # come le lasciava la b45: unique_id e entity_id delle automazioni del package,
-        # voce del registro legata alla voce della VMC
+        assert len(attese) == 13
+        # come le lasciava la b45 (14 automazioni, con quella del cambio d'IP): unique_id
+        # e entity_id delle automazioni del package, voce legata alla voce della VMC
+        cambio_ip = "automation.vmc_master_cambio_ip_vmc_riavvio_di_h_a"
         della_b45 = [
             registro.async_get_or_create(
                 "automation",
                 "automation",
-                entity_id.split(".", 1)[1],
+                "vmc_master_cambio_ip_vmc"
+                if entity_id == cambio_ip
+                else entity_id.split(".", 1)[1],
                 suggested_object_id=entity_id.split(".", 1)[1],
                 config_entry=una,
             )
-            for entity_id in sorted(attese)
+            for entity_id in sorted({*attese, cambio_ip})
         ]
-        assert sorted(v.entity_id for v in della_b45) == sorted(attese)
+        assert sorted(v.entity_id for v in della_b45) == sorted({*attese, cambio_ip})
         # un'automazione dell'utente (automations.yaml) con un nome da VMC
         dell_utente = registro.async_get_or_create(
             "automation",
@@ -66,7 +71,7 @@ async def test_nessuna_entita_e_voci_della_b45_tolte(hass: HomeAssistant) -> Non
         )
 
         # le voci della b45 tolte, quella dell'utente com'era, le native legate
-        assert [e for e in attese if registro.async_get(e)] == []
+        assert [v.entity_id for v in della_b45 if registro.async_get(v.entity_id)] == []
         assert registro.async_get(dell_utente.entity_id) == dell_utente
         legate = er.async_entries_for_config_entry(registro, una.entry_id)
         assert {v.entity_id for v in legate} == voci_attese("master")

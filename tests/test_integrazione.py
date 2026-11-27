@@ -294,61 +294,6 @@ async def test_cambia_ip_da_configura(hass: HomeAssistant) -> None:
     assert voce.runtime_data.ip == "192.168.1.170"
 
 
-async def test_cambia_ip_dalla_scheda(hass: HomeAssistant) -> None:
-    """L'IP scritto dal campo «Cambia IP VMC» (comando del motore) vale anche per
-    l'integrazione: la voce prende il nuovo IP, la VMC lo usa dal riavvio che il motore
-    chiede subito dopo (nessuna ricarica, nessun file scritto)."""
-    voce = MockConfigEntry(
-        domain=DOMAIN, unique_id="master", data={"nome": "master", "host": "192.168.1.160"}
-    )
-    voce.add_to_hass(hass)
-    assert await hass.config_entries.async_setup(voce.entry_id)
-    await hass.async_block_till_done()
-    with patch.object(hass.config_entries, "async_reload") as ricarica:
-        await voce.runtime_data.vmc._cambia_ip("192.168.1.180")
-        await hass.async_block_till_done()
-    ricarica.assert_not_called()
-    assert voce.data["host"] == "192.168.1.180"
-    assert voce.runtime_data.ip_dalla_scheda == "192.168.1.180"
-    assert not Path(hass.config.path("packages")).exists()
-    assert not Path(hass.config.path("vmc_master_backup")).exists()
-
-
-@pytest.mark.parametrize(
-    ("ip_scheda", "motivo"),
-    [
-        ("192.168.1.010", "non è valido"),
-        ("999.999.999.999", "non è valido"),
-        ("192.168.1.161", "è già usato dalla VMC sala"),
-    ],
-)
-async def test_ip_della_scheda_rifiutato(hass: HomeAssistant, ip_scheda: str, motivo: str) -> None:
-    """IP della scheda non valido o gia' di un'altra VMC: resta quello di prima e lo dice
-    una notifica."""
-    from homeassistant.components import persistent_notification
-
-    hass.config.language = "it"
-    MockConfigEntry(
-        domain=DOMAIN, unique_id="sala", data={"nome": "sala", "host": "192.168.1.161"}
-    ).add_to_hass(hass)
-    voce = MockConfigEntry(
-        domain=DOMAIN, unique_id="master", data={"nome": "master", "host": "192.168.1.160"}
-    )
-    voce.add_to_hass(hass)
-    assert await hass.config_entries.async_setup(voce.entry_id)
-    await hass.async_block_till_done()
-    await voce.runtime_data.vmc._cambia_ip(ip_scheda)
-    await hass.async_block_till_done()
-    assert voce.data["host"] == "192.168.1.160"
-    assert voce.runtime_data.ip_dalla_scheda is None
-    notifica = persistent_notification._async_get_or_create_notifications(hass)[
-        f"{DOMAIN}_ip_scheda_master"
-    ]
-    assert notifica["title"] == "VMC Master: IP della VMC master non cambiato"
-    assert f"L'IP {ip_scheda} scritto dalla scheda {motivo}" in notifica["message"]
-    assert "La VMC master resta sull'IP 192.168.1.160." in notifica["message"]
-
-
 def test_rinomina_protegge_la_cartella_dei_backup() -> None:
     from custom_components.vmc_master.trasforma import rinomina
 

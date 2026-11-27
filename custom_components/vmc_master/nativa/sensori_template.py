@@ -1,6 +1,6 @@
 """I sensori template del package come entità dell'integrazione, con i modelli tradotti.
 
-Oggi i 121 sensori calcolati della VMC sono sensori template senza trigger:
+Oggi i 120 sensori calcolati della VMC sono sensori template senza trigger:
 Home Assistant ricalcola ognuno quando cambia un'entità che il suo modello ha letto
 l'ultima volta (``async_track_template_result``) e lo scrive subito, durante la consegna
 dell'evento che l'ha fatto ricalcolare; un sensore che legge un altro sensore si
@@ -12,7 +12,7 @@ in quest'ordine, con gli stati intermedi.
 valori finali, ma un altro ordine e nessuno stato intermedio, e le automazioni possono
 scattare in modo diverso (per esempio due trigger dell'Automazione VMC Master al posto di
 uno, e un comando in più alla VMC). Per avere gli stessi istanti e lo stesso ordine questi
-121 sensori sono entità dell'integrazione che si comportano come le entità template di
+120 sensori sono entità dell'integrazione che si comportano come le entità template di
 Home Assistant (``SensoreModello``, ``BinarioModello``: sensori_modello.py), con la
 configurazione del package e i modelli tradotti in Python dal traduttore del motore
 (``ModelloHA``, che legge le entità di domani e i valori interni come il motore) al posto

@@ -1,6 +1,6 @@
 """Mappa dei nomi per confronta.py --mappa: il package di oggi (A) contro l'integrazione nativa (B).
 
-Con la variante nativa4 (fase 4) le entita' della VMC non sono piu' quelle del package: i 173
+Con la variante nativa4 (fase 4) le entita' della VMC non sono piu' quelle del package: i 172
 aiutanti visibili diventano entita' native con un altro dominio (stesso object_id), i valori
 interni, i timer e gli script vanno dentro il motore, arrivano 25 pulsanti e 34 sensori con
 l'istante di fine dei timer. La mappa viene dalla colonna «Domani» della fase 1
@@ -17,12 +17,15 @@ Voci di A (oggi):
   restano aiutanti del package anche in B, con le sue S/R degli stessi aiutanti; le loro voci I/F
   (stato all'avvio e al fork) si tolgono: nel motore non sono stati di Home Assistant;
 - S/R/I/F degli script: tolte (domani gli script sono nel motore, senza entita');
+- S/R/I/F, C/E e «cambio ip» delle voci tolte (colonna «Domani» = «tolta», piu' il sensore e
+  l'automazione del campo «Cambia IP VMC»): tolte (dalla b46 domani non ci sono; gli scenari
+  IP di gen_mancanti restano solo per il lato A);
 - C/E: gli entity_id dei dati con i nomi di domani; in homeassistant.update_entity si tolgono
   i valori interni dalle entita' (domani non sono entita': il motore li toglie dalla chiamata
   e li riscrive lui nel loro turno, con la stessa voce MR di oggi);
 - X: i comandi alla VMC (printf ... | nc) come «tcp: <comando>», il ping come «ping <ip>», il
-  cambio del nome come «tcp: VMNM <nome>», il cambio dell'indirizzo come «cambio ip <ip>» (le
-  stesse forme che scrive nativa4); il «find ... sed» dei file .sh, che domani non c'e', si toglie.
+  cambio del nome come «tcp: VMNM <nome>» (le stesse forme che scrive nativa4); il «find ... sed»
+  dei file .sh e il cambio dell'indirizzo (b46), che domani non ci sono, si tolgono.
 
 Voci di B (domani):
 - S/R/I/F dei 25 pulsanti e dei 34 sensori dei timer: tolte (entita' nuove, senza una di oggi);
@@ -61,7 +64,11 @@ MOTIVI = {
                       "solo con la finestra «Prossime letture» accesa: sensori_timer.SOLO_CON_LA_FINESTRA)"),
     'chiamata_nativa': "chiamata dell'utente a un'entita' nativa: oggi va a un aiutante e la traccia non la registra",
     'find': "comando di shell «find ... sed» sui file .sh: domani non c'e'",
+    'tolta': "voce tolta (b46: campo «Cambia IP VMC» della scheda e chi lo serve): domani non c'e'",
 }
+# Le voci tolte che non sono nella fase 1 (tabelle.TOLTE): il sensore e l'automazione del campo.
+TOLTE_FUORI_DALLA_FASE_1 = frozenset({'sensor.vmc_master_verifica_ip_inserito',
+                                      'automation.vmc_master_cambio_ip_vmc_riavvio_di_h_a'})
 # Voci cambiate (non tolte) dalla mappa, contate come le voci tolte.
 MOTIVI_CAMBIATE = {
     'update_interni': ("homeassistant.update_entity con valori interni tra le entita': tolti dai dati "
@@ -92,11 +99,14 @@ class Mappa:
         self.timer = {}
         self.script = set()
         self.pulsanti = set()
+        self.voci_tolte = set(TOLTE_FUORI_DALLA_FASE_1)
         for oggi, domani in righe:
             tipo = oggi.split('.')[0]
             if domani.startswith('button.'):
                 self.pulsanti.add(domani)
-            if tipo in AIUTANTI:
+            if domani == 'tolta':
+                self.voci_tolte.add(oggi)
+            elif tipo in AIUTANTI:
                 if domani.startswith('interna'):
                     self.interni.add(oggi)
                 else:
@@ -143,7 +153,7 @@ class Mappa:
         return tracce._json(dati)
 
     def _shell(self, comando):
-        for regola, forma in ((_PRINTF, 'tcp: {}'), (_PING, 'ping {}'), (_NOME, 'tcp: VMNM {}'), (_IP, 'cambio ip {}')):
+        for regola, forma in ((_PRINTF, 'tcp: {}'), (_PING, 'ping {}'), (_NOME, 'tcp: VMNM {}')):
             m = regola.search(comando)
             if m:
                 return forma.format(m.group(1))
@@ -154,6 +164,8 @@ class Mappa:
         k = v[0]
         if k in 'SRIF':
             e = v[2]
+            if e in self.voci_tolte:
+                return self._togli(lato, 'tolta', k)
             if e in self.script:
                 return self._togli(lato, 'script', k)
             if lato == 'B' and e in self.pulsanti:
@@ -175,6 +187,10 @@ class Mappa:
         if k == 'MS':
             return self._attributi(v, attr, nuovi)
         if k in 'CE':
+            bersagli = json.loads(v[4]).get('entity_id')
+            bersagli = [bersagli] if isinstance(bersagli, str) else (bersagli or [])
+            if bersagli and all(b in self.voci_tolte for b in bersagli):
+                return self._togli(lato, 'tolta', k)
             if lato == 'A':
                 return v[:4] + [self._dati(v[4], (v[2], v[3]), lato, k)] + v[5:]
             if v[2] in DOMINI_NATIVI:
@@ -186,6 +202,8 @@ class Mappa:
         if k == 'X' and lato == 'A':
             if v[2].startswith('find '):
                 return self._togli(lato, 'find', k)
+            if _IP.search(v[2]):
+                return self._togli(lato, 'tolta', k)
             return v[:2] + [self._shell(v[2])]
         return v
 

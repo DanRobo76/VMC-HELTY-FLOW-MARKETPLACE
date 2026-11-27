@@ -2,16 +2,18 @@
 
 - prepara_configurazione toglie dal package tutto quello che la fase 4 (con le fasi 2 e 3)
   sostituisce: le 14 automazioni, i 51 script, i 16 comandi di shell, i 34 timer, tutti gli
-  aiutanti input_* (173 entità native, 68 valori interni nella memoria del motore), i
-  sensori template, tcp, rest e command_line.
+  aiutanti input_* (172 entità native, 67 valori interni nella memoria del motore, 2 voci
+  tolte dalla b46 con il campo «Cambia IP VMC»), i sensori template, tcp, rest e
+  command_line.
   Restano «homeassistant: customize» (le icone delle automazioni: domani le automazioni sono
   logiche dell'integrazione senza entità, la traccia le aggiunge ai loro stati come Home
   Assistant le aggiungerebbe a un'entità) e «recorder:» (spento dal simulatore). Copia l'integrazione vmc_master del repository
   ($VMC_RADICE) in <cfg>/custom_components/vmc_master (solo per importarla: non è in
   configuration.yaml) e aggiunge un'integrazione minima, sim_vmc_nativa4, che nel suo setup
   (durante l'avvio di Home Assistant) crea la VMC con nativa/assemblaggio.py
-  (``VMCAssemblata``): StatoVMC e letture, 137 sensori, 173 impostazioni, memoria interna,
-  motore con il codice di generato_fase4, 34 sensori dei timer, 25 pulsanti;
+  (``VMCAssemblata``): StatoVMC e letture, 136 sensori, 172 impostazioni, memoria interna,
+  motore con il codice di generato_fase4 (13 automazioni), 34 sensori dei timer, 25
+  pulsanti;
 - la VMC finta (fakevmc) parla con il motore attraverso ``ClientFinto`` (al posto del
   client TCP) e ``ping_finto`` (al posto del ping), con gli stessi tempi dei comandi di
   shell finti del lato A (fakevmc.FakeProc: 0,05 s se la VMC riceve, 3 s se no; il ping
@@ -186,13 +188,6 @@ async def ping_finto(host):
     return acceso
 
 
-async def cambia_ip_finto(ip):
-    """Al posto del cambio d'indirizzo dell'integrazione: come il file .sh finto del lato A (0,01 s;
-    la voce X come quella del lato A tradotta da confronta.py --mappa)."""
-    fakevmc._registra((vclock._V[0], f'cambio ip {ip}'), 'X')
-    await asyncio.sleep(0.01)
-
-
 def comandi_come_oggi(comandi):
     """I comandi senza effetto fuori da Home Assistant (oggi lo shell_command
     rimuovi_caratteri_di_ritorno, find e sed sui file del package; domani nessun comando: tipo
@@ -224,8 +219,7 @@ async def avvia_assemblaggio(hass, config):
     )
     from custom_components.vmc_master.nativa.motore.stati_logiche import stati_logiche
     from homeassistant.core import callback
-    vmc = VMCAssemblata(hass, NOME, IP, client=ClientFinto(hass, IP), prova_ping=ping_finto, cambia_ip=cambia_ip_finto,
-                        versione=False)
+    vmc = VMCAssemblata(hass, NOME, IP, client=ClientFinto(hass, IP), prova_ping=ping_finto, versione=False)
     STATO['hass'] = hass
     _annota_i_trigger()
     stati_logiche(hass).osserva(callback(_traccia_logica))
@@ -394,7 +388,7 @@ def _distributore(funzione):
 
 async def avvia(hass) -> None:
     vmc = STATO.get('vmc')
-    if vmc is None or len(vmc.motore.automazioni) != 14 or len(vmc.c.interni.script) != 51:
+    if vmc is None or len(vmc.motore.automazioni) != 13 or len(vmc.c.interni.script) != 51:
         raise RuntimeError('VMC nativa della fase 4 non avviata')
 
 
@@ -444,6 +438,9 @@ async def servizio(hass, dominio, nome, dati, blocking, contesto):
     dest = _entita_domani(entita)
     if dest is None:
         raise RuntimeError(f'entità senza voce nella colonna Domani: {entita}')
+    if dest == 'tolta':
+        # b46: il campo «Cambia IP VMC» non c'è più: domani l'azione non ha un'entità
+        return True
     if dest.startswith('interna'):
         # domani nessun utente scrive un valore interno: la scrittura del motore (memoria)
         await _come_task(vmc.scrittura.chiama(f'{dominio}.{nome}', dati, contesto), blocking)

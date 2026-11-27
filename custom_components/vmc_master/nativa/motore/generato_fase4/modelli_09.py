@@ -41,13 +41,6 @@ def m1033(c, V):
     return ''.join(_o)
 
 
-def m1034(c, V):
-    # {{ ip | default('') }}
-    _o = []
-    _o.append(J.testo(J.f_default(V['ip'], '')))
-    return ''.join(_o)
-
-
 def m1035(c, V):
     # "{{ states('input_text.vmc_master_nome_da_inserire') | replace('"', '') | replace('\\',...
     _o = []
@@ -152,38 +145,6 @@ def m1040(c, V):
         _o.append('\n')
     else:
         _o.append('\n  -100\n')
-    return ''.join(_o)
-
-
-def m1041(c, V):
-    # {%- set ip = states('input_text.vmc_master_ip_insert') | trim -%} {%- set esito = state...
-    v_ip = v_esito = v_ottetti = v_ns = J.MANCANTE
-    _o = []
-    v_ip = J.f_trim(c.states(c.N('text.vmc_master_ip_insert')))
-    v_esito = c.states(c.N('input_text.vmc_master_ip_insert_esito'))
-    v_ottetti = J.f_list(J.f_map((J.chiama(J.attributo(J.leggi(v_ip, 'ip'), 'split'), '.') + ['', '']), 'int', 0))
-    v_ns = J.namespace(uso=False)
-    for v_s_1 in J.f_rejectattr(J.f_selectattr(J.f_rejectattr(J.attributo(c.states, 'sensor'), 'attributes.restored', c.test('eq'), True), 'entity_id', c.test('search'), '^sensor\\.vmc_[a-z]+_ip$'), 'entity_id', c.test('eq'), c.N('sensor.vmc_master_ip')):
-        if (J.f_trim(J.attributo(v_s_1, 'state')) == J.leggi(v_ip, 'ip')):
-            J.imposta_ns(J.leggi(v_ns, 'ns'), 'uso', True)
-    if (J.leggi(v_ip, 'ip') == ''):
-        _o.append('Nessun IP')
-    elif ((((not J.t_match(J.leggi(v_ip, 'ip'), '^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$')) or (J.elemento(J.leggi(v_ottetti, 'ottetti'), 0) in [0, 127])) or (J.elemento(J.leggi(v_ottetti, 'ottetti'), 0) >= 224)) or (J.elemento(J.leggi(v_ottetti, 'ottetti'), slice(None, 2, None)) == [169, 254])):
-        _o.append('IP non Valido')
-    elif (J.leggi(v_ip, 'ip') == J.f_trim(c.states(c.N('sensor.vmc_master_ip')))):
-        _o.append('IP già impostato')
-    elif J.attributo(J.leggi(v_ns, 'ns'), 'uso'):
-        _o.append('IP già in uso')
-    elif (J.leggi(v_esito, 'esito') == J.concat('non_risponde ', J.leggi(v_ip, 'ip'))):
-        _o.append('VMC non risponde')
-    elif (J.leggi(v_esito, 'esito') == J.concat('altro_dispositivo ', J.leggi(v_ip, 'ip'))):
-        _o.append('Non è una VMC')
-    elif (J.leggi(v_esito, 'esito') == J.concat('nome_diverso ', J.leggi(v_ip, 'ip'))):
-        _o.append('Nome VMC diverso')
-    elif (J.leggi(v_esito, 'esito') != J.concat('ok ', J.leggi(v_ip, 'ip'))):
-        _o.append('Verifica VMC in corso')
-    else:
-        _o.append(J.testo(J.leggi(v_ip, 'ip')))
     return ''.join(_o)
 
 

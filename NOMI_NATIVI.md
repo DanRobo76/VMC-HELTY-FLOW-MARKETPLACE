@@ -8,12 +8,13 @@
 
 | Gruppo / Group | Voci / Items |
 |---|---|
-| Impostazioni che cambiano dominio / Settings that change domain | 173 |
+| Impostazioni che cambiano dominio / Settings that change domain | 172 |
 | Timer che diventano sensori con l'ora di fine / Timers that become end-time sensors | 34 |
 | Script e comandi che diventano pulsanti / Scripts and commands that become buttons | 25 |
-| Voci che diventano interne all'integrazione (non più entità) / Items that become internal to the integration (no longer entities) | 110 |
+| Voci che diventano interne all'integrazione (non più entità) / Items that become internal to the integration (no longer entities) | 108 |
+| Voci tolte (non ci sono più) / Removed items (no longer exist) | 5 |
 
-## 1. Impostazioni che cambiano dominio / Settings that change domain (173)
+## 1. Impostazioni che cambiano dominio / Settings that change domain (172)
 
 ### `input_boolean` → `binary_sensor` (77)
 
@@ -226,11 +227,10 @@
 |---|---|---|
 | `input_text.vmc_‹nome›_comando_non_eseguito` | `sensor.vmc_‹nome›_comando_non_eseguito` | Comando non Eseguito durante una Fascia |
 
-### `input_text` → `text` (2)
+### `input_text` → `text` (1)
 
 | Oggi / Today | Versione nativa / Native | Nome / Name |
 |---|---|---|
-| `input_text.vmc_‹nome›_ip_insert` | `text.vmc_‹nome›_ip_insert` | Cambia IP VMC (Riavvio di H.A.) |
 | `input_text.vmc_‹nome›_nome_da_inserire` | `text.vmc_‹nome›_nome_da_inserire` | Cambia Nome VMC |
 
 ## 2. Timer che diventano sensori con l'ora di fine / Timers that become end-time sensors (34)
@@ -311,7 +311,7 @@
 | `shell_command.vmc_‹nome›_velocita_3` | `button.vmc_‹nome›_velocita_3` | VMC ‹nome› - Velocità 3 |
 | `shell_command.vmc_‹nome›_velocita_4` | `button.vmc_‹nome›_velocita_4` | VMC ‹nome› - Velocità 4 |
 
-## 4. Voci che diventano interne all'integrazione (non più entità) / Items that become internal to the integration (no longer entities) (110)
+## 4. Voci che diventano interne all'integrazione (non più entità) / Items that become internal to the integration (no longer entities) (108)
 
 ### `input_boolean` → – (1)
 
@@ -356,7 +356,7 @@
 | `input_number.vmc_‹nome›_attesa_umidita_fine` | Attesa Fine Allerta Umidità |
 | `input_number.vmc_‹nome›_attesa_umidita_memoria` | Attesa Memorizzazione Velocità (Umidità) |
 
-### `input_text` → – (35)
+### `input_text` → – (34)
 
 | Oggi / Today | Nome / Name |
 |---|---|
@@ -382,7 +382,6 @@
 | `input_text.vmc_‹nome›_countdown_umidita_avvio` | Avvio Allerta Umidità - Trigger in Attesa |
 | `input_text.vmc_‹nome›_countdown_umidita_fine` | Fine Allerta Umidità - Trigger in Attesa |
 | `input_text.vmc_‹nome›_countdown_umidita_memoria` | Memorizzazione Velocità (Umidità) - Trigger in Attesa |
-| `input_text.vmc_‹nome›_ip_insert_esito` | Esito Verifica VMC al Nuovo IP |
 | `input_text.vmc_‹nome›_last_co2_internal_entity` | Ultima Entità CO₂ interna Selezionata |
 | `input_text.vmc_‹nome›_last_humidity_external_entity` | Ultima Entità Umidità esterna Selezionata |
 | `input_text.vmc_‹nome›_last_humidity_internal_entity` | Ultima Entità Umidità interna Selezionata |
@@ -439,11 +438,41 @@
 | `script.vmc_‹nome›_notifica_velocita_diversa_da_0` | VMC ‹nome› - Invia notifica VMC in Funzione |
 | `script.vmc_‹nome›_ripristina_tempi_attesa` | VMC ‹nome› - Ripristina Tempi di Attesa Originali |
 
-### `shell_command` → – (4)
+### `shell_command` → – (3)
+
+| Oggi / Today | Nome / Name |
+|---|---|
+| `shell_command.vmc_‹nome›_cambia_nome` | – |
+| `shell_command.vmc_‹nome›_reset_filtro` | – |
+| `shell_command.vmc_‹nome›_rimuovi_caratteri_di_ritorno` | – |
+
+## 5. Voci tolte (non ci sono più) / Removed items (no longer exist) (5)
+
+🇮🇹 L'IP della VMC si cambia da *Impostazioni → Dispositivi e servizi → VMC Master → ⚙️ → Cambia l'IP della VMC*.
+
+🇺🇸 Change the unit's IP from *Settings → Devices & services → VMC Master → ⚙️ → Change the unit's IP*.
+
+### `automation` → – (1)
+
+| Oggi / Today | Nome / Name |
+|---|---|
+| `automation.vmc_‹nome›_cambio_ip_vmc_riavvio_di_h_a` | VMC ‹nome› - Cambio IP VMC (Riavvio di H.A.) |
+
+### `input_text` → – (2)
+
+| Oggi / Today | Nome / Name |
+|---|---|
+| `input_text.vmc_‹nome›_ip_insert` | Cambia IP VMC (Riavvio di H.A.) |
+| `input_text.vmc_‹nome›_ip_insert_esito` | Esito Verifica VMC al Nuovo IP |
+
+### `sensor` → – (1)
+
+| Oggi / Today | Nome / Name |
+|---|---|
+| `sensor.vmc_‹nome›_verifica_ip_inserito` | IP |
+
+### `shell_command` → – (1)
 
 | Oggi / Today | Nome / Name |
 |---|---|
 | `shell_command.vmc_‹nome›_aggiorna_indirizzo_ip` | – |
-| `shell_command.vmc_‹nome›_cambia_nome` | – |
-| `shell_command.vmc_‹nome›_reset_filtro` | – |
-| `shell_command.vmc_‹nome›_rimuovi_caratteri_di_ritorno` | – |

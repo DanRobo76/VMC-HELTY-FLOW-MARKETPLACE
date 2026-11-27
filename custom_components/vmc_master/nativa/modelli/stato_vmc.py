@@ -1,4 +1,4 @@
-"""Stato della VMC: collegamento, nome, versione, IP inserito, velocita' letta, LED, portata,
+"""Stato della VMC: collegamento, nome, versione, IP, velocita' letta, LED, portata,
 ricambi d'aria e tasti del telecomando (sensori binari).
 
 Le risposte grezze della VMC arrivano dai sensori «memorizzati» (ultima lettura valida):
@@ -8,7 +8,6 @@ nome.
 
 from __future__ import annotations
 
-import re
 from collections.abc import Callable
 
 from ..compat import fl, it, rnd, testo
@@ -60,64 +59,10 @@ def versione_corrente(L: Lettore) -> str:
     return f"v.{VERSIONE_INTEGRAZIONE}"
 
 
-_RE_IP = re.compile(
-    r"^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}"
-    r"(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$"
-)
-_RE_SENSORE_IP = re.compile(r"^sensor\.vmc_[a-z]+_ip$")
-
-
-def _ip_altre_vmc(L: Lettore) -> list[str]:
-    """Stati dei sensori IP delle altre VMC.
-
-    Nel package: ``states.sensor | rejectattr('attributes.restored', 'eq', true)
-    | selectattr('entity_id', 'search', '^sensor\\.vmc_[a-z]+_ip$')`` senza il sensore IP di
-    questa VMC.
-    """
-    proprio = L.entity_id("sensor.ip")
-    return [
-        str(s.state)
-        for s in L.elenca("sensor")
-        if s.attributes.get("restored") is not True
-        and _RE_SENSORE_IP.search(s.entity_id)
-        and s.entity_id != proprio
-    ]
-
-
 @modello("sensor.ip")
 def ip(L: Lettore) -> str:
     """IP configurato della VMC (nel package scritto come testo fisso all'installazione)."""
     return L.ip.strip()
-
-
-@modello("sensor.verifica_ip_inserito")
-def verifica_ip_inserito(L: Lettore) -> str:
-    ip = L.v("input_text.ip_insert").strip()
-    esito = L.v("input_text.ip_insert_esito")
-    ottetti = [it(x, 0) for x in ip.split(".") + ["", ""]]
-    in_uso = any(stato.strip() == ip for stato in _ip_altre_vmc(L))
-    if ip == "":
-        return "Nessun IP"
-    if (
-        not _RE_IP.match(ip)
-        or ottetti[0] in (0, 127)
-        or ottetti[0] >= 224
-        or ottetti[:2] == [169, 254]
-    ):
-        return "IP non Valido"
-    if ip == L.v("sensor.ip").strip():
-        return "IP già impostato"
-    if in_uso:
-        return "IP già in uso"
-    if esito == "non_risponde " + ip:
-        return "VMC non risponde"
-    if esito == "altro_dispositivo " + ip:
-        return "Non è una VMC"
-    if esito == "nome_diverso " + ip:
-        return "Nome VMC diverso"
-    if esito != "ok " + ip:
-        return "Verifica VMC in corso"
-    return ip
 
 
 # --- Collegamento e nome ---------------------------------------------------------------------

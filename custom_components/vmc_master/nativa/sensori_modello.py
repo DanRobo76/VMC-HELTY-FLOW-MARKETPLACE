@@ -1,7 +1,7 @@
 """I sensori calcolati della VMC come entità dell'integrazione: sensori e sensori binari
 con un modello.
 
-Ognuno dei 121 sensori calcolati di una VMC (``motore/generato_fase4/sensori.py``) è una
+Ognuno dei 120 sensori calcolati di una VMC (``motore/generato_fase4/sensori.py``) è una
 configurazione come quella di un sensore template del package (stato, disponibilità,
 icona, nome, unità...) con i modelli tradotti (``ModelloHA``, un ``Template``) al posto del
 Jinja. Qui sono entità dell'integrazione (``SensorEntity``, ``BinarySensorEntity``) che si
@@ -18,7 +18,7 @@ quella dell'integrazione (``motore.seguire.traccia_modelli``), che segue le enti
 Home Assistant e consegna anche i cambi dei valori interni del motore (memoria interna,
 timer del motore).
 
-Solo le chiavi che i 121 sensori usano: ``default_entity_id``, ``name``, ``unique_id``,
+Solo le chiavi che i 120 sensori usano: ``default_entity_id``, ``name``, ``unique_id``,
 ``state``, ``icon``, ``availability`` e, per i sensori, ``unit_of_measurement``,
 ``device_class``, ``state_class``; per i sensori binari ``delay_on``. Una configurazione
 con altre chiavi non si accetta (``ValueError``): andrebbe portata prima.
@@ -121,7 +121,7 @@ CHIAVI_SENSORE = CHIAVI_COMUNI | {
 CHIAVI_BINARIO = CHIAVI_COMUNI | {CONF_DELAY_ON}
 
 # classi dei sensori con lo stato come data o istante: Home Assistant lo converte, qui non
-# è portato (nessuno dei 121 sensori le usa)
+# è portato (nessuno dei 120 sensori le usa)
 _CLASSI_CON_DATA = (
     SensorDeviceClass.DATE,
     SensorDeviceClass.TIMESTAMP,

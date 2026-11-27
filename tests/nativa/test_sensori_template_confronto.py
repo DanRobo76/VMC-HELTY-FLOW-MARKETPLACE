@@ -9,9 +9,9 @@ tutto insieme e scriveva i cambi in fila (altro ordine, nessuno stato intermedio
 simulatore lo scenario «S|CONG|0|F|-» faceva scattare due trigger dell'Automazione VMC
 Master al posto di uno, con un comando in più alla VMC (a 14,05 s).
 
-Domani i 121 sensori template sono entità dell'integrazione che si comportano come le
+Domani i 120 sensori template sono entità dell'integrazione che si comportano come le
 entità template di Home Assistant, con i modelli tradotti (sensori_template.py,
-sensori_modello.py). Qui, nello stesso Home Assistant: oggi 120 sensori
+sensori_modello.py). Qui, nello stesso Home Assistant: oggi 119 sensori
 template del package con i loro aiutanti (tutti tranne Velocità Registrata, che legge due
 timer: qui è uno stato scritto a mano nei due lati); domani le entità di ``crea_sensori_template``
 della VMC «nativa», che leggono le entità di domani (con gli stessi stati) e i valori
@@ -95,7 +95,8 @@ def _per_sensore(voci: list[tuple[str, str]]) -> dict[str, list[str]]:
 
 
 def _domani() -> dict[str, str]:
-    """Colonna «Domani» della fase 1: aiutante di oggi -> entità di domani (o «interna»)."""
+    """Colonna «Domani» della fase 1: aiutante di oggi -> entità di domani (o «interna», o
+    «tolta»)."""
     with FASE_1.open(encoding="utf-8-sig", newline="") as f:
         return {r["Entità oggi"]: r["Domani"] for r in csv.DictReader(f, delimiter=";")}
 
@@ -103,8 +104,10 @@ def _domani() -> dict[str, str]:
 def _di_domani(entity_id: str, domani: dict[str, str]) -> str:
     """L'entity_id che legge il sensore nativo della VMC «nativa» al posto di quello di oggi."""
     nuovo = domani.get(entity_id, entity_id)
-    if nuovo.startswith("interna"):
-        nuovo = entity_id  # i valori interni tengono l'entity_id di oggi
+    if nuovo.startswith(("interna", "tolta")):
+        # i valori interni tengono l'entity_id di oggi; le voci tolte (b46) nessun sensore
+        # nativo le legge
+        nuovo = entity_id
     return nuovo.replace("vmc_master_", f"vmc_{NOME}_", 1)
 
 
@@ -128,7 +131,7 @@ async def test_sensori_template_nello_stesso_ordine_di_oggi(
     contesto.timer = TimerDelMotore(contesto, {})
     sensori, binari = crea_sensori_template(hass, contesto, codice_sensori, c.IP)
     chiavi = {chiave_del_sensore(e.entity_id, NOME) for e in (*sensori, *binari)}
-    assert len(chiavi) == 121
+    assert len(chiavi) == 120
     chiavi.discard("sensor.velocita_registrata")
     sensori = [e for e in sensori if chiave_del_sensore(e.entity_id, NOME) in chiavi]
     template = [
@@ -139,7 +142,7 @@ async def test_sensori_template_nello_stesso_ordine_di_oggi(
         for s in b.get(dominio) or []
         if s["default_entity_id"].replace("vmc_master_", "", 1) in chiavi
     ]
-    assert len(template) == 120
+    assert len(template) == 119
 
     async def passo() -> None:
         """Fine di un passo: anche i modelli con un limite di frequenza (che Home Assistant

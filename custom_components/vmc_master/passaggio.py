@@ -8,10 +8,11 @@ motore. Finché c'è, la VMC nativa non parte (``IN_ATTESA``) e la VMC continua 
 package com'era.
 
 1. Ad avvio finito si leggono dal package ancora caricato i valori che servono alla VMC
-   nativa (``leggi_valori``): le 173 impostazioni visibili (valore di partenza delle
-   entità native, come il ripristino dopo un riavvio), i 68 valori interni (archivio della
+   nativa (``leggi_valori``): le 172 impostazioni visibili (valore di partenza delle
+   entità native, come il ripristino dopo un riavvio), i 67 valori interni (archivio della
    memoria interna del motore) e i 10 sensori con memoria. Si salvano nell'archivio
-   dell'integrazione (``.storage``), niente in /config.
+   dell'integrazione (``.storage``), niente in /config. Le voci tolte (``tabelle.TOLTE``:
+   il campo «Cambia IP VMC» della scheda e chi lo serve) non passano.
 2. Una riparazione chiede di confermare la rimozione della cartella del package e dei
    suoi elementi del registro delle entità (``async_conferma``): solo dopo il clic
    dell'utente, e solo per le cartelle scritte dalla beta. Alla conferma i valori si
@@ -62,7 +63,7 @@ from .nativa.motore.memoria_interna import (
     VERSIONE_ARCHIVIO as VERSIONE_MEMORIA_INTERNA,
 )
 from .nativa.motore.memoria_interna import da_stato
-from .nativa.tabelle import DOMANI
+from .nativa.tabelle import DOMANI, TOLTE
 from .nativa.vmc import ATTRIBUTO_INTERRUZIONE
 
 _LOGGER = logging.getLogger(__name__)
@@ -271,9 +272,9 @@ def entity_id_di_oggi(chiave: str, nome: str) -> str:
 
 
 def entity_id_di_domani(chiave: str, nome: str) -> str | None:
-    """L'entity_id nativo di una voce del package (None se è interna al motore)."""
+    """L'entity_id nativo di una voce del package (None se è interna al motore o tolta)."""
     dominio = DOMANI[chiave]
-    if dominio == "interna":
+    if dominio in ("interna", "tolta"):
         return None
     return f"{dominio}.vmc_{nome}_{chiave.split('.', 1)[1]}"
 
@@ -321,22 +322,23 @@ class Letti:
 def leggi_valori(hass: HomeAssistant, nome: str) -> Letti:
     """I valori del package della VMC ``nome`` che servono alla VMC nativa.
 
-    - le 173 impostazioni visibili: lo stato dell'aiutante, che l'entità nativa riprende
+    - le 172 impostazioni visibili: lo stato dell'aiutante, che l'entità nativa riprende
       con le regole dell'aiutante (``initial`` vince, numero fuori dai limiti al minimo,
       opzione che non c'è alla prima...), come dopo un riavvio della beta;
-    - i 68 valori interni: il valore come lo salva la memoria interna (``da_stato``);
+    - i 67 valori interni: il valore come lo salva la memoria interna (``da_stato``);
     - i 10 sensori con memoria: stato e attributo dell'ultima lettura prima
       dell'interruzione.
 
     I 34 timer non passano: nessun timer del package ha ``restore``, quindi dopo il
     riavvio del passaggio ripartono fermi come dopo ogni riavvio della beta (si annotano
-    solo quelli attivi). Script e comandi di shell non hanno valori.
+    solo quelli attivi). Script e comandi di shell non hanno valori; le voci tolte non
+    passano.
     """
     letti = Letti()
     visibili = set(chiavi_comandi())
     for chiave in DOMANI:
         dominio = chiave.split(".", 1)[0]
-        if dominio in ("script", "shell_command"):
+        if dominio in ("script", "shell_command") or chiave in TOLTE:
             continue
         entity_id = entity_id_di_oggi(chiave, nome)
         stato = stato_della_beta(hass, entity_id)
@@ -643,8 +645,10 @@ async def async_riferimenti_personali(
     Si cerca nel testo della configurazione, quindi ogni uso: entità (anche nei modelli
     e come bersaglio dei servizi ``input_*.*``, ``timer.*``, ``script.turn_on``) e
     servizi del package che non ci sono più (``script.‹id›`` e ``shell_command.‹id›``
-    come azione)."""
+    come azione). Anche le voci tolte che non sono in ``DOMANI`` (il sensore e
+    l'automazione del campo «Cambia IP VMC»): domani non ci sono."""
     vecchi = {entity_id_di_oggi(c, nome): entity_id_di_domani(c, nome) for c in DOMANI}
+    vecchi |= {entity_id_di_oggi(c, nome): None for c in TOLTE if c not in DOMANI}
     trovati: list[tuple[str, str, str | None]] = []
     for dove, testo in await _async_configurazioni_personali(hass, id_package):
         for vecchio in sorted(set(_RE_ENTITY_ID.findall(testo)) & set(vecchi)):

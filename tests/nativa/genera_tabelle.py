@@ -15,6 +15,7 @@ import pprint
 from pathlib import Path
 from typing import Any
 
+from homeassistant.util import slugify
 from homeassistant.util.yaml.loader import parse_yaml
 
 from .confronto import IP, RADICE, _installatore
@@ -23,6 +24,7 @@ FILE = RADICE / "custom_components" / "vmc_master" / "nativa" / "tabelle.py"
 # La colonna «Domani» della fase 1 (decisione approvata: dominio di domani per ogni voce)
 FASE_1 = RADICE / "tests" / "nativa" / "motore" / "aiutanti_fase1.csv"
 INTERNA = "interna"
+TOLTA = "tolta"
 VERSIONE = "9.0.0b42"
 # Due nomi diversi: le parti che cambiano tra le due VMC sono il nome della VMC.
 NOMI = ("master", "zeta")
@@ -45,6 +47,21 @@ NOMI_NATIVI = {
     "sensor.versione_corrente": "Versione",
     "input_boolean.popup_versione_corrente_vs_repository": "PopUp Notifica Aggiornamento",
 }
+
+# b46 (revisione del catalogo): l'IP della VMC si cambia solo dall'ingranaggio della VMC
+# («Cambia l'IP della VMC»). Il campo «Cambia IP VMC» della scheda e ciò che serviva solo a
+# lui (il sensore che lo controllava, il valore interno con l'esito della verifica, il
+# comando che scriveva l'IP nei file e l'automazione che riavviava Home Assistant) non
+# sono nella versione nativa: fuori da SENSORI, IMPOSTAZIONI e ORDINE_AIUTANTI (anche dalle
+# opzioni che li elencano), «tolta» in DOMANI (come nella colonna «Domani» della fase 1) e
+# in TOLTE con il nome che avevano. Chiavi come in tabelle.py.
+TOLTE = (
+    "input_text.ip_insert",
+    "input_text.ip_insert_esito",
+    "shell_command.aggiorna_indirizzo_ip",
+    "sensor.verifica_ip_inserito",
+    "automation.cambio_ip_vmc_riavvio_di_h_a",
+)
 
 _CAMPI_MODELLO = {
     "name": "nome",
@@ -137,7 +154,11 @@ def _ordine(pacchetti: dict[str, dict[str, Any]]) -> dict[str, tuple[str, ...]]:
         if dominio == "timer":
             continue
         ordini = {
-            nome: [_chiave(f"{dominio}.{o}", nome) for o in pkg.get(dominio) or {}]
+            nome: [
+                chiave
+                for o in pkg.get(dominio) or {}
+                if (chiave := _chiave(f"{dominio}.{o}", nome)) not in TOLTE
+            ]
             for nome, pkg in pacchetti.items()
         }
         master = ordini["master"]
@@ -159,6 +180,11 @@ def _domani() -> dict[str, str]:
         for riga in csv.DictReader(flusso, delimiter=";"):
             chiave = _chiave(riga["Entità oggi"], "master")
             domani = riga["Domani"]
+            if domani == TOLTA:
+                if chiave not in TOLTE:
+                    raise ValueError(f"{riga['Entità oggi']}: «{TOLTA}» ma non in TOLTE")
+                uscita[chiave] = TOLTA
+                continue
             if "." not in domani:
                 uscita[chiave] = INTERNA
                 continue
@@ -217,6 +243,32 @@ def _pulsanti(pkg: dict[str, Any], nome: str) -> dict[str, dict[str, Any]]:
     return uscita
 
 
+def _senza_tolte(voci: dict[str, dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    """Le voci senza quelle tolte (TOLTE), e senza le voci tolte nelle opzioni che elencano
+    entity_id (le entità escluse dal Recorder)."""
+    tolte = {f"{c.split('.', 1)[0]}.vmc_{{nome}}_{c.split('.', 1)[1]}" for c in TOLTE}
+    uscita = {}
+    for chiave, voce in voci.items():
+        if chiave in TOLTE:
+            continue
+        if isinstance(voce.get("options"), list):
+            voce = {**voce, "options": [o for o in voce["options"] if o not in tolte]}
+        uscita[chiave] = voce
+    return uscita
+
+
+def _nomi_tolte(pkg: dict[str, Any], nome: str) -> dict[str, str]:
+    """Il nome che le voci tolte (TOLTE) avevano nel package della VMC ``nome`` (un
+    comando di shell non ha nome)."""
+    nomi = {k: v["nome"] for k, v in _sensori(pkg, nome).items()}
+    nomi |= {k: v.get("name", "") for k, v in _impostazioni(pkg, nome).items()}
+    nomi |= {_chiave(f"shell_command.{o}", nome): "" for o in pkg["shell_command"]}
+    for automazione in pkg["automation"]:
+        alias = automazione["alias"]
+        nomi[_chiave(f"automation.{slugify(alias)}", nome)] = _segnaposto(alias, nome)
+    return {chiave: nomi[chiave] for chiave in TOLTE}
+
+
 def _come_altra(valore: Any) -> Any:
     """Una voce del master come apparirebbe in un'altra VMC: {Nome} e {NOME} diventano {nome}."""
     if isinstance(valore, str):
@@ -246,8 +298,10 @@ def _unisci(master: dict[str, dict], altra: dict[str, dict]) -> dict[str, dict]:
 def contenuto() -> str:
     """Il testo di tabelle.py."""
     pacchetti = {nome: _package(nome) for nome in NOMI}
-    sensori = _unisci(*(_sensori(pacchetti[n], n) for n in NOMI))
-    impostazioni = _unisci(*(_impostazioni(pacchetti[n], n) for n in NOMI))
+    sensori = _senza_tolte(_unisci(*(_sensori(pacchetti[n], n) for n in NOMI)))
+    impostazioni = _senza_tolte(
+        _unisci(*(_impostazioni(pacchetti[n], n) for n in NOMI))
+    )
     pulsanti = _unisci(*(_pulsanti(pacchetti[n], n) for n in NOMI))
     stampa = pprint.PrettyPrinter(width=110, sort_dicts=True).pformat
     righe = [
@@ -261,7 +315,8 @@ def contenuto() -> str:
         "loro configurazione (nome, icona, iniziale, min/max/step, opzioni, durata...).",
         "solo_master = la voce c'è solo nel master (sezioni Clona VMC e Installa VMC).",
         "DOMANI: per ogni voce del package (helper, script, shell_command) il dominio di domani",
-        "(colonna «Domani» della fase 1), o «interna» se diventa stato interno del motore.",
+        "(colonna «Domani» della fase 1), o «interna» se diventa stato interno del motore, o",
+        "«tolta» se la versione nativa non l'ha più (TOLTE).",
         '"""',
         "",
         "from __future__ import annotations",
@@ -283,6 +338,11 @@ def contenuto() -> str:
         "# Fase 4: gli script e i comandi di shell che la scheda chiama, come pulsanti (tipo",
         "# script o comando: lo script o lo shell_command di oggi con lo stesso oggetto).",
         f"PULSANTI: dict[str, dict[str, Any]] = {stampa(pulsanti)}",
+        "",
+        "# b46: le voci del package che la versione nativa non ha più (il campo «Cambia IP VMC»",
+        "# della scheda e ciò che serviva solo a lui: l'IP si cambia dall'ingranaggio della",
+        "# VMC), con il nome che avevano nel package.",
+        f"TOLTE: dict[str, str] = {stampa(_nomi_tolte(pacchetti['master'], 'master'))}",
         "",
     ]
     return "\n".join(righe)

@@ -6,7 +6,8 @@ Scrive, da ``tabelle.DOMANI`` e dalla colonna «Domani» della fase 1
 - ``NOMI_NATIVI.md``, la pagina con l'elenco completo per ogni VMC (‹nome› al posto del nome
   della VMC): impostazioni che cambiano dominio, timer che diventano sensori con l'ora di
   fine, script e comandi che diventano pulsanti, voci che diventano interne
-  all'integrazione;
+  all'integrazione, voci tolte (dalla b46: il campo «Cambia IP VMC» della scheda e chi lo
+  serve, ``tabelle.TOLTE``);
 - dalla 9.0.0b45 i due README non hanno più il riepilogo (la sezione «Passaggio dalla beta»
   è stata tolta): l'elenco resta solo in questa pagina, aperta da «Ulteriori informazioni»
   della riparazione del passaggio dalla beta.
@@ -26,7 +27,12 @@ from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 
-from custom_components.vmc_master.nativa.tabelle import DOMANI, IMPOSTAZIONI, PULSANTI
+from custom_components.vmc_master.nativa.tabelle import (
+    DOMANI,
+    IMPOSTAZIONI,
+    PULSANTI,
+    TOLTE,
+)
 
 from .confronto import RADICE
 
@@ -37,6 +43,7 @@ URL_PAGINA = (
     "https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER/blob/main/NOMI_NATIVI.md"
 )
 INTERNA = "interna"
+TOLTA = "tolta"
 # La colonna «Entità oggi» della fase 1 è quella della VMC master
 NOME_FASE_1 = "master"
 SEGNAPOSTO = "‹nome›"
@@ -54,7 +61,8 @@ _AIUTANTI = (
 @dataclass(frozen=True)
 class Voce:
     """Una voce del package di oggi: ``chiave`` come in tabelle.py (es.
-    «input_boolean.opzioni_vmc»), ``domani`` il dominio della versione nativa o «interna»,
+    «input_boolean.opzioni_vmc»), ``domani`` il dominio della versione nativa, «interna» o
+    «tolta»,
     ``nome`` il nome visibile con {nome}/{Nome}/{NOME} al posto del nome della VMC."""
 
     chiave: str
@@ -73,13 +81,19 @@ class Voce:
     def interna(self) -> bool:
         return self.domani == INTERNA
 
+    @property
+    def tolta(self) -> bool:
+        return self.domani == TOLTA
+
     def oggi_per_vmc(self, nome: str) -> str:
         """L'entity_id di oggi della VMC ``nome``."""
         return f"{self.dominio}.vmc_{nome}_{self.oggetto}"
 
     def domani_per_vmc(self, nome: str) -> str | None:
         """L'entity_id nativo della VMC ``nome`` (None: non è più un'entità)."""
-        return None if self.interna else f"{self.domani}.vmc_{nome}_{self.oggetto}"
+        if self.interna or self.tolta:
+            return None
+        return f"{self.domani}.vmc_{nome}_{self.oggetto}"
 
     def per_vmc(self, nome: str) -> tuple[str, str | None]:
         """(entity_id di oggi, entity_id nativo o None) della VMC ``nome``."""
@@ -136,18 +150,36 @@ def voci() -> list[Voce]:
         oggetto = entita.removeprefix(f"vmc_{NOME_FASE_1}_")
         chiave = f"{dominio}.{oggetto}"
         colonna = riga["Domani"]
-        domani = INTERNA if colonna.startswith(INTERNA) else colonna.split(".", 1)[0]
+        domani = (
+            INTERNA
+            if colonna.startswith(INTERNA)
+            else TOLTA
+            if colonna == TOLTA
+            else colonna.split(".", 1)[0]
+        )
         if DOMANI.get(chiave) != domani:
             raise ValueError(
                 f"{chiave}: fase 1 {colonna!r}, tabelle.DOMANI {DOMANI.get(chiave)!r}"
             )
-        if domani != INTERNA and colonna != f"{domani}.vmc_{NOME_FASE_1}_{oggetto}":
+        if domani not in (INTERNA, TOLTA) and colonna != (
+            f"{domani}.vmc_{NOME_FASE_1}_{oggetto}"
+        ):
             raise ValueError(f"{chiave}: domani cambia anche l'oggetto ({colonna})")
         uscita.append(Voce(chiave, domani, _nome(chiave, domani, riga["Nome"])))
     chiavi = [v.chiave for v in uscita]
     if len(set(chiavi)) != len(chiavi) or set(chiavi) != set(DOMANI):
         raise ValueError("la fase 1 e tabelle.DOMANI non hanno le stesse voci")
     return uscita
+
+
+def voci_tolte(tutte: list[Voce] | None = None) -> list[Voce]:
+    """Le 5 voci tolte (``tabelle.TOLTE``): le 3 della fase 1 e il sensore e l'automazione
+    che non sono nella fase 1, con il nome di ``TOLTE``."""
+    tutte = voci() if tutte is None else tutte
+    della_fase_1 = {v.chiave: v for v in tutte if v.tolta}
+    if not set(della_fase_1) <= set(TOLTE):
+        raise ValueError("voci tolte della fase 1 che non sono in tabelle.TOLTE")
+    return [della_fase_1.get(c) or Voce(c, TOLTA, n) for c, n in TOLTE.items()]
 
 
 # ------------------------------------------------------------------------------- gruppi
@@ -158,16 +190,19 @@ class Gruppo:
     titolo: str
     title: str
     voci: tuple[Voce, ...]
+    nota: tuple[str, ...] = ()
 
 
 def gruppi(tutte: list[Voce] | None = None) -> list[Gruppo]:
-    """I 4 gruppi dell'elenco: impostazioni, timer, pulsanti, voci interne."""
+    """I 5 gruppi dell'elenco: impostazioni, timer, pulsanti, voci interne, voci tolte."""
     tutte = voci() if tutte is None else tutte
+    tolte = voci_tolte(tutte)
+    con_tolte = [v for v in tutte if not v.tolta] + tolte
 
     def scegli(prova) -> tuple[Voce, ...]:
         return tuple(
             sorted(
-                (v for v in tutte if prova(v)),
+                (v for v in con_tolte if prova(v)),
                 key=lambda v: (v.dominio, v.domani, v.oggetto),
             )
         )
@@ -176,7 +211,7 @@ def gruppi(tutte: list[Voce] | None = None) -> list[Gruppo]:
         Gruppo(
             "Impostazioni che cambiano dominio",
             "Settings that change domain",
-            scegli(lambda v: v.dominio in _AIUTANTI and not v.interna),
+            scegli(lambda v: v.dominio in _AIUTANTI and v.nativa is not None),
         ),
         Gruppo(
             "Timer che diventano sensori con l'ora di fine",
@@ -192,6 +227,21 @@ def gruppi(tutte: list[Voce] | None = None) -> list[Gruppo]:
             "Voci che diventano interne all'integrazione (non più entità)",
             "Items that become internal to the integration (no longer entities)",
             scegli(lambda v: v.interna),
+        ),
+        Gruppo(
+            "Voci tolte (non ci sono più)",
+            "Removed items (no longer exist)",
+            scegli(lambda v: v.tolta),
+            (
+                (
+                    "🇮🇹 L'IP della VMC si cambia da *Impostazioni → Dispositivi e servizi →"
+                    " VMC Master → ⚙️ → Cambia l'IP della VMC*."
+                ),
+                (
+                    "🇺🇸 Change the unit's IP from *Settings → Devices & services → VMC"
+                    " Master → ⚙️ → Change the unit's IP*."
+                ),
+            ),
         ),
     ]
 
@@ -233,11 +283,13 @@ def pagina() -> str:
     ]
     righe += [f"| {g.titolo} / {g.title} | {len(g.voci)} |" for g in elenco]
     for numero, gruppo in enumerate(elenco, 1):
-        interne = gruppo.voci[0].interna
+        interne = gruppo.voci[0].nativa is None
         righe += [
             "",
             f"## {numero}. {gruppo.titolo} / {gruppo.title} ({len(gruppo.voci)})",
         ]
+        for frase in gruppo.nota:
+            righe += ["", frase]
         for (dominio, domani), voci_coppia in _coppie(gruppo):
             arrivo = "–" if interne else f"`{domani}`"
             righe += ["", f"### `{dominio}` → {arrivo} ({len(voci_coppia)})", ""]

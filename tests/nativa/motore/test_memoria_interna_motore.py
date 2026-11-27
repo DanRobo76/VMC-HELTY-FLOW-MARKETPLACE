@@ -2,7 +2,7 @@
 
 Prove mirate (fase 4): automazioni e script in YAML che leggono e scrivono valori
 interni (con il nome scritto e con nomi composti dai modelli) girano con Home Assistant e
-con i 68 aiutanti del package, poi, tradotti con i valori interni
+con i 67 aiutanti del package, poi, tradotti con i valori interni
 (``traduci_configurazione(..., interni=INTERNI)``), con il motore e la memoria interna.
 Si confronta tutto il registro degli eventi (con istanti e contesti) come spiega
 ``banco_memoria``: gli eventi degli aiutanti interni con gli annunci della memoria.

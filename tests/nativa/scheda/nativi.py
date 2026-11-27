@@ -1,8 +1,9 @@
 """Le entità native che la scheda tradotta può usare e i loro stati «come domani».
 
 - ``insieme_nativo``: le entità della VMC Master che domani esistono: gli aiutanti, gli script
-  e i comandi di shell che restano visibili (colonna «Domani» di ``aiutanti_fase1.csv``) e i
-  sensori e sensori binari nativi della fase 2 (``tabelle.SENSORI``);
+  e i comandi di shell che restano visibili (colonna «Domani» di ``aiutanti_fase1.csv``, non
+  «interna» né «tolta») e i sensori e sensori binari nativi della fase 2
+  (``tabelle.SENSORI``);
 - ``stati_nativi``: dagli stati di oggi (aiutanti del package) gli stati che avranno le entità
   native nella stessa situazione, con gli attributi che Home Assistant scrive per il loro
   dominio (``NumberEntity``: min, max, step, mode; ``SelectEntity``: options; ``TextEntity``:
@@ -23,7 +24,7 @@ from typing import Any
 
 from custom_components.vmc_master.nativa.tabelle import SENSORI
 
-from .traduci_scheda import FASE_1, _leggi_csv, mappa_fase_1
+from .traduci_scheda import FASE_1, TOLTA, _leggi_csv, mappa_fase_1
 
 STATI_PACKAGE = Path(__file__).with_name("stati_package.json")
 NOME = "master"
@@ -37,7 +38,7 @@ def insieme_nativo(nome: str = NOME) -> set[str]:
     domani = {
         riga["Domani"].replace("vmc_master_", f"vmc_{nome}_", 1)
         for riga in _leggi_csv(FASE_1)
-        if not riga["Domani"].startswith("interna")
+        if not riga["Domani"].startswith("interna") and riga["Domani"] != TOLTA
     }
     sensori = {
         f"{chiave.split('.', 1)[0]}.vmc_{nome}_{chiave.split('.', 1)[1]}"
@@ -47,7 +48,7 @@ def insieme_nativo(nome: str = NOME) -> set[str]:
 
 
 def interne() -> set[str]:
-    """Le voci di oggi che domani non sono entità (stato interno del motore)."""
+    """Le voci di oggi che domani non sono entità (stato interno del motore, o tolte)."""
     return {oggi for oggi, domani in mappa_fase_1().items() if domani is None}
 
 

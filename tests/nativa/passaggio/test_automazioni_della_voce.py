@@ -1,4 +1,4 @@
-"""Le 14 automazioni del motore e la voce della VMC (Home Assistant vero).
+"""Le 13 automazioni del motore e la voce della VMC (Home Assistant vero).
 
 Dalla 9.0.0b46 le automazioni del motore sono logiche dell'integrazione: nessuna entità
 ``automation`` e nessuna voce del registro (fino alla 9.0.0b45 erano entità del
@@ -122,7 +122,7 @@ async def test_automazioni_della_vmc_senza_voce(
             )
             assert registro.async_get(AUTOMAZIONE) is None
 
-            # le 14 logiche accese (anche quella spenta nella beta della prova con
+            # le 13 logiche accese (anche quella spenta nella beta della prova con
             # initial_state: false), girano con i loro trigger
             assert _logiche(nativa) == dict.fromkeys(automazioni_attese("master"), "on")
             voce_nativa = nativa.config_entries.async_get_entry(master.entry_id)

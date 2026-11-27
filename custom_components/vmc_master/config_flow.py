@@ -207,7 +207,7 @@ async def async_nome_vmc_due_prove(ip: str) -> str | None:
     sbagliato).
 
     Lo usano tutte le finestre che leggono il nome a un IP (in_rete, ip_fisso senza MAC,
-    cambia_ip) e il servizio verifica_ip del campo «Cambia IP VMC» della scheda."""
+    cambia_ip)."""
     nome = await async_nome_vmc(ip)
     if nome is None:
         # anche la seconda prova legge il nome, che va confrontato come alla prima
@@ -261,7 +261,7 @@ def _confrontabile(testo: str) -> str:
 
 def esito_verifica_ip(nome_letto: str | None, nome_atteso: str, nome: str = "") -> str:
     """Esito della lettura del nome a un IP nuovo, con le regole dell'ingranaggio
-    «Cambia l'IP della VMC» (le usa anche il servizio verifica_ip della scheda):
+    «Cambia l'IP della VMC»:
 
     - «non_risponde»: a quell'IP non risponde niente (VMC spenta o IP sbagliato);
     - «altro_dispositivo»: risponde un apparecchio che non e' una VMC (sulla porta 5001

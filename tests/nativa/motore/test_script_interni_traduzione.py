@@ -15,7 +15,6 @@ import pytest
 from homeassistant.core import HomeAssistant
 
 from custom_components.vmc_master.nativa.motore.definizioni import (
-    COMANDO_IP,
     COMANDO_NESSUNO,
     COMANDO_NOME,
     COMANDO_VMC,
@@ -36,14 +35,15 @@ AGGANCIO = ", 'enabled': False, 'aggancio_comandi': True"
 
 def test_comandi_del_package() -> None:
     """16 comandi di shell: 13 per la VMC (12 dei tasti e il reset del filtro), il
-    cambio del nome, il cambio dell'IP e la pulizia dei file .sh."""
+    cambio del nome, il cambio dell'IP e la pulizia dei file .sh (questi due senza effetto
+    per Home Assistant: scrivono solo i file del package; dalla b46 il motore nativo non ha
+    il cambio dell'IP)."""
     comandi = leggi_comandi()
     tipi = {nome: _comando(riga) for nome, riga in comandi.items()}
     assert Counter(t for t, _, _ in tipi.values()) == {
         COMANDO_VMC: 13,
         COMANDO_NOME: 1,
-        COMANDO_IP: 1,
-        COMANDO_NESSUNO: 1,
+        COMANDO_NESSUNO: 2,
     }
     assert {n: t for n, (_, t, _) in tipi.items() if t} == {
         "vmc_master_freecooling": "VMWH0000007",
