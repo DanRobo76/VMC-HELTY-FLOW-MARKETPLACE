@@ -1,9 +1,9 @@
 <p align="center">
   <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER/raw/main/Video/VMC_MASTER_promo_IT.mp4">
-    <img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MASTER/main/Video/anteprima_scene_IT.webp" alt="Video di presentazione di VMC MASTER (1 minuto e 17 secondi)" width="100%">
+    <img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MASTER/main/Video/anteprima_scene_IT.webp?v=20261127" alt="Video di presentazione di VMC MASTER (2 minuti e 55 secondi)" width="100%">
   </a>
   <br>
-  <sub>Video di presentazione · 1 minuto e 17 secondi · clicca per scaricarlo</sub>
+  <sub>Video di presentazione · 2 minuti e 55 secondi · clicca per scaricarlo</sub>
 </p>
 
 ---
@@ -173,7 +173,7 @@ Per ogni VMC nel pannello **Opzioni** della scheda:
 
 <sub>Le schermate possono variare in funzione dell'ultima versione rilasciata.</sub>
 
-<img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MASTER/main/immagini/README/schermate_it.png" alt="Schermate VMC MASTER" width="100%">
+<img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MASTER/main/immagini/README/schermate_it.png?v=20261127" alt="Schermate VMC MASTER" width="100%">
 </details>
 
 <details>
@@ -229,10 +229,10 @@ Per ogni VMC nel pannello **Opzioni** della scheda:
 
 <p align="center">
   <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER/raw/main/Video/VMC_MASTER_promo_EN.mp4">
-    <img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MASTER/main/Video/anteprima_scene_EN.webp" alt="VMC MASTER presentation video (1 minute 17 seconds)" width="720">
+    <img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MASTER/main/Video/anteprima_scene_EN.webp?v=20261127" alt="VMC MASTER presentation video (2 minutes 55 seconds)" width="720">
   </a>
   <br>
-  <sub>Presentation video · 1 minute 17 seconds · click to download</sub>
+  <sub>Presentation video · 2 minutes 55 seconds · click to download</sub>
 </p>
 
 ---
@@ -378,7 +378,7 @@ For each unit in the card's **Opzioni** panel:
 
 <sub>Screenshots may change with the latest release. The interface of the card is in Italian.</sub>
 
-<img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MASTER/main/immagini/README/schermate_en.png" alt="VMC MASTER screenshots" width="100%">
+<img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MASTER/main/immagini/README/schermate_en.png?v=20261127" alt="VMC MASTER screenshots" width="100%">
 </details>
 
 <details>
