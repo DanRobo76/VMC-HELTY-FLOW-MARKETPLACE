@@ -14,6 +14,7 @@ from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 from homeassistant.helpers import issue_registry as ir
+from homeassistant.helpers.selector import TextSelector, TextSelectorType
 from homeassistant.setup import async_setup_component
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -1155,6 +1156,11 @@ async def test_server_su_un_altro_wifi(hass: HomeAssistant) -> None:
         campi = {str(k): k for k in risultato["data_schema"].schema}
         assert list(campi) == ["rete_vmc", "password_vmc", "rete_casa", "password_casa"]
         assert all(isinstance(k, vol.Required) for k in campi.values())
+        # le due password si scrivono nascoste, anche quella dell'access point della VMC
+        for nome in ("password_vmc", "password_casa"):
+            selettore = risultato["data_schema"].schema[campi[nome]]
+            assert isinstance(selettore, TextSelector)
+            assert selettore.config["type"] == TextSelectorType.PASSWORD
         dati = {
             "rete_vmc": "VMC_12345678", "password_vmc": "12345678",
             "rete_casa": "CasaMia", "password_casa": "password-di-casa",

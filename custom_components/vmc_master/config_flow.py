@@ -601,7 +601,7 @@ class VmcMasterConfigFlow(ConfigFlow, domain=DOMAIN):
                 vol.Required(
                     CONF_PASSWORD_VMC,
                     default=self._richiesta.get(CONF_PASSWORD_VMC, PASSWORD_VMC_FABBRICA),
-                ): str,
+                ): TextSelector(TextSelectorConfig(type=TextSelectorType.PASSWORD)),
                 vol.Required(CONF_RETE_CASA, default=rete_casa): SelectSelector(
                     SelectSelectorConfig(
                         options=_opzioni_reti(altre),

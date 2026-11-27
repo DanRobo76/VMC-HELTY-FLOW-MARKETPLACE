@@ -24,6 +24,8 @@
   "integration_type": "device",
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER/issues",
-  "requirements": [],
+  "requirements": [
+    "icmplib==3.0.4"
+  ],
   "version": "9.0.0b45"
 }
