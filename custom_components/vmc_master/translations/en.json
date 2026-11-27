@@ -182,7 +182,6 @@
     },
     "passaggio_dalla_beta": {
       "title": "VMC Master: finish the switch from the beta",
-      "description": "The units still run with the package written by the beta. Press Fix to finish.",
       "fix_flow": {
         "step": {
           "conferma": {

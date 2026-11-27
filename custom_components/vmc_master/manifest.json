@@ -1,6 +1,11 @@
 {
   "domain": "vmc_master",
   "name": "VMC Master",
+  "after_dependencies": [
+    "logger",
+    "template",
+    "trace"
+  ],
   "categories": [
     "climate.fans_ventilation"
   ],

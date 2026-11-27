@@ -182,7 +182,6 @@
     },
     "passaggio_dalla_beta": {
       "title": "VMC Master: finire il passaggio dalla beta",
-      "description": "Le VMC funzionano ancora con il package scritto dalla beta. Premere Correggi per finire.",
       "fix_flow": {
         "step": {
           "conferma": {
