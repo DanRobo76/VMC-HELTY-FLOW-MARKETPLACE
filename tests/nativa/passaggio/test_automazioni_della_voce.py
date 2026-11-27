@@ -1,15 +1,16 @@
 """Le 13 automazioni del motore e la voce della VMC (Home Assistant vero).
 
-Le automazioni del motore sono entità del componente ``automation``, con gli entity_id
-e gli unique_id della beta: la loro voce del registro è legata alla voce della VMC
-(``config_entry_id``), così Home Assistant le toglie con la voce quando la VMC si
-elimina, come le altre sue entità, senza pulizie dell'integrazione. Restano automazioni
-come le altre: girano, si spengono, si accendono e si avviano a mano; area, etichette e
-categoria date dall'utente con la beta restano dopo il passaggio.
+Dalla 9.0.0b46 le automazioni del motore sono logiche dell'integrazione: nessuna entità
+``automation`` e nessuna voce del registro (fino alla 9.0.0b45 erano entità del
+componente ``automation``, con la voce del registro legata alla voce della VMC, e si
+spegnevano, accendevano e avviavano a mano con i servizi ``automation.*``). Hanno uno
+stato interno con l'entity_id della beta, girano con la VMC avviata, ricaricata o
+riattivata e si fermano con lei (scaricata, disattivata, eliminata); ``automation.reload``
+non le tocca. ``initial_state: false`` della beta non conta più: partono accese.
 
-Il componente ``automation`` stacca il legame a ogni aggiunta delle entità (le sue
-entità non hanno una voce: ``config_entry=None``), quindi l'integrazione lo rimette a
-ogni avvio del motore; ``automation.reload`` lascia le entità del motore come sono."""
+Con il passaggio dalla beta la voce del registro dell'automazione del package (con area,
+etichetta e categoria date dall'utente) si toglie con le altre voci del package, e Home
+Assistant la ricorda come ogni voce tolta."""
 
 from __future__ import annotations
 
@@ -22,7 +23,9 @@ from homeassistant.helpers import area_registry as ar
 from homeassistant.helpers import category_registry as cr
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers import label_registry as lr
-from pytest_homeassistant_custom_component.common import async_capture_events
+from homeassistant.setup import async_setup_component
+
+from custom_components.vmc_master.nativa.motore.stati_logiche import stati_logiche
 
 from .banco import (
     aggiungi_e_avvia,
@@ -64,16 +67,19 @@ async def _apri_il_timer_con_extra_aperta(hass: HomeAssistant) -> str:
     return hass.states.get(FINESTRA_EXTRA).state
 
 
-def _legate(hass: HomeAssistant) -> dict[str, str | None]:
+def _logiche(hass: HomeAssistant) -> dict[str, str]:
+    """Gli stati interni delle logiche della VMC «master» (nessuna entità ``automation``
+    della VMC, nessuna voce del registro)."""
+    attese = automazioni_attese("master")
+    assert [e for e in attese if hass.states.get(e)] == []
     registro = er.async_get(hass)
-    return {
-        e: (v.config_entry_id if (v := registro.async_get(e)) else None)
-        for e in automazioni_attese("master")
-    }
+    assert [e for e in attese if registro.async_get(e)] == []
+    stati = stati_logiche(hass)
+    return {e: s.state for e in attese if (s := stati.stato(e)) is not None}
 
 
 @pytest.mark.parametrize("expected_lingering_timers", [True])
-async def test_automazioni_legate_alla_voce(
+async def test_automazioni_della_vmc_senza_voce(
     hass: HomeAssistant, tmp_path: Path
 ) -> None:
     config_dir = str(tmp_path)
@@ -104,77 +110,8 @@ async def test_automazioni_legate_alla_voce(
             await aggiungi_e_avvia(nativa, [])
             registro = er.async_get(nativa)
 
-            # stessa voce del registro, con area, etichetta e categoria; legata alla VMC
-            dopo = registro.async_get(AUTOMAZIONE)
-            assert (dopo.id, dopo.area_id, dopo.labels, dopo.categories) == (
-                della_beta.id,
-                area.id,
-                {etichetta.label_id},
-                {"automation": categoria.category_id},
-            )
-            assert _legate(nativa) == dict.fromkeys(
-                automazioni_attese("master"), master.entry_id
-            )
-
-            # spenta come nella beta della prova (initial_state: false): si accende e
-            # gira con i suoi trigger
-            assert nativa.states.get(AUTOMAZIONE).state == "off"
-            await _servizio(nativa, "automation.turn_on", AUTOMAZIONE)
-            assert nativa.states.get(AUTOMAZIONE).state == "on"
-            assert await _apri_il_timer_con_extra_aperta(nativa) == "off"
-            assert nativa.states.get(AUTOMAZIONE).attributes["last_triggered"]
-
-            # spenta non gira
-            await _servizio(nativa, "automation.turn_off", AUTOMAZIONE)
-            assert nativa.states.get(AUTOMAZIONE).state == "off"
-            assert await _apri_il_timer_con_extra_aperta(nativa) == "on"
-
-            # avviata a mano
-            await _servizio(nativa, "automation.turn_on", AUTOMAZIONE)
-            avviate = async_capture_events(nativa, "automation_triggered")
-            await _servizio(nativa, "automation.trigger", AUTOMAZIONE)
-            assert [e.data["entity_id"] for e in avviate] == [AUTOMAZIONE]
-
-            # automation.reload (rilegge configuration.yaml, senza automazioni della
-            # VMC) le lascia come sono, legate
-            (tmp_path / "configuration.yaml").write_text("automation: []\n")
-            await nativa.services.async_call("automation", "reload", blocking=True)
-            await nativa.async_block_till_done()
-            assert nativa.states.get(AUTOMAZIONE).state == "on"
-            assert set(_legate(nativa).values()) == {master.entry_id}
-
-            # la VMC ricaricata: il motore ripartito le lega di nuovo
-            assert await nativa.config_entries.async_reload(master.entry_id)
-            await nativa.async_block_till_done()
-            assert set(_legate(nativa).values()) == {master.entry_id}
-            assert await _apri_il_timer_con_extra_aperta(nativa) == "off"
-
-            # la VMC disattivata: Home Assistant disattiva anche le sue automazioni (il
-            # motore è fermo); riattivata, tornano attive e girano
-            await nativa.config_entries.async_set_disabled_by(
-                master.entry_id, ConfigEntryDisabler.USER
-            )
-            await nativa.async_block_till_done()
-            assert {
-                registro.async_get(e).disabled_by for e in automazioni_attese("master")
-            } == {er.RegistryEntryDisabler.CONFIG_ENTRY}
-            await nativa.config_entries.async_set_disabled_by(master.entry_id, None)
-            await nativa.async_block_till_done()
-            assert {
-                registro.async_get(e).disabled_by for e in automazioni_attese("master")
-            } == {None}
-            assert set(_legate(nativa).values()) == {master.entry_id}
-            assert nativa.states.get(AUTOMAZIONE).state == "on"
-            assert await _apri_il_timer_con_extra_aperta(nativa) == "off"
-
-            # la VMC eliminata: Home Assistant toglie le automazioni con la voce
-            assert await nativa.config_entries.async_remove(master.entry_id)
-            await nativa.async_block_till_done()
-            assert _legate(nativa) == dict.fromkeys(automazioni_attese("master"))
-            assert [
-                e for e in automazioni_attese("master") if nativa.states.get(e)
-            ] == []
-            # ricordate come le altre entità tolte (area ed etichetta comprese)
+            # la voce della beta tolta con le altre del package e ricordata da Home
+            # Assistant come ogni voce tolta (area compresa); nessuna voce nuova
             ricordata = registro.deleted_entities[
                 ("automation", "automation", "vmc_master_esclusivita_finestre_opzioni")
             ]
@@ -183,3 +120,53 @@ async def test_automazioni_legate_alla_voce(
                 area.id,
                 None,
             )
+            assert registro.async_get(AUTOMAZIONE) is None
+
+            # le 13 logiche accese (anche quella spenta nella beta della prova con
+            # initial_state: false), girano con i loro trigger
+            assert _logiche(nativa) == dict.fromkeys(automazioni_attese("master"), "on")
+            voce_nativa = nativa.config_entries.async_get_entry(master.entry_id)
+            assert voce_nativa is not None
+            motore = voce_nativa.runtime_data.vmc.motore
+            assert not nativa.services.has_service("automation", "turn_off")
+            assert await _apri_il_timer_con_extra_aperta(nativa) == "off"
+            stato = stati_logiche(nativa).stato(AUTOMAZIONE)
+            assert stato is not None
+            assert stato.attributes["last_triggered"]
+
+            # automation.reload (rilegge configuration.yaml, senza automazioni) non le
+            # tocca
+            assert await async_setup_component(nativa, "automation", {})
+            (tmp_path / "configuration.yaml").write_text("automation: []\n")
+            await nativa.services.async_call("automation", "reload", blocking=True)
+            await nativa.async_block_till_done()
+            assert voce_nativa.runtime_data.vmc.motore is motore
+            assert _logiche(nativa) == dict.fromkeys(automazioni_attese("master"), "on")
+            assert await _apri_il_timer_con_extra_aperta(nativa) == "off"
+
+            # la VMC ricaricata: un motore nuovo, logiche di nuovo avviate
+            assert await nativa.config_entries.async_reload(master.entry_id)
+            await nativa.async_block_till_done()
+            assert voce_nativa.runtime_data.vmc.motore is not motore
+            assert _logiche(nativa) == dict.fromkeys(automazioni_attese("master"), "on")
+            assert await _apri_il_timer_con_extra_aperta(nativa) == "off"
+
+            # la VMC disattivata: logiche fermate; riattivata, tornano e girano
+            await nativa.config_entries.async_set_disabled_by(
+                master.entry_id, ConfigEntryDisabler.USER
+            )
+            await nativa.async_block_till_done()
+            assert _logiche(nativa) == {}
+            await nativa.config_entries.async_set_disabled_by(master.entry_id, None)
+            await nativa.async_block_till_done()
+            assert _logiche(nativa) == dict.fromkeys(automazioni_attese("master"), "on")
+            assert await _apri_il_timer_con_extra_aperta(nativa) == "off"
+
+            # la VMC eliminata: logiche fermate, nulla nel registro; la voce della beta
+            # resta ricordata com'era
+            assert await nativa.config_entries.async_remove(master.entry_id)
+            await nativa.async_block_till_done()
+            assert _logiche(nativa) == {}
+            assert registro.deleted_entities[
+                ("automation", "automation", "vmc_master_esclusivita_finestre_opzioni")
+            ] == ricordata

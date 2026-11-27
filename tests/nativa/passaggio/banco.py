@@ -13,8 +13,8 @@ funzioni di caricamento (``EntityRegistry.async_load``,
 from __future__ import annotations
 
 import json
-from collections.abc import AsyncIterator, Iterable
-from contextlib import ExitStack, asynccontextmanager
+from collections.abc import AsyncIterator, Iterable, Iterator
+from contextlib import ExitStack, asynccontextmanager, contextmanager
 from pathlib import Path
 from typing import Any
 from unittest.mock import AsyncMock, patch
@@ -134,8 +134,8 @@ def entity_id_attesi(nome: str) -> set[str]:
     return attesi
 
 
-# Le 13 automazioni del motore (nel componente automation, con gli entity_id della beta):
-# la loro voce del registro è legata alla voce della VMC
+# Le 13 automazioni del motore: logiche dell'integrazione con gli entity_id della beta per
+# i loro stati interni (nessuna entità automation, nessuna voce del registro)
 AUTOMAZIONI_DEL_MOTORE = (
     "aggiorna_aria_scambiata_e_gestisci_countdown",
     "riepilogo_audio_avvio",
@@ -153,16 +153,34 @@ AUTOMAZIONI_DEL_MOTORE = (
 
 
 def automazioni_attese(nome: str) -> set[str]:
-    """Gli entity_id delle 13 automazioni del motore della VMC."""
+    """Gli entity_id delle 13 automazioni del motore della VMC (gli stati interni delle
+    logiche)."""
     return {f"automation.vmc_{nome}_{a}" for a in AUTOMAZIONI_DEL_MOTORE} | {
         f"automation.automazione_vmc_{nome}"
     }
 
 
+@contextmanager
+def logiche_spente() -> Iterator[None]:
+    """Le logiche del motore scrivono il loro stato («off») ma non agganciano i trigger,
+    come le automazioni del package della beta della prova (``initial_state: false``,
+    ``configurazione_package``), che fino alla 9.0.0b45 il motore riprendeva spente: i
+    valori portati dalla beta restano come sono. (Le logiche non si spengono: nella VMC
+    nativa vera girano sempre.)"""
+
+    async def solo_stato(logica: Any) -> None:
+        logica.scrivi_stato()
+
+    with patch(
+        "custom_components.vmc_master.nativa.motore.logiche.Logica.avvia", solo_stato
+    ):
+        yield
+
+
 def voci_attese(nome: str) -> set[str]:
-    """Le voci del registro legate alla voce della VMC: le 367 entità native e le 13
-    automazioni del motore."""
-    return entity_id_attesi(nome) | automazioni_attese(nome)
+    """Le voci del registro legate alla voce della VMC: le 367 entità native (le
+    automazioni del motore sono logiche senza entità)."""
+    return entity_id_attesi(nome)
 
 
 def file_scritti(cartella: Path) -> dict[str, float]:

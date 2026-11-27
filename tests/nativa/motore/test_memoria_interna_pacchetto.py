@@ -24,12 +24,19 @@ Anche l'ordine di tutto insieme (``sequenza``) è lo stesso. Lo stato finale dei
 interni nella memoria è quello degli aiutanti (stato, attributi, last_changed,
 last_updated, last_reported).
 
+Le automazioni del motore sono logiche dell'integrazione (``fase3.MotoreFase3``: gli
+script restano entità ``script``): i loro stati entrano nel registro nel punto del bus
+dei loro state_changed (``fase3.osserva_logiche``), senza ``automation_triggered``, e un
+ciclo senza fine ferma la corsa (come in ``test_pacchetto_casuale``).
+
 Con il riavvio la prima parte finisce con la chiusura di Home Assistant
 (``hass.async_stop()``, con le esecuzioni in corso) e la seconda riparte da quello che
 è stato salvato: con gli aiutanti gli stati salvati da ``restore_state`` alla chiusura,
 con la memoria l'archivio della memoria (``MemoriaInterna.async_carica``) e gli stati
 delle altre entità. I salvataggi si confrontano (i valori interni salvati dalla memoria
-sono quelli che Home Assistant salva per gli aiutanti).
+sono quelli che Home Assistant salva per gli aiutanti). Le logiche non hanno stati
+salvati (le automazioni di Home Assistant sì, con ``last_triggered``): la seconda parte
+di Home Assistant riparte senza gli stati salvati delle automazioni, come le logiche.
 
     VMC_PASSI_MEMORIA=2000 VMC_SEME_MEMORIA=7 pytest \\
         tests/nativa/motore/test_memoria_interna_pacchetto.py -s
@@ -80,7 +87,6 @@ from pytest_homeassistant_custom_component.common import async_test_home_assista
 
 from custom_components.vmc_master.const import NOME_MASTER
 from custom_components.vmc_master.nativa.motore import generato
-from custom_components.vmc_master.nativa.motore.ha import Motore
 from custom_components.vmc_master.nativa.motore.memoria_interna import (
     CHIAVE_ARCHIVIO,
     INTERNI,
@@ -88,6 +94,7 @@ from custom_components.vmc_master.nativa.motore.memoria_interna import (
     MemoriaInterna,
     da_stato,
 )
+from custom_components.vmc_master.nativa.motore.stati_logiche import stati_logiche
 
 from . import test_pacchetto_casuale as casuale
 from .banco_memoria import (
@@ -97,6 +104,7 @@ from .banco_memoria import (
     modelli_entita_con_memoria,
     servizi_misti,
 )
+from .fase3 import MotoreFase3, osserva_logiche, personalizzato
 from .test_memoria_interna import IDS
 from .test_pacchetto_casuale import (
     AIUTANTI,
@@ -306,6 +314,7 @@ async def _corsa_ciclo(
     if salvati is None:
         salvati = _salvati_da_stati(prova.ripristino, prova.inizio)
     memoria: MemoriaInterna | None = None
+    m: MotoreFase3 | None = None
 
     async with async_test_home_assistant(initial_state=CoreState.not_running) as hass:
         hass.import_executor = casuale.EsecutoreSincrono()
@@ -320,7 +329,8 @@ async def _corsa_ciclo(
 
         @callback
         def annota(evento: Event) -> None:
-            if annota_attivo:
+            # automation_triggered: solo con Home Assistant (le logiche non lo hanno)
+            if annota_attivo and evento.event_type != "automation_triggered":
                 smistatore.evento(evento)
 
         @callback
@@ -329,6 +339,7 @@ async def _corsa_ciclo(
                 smistatore.rapporto(evento)
 
         hass.bus.async_listen(MATCH_ALL, annota)
+        smetti = osserva_logiche(hass, annota) if motore else None
         hass.bus.async_listen(
             EVENT_STATE_REPORTED,
             rapporto,
@@ -454,7 +465,8 @@ async def _corsa_ciclo(
         if memoria is not None:
             toccati = modelli_entita_con_memoria(hass, memoria)
             assert toccati == SENSORI_CON_INTERNI
-            await Motore(hass, memoria=memoria).avvia(crea=_TRADOTTO["motore"].crea)
+            m = MotoreFase3(hass, memoria=memoria)
+            await m.avvia(crea=_TRADOTTO["motore"].crea)
         else:
             assert await async_setup_component(
                 hass, "script", {"script": pkg["script"]}
@@ -566,19 +578,6 @@ async def _corsa_ciclo(
                     leggi(SENSORI)
             await _lavora(hass, ritmo)
 
-        async def interrompi_ciclo() -> None:
-            istante = norma(ritmo.istante)
-            smistatore.nota((istante, "ciclo infinito", ritmo.eventi))
-            if istante in esito["cicli_infiniti"]:
-                raise CicloInfinito(ritmo.istante)
-            esito["cicli_infiniti"].append(istante)
-            ritmo.eventi = 0
-            for servizio in ("turn_off", "turn_on"):
-                await hass.services.async_call(
-                    "automation", servizio, {"entity_id": "all"}, blocking=True
-                )
-            await _lavora(hass, ritmo)
-
         async def esegui() -> None:
             smistatore.nota(("avvio",))
             avvio = asyncio.ensure_future(hass.async_start())
@@ -587,10 +586,7 @@ async def _corsa_ciclo(
             smistatore.nota(("avviato",))
             hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, salva_alla_chiusura)
             for indice, passo in enumerate(prova.passi):
-                try:
-                    await passo_singolo(indice, passo)
-                except CicloInfinito:
-                    await interrompi_ciclo()
+                await passo_singolo(indice, passo)
             if riavvio:
                 # Home Assistant si chiude con le esecuzioni in corso
                 smistatore.nota(("chiusura",))
@@ -604,6 +600,7 @@ async def _corsa_ciclo(
         try:
             await esegui()
         except CicloInfinito:
+            esito["cicli_infiniti"].append(norma(ritmo.istante))
             esito["corsa_interrotta"] = norma(ritmo.istante)
             smistatore.nota((norma(ritmo.istante), "corsa interrotta", ritmo.eventi))
         smistatore.nota(("fine",))
@@ -619,8 +616,13 @@ async def _corsa_ciclo(
             )
 
         stati = hass.states.async_all()
+        logiche = [
+            s
+            for s in (personalizzato(hass, v) for v in stati_logiche(hass).stati.values())
+            if s is not None
+        ]
         esito["stati"] = sorted(
-            voce(s)[:4] for s in stati if s.entity_id not in interni
+            voce(s)[:4] for s in [*stati, *logiche] if s.entity_id not in interni
         )
         finali_interni = (
             [memoria.stato(e) for e in IDS]
@@ -641,10 +643,15 @@ async def _corsa_ciclo(
         )
         esito["vmc"] = dict(vars(vmc))
         esito["update_senza_interni"] = smistatore.update_senza_interni
+        if smetti is not None:
+            smetti()
         if not riavvio:
-            await hass.services.async_call(
-                "automation", "turn_off", {"entity_id": "all"}, blocking=True
-            )
+            if m is not None:
+                await m.ferma()
+            else:
+                await hass.services.async_call(
+                    "automation", "turn_off", {"entity_id": "all"}, blocking=True
+                )
             await hass.services.async_call(
                 "script", "turn_off", {"entity_id": "all"}, blocking=True
             )
@@ -838,13 +845,23 @@ async def test_pacchetto_con_la_memoria_e_riavvio(
     conti_1 = _confronta_corse(atteso_1, ottenuto_1, f"seme {seme}, prima parte")
     _stampa(f"seme {seme}, prima parte", prima, conti_1, atteso_1)
 
-    # i salvataggi alla chiusura: le altre entità come Home Assistant, i valori interni
-    # nell'archivio della memoria come restore_state salva gli aiutanti
+    # i salvataggi alla chiusura: le altre entità come Home Assistant (tranne le
+    # automazioni: le logiche non hanno stati salvati), i valori interni nell'archivio
+    # della memoria come restore_state salva gli aiutanti
     interni = set(IDS)
+    automazioni = [
+        v[0] for v in atteso_1["salvati_confronto"] if v[0].startswith("automation.")
+    ]
+    assert len(automazioni) == 14
     assert [
-        v for v in atteso_1["salvati_confronto"] if v[0] not in interni
+        v
+        for v in atteso_1["salvati_confronto"]
+        if v[0] not in interni and v[0] not in automazioni
     ] == ottenuto_1["salvati_confronto"]
-    assert not any(v[0] in interni for v in ottenuto_1["salvati_confronto"])
+    assert not any(
+        v[0] in interni or v[0].startswith("automation.")
+        for v in ottenuto_1["salvati_confronto"]
+    )
     archiviati = hass_storage[CHIAVE]["data"]["valori"]
     per_entita = {v[0]: v[1] for v in atteso_1["salvati_confronto"]}
     assert archiviati == {
@@ -860,12 +877,17 @@ async def test_pacchetto_con_la_memoria_e_riavvio(
     seconda = GeneratoreSenzaInterni(seme + 1).prova(passi)
     seconda.inizio = atteso_1["fine"] + timedelta(seconds=PAUSA_RIAVVIO)
     seconda.vmc = VmcFinta(**atteso_1["vmc"])
+    # le automazioni di Home Assistant ripartono senza stato salvato, come le logiche
     atteso_2 = await _corsa(
         freezer,
         seconda,
         motore=False,
         archivio=hass_storage,
-        salvati=atteso_1["salvati"],
+        salvati=[
+            v
+            for v in atteso_1["salvati"]
+            if not v["state"]["entity_id"].startswith("automation.")
+        ],
     )
     ottenuto_2 = await _corsa(
         freezer,

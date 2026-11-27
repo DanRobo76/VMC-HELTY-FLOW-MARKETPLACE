@@ -10,15 +10,20 @@ contesto e l'istante; messaggi di ``log_cb`` e dei registri) deve essere identic
   (``async_validate_trigger_config``), cioè come le ha il motore.
 - Valori interni: le configurazioni scritte come nel codice tradotto, sui valori della
   sorgente finta (con il motore) o su entità vere (con Home Assistant).
-- Il trigger dei timer del motore (``altri``) e le attivazioni del codice tradotto
-  (``generato_fase4``) con la memoria interna vera: confronto con il codice di oggi
-  (``timer.inizializza_trigger`` e la consegna della memoria nel dizionario di Home
-  Assistant).
+- Il trigger dei timer del motore (``altri``: ``timer.attacca_trigger_timer``, come lo
+  aggancia il motore, ed ``evento_anche_su``) e le attivazioni del codice tradotto
+  (``generato_fase4``) con la memoria interna vera: confronto con
+  ``_inizializza_come_ha``, il codice del motore fino alla 9.0.0b45
+  (``timer.inizializza_trigger``: ``async_initialize_triggers`` con le parti interne di
+  Home Assistant e il trigger ``event`` di Home Assistant anche sul bus dei timer del
+  motore), qui come riferimento.
 """
 
 from __future__ import annotations
 
-from collections.abc import Callable
+import asyncio
+import logging
+from collections.abc import Callable, Mapping
 from datetime import timedelta
 from types import SimpleNamespace
 from typing import Any
@@ -26,13 +31,35 @@ from typing import Any
 import probatio
 import pytest
 from freezegun.api import FrozenDateTimeFactory
-from homeassistant.core import Context, HomeAssistant, State, callback
-from homeassistant.helpers.event import async_track_template
+from homeassistant.components.homeassistant.triggers import event as trigger_evento
+from homeassistant.const import CONF_ALIAS, CONF_ENABLED, CONF_ID, CONF_PLATFORM
+from homeassistant.core import (
+    CALLBACK_TYPE,
+    Context,
+    Event,
+    EventStateChangedData,
+    HomeAssistant,
+    callback,
+)
+from homeassistant.exceptions import HomeAssistantError, TemplateError
+from homeassistant.helpers.event import (
+    _TRACK_STATE_CHANGE_DATA,
+    _async_dispatch_entity_id_event,
+    async_track_template,
+)
 from homeassistant.helpers.template import Template
 from homeassistant.helpers.trigger import (
+    TriggerData,
+    TriggerInfo,
+    _async_attach_trigger_cls,
+    _async_get_trigger_platform,
+    _async_is_legacy_trigger,
+    _trigger_action_wrapper,
     async_initialize_triggers,
     async_validate_trigger_config,
+    get_relative_description_key,
 )
+from homeassistant.util.async_ import create_eager_task
 
 from custom_components.vmc_master.nativa.motore.attivazioni import (
     PIATTAFORME,
@@ -50,8 +77,8 @@ from custom_components.vmc_master.nativa.motore.seguire import (
 )
 from custom_components.vmc_master.nativa.motore.timer import (
     TRIGGER,
+    attacca_trigger_timer,
     bus_del_motore,
-    inizializza_trigger,
 )
 
 from .test_seguire import (  # noqa: F401
@@ -68,6 +95,150 @@ pytestmark = pytest.mark.usefixtures("tempi_casuali", "ordine_dei_timer")
 
 HA = SimpleNamespace(nome="ha", inizializza=async_initialize_triggers)
 MIO = SimpleNamespace(nome="mio", inizializza=inizializza_attivazioni)
+
+
+# --- il riferimento: il codice del motore fino alla 9.0.0b45 ----------------------------
+
+
+class _HassDelMotore:
+    """Quello che il trigger ``event`` di Home Assistant usa di ``hass``, con il bus dei
+    timer del motore al posto del bus di Home Assistant."""
+
+    def __init__(self, hass: HomeAssistant) -> None:
+        self.loop = hass.loop
+        self.async_run_hass_job = hass.async_run_hass_job
+        self.bus = bus_del_motore(hass)
+
+
+async def _attacca_trigger_timer_ha(
+    hass: HomeAssistant,
+    conf: Mapping[str, Any],
+    action: Callable[..., Any],
+    info: TriggerInfo,
+    platform: Any,
+) -> CALLBACK_TYPE:
+    """Il trigger ``event`` di Home Assistant (lo stesso codice) due volte: sul bus di
+    Home Assistant, come lo attacca Home Assistant (``platform``: la piattaforma dei
+    trigger ``event``); poi sul bus dei timer del motore."""
+    conf_evento = {**conf, CONF_PLATFORM: "event"}
+    togli = [
+        await platform.async_attach_trigger(hass, conf_evento, action, info),
+        await trigger_evento.async_attach_trigger(
+            _HassDelMotore(hass),  # type: ignore[arg-type]
+            conf_evento,
+            action,
+            info,
+        ),
+    ]
+
+    @callback
+    def togli_tutto() -> None:
+        for una in togli:
+            una()
+
+    return togli_tutto
+
+
+async def _inizializza_come_ha(
+    hass: HomeAssistant,
+    trigger_config: list[Mapping[str, Any]],
+    action: Callable[..., Any],
+    domain: str,
+    name: str,
+    log_cb: Callable[..., Any],
+    variables: Any = None,
+    *,
+    did_not_trigger: Any = None,
+) -> CALLBACK_TYPE | None:
+    """``helpers.trigger.async_initialize_triggers`` (le stesse righe) con i trigger dei
+    timer del motore (``TRIGGER``): stessi id, indici e ordine degli altri trigger (il
+    ``timer.inizializza_trigger`` del motore fino alla 9.0.0b45)."""
+    triggers: list[asyncio.Task[CALLBACK_TYPE]] = []
+    for idx, conf in enumerate(trigger_config):
+        if CONF_ENABLED in conf:
+            enabled = conf[CONF_ENABLED]
+            if hasattr(enabled, "async_render"):
+                try:
+                    enabled = enabled.async_render(variables, limited=True)
+                except TemplateError as err:
+                    log_cb(logging.ERROR, f"Error rendering enabled template: {err}")
+                    continue
+            if not enabled:
+                continue
+
+        trigger_key: str = conf[CONF_PLATFORM]
+        # un trigger dei timer del motore è un trigger «event» di Home Assistant
+        timer_del_motore = trigger_key == TRIGGER
+        if timer_del_motore:
+            trigger_key = "event"
+        platform_domain, platform = await _async_get_trigger_platform(hass, trigger_key)
+        trigger_id = conf.get(CONF_ID, f"{idx}")
+        trigger_idx = f"{idx}"
+        trigger_alias = conf.get(CONF_ALIAS)
+        trigger_data = TriggerData(id=trigger_id, idx=trigger_idx, alias=trigger_alias)
+        info = TriggerInfo(
+            domain=domain,
+            name=name,
+            variables=variables,
+            trigger_data=trigger_data,
+        )
+
+        if not await _async_is_legacy_trigger(hass, platform, trigger_key):
+            if timer_del_motore:
+                raise HomeAssistantError("il trigger event non è più un trigger legacy")
+            trigger_descriptors = await platform.async_get_triggers(hass)
+            relative_trigger_key = get_relative_description_key(
+                platform_domain, trigger_key
+            )
+            trigger_cls = trigger_descriptors[relative_trigger_key]
+            coro = _async_attach_trigger_cls(
+                hass,
+                trigger_cls,
+                trigger_key,
+                conf,  # type: ignore[arg-type]
+                action,
+                info,
+                did_not_trigger,
+            )
+        else:
+            action_wrapper = _trigger_action_wrapper(hass, action, conf)  # type: ignore[arg-type]
+            if timer_del_motore:
+                coro = _attacca_trigger_timer_ha(
+                    hass, conf, action_wrapper, info, platform
+                )
+            else:
+                coro = platform.async_attach_trigger(hass, conf, action_wrapper, info)
+
+        triggers.append(create_eager_task(coro))
+
+    attach_results = await asyncio.gather(*triggers, return_exceptions=True)
+    removes: list[Callable[[], None]] = []
+
+    for result in attach_results:
+        if isinstance(result, HomeAssistantError):
+            log_cb(logging.ERROR, f"Got error '{result}' when setting up triggers for")
+        elif isinstance(result, Exception):
+            log_cb(logging.ERROR, "Error setting up trigger", exc_info=result)
+        elif isinstance(result, BaseException):
+            raise result from None
+        elif result is None:
+            log_cb(  # type: ignore[unreachable]
+                logging.ERROR, "Unknown error while setting up trigger (empty result)"
+            )
+        else:
+            removes.append(result)
+
+    if not removes:
+        return None
+
+    log_cb(logging.INFO, "Initialized trigger")
+
+    @callback
+    def remove_triggers() -> None:
+        for remove in removes:
+            remove()
+
+    return remove_triggers
 
 
 def _azione(b: Banco, nome: str = "azione") -> Callable[..., Any]:
@@ -586,6 +757,17 @@ async def test_valori_interni_come_entita(freezer: FrozenDateTimeFactory) -> Non
 
 
 async def _prepara_timer(b: Banco) -> None:
+    """Il trigger dei timer del motore come lo aggancia il motore
+    (``timer.attacca_trigger_timer``)."""
+    await _prepara_timer_con(b, attacca_trigger_timer)
+
+
+async def _prepara_timer_anche_su(b: Banco) -> None:
+    """Il trigger dei timer del motore con ``evento_anche_su(bus_del_motore(hass))``."""
+    await _prepara_timer_con(b, evento_anche_su(bus_del_motore(b.hass)))
+
+
+async def _prepara_timer_con(b: Banco, piattaforma: Any) -> None:
     hass = b.hass
     conf = [
         {"event_type": [Template("timer.finished", hass)], "id": "scaduto", "platform": TRIGGER},
@@ -605,12 +787,12 @@ async def _prepara_timer(b: Banco) -> None:
             "automation",
             "timer",
             _log_cb(b),
-            altri={TRIGGER: evento_anche_su(bus_del_motore(hass))},
+            altri={TRIGGER: piattaforma},
             **argomenti,
         )
     else:
-        # il codice di oggi: helpers privati di Home Assistant
-        togli = await inizializza_trigger(
+        # il riferimento: le parti interne di Home Assistant
+        togli = await _inizializza_come_ha(
             hass, conf, _azione(b), "automation", "timer", _log_cb(b), **argomenti
         )
     b.oggetti["togli"] = togli
@@ -623,13 +805,17 @@ def _lancia(tipo: str, dati: dict[str, Any]) -> Callable[[Banco], None]:
     return lancia
 
 
-async def test_trigger_dei_timer_del_motore(freezer: FrozenDateTimeFactory) -> None:
-    """``altri`` con ``evento_anche_su(bus_del_motore(hass))`` come
-    ``timer.inizializza_trigger`` di oggi: gli eventi dei timer del motore e quelli dello
-    stesso tipo sul bus di Home Assistant, stessi dati, ordine e variabili."""
+@pytest.mark.parametrize("prepara", [_prepara_timer, _prepara_timer_anche_su])
+async def test_trigger_dei_timer_del_motore(
+    freezer: FrozenDateTimeFactory, prepara: Callable[[Banco], Any]
+) -> None:
+    """``altri`` con ``timer.attacca_trigger_timer`` (come il motore) e con
+    ``evento_anche_su(bus_del_motore(hass))`` come ``_inizializza_come_ha``: gli eventi
+    dei timer del motore e quelli dello stesso tipo sul bus di Home Assistant, stessi
+    dati, ordine e variabili."""
     registro = await come_home_assistant(
         freezer,
-        _prepara_timer,
+        prepara,
         [
             ("chiama", _lancia("timer.finished", {"entity_id": "timer.a"})),
             ("evento", "timer.finished", {"entity_id": "timer.b"}),
@@ -647,27 +833,21 @@ async def test_trigger_dei_timer_del_motore(freezer: FrozenDateTimeFactory) -> N
 # --- la memoria interna vera e il codice tradotto ------------------------------------------
 
 
-class _SorgenteMemoria:
-    """La memoria interna come sorgente di ``CambiInterni`` (``contiene``, ``stato``)."""
-
-    def __init__(self, memoria: MemoriaInterna) -> None:
-        self.memoria = memoria
-
-    def contiene(self, entity_id: str) -> bool:
-        return entity_id in self.memoria
-
-    def stato(self, entity_id: str) -> State | None:
-        return self.memoria.stato(entity_id)
-
-
 def _con_memoria(b: Banco, memoria: MemoriaInterna) -> None:
-    """Con il motore i cambi della memoria vanno a ``CambiInterni`` (dove la memoria
-    consegnerà con la b46); con Home Assistant restano quelli di oggi (la memoria li
-    consegna nel dizionario privato di Home Assistant)."""
+    """Con il motore la memoria consegna i suoi cambi a ``CambiInterni`` (ne è una
+    sorgente); con Home Assistant li consegna anche come la memoria fino alla 9.0.0b45,
+    nel dizionario privato di Home Assistant (a chi segue l'entità con
+    ``async_track_state_change_event``), qui come riferimento."""
+    assert cambi_interni(b.hass).sorgente_di(memoria.entity_ids[0]) is memoria
     if b.mio:
-        interni = cambi_interni(b.hass)
-        interni.aggiungi(_SorgenteMemoria(memoria))
-        memoria.ascolta_cambi(interni.consegna)
+        return
+
+    @callback
+    def a_home_assistant(cambio: Event[EventStateChangedData]) -> None:
+        if (seguiti := b.hass.data.get(_TRACK_STATE_CHANGE_DATA)) is not None:
+            _async_dispatch_entity_id_event(b.hass, seguiti.callbacks, cambio)
+
+    memoria.ascolta_cambi(a_home_assistant)
 
 
 def _scrivi_memoria(dominio: str, servizio: str, dati: dict[str, Any]) -> Any:
@@ -783,8 +963,9 @@ async def test_memoria_interna_vera(freezer: FrozenDateTimeFactory) -> None:
 
 async def _prepara_fase4(b: Banco) -> None:
     """Tutte le automazioni del codice tradotto, con la memoria interna vera: con Home
-    Assistant come le aggancia oggi il motore (``timer.inizializza_trigger``), con il
-    motore con ``inizializza_attivazioni``."""
+    Assistant come le agganciava il motore fino alla 9.0.0b45 (``_inizializza_come_ha``),
+    con il motore come le aggancia oggi (``inizializza_attivazioni`` con
+    ``timer.attacca_trigger_timer``)."""
     hass = b.hass
     c = Contesto(hass, "master")
     automazioni, _ = codice_fase4.crea(c)
@@ -795,10 +976,10 @@ async def _prepara_fase4(b: Banco) -> None:
     for automazione in automazioni:
         argomenti: dict[str, Any] = {"variables": {"this": None}}
         if b.mio:
-            argomenti["altri"] = {TRIGGER: evento_anche_su(bus_del_motore(hass))}
+            argomenti["altri"] = {TRIGGER: attacca_trigger_timer}
             inizializza = inizializza_attivazioni
         else:
-            inizializza = inizializza_trigger
+            inizializza = _inizializza_come_ha
         uno = await inizializza(
             hass,
             list(automazione.trigger),
@@ -821,7 +1002,7 @@ async def _prepara_fase4(b: Banco) -> None:
 
 async def test_attivazioni_del_codice_tradotto(freezer: FrozenDateTimeFactory) -> None:
     """Le configurazioni dei trigger come le scrive il codice tradotto (``generato_fase4``,
-    14 automazioni, oltre 600 trigger) con la memoria interna vera: stessi trigger, stessi
+    13 automazioni, centinaia di trigger) con la memoria interna vera: stessi trigger, stessi
     messaggi e stesse azioni con il codice di oggi e con il motore, anche ai cambi dei
     valori interni e delle entità che i trigger seguono."""
     registro = await come_home_assistant(
@@ -848,7 +1029,7 @@ async def test_attivazioni_del_codice_tradotto(freezer: FrozenDateTimeFactory) -
         ],
     )
     agganciate = {r[2][0]: r[2][1] for r in etichette(registro, "agganciata")}
-    assert len(agganciate) == 14
+    assert len(agganciate) == 13
     # i suoi trigger sono tutti agganci dei comandi (spenti qui)
     assert [nome for nome, si in agganciate.items() if not si] == [
         "VMC Master - Letture Ravvicinate"

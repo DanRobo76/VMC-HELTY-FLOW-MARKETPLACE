@@ -18,6 +18,7 @@ from custom_components.vmc_master.const import CONF_HOST, DOMAIN
 from custom_components.vmc_master.nativa.motore.memoria_interna import (
     CHIAVE_ARCHIVIO as CHIAVE_MEMORIA_INTERNA,
 )
+from custom_components.vmc_master.nativa.motore.stati_logiche import stati_logiche
 from custom_components.vmc_master.nativa.tabelle import IMPOSTAZIONI
 
 from .banco import (
@@ -34,8 +35,9 @@ ENTITA_PER_VMC = (
     367  # 172 impostazioni + 136 sensori + 34 sensori dei timer + 25 pulsanti
 )
 AUTOMAZIONI_PER_VMC = 13
-# voci del registro legate alla voce della VMC: entità native e automazioni del motore
-VOCI_PER_VMC = ENTITA_PER_VMC + AUTOMAZIONI_PER_VMC
+# voci del registro legate alla voce della VMC: le entità native (le automazioni del
+# motore sono logiche dell'integrazione, senza entità)
+VOCI_PER_VMC = ENTITA_PER_VMC
 
 
 @pytest.fixture(autouse=True)
@@ -49,18 +51,21 @@ def _entita(hass: HomeAssistant, entry_id: str) -> list[er.RegistryEntry]:
     return er.async_entries_for_config_entry(er.async_get(hass), entry_id)
 
 
+def _della_vmc(entity_id: str, nome: str) -> bool:
+    return (
+        f"vmc_{nome}_" in entity_id or entity_id == f"automation.automazione_vmc_{nome}"
+    )
+
+
 def _automazioni(hass: HomeAssistant, nome: str) -> list[str]:
-    """Le automazioni del motore della VMC caricate (non i loro stati «unavailable»
-    ripristinati, che Home Assistant lascia per le voci del registro)."""
-    return sorted(
+    """Le automazioni del motore della VMC avviate: logiche dell'integrazione, con il
+    loro stato interno (nessuna entità ``automation`` della VMC, nemmeno ripristinata)."""
+    assert [
         s.entity_id
         for s in hass.states.async_all("automation")
-        if (
-            f"vmc_{nome}_" in s.entity_id
-            or s.entity_id == f"automation.automazione_vmc_{nome}"
-        )
-        and not s.attributes.get(EntityStateAttribute.RESTORED)
-    )
+        if _della_vmc(s.entity_id, nome)
+    ] == []
+    return sorted(e for e in stati_logiche(hass).stati if _della_vmc(e, nome))
 
 
 def _nulla_in_config(config_dir: Path) -> None:
@@ -79,8 +84,11 @@ async def test_una_vmc_si_avvia_si_ricarica_si_scarica_e_si_elimina(
     assert len(voci) == VOCI_PER_VMC
     assert all(hass.states.get(v.entity_id) is not None for v in voci)
     assert {v.entity_id for v in voci} == voci_attese("master")  # niente «_2»
-    # le automazioni del motore: legate alla voce della VMC
+    # le automazioni del motore: logiche avviate, senza entità né voci del registro
     assert set(_automazioni(hass, "master")) == automazioni_attese("master")
+    assert sorted(a.entity_id for a in master.runtime_data.vmc.motore.automazioni) == (
+        sorted(automazioni_attese("master"))
+    )
     assert ir.async_get(hass).async_get_issue(DOMAIN, ISSUE_PASSAGGIO) is None
     assert [c.host for c in ClientFinto.istanze] == ["192.168.1.160"]
 
@@ -104,7 +112,7 @@ async def test_una_vmc_si_avvia_si_ricarica_si_scarica_e_si_elimina(
     )
     assert len(_automazioni(hass, "master")) == AUTOMAZIONI_PER_VMC
 
-    # scaricata: niente entità vive (il registro resta), automazioni del motore tolte
+    # scaricata: niente entità vive (il registro resta), logiche del motore fermate
     assert await hass.config_entries.async_unload(master.entry_id)
     await hass.async_block_till_done()
     assert master.state is ConfigEntryState.NOT_LOADED
@@ -116,8 +124,9 @@ async def test_una_vmc_si_avvia_si_ricarica_si_scarica_e_si_elimina(
     )
     assert _automazioni(hass, "master") == []
 
-    # eliminata: Home Assistant toglie le sue entità e le automazioni del motore; la
-    # memoria interna resta, con l'istante dell'eliminazione (test_riaggiunta.py)
+    # eliminata: Home Assistant toglie le sue entità (nessuna voce delle automazioni del
+    # motore); la memoria interna resta, con l'istante dell'eliminazione
+    # (test_riaggiunta.py)
     assert await hass.config_entries.async_setup(master.entry_id)
     await hass.async_block_till_done()
     assert CHIAVE_MEMORIA_INTERNA.format(nome="master") in hass_storage
