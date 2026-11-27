@@ -13,6 +13,8 @@ from pathlib import Path
 
 from homeassistant.components import ping
 
+import custom_components.vmc_master  # noqa: F401  (si prova anche da solo)
+
 CC = Path(__file__).parent.parent / "custom_components" / "vmc_master"
 
 
