@@ -3,8 +3,9 @@
 Le 121 configurazioni vere della VMC «master» (``generato_fase4.sensori``) una volta con le
 entità template di Home Assistant (``StateSensorEntity``, ``StateBinarySensorEntity``) e una
 volta con quelle dell'integrazione (``SensoreModello``, ``BinarioModello``, da
-``sensori_template.in_ordine``), tutte e due con ``async_track_template_result`` di Home
-Assistant, ognuna in un Home Assistant suo con l'orologio fermo (anche quello del ciclo
+``sensori_template.in_ordine``, che seguono i modelli con ``seguire.traccia_modelli``
+dell'integrazione al posto di ``async_track_template_result`` di Home Assistant), ognuna
+in un Home Assistant suo con l'orologio fermo (anche quello del ciclo
 degli eventi: i ritardi scattano solo quando la prova fa passare il tempo). Gli stessi
 cambi delle entità lette (letture, impostazioni, valori interni, timer del motore, tempo
 che passa, ``homeassistant.update_entity``, entity_id cambiati, entità tolte) devono dare
@@ -27,6 +28,7 @@ import random
 from collections.abc import AsyncIterator, Callable, Sequence
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime, timedelta
+from functools import partial
 from pathlib import Path
 from typing import Any
 
@@ -40,6 +42,10 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers import restore_state as rs
 from homeassistant.helpers.entity import Entity
+from homeassistant.helpers.event import (
+    _TRACK_STATE_CHANGE_DATA,
+    _async_dispatch_entity_id_event,
+)
 from homeassistant.setup import async_setup_component
 from pytest_homeassistant_custom_component.common import (
     MockEntityPlatform,
@@ -333,6 +339,12 @@ async def _istanza(config_dir: str, avviato: bool) -> AsyncIterator[HomeAssistan
                 await hass.async_stop(force=True)
 
 
+@callback
+def _ai_tracker_di_home_assistant(hass: HomeAssistant, cambio: Event[Any]) -> None:
+    if (seguiti := hass.data.get(_TRACK_STATE_CHANGE_DATA)) is not None:
+        _async_dispatch_entity_id_event(hass, seguiti.callbacks, cambio)
+
+
 async def _gira(
     freezer: FrozenDateTimeFactory,
     config_dir: str,
@@ -357,6 +369,11 @@ async def _gira(
         motore = contesto.timer = TimerDelMotore(contesto, timer or {})
         await motore.prepara()
         annunci = AnnunciDeiTimer(hass, motore)
+        # le entità template di Home Assistant seguono i timer con i tracker di Home
+        # Assistant: come quando i timer erano entità (con il package), i cambi dei timer del
+        # motore vanno anche ai tracker di Home Assistant (le entità dell'integrazione li
+        # ricevono da CambiInterni; per loro questi tracker non hanno i timer)
+        annunci.osserva(partial(_ai_tracker_di_home_assistant, hass))
         for eid, (valore, attributi) in iniziali.items():
             hass.states.async_set(eid, valore, attributi)
         await hass.async_block_till_done()

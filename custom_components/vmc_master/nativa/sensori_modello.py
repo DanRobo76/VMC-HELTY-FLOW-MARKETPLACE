@@ -13,9 +13,10 @@ cronologia degli utenti resta). Il simulatore confronta istanti e ordine dei cam
 il package.
 
 I modelli si seguono con una funzione con la firma di
-``homeassistant.helpers.event.async_track_template_result`` (parametro ``segui``, di norma
-quella di Home Assistant): l'integrazione può passare la sua, che consegna anche i cambi
-dei valori interni del motore.
+``homeassistant.helpers.event.async_track_template_result`` (parametro ``segui``): di norma
+quella dell'integrazione (``motore.seguire.traccia_modelli``), che segue le entità come
+Home Assistant e consegna anche i cambi dei valori interni del motore (memoria interna,
+timer del motore).
 
 Solo le chiavi che i 121 sensori usano: ``default_entity_id``, ``name``, ``unique_id``,
 ``state``, ``icon``, ``availability`` e, per i sensori, ``unit_of_measurement``,
@@ -75,7 +76,6 @@ from homeassistant.helpers.event import (
     TrackTemplateResult,
     TrackTemplateResultListener,
     async_call_later,
-    async_track_template_result,
 )
 from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.helpers.start import async_at_start
@@ -86,6 +86,8 @@ from homeassistant.helpers.template import (
 )
 from homeassistant.helpers.typing import StateType
 from homeassistant.util.enum import try_parse_enum
+
+from .motore.seguire import traccia_modelli
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -307,7 +309,7 @@ class EntitaModello(Entity):
         config: Mapping[str, Any],
         unique_id: str | None,
         *,
-        segui: Seguire = async_track_template_result,
+        segui: Seguire = traccia_modelli,
     ) -> None:
         if altre := set(config) - self._chiavi:
             raise ValueError(
@@ -617,7 +619,7 @@ class SensoreModello(EntitaModello, RestoreSensor):
         config: Mapping[str, Any],
         unique_id: str | None,
         *,
-        segui: Seguire = async_track_template_result,
+        segui: Seguire = traccia_modelli,
     ) -> None:
         if (
             try_parse_enum(SensorDeviceClass, config.get(CONF_DEVICE_CLASS))
@@ -697,7 +699,7 @@ class BinarioModello(EntitaModello, BinarySensorEntity, RestoreEntity):
         config: Mapping[str, Any],
         unique_id: str | None,
         *,
-        segui: Seguire = async_track_template_result,
+        segui: Seguire = traccia_modelli,
     ) -> None:
         super().__init__(hass, config, unique_id, segui=segui)
         self._attr_device_class = None

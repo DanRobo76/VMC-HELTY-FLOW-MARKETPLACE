@@ -17,13 +17,14 @@ Home Assistant (``SensoreModello``, ``BinarioModello``: sensori_modello.py), con
 configurazione del package e i modelli tradotti in Python dal traduttore del motore
 (``ModelloHA``, che legge le entità di domani e i valori interni come il motore) al posto
 dei Template Jinja: ``motore/generato_fase4/sensori.py``. I modelli si seguono con
-``segui`` (la firma di ``async_track_template_result``, di norma quella di Home
-Assistant).
+``segui`` (la firma di ``async_track_template_result``): di norma
+``motore.seguire.traccia_modelli``, che segue anche i valori interni (memoria interna,
+timer del motore) letti dai modelli.
 
 Il sensore che legge due timer del motore (Velocità Registrata) li segue come il template
 di oggi segue i timer: le letture dei timer del motore si annotano nel ``RenderInfo`` e
-``AnnunciDeiTimer`` consegna i cambi dei timer a chi li segue, nel punto del bus in cui
-Home Assistant consegnerebbe il loro ``state_changed``.
+``AnnunciDeiTimer`` consegna i cambi dei timer a chi li segue (``CambiInterni``), nel punto
+del bus in cui Home Assistant consegnerebbe il loro ``state_changed``.
 """
 
 from __future__ import annotations
@@ -43,13 +44,9 @@ from homeassistant.core import (
     callback,
 )
 from homeassistant.helpers.entity import Entity
-from homeassistant.helpers.event import (
-    _TRACK_STATE_CHANGE_DATA,
-    _async_dispatch_entity_id_event,
-    async_track_template_result,
-)
 
 from .motore.contesto import Contesto
+from .motore.seguire import cambi_interni, traccia_modelli
 from .motore.timer import TimerDelMotore, TimerMotore
 from .sensori_modello import BinarioModello, Seguire, SensoreModello
 
@@ -70,7 +67,7 @@ def crea_sensori_template(
     codice: ModuleType,
     ip: str,
     *,
-    segui: Seguire = async_track_template_result,
+    segui: Seguire = traccia_modelli,
 ) -> SensoriTemplate:
     """Le entità dei sensori template (sensori, sensori binari) nell'ordine del package,
     dal codice tradotto ``codice`` (``generato_fase4.sensori``) per la VMC di ``c``
@@ -92,7 +89,7 @@ def in_ordine(
     codice: ModuleType,
     ip: str,
     *,
-    segui: Seguire = async_track_template_result,
+    segui: Seguire = traccia_modelli,
 ) -> list[SensoreModello | BinarioModello]:
     """Le entità dei sensori template nell'ordine del package, sensori e sensori binari
     insieme: l'ordine in cui oggi l'integrazione template le aggiunge e in cui, all'avvio,
@@ -126,15 +123,15 @@ def a_gruppi(entita: Sequence[Entity]) -> list[tuple[str, list[Any]]]:
 class AnnunciDeiTimer:
     """I cambi dei timer del motore a chi li segue come entità.
 
-    Un timer del motore non è nella macchina degli stati: oggi ogni sua scrittura è un
-    ``state_changed`` che Home Assistant consegna a chi segue il timer
-    (``async_track_state_change_event``: il sensore template che lo legge). Qui ogni
-    scrittura si annuncia con un evento ``state_reported`` con un marchio (entity_id vuoto:
-    nessun ascoltatore di un'entità lo prende), che il bus consegna nello stesso punto in
-    cui consegnerebbe ``state_changed`` (anche durante la consegna di un altro evento,
-    in coda); alla consegna il cambio va prima agli ``osservatori`` (chi ascolta il bus
-    prima dei tracker, per esempio la traccia del simulatore) e poi a chi segue il timer.
-    Come la memoria interna per i valori interni.
+    Un timer del motore non è nella macchina degli stati: con il package ogni sua
+    scrittura era un ``state_changed`` che Home Assistant consegnava a chi segue il timer
+    (il sensore template che lo legge, i modelli del motore). Qui ogni scrittura si
+    annuncia con un evento ``state_reported`` con un marchio (entity_id vuoto: nessun
+    ascoltatore di un'entità lo prende), che il bus consegna nello stesso punto in cui
+    consegnerebbe ``state_changed`` (anche durante la consegna di un altro evento, in
+    coda); alla consegna il cambio va prima agli ``osservatori`` (chi ascolta il bus
+    prima dei tracker, per esempio la traccia del simulatore) e poi a chi segue il timer
+    (``CambiInterni``). Come la memoria interna per i valori interni.
     """
 
     def __init__(self, hass: HomeAssistant, timer: TimerDelMotore) -> None:
@@ -194,5 +191,4 @@ class AnnunciDeiTimer:
         )
         for funzione in list(self._osservatori):
             funzione(cambio)
-        if (seguiti := self.hass.data.get(_TRACK_STATE_CHANGE_DATA)) is not None:
-            _async_dispatch_entity_id_event(self.hass, seguiti.callbacks, cambio)
+        cambi_interni(self.hass).consegna(cambio)
