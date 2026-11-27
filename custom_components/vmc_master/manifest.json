@@ -3,8 +3,7 @@
   "name": "VMC Master",
   "after_dependencies": [
     "logger",
-    "template",
-    "trace"
+    "template"
   ],
   "categories": [
     "climate.fans_ventilation"

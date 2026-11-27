@@ -9,8 +9,9 @@ tutto insieme e scriveva i cambi in fila (altro ordine, nessuno stato intermedio
 simulatore lo scenario «S|CONG|0|F|-» faceva scattare due trigger dell'Automazione VMC
 Master al posto di uno, con un comando in più alla VMC (a 14,05 s).
 
-Domani i 121 sensori template sono entità template di Home Assistant con i modelli
-tradotti (sensori_template.py). Qui, nello stesso Home Assistant: oggi 120 sensori
+Domani i 121 sensori template sono entità dell'integrazione che si comportano come le
+entità template di Home Assistant, con i modelli tradotti (sensori_template.py,
+sensori_modello.py). Qui, nello stesso Home Assistant: oggi 120 sensori
 template del package con i loro aiutanti (tutti tranne Velocità Registrata, che legge due
 timer: qui è uno stato scritto a mano nei due lati); domani le entità di ``crea_sensori_template``
 della VMC «nativa», che leggono le entità di domani (con gli stessi stati) e i valori
@@ -34,7 +35,6 @@ from typing import Any
 
 import pytest
 from freezegun.api import FrozenDateTimeFactory
-from homeassistant.components.template.sensor import StateSensorEntity
 from homeassistant.const import EVENT_STATE_CHANGED
 from homeassistant.core import Event, HomeAssistant, callback
 from homeassistant.setup import async_setup_component
@@ -48,6 +48,7 @@ from custom_components.vmc_master.nativa.motore.generato_fase4 import (
     sensori as codice_sensori,
 )
 from custom_components.vmc_master.nativa.motore.timer import TimerDelMotore
+from custom_components.vmc_master.nativa.sensori_modello import SensoreModello
 from custom_components.vmc_master.nativa.sensori_template import (
     AnnunciDeiTimer,
     chiave_del_sensore,
@@ -282,7 +283,7 @@ async def test_un_timer_del_motore_letto_da_un_sensore_template(
     def modello(c: Contesto, variabili: Any) -> str:
         return c.timer.states(c.N("timer.vmc_master_prova"))
 
-    nativo = StateSensorEntity(
+    nativo = SensoreModello(
         hass,
         {
             "default_entity_id": f"sensor.vmc_{NOME}_legge_timer",

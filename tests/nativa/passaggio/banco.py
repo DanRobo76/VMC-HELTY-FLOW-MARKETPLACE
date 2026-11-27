@@ -19,6 +19,7 @@ from pathlib import Path
 from typing import Any
 from unittest.mock import AsyncMock, patch
 
+import yaml
 from homeassistant import loader
 from homeassistant.core import CoreState, HomeAssistant, State
 from homeassistant.helpers import entity_registry as er
@@ -292,6 +293,31 @@ def _senza_ora_delle_medie(blocco: dict[str, Any]) -> dict[str, Any]:
     return {**blocco, chiave: trigger}
 
 
+def scrivi_configurazione(
+    config_dir: str,
+    automazioni_personali: Iterable[dict[str, Any]] = (),
+    script_personali: dict[str, Any] | None = None,
+) -> None:
+    """configuration.yaml di chi ha la beta: i package della cartella packages (come
+    chiede la guida della beta) e le automazioni e gli script dell'utente nei file
+    dell'interfaccia (automations.yaml, scripts.yaml)."""
+    cartella = Path(config_dir)
+    (cartella / "configuration.yaml").write_text(
+        "homeassistant:\n"
+        "  packages: !include_dir_named packages/\n"
+        "automation: !include automations.yaml\n"
+        "script: !include scripts.yaml\n",
+        encoding="utf-8",
+    )
+    (cartella / "automations.yaml").write_text(
+        yaml.safe_dump(list(automazioni_personali), allow_unicode=True),
+        encoding="utf-8",
+    )
+    (cartella / "scripts.yaml").write_text(
+        yaml.safe_dump(script_personali or {}, allow_unicode=True), encoding="utf-8"
+    )
+
+
 async def carica_package(
     hass: HomeAssistant,
     cartelle: Iterable[Path],
@@ -302,7 +328,13 @@ async def carica_package(
     script, sensori template e automazioni con le integrazioni vere; i sensori rest,
     command_line (voce nel registro) e tcp (senza unique_id) solo come stati, perché
     vanno in rete. ``automazioni_personali`` e ``script_personali``: quelli dell'utente
-    (automations.yaml, scripts.yaml)."""
+    (automations.yaml, scripts.yaml), scritti anche nella configurazione YAML
+    (``scrivi_configurazione``)."""
+    automazioni_personali = list(automazioni_personali)
+    if automazioni_personali or script_personali:
+        scrivi_configurazione(
+            hass.config.config_dir, automazioni_personali, script_personali
+        )
     config = configurazione_package(cartelle)
     if not hass.services.has_service("recorder", "get_statistics"):
         config["template"] = [_senza_ora_delle_medie(b) for b in config["template"]]

@@ -88,8 +88,11 @@ def test_integrazioni_importate_nel_manifest() -> None:
     manifest = json.loads((CC / "manifest.json").read_text(encoding="utf-8"))
     dichiarate = set(manifest.get("dependencies", [])) | set(manifest.get("after_dependencies", []))
     importate = _integrazioni_importate()
-    # la lettura trova davvero gli import (le tre del 27-11-2026 comprese)
-    assert {"logger", "template", "trace", "sensor"} <= set(importate)
+    # la lettura trova davvero gli import (logger del 27-11-2026 compreso); dalla b46 nessun
+    # modulo importa le integrazioni template (sensori_modello.py) e trace (le logiche del
+    # motore non sono automazioni: niente tracce)
+    assert {"logger", "sensor"} <= set(importate)
+    assert not {"template", "trace", "automation", "script"} & set(importate)
     mancanti = {
         nome: sorted(file)
         for nome, file in importate.items()
@@ -99,9 +102,12 @@ def test_integrazioni_importate_nel_manifest() -> None:
 
 
 def test_after_dependencies_senza_doppioni() -> None:
-    """after_dependencies: solo le tre integrazioni importate, mai ripetute fra le dependencies."""
+    """after_dependencies: l'integrazione importata (logger) e template, mai ripetute fra le
+    dependencies. Template non è più importata dalla b46: nel manifest resta l'ordine di avvio
+    dopo l'integrazione template (il package della beta) che c'era dalla b44; trace non serve
+    più (dalla b46 il motore non ha automazioni né tracce)."""
     manifest = json.loads((CC / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["after_dependencies"] == ["logger", "template", "trace"]
+    assert manifest["after_dependencies"] == ["logger", "template"]
     assert not set(manifest["after_dependencies"]) & set(manifest["dependencies"])
     # hassfest vuole domain e name per primi, poi le chiavi in ordine alfabetico
     chiavi = list(manifest)

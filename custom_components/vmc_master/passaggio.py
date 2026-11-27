@@ -30,7 +30,7 @@ import json
 import logging
 import re
 import shutil
-from collections.abc import Iterable, Iterator, Mapping
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path
@@ -38,13 +38,20 @@ from typing import Any, Final
 
 import yaml
 from homeassistant.components.lovelace import LOVELACE_DATA
+from homeassistant.config import (
+    YAML_CONFIG_FILE,
+    extract_domain_configs,
+    load_yaml_config_file,
+)
 from homeassistant.const import EntityStateAttribute
 from homeassistant.core import HomeAssistant, State, callback
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.restore_state import STATE_EXPIRATION
 from homeassistant.helpers.restore_state import async_get as memoria_ripristino
 from homeassistant.helpers.storage import Store
 from homeassistant.util import dt as dt_util
+from homeassistant.util.yaml import Secrets
 
 from .nativa.comandi import chiavi_comandi
 from .nativa.memoria import IN_ORDINE as SENSORI_CON_MEMORIA
@@ -526,26 +533,104 @@ async def async_conferma(hass: HomeAssistant, nome: str) -> EsitoConferma:
 _RE_ENTITY_ID = re.compile(r"(?<![\w.])([a-z_]+\.vmc_[a-z]+_[a-z0-9_]+)(?![\w])")
 
 
-def _configurazioni_personali(
-    hass: HomeAssistant, del_package: set[str]
-) -> Iterator[tuple[str, str]]:
-    """(entity_id, testo) di ogni automazione e script caricato che non è del package:
-    la configurazione come l'utente l'ha scritta (``raw_config``), gli ingressi dei
-    progetti (blueprint) e le entità che Home Assistant vi trova."""
-    for dominio in ("automation", "script"):
-        componente = hass.data.get(dominio)
-        for entita in getattr(componente, "entities", ()):
-            if entita.entity_id in del_package:
-                continue
-            parti = [
-                getattr(entita, "raw_config", None),
-                getattr(entita, "_raw_blueprint_inputs", None),
-                sorted(getattr(entita, "referenced_entities", ())),
+_DOMINI_PERSONALI: Final = ("automation", "script")
+
+
+def _leggi_configurazioni_personali(
+    config_dir: str,
+) -> list[tuple[str, str | None, str | None, str]]:
+    """(dominio, id o chiave, alias, testo) di ogni automazione e script scritto nella
+    configurazione YAML di Home Assistant: configuration.yaml con i file che include e i
+    package, quindi anche quelli creati dall'interfaccia (automations.yaml, scripts.yaml).
+    Il testo è la configurazione come l'utente l'ha scritta, più il file del progetto
+    (blueprint) che usa. Legge i file: nell'esecutore."""
+    cartella = Path(config_dir)
+    config = load_yaml_config_file(str(cartella / YAML_CONFIG_FILE), Secrets(cartella))
+    blocchi: list[dict[Any, Any]] = [config]
+    generale = config.get("homeassistant")
+    pacchetti = generale.get("packages") if isinstance(generale, dict) else None
+    if isinstance(pacchetti, dict):
+        blocchi.extend(p for p in pacchetti.values() if isinstance(p, dict))
+    trovate: list[tuple[str, str | None, str | None, str]] = []
+    for blocco in blocchi:
+        for dominio in _DOMINI_PERSONALI:
+            for chiave in extract_domain_configs(blocco, dominio):
+                valore = blocco[chiave]
+                if dominio == "automation":
+                    voci = [
+                        (None if v.get("id") is None else str(v["id"]), v)
+                        for v in _come_lista(valore)
+                        if isinstance(v, dict) and v
+                    ]
+                else:
+                    voci = [
+                        (str(k), v)
+                        for k, v in (valore.items() if isinstance(valore, dict) else ())
+                        if isinstance(v, dict)
+                    ]
+                for nome, voce in voci:
+                    alias = voce.get("alias")
+                    parti: list[Any] = [voce]
+                    progetto = voce.get("use_blueprint")
+                    percorso = (
+                        progetto.get("path") if isinstance(progetto, dict) else None
+                    )
+                    if isinstance(percorso, str):
+                        try:
+                            parti.append(
+                                (cartella / "blueprints" / dominio / percorso).read_text(
+                                    encoding="utf-8"
+                                )
+                            )
+                        except (OSError, UnicodeDecodeError) as errore:
+                            _LOGGER.debug("Progetto %s non letto: %s", percorso, errore)
+                    trovate.append(
+                        (
+                            dominio,
+                            nome,
+                            None if alias is None else str(alias),
+                            json.dumps(parti, ensure_ascii=False, default=str),
+                        )
+                    )
+    return trovate
+
+
+async def _async_configurazioni_personali(
+    hass: HomeAssistant, id_package: Iterable[tuple[str, str, str]]
+) -> list[tuple[str, str]]:
+    """(dove, testo) di ogni automazione e script dell'utente (non del package): dove è
+    l'entity_id che Home Assistant gli ha dato (dal registro delle entità o, per
+    un'automazione senza id, dallo stato con il suo nome), altrimenti il suo nome."""
+    try:
+        trovate = await hass.async_add_executor_job(
+            _leggi_configurazioni_personali, hass.config.config_dir
+        )
+    except (HomeAssistantError, OSError) as errore:
+        _LOGGER.warning("Configurazione di Home Assistant non letta: %s", errore)
+        return []
+    ids = set(id_package)
+    registro = er.async_get(hass)
+    personali: list[tuple[str, str]] = []
+    for dominio, nome, alias, testo in trovate:
+        if nome is not None:
+            if (dominio, dominio, nome) in ids:
+                continue  # del package
+            dove = registro.async_get_entity_id(dominio, dominio, nome)
+        else:  # automazione senza id: nessuna voce nel registro
+            con_il_nome = [
+                s.entity_id
+                for s in hass.states.async_all(dominio)
+                if "id" not in s.attributes and s.name == alias
             ]
-            yield (
-                entita.entity_id,
-                json.dumps([p for p in parti if p], ensure_ascii=False, default=str),
+            dove = con_il_nome[0] if len(con_il_nome) == 1 else None
+        if dove is None:
+            dove = (
+                f"{dominio}.{nome}"
+                if dominio == "script"
+                else f"{dominio}: {alias or nome or '-'}"
             )
+        personali.append((dove, testo))
+    return personali
 
 
 async def async_riferimenti_personali(
@@ -560,9 +645,8 @@ async def async_riferimenti_personali(
     servizi del package che non ci sono più (``script.‹id›`` e ``shell_command.‹id›``
     come azione)."""
     vecchi = {entity_id_di_oggi(c, nome): entity_id_di_domani(c, nome) for c in DOMANI}
-    del_package = set(voci_del_package(hass, id_package))
     trovati: list[tuple[str, str, str | None]] = []
-    for dove, testo in _configurazioni_personali(hass, del_package):
+    for dove, testo in await _async_configurazioni_personali(hass, id_package):
         for vecchio in sorted(set(_RE_ENTITY_ID.findall(testo)) & set(vecchi)):
             trovati.append((dove, vecchio, vecchi[vecchio]))
     dati = hass.data.get(LOVELACE_DATA)
