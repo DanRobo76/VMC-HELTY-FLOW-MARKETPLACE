@@ -7,7 +7,6 @@ from __future__ import annotations
 import asyncio
 import contextlib
 from collections.abc import AsyncIterator, Awaitable, Callable
-from pathlib import Path
 from unittest.mock import patch
 
 import pytest
@@ -59,34 +58,6 @@ async def test_scheda_di_un_altra_integrazione(hass: HomeAssistant, hass_client)
 
 
 # --- Notifica di migrazione ----------------------------------------------------------
-
-
-@pytest.mark.parametrize(
-    ("lingua", "titolo", "prima_del_riavvio"),
-    [
-        ("it", "VMC Master: VMC master passata all'integrazione", "PRIMA di riavviare"),
-        ("en", "VMC Master: unit master moved to the integration", "BEFORE restarting"),
-    ],
-)
-async def test_notifica_di_migrazione(
-    hass: HomeAssistant, lingua: str, titolo: str, prima_del_riavvio: str
-) -> None:
-    """Installazione manuale trovata: la notifica dice di eliminare l'automazione
-    incollata a mano prima del riavvio (altrimenti girano due automazioni uguali)."""
-    hass.config.language = lingua
-    cartella = Path(hass.config.path("packages", "vmc_helty_flow", "master"))
-    cartella.mkdir(parents=True)
-    (cartella / "vmc_master.yaml").write_text(
-        "sensor:\n  - platform: tcp\n    host: 192.168.1.160\n", encoding="utf-8"
-    )
-    await _master(hass)
-    notifiche = persistent_notification._async_get_or_create_notifications(hass)
-    notifica = notifiche.get(f"{DOMAIN}_migrazione_master")
-    assert notifica is not None
-    assert notifica["title"] == titolo
-    assert prima_del_riavvio in notifica["message"]
-    assert "«Automazione VMC Master»" in notifica["message"]
-    assert "vmc_master_backup" in notifica["message"]
 
 
 async def test_nessuna_notifica_senza_migrazione(hass: HomeAssistant) -> None:

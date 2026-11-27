@@ -94,7 +94,7 @@ AVVISI = {
     ),
     "Verifica VMC in corso": "Verifica in corso: controllo che a questo IP risponda la VMC",
     "VMC non risponde": "La VMC non risponde a questo IP: non è stato cambiato nulla.",
-    "Non è una VMC": "A questo IP risponde un dispositivo che non è una VMC",
+    "Non è una VMC": "A questo IP risponde un apparecchio che non è una VMC",
     "Nome VMC diverso": "A questo IP risponde una VMC con un altro nome: non è stato cambiato nulla.",
 }
 STATI_SENZA_RIAVVIO = [*AVVISI, "Nessun IP", "unknown", "unavailable"]
@@ -563,7 +563,9 @@ async def test_cambia_ip_seconda_prova_e_nome_mai_letto(hass: HomeAssistant) -> 
     risultato = await hass.config_entries.options.async_configure(risultato["flow_id"], {"next_step_id": "cambia_ip"})
     with patch(NOME_VMC, AsyncMock(side_effect=[None, "VMC Zona Notte"])) as lettura:
         risultato = await hass.config_entries.options.async_configure(risultato["flow_id"], {"host": "192.168.1.170"})
-    assert lettura.await_count == 2
+    # due prove della finestra, poi la VMC riparte con il nuovo IP e rilegge il nome per
+    # il titolo (la terza lettura, senza risposta: il titolo resta)
+    assert lettura.await_count == 3
     assert risultato["type"] is FlowResultType.CREATE_ENTRY
     await hass.async_block_till_done()
     assert voce.data["host"] == "192.168.1.170"

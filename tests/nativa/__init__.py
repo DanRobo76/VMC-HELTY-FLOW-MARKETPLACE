@@ -1,0 +1,1 @@
+"""Test della versione nativa."""

@@ -105,23 +105,39 @@ def rimuovi_sezioni_solo_master(testo: str) -> str:
 # Parole che non vanno rinominate:
 # - il nome del file del video nel repository VMC-HELTY-FLOW: altrimenti nelle VMC
 #   clonate il link punta a «VMC_‹nome›_promo_IT.mp4», che non esiste;
-# - la cartella dei backup (installatore.CARTELLA_BACKUP), che e' una sola per tutte
-#   le VMC: il Pannello Informazioni deve indicare sempre «vmc_master_backup»;
+# - la cartella dei backup della beta (vmc_master_backup), che era una sola per tutte
+#   le VMC: il Pannello Informazioni della beta indicava sempre «vmc_master_backup»;
 # - il servizio dell'integrazione chiamato dall'Automazione Cambio IP (dominio
 #   «vmc_master», uno solo per tutte le VMC): «vmc_‹nome›.verifica_ip» non esiste;
 # - il nome dell'integrazione nell'intestazione della licenza dei file (righe
-#   «… CON L'INTEGRAZIONE VMC MASTER»): l'integrazione e' una sola per tutte le VMC.
+#   «… CON L'INTEGRAZIONE VMC MASTER»): l'integrazione e' una sola per tutte le VMC;
+# - i nomi con il trattino della scheda nativa: i tipi delle schede personalizzate
+#   («custom:vmc-master-conto-alla-rovescia», «vmc-master-card»), definiti una volta
+#   sola dal JavaScript della scheda (gli entity_id hanno solo trattini bassi);
+# - il nome del repository dell'integrazione nativa (VMC-HELTY-FLOW-MASTER) nei link
+#   e nella pagina del Marketplace.
+# Nei file della beta (cartella «package») le ultime due non ci sono: restano identici.
 _VIDEO_PROMO = "VMC_MASTER_promo_"
 _CARTELLA_BACKUP = "vmc_master_backup"
 _SERVIZIO_VERIFICA_IP = "vmc_master.verifica_ip"
 _INTEGRAZIONE = "INTEGRAZIONE VMC MASTER"
-_PROTETTE = (_VIDEO_PROMO, _CARTELLA_BACKUP, _SERVIZIO_VERIFICA_IP, _INTEGRAZIONE)
+_ELEMENTI_SCHEDA = "vmc-master-"
+_REPOSITORY_NATIVA = "HELTY-FLOW-MASTER"
+_PROTETTE = (
+    _VIDEO_PROMO,
+    _CARTELLA_BACKUP,
+    _SERVIZIO_VERIFICA_IP,
+    _INTEGRAZIONE,
+    _ELEMENTI_SCHEDA,
+    _REPOSITORY_NATIVA,
+)
 
 
 def rinomina(testo: str, nome: str) -> str:
     """s/master/nome/g, poi s/Master/nome/g, poi s/MASTER/nome/g (come vmc_script_clona.sh),
     lasciando intatte le parole di _PROTETTE (video promozionale, cartella dei backup,
-    servizio verifica_ip e nome dell'integrazione nella licenza)."""
+    servizio verifica_ip, nome dell'integrazione nella licenza, tipi delle schede
+    personalizzate e repository dell'integrazione nativa)."""
     for indice, parola in enumerate(_PROTETTE):
         testo = testo.replace(parola, f"\x00PROTETTA{indice}\x00")
     testo = testo.replace("master", nome).replace("Master", nome).replace("MASTER", nome)
@@ -167,13 +183,18 @@ def adatta_versione(yaml_vmc: str, versione: str) -> str:
 # percorsi. Il nome «VMC-HELTY-FLOW» senza «DanRobo76/» (testo, nomi delle
 # automazioni) resta com'e'.
 _RE_LINK_REPOSITORY_8 = re.compile(r"DanRobo76/VMC-HELTY-FLOW(?![-\w])")
+# Il repository della beta: solo per rifare i file che la beta scriveva (installatore,
+# per riconoscere i suoi elementi e per le prove); la scheda servita dall'integrazione
+# usa const.REPOSITORY (VMC-HELTY-FLOW-MASTER)
 REPOSITORY_INTEGRAZIONE = "DanRobo76/VMC-HELTY-FLOW-MARKETPLACE"
 
 
-def adatta_link_repository(testo: str) -> str:
+def adatta_link_repository(testo: str, repository: str = REPOSITORY_INTEGRAZIONE) -> str:
     """Tutti i link a github.com/DanRobo76/VMC-HELTY-FLOW (anche api.github.com e
-    raw.githubusercontent.com) diventano link a VMC-HELTY-FLOW-MARKETPLACE."""
-    return _RE_LINK_REPOSITORY_8.sub(REPOSITORY_INTEGRAZIONE, testo)
+    raw.githubusercontent.com) diventano link a ``repository`` (di norma
+    VMC-HELTY-FLOW-MARKETPLACE, quello della beta; la scheda dell'integrazione nativa
+    passa VMC-HELTY-FLOW-MASTER)."""
+    return _RE_LINK_REPOSITORY_8.sub(repository, testo)
 
 
 def per_vmc(testo_master: str, nome: str, ip: str) -> str:

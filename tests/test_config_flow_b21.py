@@ -79,7 +79,9 @@ async def test_cambia_ip_con_un_altro_nome(hass: HomeAssistant) -> None:
         risultato = await hass.config_entries.options.async_configure(
             risultato["flow_id"], {"host": "192.168.1.170"}
         )
-    nome.assert_not_called()
+    # il secondo Invia non rilegge il nome: la sola lettura e' quella del titolo, dopo che
+    # la VMC e' ripartita con il nuovo IP
+    nome.assert_called_once_with("192.168.1.170")
     assert risultato["type"] is FlowResultType.CREATE_ENTRY
     await hass.async_block_till_done()
     assert voce.data["host"] == "192.168.1.170"
@@ -99,7 +101,9 @@ async def test_cambia_ip_stessa_vmc(hass: HomeAssistant) -> None:
 
 
 async def test_nome_vuoto_chiede_il_nome(hass: HomeAssistant) -> None:
-    """VMC che risponde senza nome leggibile: finestra «nome_manuale», mai «Nome letto: -»."""
+    """Il nome si scrive a mano (finestra «nome_manuale», mai «Nome letto: -») solo per
+    una VMC che non risponde, aggiunta con «Aggiungi comunque». Chi risponde sulla porta
+    5001 senza il nome della VMC non è una VMC (b44): si corregge l'IP."""
     MockConfigEntry(
         domain=DOMAIN, unique_id="master", data={"nome": "master", "host": "192.168.1.160"}
     ).add_to_hass(hass)
@@ -113,13 +117,21 @@ async def test_nome_vuoto_chiede_il_nome(hass: HomeAssistant) -> None:
         risultato = await hass.config_entries.flow.async_configure(
             risultato["flow_id"], {"host": "192.168.1.162"}
         )
+    assert risultato["step_id"] == "in_rete"
+    assert risultato["errors"] == {"host": "non_e_una_vmc"}
+    with patch(NOME_VMC, return_value=None):
+        risultato = await hass.config_entries.flow.async_configure(
+            risultato["flow_id"], {"host": "192.168.1.162"}
+        )
+    # non risponde niente: si avvisa come per una VMC spenta, prima del nome
+    assert risultato["step_id"] == "non_raggiungibile"
+    risultato = await hass.config_entries.flow.async_configure(
+        risultato["flow_id"], {"next_step_id": "aggiungi_comunque"}
+    )
     assert risultato["step_id"] == "nome_manuale" and risultato["errors"] == {}
     risultato = await hass.config_entries.flow.async_configure(
         risultato["flow_id"], {"nome": "studio"}
     )
-    # senza nome non si sa se e' una VMC: si chiede conferma come per una VMC spenta
-    assert risultato["step_id"] == "non_raggiungibile"
-    risultato = await hass.config_entries.flow.async_configure(risultato["flow_id"], {})
     assert risultato["type"] is FlowResultType.CREATE_ENTRY
     assert risultato["title"] == "VMC studio"
 
@@ -225,7 +237,19 @@ def test_traduzioni() -> None:
     assert "zeri iniziali" in it["config"]["error"]["ip_non_valido"]
     assert "zeri iniziali" in it["options"]["error"]["ip_non_valido"]
     assert "VMC_…." not in json.dumps(it, ensure_ascii=False)
-    assert it["options"]["step"]["elimina"]["description"].count("Aggiungi dispositivo") == 1
+    # un solo percorso per aggiungere ogni VMC, scritto per intero (prova del 27-11-2026)
+    percorso = (
+        "*Impostazioni → Dispositivi e servizi → pulsante «Aggiungi integrazione» in basso a "
+        "destra → VMC Master*"
+    )
+    assert it["options"]["step"]["elimina"]["description"].count(percorso) == 1
+    testi = json.dumps(lingue, ensure_ascii=False)
+    assert "Aggiungi dispositivo" not in testi and "Add device" not in testi
+    for chiave in ("non_raggiungibile", "password_server"):
+        assert percorso in it["config"]["step"][chiave]["description"]
+    for chiave in ("senza_supervisor", "senza_wifi"):
+        assert percorso in it["config"]["abort"][chiave]
+    assert percorso in it["config"]["progress"]["collega"]
     assert "vuoi" not in json.dumps(it["options"], ensure_ascii=False).lower()
     assert "riavvia Home" not in json.dumps(it["options"], ensure_ascii=False)
 

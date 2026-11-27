@@ -1,0 +1,490 @@
+﻿N.;Entità nella scheda oggi;Dove compare;Diventa;Note
+1;automation.automazione_vmc_master;elenco Pulisci cronologia;motore Python (tolta dalla scheda);
+2;automation.vmc_master_aggiorna_aria_scambiata_e_gestisci_countdown;elenco Pulisci cronologia;motore Python (tolta dalla scheda);
+3;automation.vmc_master_audio_allerte_e_stato;elenco Pulisci cronologia;motore Python (tolta dalla scheda);
+4;automation.vmc_master_cambio_ip_vmc_riavvio_di_h_a;elenco Pulisci cronologia;motore Python (tolta dalla scheda);
+5;automation.vmc_master_countdown_attese_automazione;elenco Pulisci cronologia;motore Python (tolta dalla scheda);
+6;automation.vmc_master_countdown_letture_vmc;elenco Pulisci cronologia;motore Python (tolta dalla scheda);
+7;automation.vmc_master_esclusivita_finestre_opzioni;elenco Pulisci cronologia;motore Python (tolta dalla scheda);
+8;automation.vmc_master_inizializza_tempi_di_attesa;elenco Pulisci cronologia;motore Python (tolta dalla scheda);
+9;automation.vmc_master_letture_ravvicinate;elenco Pulisci cronologia;motore Python (tolta dalla scheda);
+10;automation.vmc_master_registro_comandi_e_scelte;elenco Pulisci cronologia;motore Python (tolta dalla scheda);
+11;automation.vmc_master_riallineamento_allerte_al_riavvio;elenco Pulisci cronologia;motore Python (tolta dalla scheda);
+12;automation.vmc_master_riepilogo_audio_avvio;elenco Pulisci cronologia;motore Python (tolta dalla scheda);
+13;automation.vmc_master_rimando_della_scelta;elenco Pulisci cronologia;motore Python (tolta dalla scheda);
+14;automation.vmc_master_ripartenza_della_vmc;elenco Pulisci cronologia;motore Python (tolta dalla scheda);
+15;binary_sensor.vmc_master_black_out_rilevato;elenco Pulisci cronologia;binary_sensor.vmc_master_black_out_rilevato;
+16;binary_sensor.vmc_master_tasto_free_cool_heat;condizione, elenco Pulisci cronologia, pulsante;binary_sensor.vmc_master_tasto_free_cool_heat;
+17;binary_sensor.vmc_master_tasto_free_cooling;condizione, elenco Pulisci cronologia, pulsante;binary_sensor.vmc_master_tasto_free_cooling;
+18;binary_sensor.vmc_master_tasto_free_heating;condizione, elenco Pulisci cronologia, pulsante;binary_sensor.vmc_master_tasto_free_heating;
+19;binary_sensor.vmc_master_tasto_iperventilazione;condizione, elenco Pulisci cronologia, pulsante;binary_sensor.vmc_master_tasto_iperventilazione;
+20;binary_sensor.vmc_master_tasto_led_pannello_off;elenco Pulisci cronologia, pulsante;binary_sensor.vmc_master_tasto_led_pannello_off;
+21;binary_sensor.vmc_master_tasto_led_pannello_on;elenco Pulisci cronologia, pulsante;binary_sensor.vmc_master_tasto_led_pannello_on;
+22;binary_sensor.vmc_master_tasto_notturna;condizione, elenco Pulisci cronologia, pulsante;binary_sensor.vmc_master_tasto_notturna;
+23;binary_sensor.vmc_master_tasto_sensori_off;elenco Pulisci cronologia, pulsante;binary_sensor.vmc_master_tasto_sensori_off;
+24;binary_sensor.vmc_master_tasto_sensori_on;elenco Pulisci cronologia, pulsante;binary_sensor.vmc_master_tasto_sensori_on;
+25;binary_sensor.vmc_master_tasto_velocita_0;elenco Pulisci cronologia, pulsante;binary_sensor.vmc_master_tasto_velocita_0;
+26;binary_sensor.vmc_master_tasto_velocita_1;condizione, elenco Pulisci cronologia, pulsante;binary_sensor.vmc_master_tasto_velocita_1;
+27;binary_sensor.vmc_master_tasto_velocita_2;condizione, elenco Pulisci cronologia, pulsante;binary_sensor.vmc_master_tasto_velocita_2;
+28;binary_sensor.vmc_master_tasto_velocita_3;condizione, elenco Pulisci cronologia, pulsante;binary_sensor.vmc_master_tasto_velocita_3;
+29;binary_sensor.vmc_master_tasto_velocita_4;condizione, elenco Pulisci cronologia, pulsante;binary_sensor.vmc_master_tasto_velocita_4;
+30;input_boolean.vmc_master_attese_inizializzate;elenco Pulisci cronologia, testo;binary_sensor.vmc_master_attese_inizializzate;
+31;input_boolean.vmc_master_avvio_home_assistant_in_corso_per_audio;elenco Pulisci cronologia, testo;binary_sensor.vmc_master_avvio_home_assistant_in_corso_per_audio;
+32;input_boolean.vmc_master_conferma_pulizia_cronologia;spegni, accendi, condizione, elenco Pulisci cronologia, testo;switch.vmc_master_conferma_pulizia_cronologia;input_boolean.toggle/turn_on/turn_off → switch.toggle/turn_on/turn_off
+33;input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_congelamento_verifica_soglia_valore_spia;
+34;input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_delta_temp_verifica_soglia_valore_spia;
+35;input_boolean.vmc_master_notifica_allerta_black_out;elenco Pulisci cronologia, riga, testo;switch.vmc_master_notifica_allerta_black_out;
+36;input_boolean.vmc_master_notifica_allerta_congelamento;elenco Pulisci cronologia, riga, testo;switch.vmc_master_notifica_allerta_congelamento;
+37;input_boolean.vmc_master_notifica_allerta_differenza_temp_int_est;elenco Pulisci cronologia, riga, testo;switch.vmc_master_notifica_allerta_differenza_temp_int_est;
+38;input_boolean.vmc_master_notifica_allerta_freecooling_heating;elenco Pulisci cronologia, riga, testo;switch.vmc_master_notifica_allerta_freecooling_heating;
+39;input_boolean.vmc_master_notifica_allerta_inquinanti;elenco Pulisci cronologia, riga, testo;switch.vmc_master_notifica_allerta_inquinanti;
+40;input_boolean.vmc_master_notifica_allerta_pdr;elenco Pulisci cronologia, riga, testo;switch.vmc_master_notifica_allerta_pdr;
+41;input_boolean.vmc_master_notifica_allerta_riepilogo;elenco Pulisci cronologia, riga, testo;switch.vmc_master_notifica_allerta_riepilogo;
+42;input_boolean.vmc_master_notifica_allerta_status_velocita;elenco Pulisci cronologia, riga, testo;switch.vmc_master_notifica_allerta_status_velocita;
+43;input_boolean.vmc_master_notifica_allerta_umidita;elenco Pulisci cronologia, riga, testo;switch.vmc_master_notifica_allerta_umidita;
+44;input_boolean.vmc_master_notifica_audio;elenco Pulisci cronologia, riga, testo;switch.vmc_master_notifica_audio;
+45;input_boolean.vmc_master_notifica_status_vmc;elenco Pulisci cronologia, riga, testo;switch.vmc_master_notifica_status_vmc;
+46;input_boolean.vmc_master_opzione_finestra_audio;condizione, elenco Pulisci cronologia, pulsante di riga, testo;switch.vmc_master_opzione_finestra_audio;
+47;input_boolean.vmc_master_opzione_finestra_prossime_letture;condizione, elenco Pulisci cronologia, pulsante di riga, testo;switch.vmc_master_opzione_finestra_prossime_letture;
+48;input_boolean.vmc_master_opzione_finestra_tempi_attesa;elenco Pulisci cronologia, testo;binary_sensor.vmc_master_opzione_finestra_tempi_attesa;
+49;input_boolean.vmc_master_opzioni_accendi_spegni_avvisi;inverti, condizione, elenco Pulisci cronologia, riga, testo;switch.vmc_master_opzioni_accendi_spegni_avvisi;input_boolean.toggle/turn_on/turn_off → switch.toggle/turn_on/turn_off
+50;input_boolean.vmc_master_opzioni_accendi_spegni_avvisi_spia;elenco Pulisci cronologia, testo;binary_sensor.vmc_master_opzioni_accendi_spegni_avvisi_spia;
+51;input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_calendario;elenco Pulisci cronologia, riga, testo;switch.vmc_master_opzioni_accendi_spegni_vmc_vs_calendario;
+52;input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc;elenco Pulisci cronologia, riga, testo;switch.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc;
+53;input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_freecooling;elenco Pulisci cronologia, riga, testo;switch.vmc_master_opzioni_accendi_spegni_vmc_vs_freecooling;
+54;input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_freeheating;elenco Pulisci cronologia, riga, testo;switch.vmc_master_opzioni_accendi_spegni_vmc_vs_freeheating;
+55;input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr;elenco Pulisci cronologia, riga, testo;switch.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr;
+56;input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_umidita;elenco Pulisci cronologia, riga, testo;switch.vmc_master_opzioni_accendi_spegni_vmc_vs_umidita;
+57;input_boolean.vmc_master_opzioni_avvisi;condizione, elenco Pulisci cronologia, pulsante di riga, testo;switch.vmc_master_opzioni_avvisi;
+58;input_boolean.vmc_master_opzioni_avvisi_grafici;condizione, elenco Pulisci cronologia, pulsante di riga, testo;switch.vmc_master_opzioni_avvisi_grafici;
+59;input_boolean.vmc_master_opzioni_calendario;condizione, elenco Pulisci cronologia, pulsante di riga, testo;switch.vmc_master_opzioni_calendario;
+60;input_boolean.vmc_master_opzioni_calendario_main;condizione, elenco Pulisci cronologia, pulsante di riga, testo;switch.vmc_master_opzioni_calendario_main;
+61;input_boolean.vmc_master_opzioni_elementi_chimici;condizione, elenco Pulisci cronologia, pulsante di riga, testo;switch.vmc_master_opzioni_elementi_chimici;
+62;input_boolean.vmc_master_opzioni_free_heating_o_free_cooling;condizione, elenco Pulisci cronologia, pulsante di riga, testo;switch.vmc_master_opzioni_free_heating_o_free_cooling;
+63;input_boolean.vmc_master_opzioni_interruttore_calendario;condizione, elenco Pulisci cronologia, pulsante di riga, testo;switch.vmc_master_opzioni_interruttore_calendario;
+64;input_boolean.vmc_master_opzioni_interruttore_monitoraggio_sensori_extra;condizione, elenco Pulisci cronologia, pulsante di riga, testo;switch.vmc_master_opzioni_interruttore_monitoraggio_sensori_extra;
+65;input_boolean.vmc_master_opzioni_interruttore_offset_sensori;condizione, elenco Pulisci cronologia, pulsante di riga, testo;switch.vmc_master_opzioni_interruttore_offset_sensori;
+66;input_boolean.vmc_master_opzioni_interruttore_sensori_vmc_interni;condizione, elenco Pulisci cronologia, pulsante di riga, testo;switch.vmc_master_opzioni_interruttore_sensori_vmc_interni;
+67;input_boolean.vmc_master_opzioni_lettura_sensori;condizione, elenco Pulisci cronologia, pulsante di riga, testo;switch.vmc_master_opzioni_lettura_sensori;
+68;input_boolean.vmc_master_opzioni_monitoraggio_sensori;condizione, elenco Pulisci cronologia, pulsante di riga, testo;switch.vmc_master_opzioni_monitoraggio_sensori;
+69;input_boolean.vmc_master_opzioni_offset_sensori;condizione, elenco Pulisci cronologia, pulsante di riga, testo;switch.vmc_master_opzioni_offset_sensori;
+70;input_boolean.vmc_master_opzioni_punto_di_rugiada;condizione, elenco Pulisci cronologia, pulsante di riga, testo;switch.vmc_master_opzioni_punto_di_rugiada;
+71;input_boolean.vmc_master_opzioni_scelta_sensori;condizione, elenco Pulisci cronologia, pulsante di riga, testo;switch.vmc_master_opzioni_scelta_sensori;
+72;input_boolean.vmc_master_opzioni_vmc;condizione, elenco Pulisci cronologia, pulsante di riga, testo;switch.vmc_master_opzioni_vmc;
+73;input_boolean.vmc_master_popup_versione_corrente_vs_repository;elenco Pulisci cronologia, testo;binary_sensor.vmc_master_popup_versione_corrente_vs_repository;
+74;input_boolean.vmc_master_spia_calendario_black_out;condizione, elenco Pulisci cronologia;binary_sensor.vmc_master_spia_calendario_black_out;
+75;input_boolean.vmc_master_spia_calendario_comando_non_eseguito;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_calendario_comando_non_eseguito;
+76;input_boolean.vmc_master_spia_calendario_domenica_1;elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_calendario_domenica_1;
+77;input_boolean.vmc_master_spia_calendario_domenica_2;elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_calendario_domenica_2;
+78;input_boolean.vmc_master_spia_calendario_giovedi_1;elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_calendario_giovedi_1;
+79;input_boolean.vmc_master_spia_calendario_giovedi_2;elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_calendario_giovedi_2;
+80;input_boolean.vmc_master_spia_calendario_lunedi_1;elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_calendario_lunedi_1;
+81;input_boolean.vmc_master_spia_calendario_lunedi_2;elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_calendario_lunedi_2;
+82;input_boolean.vmc_master_spia_calendario_martedi_1;elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_calendario_martedi_1;
+83;input_boolean.vmc_master_spia_calendario_martedi_2;elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_calendario_martedi_2;
+84;input_boolean.vmc_master_spia_calendario_mercoledi_1;elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_calendario_mercoledi_1;
+85;input_boolean.vmc_master_spia_calendario_mercoledi_2;elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_calendario_mercoledi_2;
+86;input_boolean.vmc_master_spia_calendario_sabato_1;elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_calendario_sabato_1;
+87;input_boolean.vmc_master_spia_calendario_sabato_2;elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_calendario_sabato_2;
+88;input_boolean.vmc_master_spia_calendario_venerdi_1;elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_calendario_venerdi_1;
+89;input_boolean.vmc_master_spia_calendario_venerdi_2;elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_calendario_venerdi_2;
+90;input_boolean.vmc_master_spia_co2_o_voc;elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_co2_o_voc;
+91;input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0;
+92;input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+93;input_boolean.vmc_master_spia_umidita_velocita_0;elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_umidita_velocita_0;
+94;input_boolean.vmc_master_spia_umidita_velocita_1;elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_umidita_velocita_1;
+95;input_boolean.vmc_master_spia_umidita_velocita_2;elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_umidita_velocita_2;
+96;input_boolean.vmc_master_spia_umidita_velocita_3;elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_umidita_velocita_3;
+97;input_boolean.vmc_master_spia_umidita_velocita_4;elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_umidita_velocita_4;
+98;input_boolean.vmc_master_spia_umidita_velocita_freecooling;elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_umidita_velocita_freecooling;
+99;input_boolean.vmc_master_spia_umidita_velocita_iperventilazione;elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_umidita_velocita_iperventilazione;
+100;input_boolean.vmc_master_spia_umidita_velocita_notturna;elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_umidita_velocita_notturna;
+101;input_boolean.vmc_master_spia_velocita_0;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_0;
+102;input_boolean.vmc_master_spia_velocita_0_co2_o_voc;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_0_co2_o_voc;
+103;input_boolean.vmc_master_spia_velocita_0_congelamento;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_0_congelamento;
+104;input_boolean.vmc_master_spia_velocita_0_delta_temp_verifica_soglia_valore;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_0_delta_temp_verifica_soglia_valore;
+105;input_boolean.vmc_master_spia_velocita_0_un_solo_avvio;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_0_un_solo_avvio;
+106;input_boolean.vmc_master_spia_velocita_1;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_1;
+107;input_boolean.vmc_master_spia_velocita_1_co2_o_voc;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_1_co2_o_voc;
+108;input_boolean.vmc_master_spia_velocita_1_co2_o_voc_pdr;elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_1_co2_o_voc_pdr;
+109;input_boolean.vmc_master_spia_velocita_1_congelamento;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_1_congelamento;
+110;input_boolean.vmc_master_spia_velocita_1_delta_temp_verifica_soglia_valore;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_1_delta_temp_verifica_soglia_valore;
+111;input_boolean.vmc_master_spia_velocita_1_un_solo_avvio;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_1_un_solo_avvio;
+112;input_boolean.vmc_master_spia_velocita_2;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_2;
+113;input_boolean.vmc_master_spia_velocita_2_co2_o_voc;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_2_co2_o_voc;
+114;input_boolean.vmc_master_spia_velocita_2_congelamento;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_2_congelamento;
+115;input_boolean.vmc_master_spia_velocita_2_delta_temp_verifica_soglia_valore;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_2_delta_temp_verifica_soglia_valore;
+116;input_boolean.vmc_master_spia_velocita_2_un_solo_avvio;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_2_un_solo_avvio;
+117;input_boolean.vmc_master_spia_velocita_3;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_3;
+118;input_boolean.vmc_master_spia_velocita_3_co2_o_voc;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_3_co2_o_voc;
+119;input_boolean.vmc_master_spia_velocita_3_congelamento;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_3_congelamento;
+120;input_boolean.vmc_master_spia_velocita_3_delta_temp_verifica_soglia_valore;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_3_delta_temp_verifica_soglia_valore;
+121;input_boolean.vmc_master_spia_velocita_3_un_solo_avvio;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_3_un_solo_avvio;
+122;input_boolean.vmc_master_spia_velocita_4;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_4;
+123;input_boolean.vmc_master_spia_velocita_4_co2_o_voc;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_4_co2_o_voc;
+124;input_boolean.vmc_master_spia_velocita_4_congelamento;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_4_congelamento;
+125;input_boolean.vmc_master_spia_velocita_4_delta_temp_verifica_soglia_valore;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_4_delta_temp_verifica_soglia_valore;
+126;input_boolean.vmc_master_spia_velocita_4_un_solo_avvio;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_4_un_solo_avvio;
+127;input_boolean.vmc_master_spia_velocita_freecooling;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_freecooling;
+128;input_boolean.vmc_master_spia_velocita_freecooling_co2_o_voc;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_freecooling_co2_o_voc;
+129;input_boolean.vmc_master_spia_velocita_freecooling_congelamento;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_freecooling_congelamento;
+130;input_boolean.vmc_master_spia_velocita_freecooling_delta_temp_verifica_soglia_valore;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_freecooling_delta_temp_verifica_soglia_valore;
+131;input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_freecooling_un_solo_avvio;
+132;input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling;
+133;input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating;
+134;input_boolean.vmc_master_spia_velocita_iperventilazione;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_iperventilazione;
+135;input_boolean.vmc_master_spia_velocita_iperventilazione_co2_o_voc;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_iperventilazione_co2_o_voc;
+136;input_boolean.vmc_master_spia_velocita_iperventilazione_congelamento;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_iperventilazione_congelamento;
+137;input_boolean.vmc_master_spia_velocita_iperventilazione_delta_temp_verifica_soglia_valore;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_iperventilazione_delta_temp_verifica_soglia_valore;
+138;input_boolean.vmc_master_spia_velocita_iperventilazione_un_solo_avvio;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_iperventilazione_un_solo_avvio;
+139;input_boolean.vmc_master_spia_velocita_notturna;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_notturna;
+140;input_boolean.vmc_master_spia_velocita_notturna_co2_o_voc;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_notturna_co2_o_voc;
+141;input_boolean.vmc_master_spia_velocita_notturna_congelamento;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_notturna_congelamento;
+142;input_boolean.vmc_master_spia_velocita_notturna_delta_temp_verifica_soglia_valore;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_notturna_delta_temp_verifica_soglia_valore;
+143;input_boolean.vmc_master_spia_velocita_notturna_un_solo_avvio;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_spia_velocita_notturna_un_solo_avvio;
+144;input_boolean.vmc_master_umidita_verifica_soglia_valore_spia;condizione, elenco Pulisci cronologia, testo;binary_sensor.vmc_master_umidita_verifica_soglia_valore_spia;
+145;input_datetime.vmc_master_accensione_domenica;elenco Pulisci cronologia, riga;time.vmc_master_accensione_domenica;
+146;input_datetime.vmc_master_accensione_domenica_2;elenco Pulisci cronologia, riga;time.vmc_master_accensione_domenica_2;
+147;input_datetime.vmc_master_accensione_giovedi;elenco Pulisci cronologia, riga;time.vmc_master_accensione_giovedi;
+148;input_datetime.vmc_master_accensione_giovedi_2;elenco Pulisci cronologia, riga;time.vmc_master_accensione_giovedi_2;
+149;input_datetime.vmc_master_accensione_lunedi;elenco Pulisci cronologia, riga;time.vmc_master_accensione_lunedi;
+150;input_datetime.vmc_master_accensione_lunedi_2;elenco Pulisci cronologia, riga;time.vmc_master_accensione_lunedi_2;
+151;input_datetime.vmc_master_accensione_martedi;elenco Pulisci cronologia, riga;time.vmc_master_accensione_martedi;
+152;input_datetime.vmc_master_accensione_martedi_2;elenco Pulisci cronologia, riga;time.vmc_master_accensione_martedi_2;
+153;input_datetime.vmc_master_accensione_mercoledi;elenco Pulisci cronologia, riga;time.vmc_master_accensione_mercoledi;
+154;input_datetime.vmc_master_accensione_mercoledi_2;elenco Pulisci cronologia, riga;time.vmc_master_accensione_mercoledi_2;
+155;input_datetime.vmc_master_accensione_sabato;elenco Pulisci cronologia, riga;time.vmc_master_accensione_sabato;
+156;input_datetime.vmc_master_accensione_sabato_2;elenco Pulisci cronologia, riga;time.vmc_master_accensione_sabato_2;
+157;input_datetime.vmc_master_accensione_venerdi;elenco Pulisci cronologia, riga;time.vmc_master_accensione_venerdi;
+158;input_datetime.vmc_master_accensione_venerdi_2;elenco Pulisci cronologia, riga;time.vmc_master_accensione_venerdi_2;
+159;input_datetime.vmc_master_audio_end_time;elenco Pulisci cronologia, riga;time.vmc_master_audio_end_time;
+160;input_datetime.vmc_master_audio_start_time;elenco Pulisci cronologia, riga;time.vmc_master_audio_start_time;
+161;input_datetime.vmc_master_spegnimento_domenica;elenco Pulisci cronologia, riga;time.vmc_master_spegnimento_domenica;
+162;input_datetime.vmc_master_spegnimento_domenica_2;elenco Pulisci cronologia, riga;time.vmc_master_spegnimento_domenica_2;
+163;input_datetime.vmc_master_spegnimento_giovedi;elenco Pulisci cronologia, riga;time.vmc_master_spegnimento_giovedi;
+164;input_datetime.vmc_master_spegnimento_giovedi_2;elenco Pulisci cronologia, riga;time.vmc_master_spegnimento_giovedi_2;
+165;input_datetime.vmc_master_spegnimento_lunedi;elenco Pulisci cronologia, riga;time.vmc_master_spegnimento_lunedi;
+166;input_datetime.vmc_master_spegnimento_lunedi_2;elenco Pulisci cronologia, riga;time.vmc_master_spegnimento_lunedi_2;
+167;input_datetime.vmc_master_spegnimento_martedi;elenco Pulisci cronologia, riga;time.vmc_master_spegnimento_martedi;
+168;input_datetime.vmc_master_spegnimento_martedi_2;elenco Pulisci cronologia, riga;time.vmc_master_spegnimento_martedi_2;
+169;input_datetime.vmc_master_spegnimento_mercoledi;elenco Pulisci cronologia, riga;time.vmc_master_spegnimento_mercoledi;
+170;input_datetime.vmc_master_spegnimento_mercoledi_2;elenco Pulisci cronologia, riga;time.vmc_master_spegnimento_mercoledi_2;
+171;input_datetime.vmc_master_spegnimento_sabato;elenco Pulisci cronologia, riga;time.vmc_master_spegnimento_sabato;
+172;input_datetime.vmc_master_spegnimento_sabato_2;elenco Pulisci cronologia, riga;time.vmc_master_spegnimento_sabato_2;
+173;input_datetime.vmc_master_spegnimento_venerdi;elenco Pulisci cronologia, riga;time.vmc_master_spegnimento_venerdi;
+174;input_datetime.vmc_master_spegnimento_venerdi_2;elenco Pulisci cronologia, riga;time.vmc_master_spegnimento_venerdi_2;
+175;input_number.vmc_master_aria_scambiata_freecooling;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+176;input_number.vmc_master_aria_scambiata_iperventilazione;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+177;input_number.vmc_master_aria_scambiata_notte;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+178;input_number.vmc_master_aria_scambiata_ricomincio;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+179;input_number.vmc_master_aria_scambiata_v1;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+180;input_number.vmc_master_aria_scambiata_v2;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+181;input_number.vmc_master_aria_scambiata_v3;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+182;input_number.vmc_master_aria_scambiata_v4;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+183;input_number.vmc_master_attesa_avvisi;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+184;input_number.vmc_master_attesa_blackout_rilevazione;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+185;input_number.vmc_master_attesa_blackout_ripristino;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+186;input_number.vmc_master_attesa_calendario_fine;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+187;input_number.vmc_master_attesa_calendario_inizio;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+188;input_number.vmc_master_attesa_delta_avvio;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+189;input_number.vmc_master_attesa_delta_fine;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+190;input_number.vmc_master_attesa_delta_memoria;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+191;input_number.vmc_master_attesa_free_annullamento;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+192;input_number.vmc_master_attesa_free_ripristino;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+193;input_number.vmc_master_attesa_free_ripristino_inquinanti;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+194;input_number.vmc_master_attesa_free_sospensione;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+195;input_number.vmc_master_attesa_free_sospensione_inquinanti;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+196;input_number.vmc_master_attesa_inquinanti_avvio;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+197;input_number.vmc_master_attesa_inquinanti_avvio_spia_pdr;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+198;input_number.vmc_master_attesa_inquinanti_fine;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+199;input_number.vmc_master_attesa_inquinanti_memoria;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+200;input_number.vmc_master_attesa_pdr_cambio;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+201;input_number.vmc_master_attesa_pdr_cambio_inquinanti;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+202;input_number.vmc_master_attesa_pdr_ripristino;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+203;input_number.vmc_master_attesa_pdr_ripristino_inquinanti;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+204;input_number.vmc_master_attesa_umidita_avvio;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+205;input_number.vmc_master_attesa_umidita_fine;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+206;input_number.vmc_master_attesa_umidita_memoria;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+207;input_number.vmc_master_audio_volume;elenco Pulisci cronologia, riga;number.vmc_master_audio_volume;
+208;input_number.vmc_master_fase_riallineamento_al_riavvio;condizione, elenco Pulisci cronologia, testo;sensor.vmc_master_fase_riallineamento_al_riavvio;
+209;input_number.vmc_master_offset_co2;elenco Pulisci cronologia, riga, testo;number.vmc_master_offset_co2;
+210;input_number.vmc_master_offset_temp_esterna;elenco Pulisci cronologia, riga, testo;number.vmc_master_offset_temp_esterna;
+211;input_number.vmc_master_offset_temp_interna;elenco Pulisci cronologia, riga, testo;number.vmc_master_offset_temp_interna;
+212;input_number.vmc_master_offset_umidita_esterna;elenco Pulisci cronologia, riga, testo;number.vmc_master_offset_umidita_esterna;
+213;input_number.vmc_master_offset_umidita_interna;elenco Pulisci cronologia, riga, testo;number.vmc_master_offset_umidita_interna;
+214;input_number.vmc_master_offset_verifica_impiego_vmc;elenco Pulisci cronologia, riga, testo;number.vmc_master_offset_verifica_impiego_vmc;
+215;input_number.vmc_master_offset_voc;elenco Pulisci cronologia, riga, testo;number.vmc_master_offset_voc;
+216;input_number.vmc_master_umidita_avvio;elenco Pulisci cronologia, riga, testo;number.vmc_master_umidita_avvio;
+217;input_number.vmc_master_volume_da_inserire;condizione, elenco Pulisci cronologia, riga;number.vmc_master_volume_da_inserire;
+218;input_select.vmc_master_entita_escluse_recorder;testo;sensor.vmc_master_entita_escluse_recorder;
+219;input_select.vmc_master_mese_1_fascia_freecooling;elenco Pulisci cronologia, riga;select.vmc_master_mese_1_fascia_freecooling;
+220;input_select.vmc_master_mese_1_fascia_freeheating;elenco Pulisci cronologia, riga;select.vmc_master_mese_1_fascia_freeheating;
+221;input_select.vmc_master_mese_2_fascia_freecooling;elenco Pulisci cronologia, riga;select.vmc_master_mese_2_fascia_freecooling;
+222;input_select.vmc_master_mese_2_fascia_freeheating;elenco Pulisci cronologia, riga;select.vmc_master_mese_2_fascia_freeheating;
+223;input_select.vmc_master_selected_co2_internal_entity;elenco Pulisci cronologia, riga;select.vmc_master_selected_co2_internal_entity;
+224;input_select.vmc_master_selected_humidity_external_entity;elenco Pulisci cronologia, riga;select.vmc_master_selected_humidity_external_entity;
+225;input_select.vmc_master_selected_humidity_internal_entity;elenco Pulisci cronologia, riga;select.vmc_master_selected_humidity_internal_entity;
+226;input_select.vmc_master_selected_media_player_entity;elenco Pulisci cronologia, riga;select.vmc_master_selected_media_player_entity;
+227;input_select.vmc_master_selected_notification_device;elenco Pulisci cronologia, riga;select.vmc_master_selected_notification_device;
+228;input_select.vmc_master_selected_temp_external_entity;elenco Pulisci cronologia, riga;select.vmc_master_selected_temp_external_entity;
+229;input_select.vmc_master_selected_temp_internal_entity;elenco Pulisci cronologia, riga;select.vmc_master_selected_temp_internal_entity;
+230;input_select.vmc_master_speed_1_fascia_calendario;elenco Pulisci cronologia, riga;select.vmc_master_speed_1_fascia_calendario;
+231;input_select.vmc_master_speed_2_fascia_calendario;elenco Pulisci cronologia, riga;select.vmc_master_speed_2_fascia_calendario;
+232;input_select.vmc_master_speed_umidita;elenco Pulisci cronologia, riga, testo;select.vmc_master_speed_umidita;
+233;input_text.vmc_master_comando_non_eseguito;condizione, elenco Pulisci cronologia;sensor.vmc_master_comando_non_eseguito;
+234;input_text.vmc_master_countdown_avvisi;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+235;input_text.vmc_master_countdown_blackout_rilevazione;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+236;input_text.vmc_master_countdown_blackout_ripristino;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+237;input_text.vmc_master_countdown_calendario_fine;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+238;input_text.vmc_master_countdown_calendario_inizio;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+239;input_text.vmc_master_countdown_delta_avvio;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+240;input_text.vmc_master_countdown_delta_fine;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+241;input_text.vmc_master_countdown_delta_memoria;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+242;input_text.vmc_master_countdown_free_cooling_annullamento;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+243;input_text.vmc_master_countdown_free_cooling_ripristino;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+244;input_text.vmc_master_countdown_free_cooling_sospensione;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+245;input_text.vmc_master_countdown_free_heating_annullamento;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+246;input_text.vmc_master_countdown_free_heating_ripristino;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+247;input_text.vmc_master_countdown_free_heating_sospensione;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+248;input_text.vmc_master_countdown_inquinanti_avvio;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+249;input_text.vmc_master_countdown_inquinanti_fine;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+250;input_text.vmc_master_countdown_inquinanti_memoria;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+251;input_text.vmc_master_countdown_pdr_cambio;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+252;input_text.vmc_master_countdown_pdr_ripristino;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+253;input_text.vmc_master_countdown_umidita_avvio;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+254;input_text.vmc_master_countdown_umidita_fine;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+255;input_text.vmc_master_countdown_umidita_memoria;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+256;input_text.vmc_master_ip_insert;condizione, elenco Pulisci cronologia, riga;text.vmc_master_ip_insert;
+257;input_text.vmc_master_ip_insert_esito;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+258;input_text.vmc_master_last_co2_internal_entity;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+259;input_text.vmc_master_last_humidity_external_entity;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+260;input_text.vmc_master_last_humidity_internal_entity;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+261;input_text.vmc_master_last_media_player_entity;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+262;input_text.vmc_master_last_notification_device;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+263;input_text.vmc_master_last_temp_external_entity;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+264;input_text.vmc_master_last_temp_internal_entity;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+265;input_text.vmc_master_nome_da_inserire;elenco Pulisci cronologia, riga;text.vmc_master_nome_da_inserire;
+266;input_text.vmc_master_tempo_mancante_reset;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+267;input_text.vmc_master_ultima_scelta_utente;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+268;input_text.vmc_master_ultime_letture_velocita;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+269;input_text.vmc_master_ultimi_comandi_automazione;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+270;input_text.vmc_master_velocita_precedente;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+271;script.vmc_master_aggiorna_elenco_entita_co2_interna;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+272;script.vmc_master_aggiorna_elenco_entita_media_player;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+273;script.vmc_master_aggiorna_elenco_entita_notifica_dispositivo;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+274;script.vmc_master_aggiorna_elenco_entita_temperatura_esterna;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+275;script.vmc_master_aggiorna_elenco_entita_temperatura_interna;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+276;script.vmc_master_aggiorna_elenco_entita_umidita_esterna;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+277;script.vmc_master_aggiorna_elenco_entita_umidita_interna;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+278;script.vmc_master_audio_allerta_black_out;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+279;script.vmc_master_audio_allerta_co2;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+280;script.vmc_master_audio_allerta_congelamento;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+281;script.vmc_master_audio_allerta_diff_temp;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+282;script.vmc_master_audio_allerta_pdr;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+283;script.vmc_master_audio_allerta_umidita_interna;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+284;script.vmc_master_audio_allerta_voc;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+285;script.vmc_master_audio_free_heating_o_free_cooling;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+286;script.vmc_master_audio_nessuna_allerta_black_out;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+287;script.vmc_master_audio_nessuna_allerta_co2;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+288;script.vmc_master_audio_nessuna_allerta_congelamento;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+289;script.vmc_master_audio_nessuna_allerta_diff_temp;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+290;script.vmc_master_audio_nessuna_allerta_pdr;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+291;script.vmc_master_audio_nessuna_allerta_umidita_interna;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+292;script.vmc_master_audio_nessuna_allerta_voc;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+293;script.vmc_master_audio_profilo;avvio script, elenco Pulisci cronologia, pulsante;button.vmc_master_audio_profilo;script.turn_on → button.press
+294;script.vmc_master_audio_status_velocita;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+295;script.vmc_master_azzera_aria_scambiata;avvio script, elenco Pulisci cronologia, pulsante;button.vmc_master_azzera_aria_scambiata;script.turn_on → button.press
+296;script.vmc_master_azzera_aria_scambiata_puntuale;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+297;script.vmc_master_azzera_booleans;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+298;script.vmc_master_azzera_offset_sensors;avvio script, elenco Pulisci cronologia, pulsante;button.vmc_master_azzera_offset_sensors;script.turn_on → button.press
+299;script.vmc_master_bottone_panico;avvio script, elenco Pulisci cronologia, pulsante;button.vmc_master_bottone_panico;script.turn_on → button.press
+300;script.vmc_master_calendario_fascia_1_o_2_off;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+301;script.vmc_master_calendario_fascia_1_on;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+302;script.vmc_master_calendario_fascia_2_on;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+303;script.vmc_master_notifica_cambio_filtro;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+304;script.vmc_master_notifica_errore_co2_interna;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+305;script.vmc_master_notifica_errore_media_player;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+306;script.vmc_master_notifica_errore_temp_esterna;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+307;script.vmc_master_notifica_errore_temp_interna;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+308;script.vmc_master_notifica_errore_umidita_esterna;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+309;script.vmc_master_notifica_errore_umidita_interna;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+310;script.vmc_master_notifica_velocita_0;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+311;script.vmc_master_notifica_velocita_diversa_da_0;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+312;script.vmc_master_profilo_calendario;avvio script, elenco Pulisci cronologia, pulsante;button.vmc_master_profilo_calendario;script.turn_on → button.press
+313;script.vmc_master_profilo_free_heating_cooling;avvio script, elenco Pulisci cronologia, pulsante;button.vmc_master_profilo_free_heating_cooling;script.turn_on → button.press
+314;script.vmc_master_profilo_inizializzazione;avvio script, elenco Pulisci cronologia, pulsante;button.vmc_master_profilo_inizializzazione;script.turn_on → button.press
+315;script.vmc_master_profilo_pdr;avvio script, elenco Pulisci cronologia, pulsante;button.vmc_master_profilo_pdr;script.turn_on → button.press
+316;script.vmc_master_profilo_umidita;avvio script, elenco Pulisci cronologia, pulsante;button.vmc_master_profilo_umidita;script.turn_on → button.press
+317;script.vmc_master_pulisci_cronologia_audio;avvio script, elenco Pulisci cronologia, pulsante;button.vmc_master_pulisci_cronologia_audio;script.turn_on → button.press
+318;script.vmc_master_pulisci_cronologia_entita;avvio script, pulsante;button.vmc_master_pulisci_cronologia_entita;script.turn_on → button.press
+319;script.vmc_master_reset_filtro_vmc;avvio script, elenco Pulisci cronologia, pulsante;button.vmc_master_reset_filtro_vmc;script.turn_on → button.press
+320;script.vmc_master_ripristina_tempi_attesa;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+321;script.vmc_master_upgrade_sensors;avvio script, elenco Pulisci cronologia, pulsante;button.vmc_master_upgrade_sensors;script.turn_on → button.press
+322;sensor.vmc_master_alert_avvio_interfaccia;condizione, elenco Pulisci cronologia, pulsante;sensor.vmc_master_alert_avvio_interfaccia;
+323;sensor.vmc_master_alert_monitoraggio_black_out;elenco Pulisci cronologia, riga;sensor.vmc_master_alert_monitoraggio_black_out;
+324;sensor.vmc_master_alert_monitoraggio_co2;condizione, elenco Pulisci cronologia, testo;sensor.vmc_master_alert_monitoraggio_co2;
+325;sensor.vmc_master_alert_monitoraggio_congelamento;elenco Pulisci cronologia;sensor.vmc_master_alert_monitoraggio_congelamento;
+326;sensor.vmc_master_alert_monitoraggio_delta;condizione, elenco Pulisci cronologia;sensor.vmc_master_alert_monitoraggio_delta;
+327;sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling;condizione, elenco Pulisci cronologia;sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling;
+328;sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi;elenco Pulisci cronologia, riga, testo;sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_allert_interfaccia_avvisi;
+329;sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_disabilitato;condizione, elenco Pulisci cronologia, testo;sensor.vmc_master_alert_monitoraggio_free_heating_o_free_cooling_disabilitato;
+330;sensor.vmc_master_alert_monitoraggio_offset_tutti_min;condizione, elenco Pulisci cronologia, testo;sensor.vmc_master_alert_monitoraggio_offset_tutti_min;
+331;sensor.vmc_master_alert_monitoraggio_pdr;condizione, elenco Pulisci cronologia, riga, testo;sensor.vmc_master_alert_monitoraggio_pdr;
+332;sensor.vmc_master_alert_monitoraggio_totale;elenco Pulisci cronologia;sensor.vmc_master_alert_monitoraggio_totale;
+333;sensor.vmc_master_alert_monitoraggio_umidita;condizione, elenco Pulisci cronologia, testo;sensor.vmc_master_alert_monitoraggio_umidita;
+334;sensor.vmc_master_alert_monitoraggio_voc;condizione, elenco Pulisci cronologia, testo;sensor.vmc_master_alert_monitoraggio_voc;
+335;sensor.vmc_master_calcolo_confort_interno;elenco Pulisci cronologia, riga;sensor.vmc_master_calcolo_confort_interno;
+336;sensor.vmc_master_calcolo_rischio_muffa_12w;elenco Pulisci cronologia;sensor.vmc_master_calcolo_rischio_muffa_12w;
+337;sensor.vmc_master_calcolo_rischio_muffa_4w;elenco Pulisci cronologia;sensor.vmc_master_calcolo_rischio_muffa_4w;
+338;sensor.vmc_master_calcolo_rischio_muffa_8w;elenco Pulisci cronologia;sensor.vmc_master_calcolo_rischio_muffa_8w;
+339;sensor.vmc_master_cicli_ricambio_aria;elenco Pulisci cronologia, riga condizionale;sensor.vmc_master_cicli_ricambio_aria;
+340;sensor.vmc_master_co2_interna_selezionata;condizione, elenco Pulisci cronologia, testo;sensor.vmc_master_co2_interna_selezionata;
+341;sensor.vmc_master_co2_status;condizione, elenco Pulisci cronologia, scheda sensore, riga, testo;sensor.vmc_master_co2_status;
+342;sensor.vmc_master_co2_status_grafico;elenco Pulisci cronologia;sensor.vmc_master_co2_status_grafico;
+343;sensor.vmc_master_co2_status_senza_offset;elenco Pulisci cronologia, riga;sensor.vmc_master_co2_status_senza_offset;
+344;sensor.vmc_master_co2_status_senza_offset_grafico;elenco Pulisci cronologia;sensor.vmc_master_co2_status_senza_offset_grafico;
+345;sensor.vmc_master_co2_status_verifica_soglia;elenco Pulisci cronologia, riga, testo;sensor.vmc_master_co2_status_verifica_soglia;
+346;sensor.vmc_master_congelamento_verifica_soglia;condizione, elenco Pulisci cronologia, riga, testo;sensor.vmc_master_congelamento_verifica_soglia;
+347;sensor.vmc_master_delta_temp_verifica_soglia;condizione, elenco Pulisci cronologia, riga, testo;sensor.vmc_master_delta_temp_verifica_soglia;
+348;sensor.vmc_master_hum_interna_media_12w;elenco Pulisci cronologia;sensor.vmc_master_hum_interna_media_12w;
+349;sensor.vmc_master_hum_interna_media_4w;elenco Pulisci cronologia;sensor.vmc_master_hum_interna_media_4w;
+350;sensor.vmc_master_hum_interna_media_8w;elenco Pulisci cronologia;sensor.vmc_master_hum_interna_media_8w;
+351;sensor.vmc_master_hum_interna_numeric;elenco Pulisci cronologia;sensor.vmc_master_hum_interna_numeric;
+352;sensor.vmc_master_ip;elenco Pulisci cronologia, riga;sensor.vmc_master_ip;
+353;sensor.vmc_master_lan;elenco Pulisci cronologia, testo;sensor.vmc_master_lan;
+354;sensor.vmc_master_mese_1_fascia_freecooling;elenco Pulisci cronologia;sensor.vmc_master_mese_1_fascia_freecooling;
+355;sensor.vmc_master_mese_1_fascia_freeheating;elenco Pulisci cronologia;sensor.vmc_master_mese_1_fascia_freeheating;
+356;sensor.vmc_master_mese_2_fascia_freecooling;elenco Pulisci cronologia;sensor.vmc_master_mese_2_fascia_freecooling;
+357;sensor.vmc_master_mese_2_fascia_freeheating;elenco Pulisci cronologia;sensor.vmc_master_mese_2_fascia_freeheating;
+358;sensor.vmc_master_nome;elenco Pulisci cronologia, testo;sensor.vmc_master_nome;
+359;sensor.vmc_master_nome_memorizzata;elenco Pulisci cronologia;sensor.vmc_master_nome_memorizzata;
+360;sensor.vmc_master_nome_status;elenco Pulisci cronologia, riga, testo;sensor.vmc_master_nome_status;
+361;sensor.vmc_master_punto_di_rugiada_esterno;elenco Pulisci cronologia, scheda sensore, riga, testo;sensor.vmc_master_punto_di_rugiada_esterno;
+362;sensor.vmc_master_punto_di_rugiada_esterno_grafico;elenco Pulisci cronologia;sensor.vmc_master_punto_di_rugiada_esterno_grafico;
+363;sensor.vmc_master_punto_di_rugiada_interno;elenco Pulisci cronologia, scheda sensore, riga, testo;sensor.vmc_master_punto_di_rugiada_interno;
+364;sensor.vmc_master_punto_di_rugiada_interno_esterno_non_calcolabile;elenco Pulisci cronologia;sensor.vmc_master_punto_di_rugiada_interno_esterno_non_calcolabile;
+365;sensor.vmc_master_punto_di_rugiada_interno_grafico;elenco Pulisci cronologia;sensor.vmc_master_punto_di_rugiada_interno_grafico;
+366;sensor.vmc_master_punto_di_rugiada_valore;elenco Pulisci cronologia, riga;sensor.vmc_master_punto_di_rugiada_valore;
+367;sensor.vmc_master_punto_di_rugiada_valore_grafico;elenco Pulisci cronologia;sensor.vmc_master_punto_di_rugiada_valore_grafico;
+368;sensor.vmc_master_punto_di_rugiada_verifica_confronto;elenco Pulisci cronologia, testo;sensor.vmc_master_punto_di_rugiada_verifica_confronto;
+369;sensor.vmc_master_punto_di_rugiada_verifica_confronto_valore;elenco Pulisci cronologia, testo;sensor.vmc_master_punto_di_rugiada_verifica_confronto_valore;
+370;sensor.vmc_master_rischio_muffa_giorni_dati;elenco Pulisci cronologia, testo;sensor.vmc_master_rischio_muffa_giorni_dati;
+371;sensor.vmc_master_sensori;elenco Pulisci cronologia, testo;sensor.vmc_master_sensori;
+372;sensor.vmc_master_sensori_memorizzata;elenco Pulisci cronologia;sensor.vmc_master_sensori_memorizzata;
+373;sensor.vmc_master_speed_1_fascia_calendario;elenco Pulisci cronologia;sensor.vmc_master_speed_1_fascia_calendario;
+374;sensor.vmc_master_speed_2_fascia_calendario;elenco Pulisci cronologia;sensor.vmc_master_speed_2_fascia_calendario;
+375;sensor.vmc_master_spia_pannello_alert_monitoraggio_totale;elenco Pulisci cronologia, riga;sensor.vmc_master_spia_pannello_alert_monitoraggio_totale;
+376;sensor.vmc_master_stato_led_interfaccia;condizione, elenco Pulisci cronologia;sensor.vmc_master_stato_led_interfaccia;
+377;sensor.vmc_master_status_accensione_vmc_tramite_calendario;elenco Pulisci cronologia, testo;sensor.vmc_master_status_accensione_vmc_tramite_calendario;
+378;sensor.vmc_master_status_accensione_vmc_tramite_calendario_2;elenco Pulisci cronologia, testo;sensor.vmc_master_status_accensione_vmc_tramite_calendario_2;
+379;sensor.vmc_master_status_accensione_vmc_tramite_calendario_2_interfaccia;elenco Pulisci cronologia, riga;sensor.vmc_master_status_accensione_vmc_tramite_calendario_2_interfaccia;
+380;sensor.vmc_master_status_accensione_vmc_tramite_calendario_interfaccia;elenco Pulisci cronologia, riga;sensor.vmc_master_status_accensione_vmc_tramite_calendario_interfaccia;
+381;sensor.vmc_master_status_calcolo_aria_scambiata_totale;elenco Pulisci cronologia, riga;sensor.vmc_master_status_calcolo_aria_scambiata_totale;
+382;sensor.vmc_master_status_calcolo_portata_ventola;elenco Pulisci cronologia, riga condizionale;sensor.vmc_master_status_calcolo_portata_ventola;
+383;sensor.vmc_master_status_check_freeheating_freecooling;elenco Pulisci cronologia;sensor.vmc_master_status_check_freeheating_freecooling;
+384;sensor.vmc_master_status_freecooling;elenco Pulisci cronologia;sensor.vmc_master_status_freecooling;
+385;sensor.vmc_master_status_freeheating;elenco Pulisci cronologia;sensor.vmc_master_status_freeheating;
+386;sensor.vmc_master_status_ip;elenco Pulisci cronologia, testo;sensor.vmc_master_status_ip;
+387;sensor.vmc_master_status_ip_interfaccia;condizione, elenco Pulisci cronologia, riga, testo;sensor.vmc_master_status_ip_interfaccia;
+388;sensor.vmc_master_status_led_pannello_lettura_codice_interpretato;elenco Pulisci cronologia, riga;sensor.vmc_master_status_led_pannello_lettura_codice_interpretato;
+389;sensor.vmc_master_status_mese_corrente_freeheating_o_freecooling;condizione, elenco Pulisci cronologia, riga, testo;sensor.vmc_master_status_mese_corrente_freeheating_o_freecooling;
+390;sensor.vmc_master_status_portata_ventola_lettura_codice_interpretato;elenco Pulisci cronologia, riga;sensor.vmc_master_status_portata_ventola_lettura_codice_interpretato;
+391;sensor.vmc_master_status_sensori_lettura_codice_interpretato;elenco Pulisci cronologia, riga;sensor.vmc_master_status_sensori_lettura_codice_interpretato;
+392;sensor.vmc_master_status_spegnimento_vmc_tramite_calendario;elenco Pulisci cronologia;sensor.vmc_master_status_spegnimento_vmc_tramite_calendario;
+393;sensor.vmc_master_status_spegnimento_vmc_tramite_calendario_2;elenco Pulisci cronologia;sensor.vmc_master_status_spegnimento_vmc_tramite_calendario_2;
+394;sensor.vmc_master_status_spegnimento_vmc_tramite_calendario_2_interfaccia;elenco Pulisci cronologia, riga;sensor.vmc_master_status_spegnimento_vmc_tramite_calendario_2_interfaccia;
+395;sensor.vmc_master_status_spegnimento_vmc_tramite_calendario_interfaccia;elenco Pulisci cronologia, riga;sensor.vmc_master_status_spegnimento_vmc_tramite_calendario_interfaccia;
+396;sensor.vmc_master_status_ventola;condizione, elenco Pulisci cronologia, testo;sensor.vmc_master_status_ventola;
+397;sensor.vmc_master_status_ventola_lettura_codice;elenco Pulisci cronologia;sensor.vmc_master_status_ventola_lettura_codice;
+398;sensor.vmc_master_status_ventola_lettura_codice_interpretato;elenco Pulisci cronologia, testo;sensor.vmc_master_status_ventola_lettura_codice_interpretato;
+399;sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia;condizione, elenco Pulisci cronologia, riga, testo;sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia;
+400;sensor.vmc_master_status_ventola_memorizzata;elenco Pulisci cronologia;sensor.vmc_master_status_ventola_memorizzata;
+401;sensor.vmc_master_temp_esterna_positivo_negativo;elenco Pulisci cronologia;sensor.vmc_master_temp_esterna_positivo_negativo;
+402;sensor.vmc_master_temp_esterna_status;condizione, elenco Pulisci cronologia, scheda sensore, riga, testo;sensor.vmc_master_temp_esterna_status;
+403;sensor.vmc_master_temp_esterna_status_grafico;elenco Pulisci cronologia;sensor.vmc_master_temp_esterna_status_grafico;
+404;sensor.vmc_master_temp_esterna_status_senza_offset;elenco Pulisci cronologia, riga, testo;sensor.vmc_master_temp_esterna_status_senza_offset;
+405;sensor.vmc_master_temp_esterna_status_senza_offset_grafico;elenco Pulisci cronologia;sensor.vmc_master_temp_esterna_status_senza_offset_grafico;
+406;sensor.vmc_master_temp_interna_media_12w;elenco Pulisci cronologia;sensor.vmc_master_temp_interna_media_12w;
+407;sensor.vmc_master_temp_interna_media_4w;elenco Pulisci cronologia;sensor.vmc_master_temp_interna_media_4w;
+408;sensor.vmc_master_temp_interna_media_8w;elenco Pulisci cronologia;sensor.vmc_master_temp_interna_media_8w;
+409;sensor.vmc_master_temp_interna_numeric;elenco Pulisci cronologia;sensor.vmc_master_temp_interna_numeric;
+410;sensor.vmc_master_temp_interna_positivo_negativo;elenco Pulisci cronologia;sensor.vmc_master_temp_interna_positivo_negativo;
+411;sensor.vmc_master_temp_interna_status;condizione, elenco Pulisci cronologia, scheda sensore, riga, testo;sensor.vmc_master_temp_interna_status;
+412;sensor.vmc_master_temp_interna_status_grafico;elenco Pulisci cronologia;sensor.vmc_master_temp_interna_status_grafico;
+413;sensor.vmc_master_temp_interna_status_senza_offset;elenco Pulisci cronologia, riga, testo;sensor.vmc_master_temp_interna_status_senza_offset;
+414;sensor.vmc_master_temp_interna_status_senza_offset_grafico;elenco Pulisci cronologia;sensor.vmc_master_temp_interna_status_senza_offset_grafico;
+415;sensor.vmc_master_temperatura_esterna_selezionata;condizione, elenco Pulisci cronologia, testo;sensor.vmc_master_temperatura_esterna_selezionata;
+416;sensor.vmc_master_temperatura_interna_selezionata;condizione, elenco Pulisci cronologia, testo;sensor.vmc_master_temperatura_interna_selezionata;
+417;sensor.vmc_master_tempo_mancante_ricambio;elenco Pulisci cronologia, riga condizionale;sensor.vmc_master_tempo_mancante_ricambio;
+418;sensor.vmc_master_trend_muffa;elenco Pulisci cronologia, riga;sensor.vmc_master_trend_muffa;
+419;sensor.vmc_master_trend_muffa_level;elenco Pulisci cronologia;sensor.vmc_master_trend_muffa_level;
+420;sensor.vmc_master_trend_muffa_level_numeric;elenco Pulisci cronologia, grafico;sensor.vmc_master_trend_muffa_level_numeric;
+421;sensor.vmc_master_umidita_assoluta_esterna;elenco Pulisci cronologia, scheda sensore, riga;sensor.vmc_master_umidita_assoluta_esterna;
+422;sensor.vmc_master_umidita_assoluta_esterna_grafico;elenco Pulisci cronologia;sensor.vmc_master_umidita_assoluta_esterna_grafico;
+423;sensor.vmc_master_umidita_assoluta_interna;elenco Pulisci cronologia, scheda sensore, riga;sensor.vmc_master_umidita_assoluta_interna;
+424;sensor.vmc_master_umidita_assoluta_interna_grafico;elenco Pulisci cronologia;sensor.vmc_master_umidita_assoluta_interna_grafico;
+425;sensor.vmc_master_umidita_esterna_selezionata;elenco Pulisci cronologia;sensor.vmc_master_umidita_esterna_selezionata;
+426;sensor.vmc_master_umidita_esterna_status;condizione, elenco Pulisci cronologia, scheda sensore, riga, testo;sensor.vmc_master_umidita_esterna_status;
+427;sensor.vmc_master_umidita_esterna_status_grafico;elenco Pulisci cronologia;sensor.vmc_master_umidita_esterna_status_grafico;
+428;sensor.vmc_master_umidita_interna_selezionata;condizione, elenco Pulisci cronologia, testo;sensor.vmc_master_umidita_interna_selezionata;
+429;sensor.vmc_master_umidita_interna_status;condizione, elenco Pulisci cronologia, scheda sensore, riga, testo;sensor.vmc_master_umidita_interna_status;
+430;sensor.vmc_master_umidita_interna_status_grafico;elenco Pulisci cronologia;sensor.vmc_master_umidita_interna_status_grafico;
+431;sensor.vmc_master_umidita_interna_status_senza_offset;elenco Pulisci cronologia, riga;sensor.vmc_master_umidita_interna_status_senza_offset;
+432;sensor.vmc_master_umidita_interna_status_senza_offset_grafico;elenco Pulisci cronologia;sensor.vmc_master_umidita_interna_status_senza_offset_grafico;
+433;sensor.vmc_master_umidita_interna_status_verifica_soglia;elenco Pulisci cronologia, riga, testo;sensor.vmc_master_umidita_interna_status_verifica_soglia;
+434;sensor.vmc_master_umidita_interna_status_verifica_soglia_valore;elenco Pulisci cronologia, testo;sensor.vmc_master_umidita_interna_status_verifica_soglia_valore;
+435;sensor.vmc_master_velocita_registrata;condizione, elenco Pulisci cronologia, riga condizionale;sensor.vmc_master_velocita_registrata;
+436;sensor.vmc_master_verifica_ip_inserito;condizione, elenco Pulisci cronologia;sensor.vmc_master_verifica_ip_inserito;
+437;sensor.vmc_master_versione_corrente;elenco Pulisci cronologia, testo;sensor.vmc_master_versione_corrente;
+438;sensor.vmc_master_versione_repository;elenco Pulisci cronologia, testo;sensor.vmc_master_versione_repository;
+439;sensor.vmc_master_voc_status;elenco Pulisci cronologia, scheda sensore, riga, testo;sensor.vmc_master_voc_status;
+440;sensor.vmc_master_voc_status_grafico;elenco Pulisci cronologia;sensor.vmc_master_voc_status_grafico;
+441;sensor.vmc_master_voc_status_senza_offset;elenco Pulisci cronologia, riga;sensor.vmc_master_voc_status_senza_offset;
+442;sensor.vmc_master_voc_status_senza_offset_grafico;elenco Pulisci cronologia;sensor.vmc_master_voc_status_senza_offset_grafico;
+443;sensor.vmc_master_voc_status_verifica_soglia;elenco Pulisci cronologia, riga, testo;sensor.vmc_master_voc_status_verifica_soglia;
+444;shell_command.vmc_master_freecooling;comando VMC;button.vmc_master_freecooling;shell_command → button.press (il pulsante fa anche registro comandi e letture ravvicinate)
+445;shell_command.vmc_master_iperventilazione;comando VMC;button.vmc_master_iperventilazione;shell_command → button.press (il pulsante fa anche registro comandi e letture ravvicinate)
+446;shell_command.vmc_master_notturna;comando VMC;button.vmc_master_notturna;shell_command → button.press (il pulsante fa anche registro comandi e letture ravvicinate)
+447;shell_command.vmc_master_pannello_led_off;comando VMC;button.vmc_master_pannello_led_off;shell_command → button.press (il pulsante fa anche registro comandi e letture ravvicinate)
+448;shell_command.vmc_master_pannello_led_on;comando VMC;button.vmc_master_pannello_led_on;shell_command → button.press (il pulsante fa anche registro comandi e letture ravvicinate)
+449;shell_command.vmc_master_sensori_off;comando VMC;button.vmc_master_sensori_off;shell_command → button.press (il pulsante fa anche registro comandi e letture ravvicinate)
+450;shell_command.vmc_master_sensori_on;comando VMC;button.vmc_master_sensori_on;shell_command → button.press (il pulsante fa anche registro comandi e letture ravvicinate)
+451;shell_command.vmc_master_velocita_0;comando VMC;button.vmc_master_velocita_0;shell_command → button.press (il pulsante fa anche registro comandi e letture ravvicinate)
+452;shell_command.vmc_master_velocita_1;comando VMC;button.vmc_master_velocita_1;shell_command → button.press (il pulsante fa anche registro comandi e letture ravvicinate)
+453;shell_command.vmc_master_velocita_2;comando VMC;button.vmc_master_velocita_2;shell_command → button.press (il pulsante fa anche registro comandi e letture ravvicinate)
+454;shell_command.vmc_master_velocita_3;comando VMC;button.vmc_master_velocita_3;shell_command → button.press (il pulsante fa anche registro comandi e letture ravvicinate)
+455;shell_command.vmc_master_velocita_4;comando VMC;button.vmc_master_velocita_4;shell_command → button.press (il pulsante fa anche registro comandi e letture ravvicinate)
+456;timer.vmc_master_countdown_avvio_home_assistant;condizione, elenco Pulisci cronologia, riga condizionale;sensor.vmc_master_countdown_avvio_home_assistant;"condizioni «active» → stato diverso da unknown; «idle» → unknown; riga con conto alla rovescia mm:ss dal file JavaScript della scheda"
+457;timer.vmc_master_countdown_avvisi;condizione, elenco Pulisci cronologia, riga condizionale;sensor.vmc_master_countdown_avvisi;"condizioni «active» → stato diverso da unknown; «idle» → unknown; riga con conto alla rovescia mm:ss dal file JavaScript della scheda"
+458;timer.vmc_master_countdown_blackout_rilevazione;condizione, elenco Pulisci cronologia, riga condizionale;sensor.vmc_master_countdown_blackout_rilevazione;"condizioni «active» → stato diverso da unknown; «idle» → unknown; riga con conto alla rovescia mm:ss dal file JavaScript della scheda"
+459;timer.vmc_master_countdown_blackout_ripristino;condizione, elenco Pulisci cronologia, riga condizionale;sensor.vmc_master_countdown_blackout_ripristino;"condizioni «active» → stato diverso da unknown; «idle» → unknown; riga con conto alla rovescia mm:ss dal file JavaScript della scheda"
+460;timer.vmc_master_countdown_calendario_fine;condizione, elenco Pulisci cronologia, riga condizionale;sensor.vmc_master_countdown_calendario_fine;"condizioni «active» → stato diverso da unknown; «idle» → unknown; riga con conto alla rovescia mm:ss dal file JavaScript della scheda"
+461;timer.vmc_master_countdown_calendario_inizio;condizione, elenco Pulisci cronologia, riga condizionale;sensor.vmc_master_countdown_calendario_inizio;"condizioni «active» → stato diverso da unknown; «idle» → unknown; riga con conto alla rovescia mm:ss dal file JavaScript della scheda"
+462;timer.vmc_master_countdown_delta_avvio;condizione, elenco Pulisci cronologia, riga condizionale;sensor.vmc_master_countdown_delta_avvio;"condizioni «active» → stato diverso da unknown; «idle» → unknown; riga con conto alla rovescia mm:ss dal file JavaScript della scheda"
+463;timer.vmc_master_countdown_delta_fine;condizione, elenco Pulisci cronologia, riga condizionale;sensor.vmc_master_countdown_delta_fine;"condizioni «active» → stato diverso da unknown; «idle» → unknown; riga con conto alla rovescia mm:ss dal file JavaScript della scheda"
+464;timer.vmc_master_countdown_delta_memoria;condizione, elenco Pulisci cronologia, riga condizionale;sensor.vmc_master_countdown_delta_memoria;"condizioni «active» → stato diverso da unknown; «idle» → unknown; riga con conto alla rovescia mm:ss dal file JavaScript della scheda"
+465;timer.vmc_master_countdown_fase_allerte;condizione, elenco Pulisci cronologia, riga condizionale;sensor.vmc_master_countdown_fase_allerte;"condizioni «active» → stato diverso da unknown; «idle» → unknown; riga con conto alla rovescia mm:ss dal file JavaScript della scheda"
+466;timer.vmc_master_countdown_free_cooling_annullamento;condizione, elenco Pulisci cronologia, riga condizionale;sensor.vmc_master_countdown_free_cooling_annullamento;"condizioni «active» → stato diverso da unknown; «idle» → unknown; riga con conto alla rovescia mm:ss dal file JavaScript della scheda"
+467;timer.vmc_master_countdown_free_cooling_ripristino;condizione, elenco Pulisci cronologia, riga condizionale;sensor.vmc_master_countdown_free_cooling_ripristino;"condizioni «active» → stato diverso da unknown; «idle» → unknown; riga con conto alla rovescia mm:ss dal file JavaScript della scheda"
+468;timer.vmc_master_countdown_free_cooling_sospensione;condizione, elenco Pulisci cronologia, riga condizionale;sensor.vmc_master_countdown_free_cooling_sospensione;"condizioni «active» → stato diverso da unknown; «idle» → unknown; riga con conto alla rovescia mm:ss dal file JavaScript della scheda"
+469;timer.vmc_master_countdown_free_heating_annullamento;condizione, elenco Pulisci cronologia, riga condizionale;sensor.vmc_master_countdown_free_heating_annullamento;"condizioni «active» → stato diverso da unknown; «idle» → unknown; riga con conto alla rovescia mm:ss dal file JavaScript della scheda"
+470;timer.vmc_master_countdown_free_heating_ripristino;condizione, elenco Pulisci cronologia, riga condizionale;sensor.vmc_master_countdown_free_heating_ripristino;"condizioni «active» → stato diverso da unknown; «idle» → unknown; riga con conto alla rovescia mm:ss dal file JavaScript della scheda"
+471;timer.vmc_master_countdown_free_heating_sospensione;condizione, elenco Pulisci cronologia, riga condizionale;sensor.vmc_master_countdown_free_heating_sospensione;"condizioni «active» → stato diverso da unknown; «idle» → unknown; riga con conto alla rovescia mm:ss dal file JavaScript della scheda"
+472;timer.vmc_master_countdown_inquinanti_avvio;condizione, elenco Pulisci cronologia, riga condizionale;sensor.vmc_master_countdown_inquinanti_avvio;"condizioni «active» → stato diverso da unknown; «idle» → unknown; riga con conto alla rovescia mm:ss dal file JavaScript della scheda"
+473;timer.vmc_master_countdown_inquinanti_fine;condizione, elenco Pulisci cronologia, riga condizionale;sensor.vmc_master_countdown_inquinanti_fine;"condizioni «active» → stato diverso da unknown; «idle» → unknown; riga con conto alla rovescia mm:ss dal file JavaScript della scheda"
+474;timer.vmc_master_countdown_inquinanti_memoria;condizione, elenco Pulisci cronologia, riga condizionale;sensor.vmc_master_countdown_inquinanti_memoria;"condizioni «active» → stato diverso da unknown; «idle» → unknown; riga con conto alla rovescia mm:ss dal file JavaScript della scheda"
+475;timer.vmc_master_countdown_pdr_cambio;condizione, elenco Pulisci cronologia, riga condizionale;sensor.vmc_master_countdown_pdr_cambio;"condizioni «active» → stato diverso da unknown; «idle» → unknown; riga con conto alla rovescia mm:ss dal file JavaScript della scheda"
+476;timer.vmc_master_countdown_pdr_ripristino;condizione, elenco Pulisci cronologia, riga condizionale;sensor.vmc_master_countdown_pdr_ripristino;"condizioni «active» → stato diverso da unknown; «idle» → unknown; riga con conto alla rovescia mm:ss dal file JavaScript della scheda"
+477;timer.vmc_master_countdown_riattivazione_allerte;condizione, elenco Pulisci cronologia;sensor.vmc_master_countdown_riattivazione_allerte;"condizioni «active» → stato diverso da unknown; «idle» → unknown; riga con conto alla rovescia mm:ss dal file JavaScript della scheda"
+478;timer.vmc_master_countdown_script_agg_sensori;condizione, elenco Pulisci cronologia, riga condizionale;sensor.vmc_master_countdown_script_agg_sensori;"condizioni «active» → stato diverso da unknown; «idle» → unknown; riga con conto alla rovescia mm:ss dal file JavaScript della scheda"
+479;timer.vmc_master_countdown_script_inizializzazione;condizione, elenco Pulisci cronologia, riga condizionale;sensor.vmc_master_countdown_script_inizializzazione;"condizioni «active» → stato diverso da unknown; «idle» → unknown; riga con conto alla rovescia mm:ss dal file JavaScript della scheda"
+480;timer.vmc_master_countdown_script_panic_button;condizione, elenco Pulisci cronologia, riga condizionale;sensor.vmc_master_countdown_script_panic_button;"condizioni «active» → stato diverso da unknown; «idle» → unknown; riga con conto alla rovescia mm:ss dal file JavaScript della scheda"
+481;timer.vmc_master_countdown_script_reset_filtro;condizione, elenco Pulisci cronologia, riga condizionale;sensor.vmc_master_countdown_script_reset_filtro;"condizioni «active» → stato diverso da unknown; «idle» → unknown; riga con conto alla rovescia mm:ss dal file JavaScript della scheda"
+482;timer.vmc_master_countdown_umidita_avvio;condizione, elenco Pulisci cronologia, riga condizionale;sensor.vmc_master_countdown_umidita_avvio;"condizioni «active» → stato diverso da unknown; «idle» → unknown; riga con conto alla rovescia mm:ss dal file JavaScript della scheda"
+483;timer.vmc_master_countdown_umidita_fine;condizione, elenco Pulisci cronologia, riga condizionale;sensor.vmc_master_countdown_umidita_fine;"condizioni «active» → stato diverso da unknown; «idle» → unknown; riga con conto alla rovescia mm:ss dal file JavaScript della scheda"
+484;timer.vmc_master_countdown_umidita_memoria;condizione, elenco Pulisci cronologia, riga condizionale;sensor.vmc_master_countdown_umidita_memoria;"condizioni «active» → stato diverso da unknown; «idle» → unknown; riga con conto alla rovescia mm:ss dal file JavaScript della scheda"
+485;timer.vmc_master_lettura_ambientali;elenco Pulisci cronologia, riga;sensor.vmc_master_lettura_ambientali;"condizioni «active» → stato diverso da unknown; «idle» → unknown; riga con conto alla rovescia mm:ss dal file JavaScript della scheda"
+486;timer.vmc_master_lettura_lan;elenco Pulisci cronologia, riga;sensor.vmc_master_lettura_lan;"condizioni «active» → stato diverso da unknown; «idle» → unknown; riga con conto alla rovescia mm:ss dal file JavaScript della scheda"
+487;timer.vmc_master_lettura_nome;elenco Pulisci cronologia, riga;sensor.vmc_master_lettura_nome;"condizioni «active» → stato diverso da unknown; «idle» → unknown; riga con conto alla rovescia mm:ss dal file JavaScript della scheda"
+488;timer.vmc_master_lettura_ping;elenco Pulisci cronologia, riga;sensor.vmc_master_lettura_ping;"condizioni «active» → stato diverso da unknown; «idle» → unknown; riga con conto alla rovescia mm:ss dal file JavaScript della scheda"
+489;timer.vmc_master_lettura_ventilazione;elenco Pulisci cronologia, riga;sensor.vmc_master_lettura_ventilazione;"condizioni «active» → stato diverso da unknown; «idle» → unknown; riga con conto alla rovescia mm:ss dal file JavaScript della scheda"

@@ -1,4 +1,4 @@
-"""Copertura al 100 %: motore Wi-Fi (riga di comando della 8.6.0), installatore e prepara.
+"""Copertura al 100 %: motore Wi-Fi (riga di comando della 8.6.0), installatore.
 
 Solo test, nessuna modifica al codice dell'integrazione. Le parti del motore provate qui
 sono quelle che la Finestra Prima Installazione VMC della release 8.6.0 usa dalla riga di
@@ -12,27 +12,23 @@ from __future__ import annotations
 import fcntl
 import json
 import os
-from pathlib import Path
 import runpy
 import socket
 import sys
+import uuid
+from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
-import uuid
-import warnings
 
 import pytest
 
-from custom_components.vmc_master import installatore, prepara
+from custom_components.vmc_master import installatore
 from custom_components.vmc_master import motore_installa_vmc as motore
 
 from .test_b22_motore import RICHIESTA, SupervisorFinto, _engine, _identita
 
 Failure = motore.Failure
 IP = "192.168.1.160"
-VERSIONE = json.loads(
-    (Path(installatore.__file__).parent / "manifest.json").read_text(encoding="utf-8")
-)["version"]
 
 
 def _codice(funzione, *argomenti) -> str:
@@ -668,81 +664,8 @@ def test_motore_avviato_come_programma(monkeypatch) -> None:
     assert uscita.value.code == 2
 
 
-# ---------------------------------------------------------------- installatore e prepara
+# ---------------------------------------------------------------- installatore
 def test_automazione_gia_con_a_capo_finale() -> None:
     testo = installatore.automazione_come_package("alias: Prova\n", "sala")
     assert testo.endswith("    alias: Prova\n") and not testo.endswith("\n\n")
 
-
-def test_sensori_di_forma_inattesa() -> None:
-    assert installatore._per_piattaforma(None) == {}
-    assert installatore._per_piattaforma("testo") is None
-    assert installatore._per_piattaforma([{"platform": "rest"}, "testo"]) is None
-    assert installatore._ricariche_sensori("testo", []) is None
-    assert installatore._ricariche_sensori(None, [{"platform": "rest", "name": "x"}]) == {"rest.reload"}
-    assert installatore.ricariche_necessarie("sensor: testo\n", "sensor:\n  - platform: rest\n") is None
-
-
-def test_ricariche_un_cambio_alla_volta() -> None:
-    """Una sola parte cambiata per volta: l'esito di ogni ramo non dipende dall'ordine in cui
-    si visitano le chiavi (insiemi, ordine diverso a ogni avvio di Python)."""
-    ricariche = installatore.ricariche_necessarie
-    sensori = installatore._ricariche_sensori
-    # sensori TCP cambiati (IP della VMC): riavvio; gruppo uguale: nulla da ricaricare
-    assert sensori([{"platform": "tcp", "host": "a"}], [{"platform": "tcp", "host": "b"}]) is None
-    assert sensori([{"platform": "rest", "x": 1}, {"platform": "tcp"}],
-                   [{"platform": "rest", "x": 2}, {"platform": "tcp"}]) == {"rest.reload"}
-    tcp = "sensor:\n  - platform: tcp\n    host: 192.168.1.160\n"
-    assert ricariche(tcp, tcp.replace("160", "170")) is None
-    assert ricariche("timer:\n  a: {}\n", "timer:\n  b: {}\n") == {"timer.reload"}
-    assert ricariche("shell_command:\n  a: x\n", "shell_command:\n  a: y\n") is None
-    recorder = "recorder:\n  exclude:\n    entities:\n      - a.b\n"
-    assert ricariche(recorder, recorder + "      - c.d\n") == set()
-    assert ricariche(recorder, recorder + "  purge_keep_days: 3\n") is None
-    assert ricariche("a: 1\nb: 2\n", "b: 2\na: 1\n") == set()
-
-
-def test_package_che_non_e_un_dizionario() -> None:
-    assert installatore.ricariche_necessarie("- uno\n- due\n", "a: 1\n") is None
-    assert installatore.ricariche_necessarie("a: 1\n", "testo semplice\n") is None
-
-
-def test_marcatore_illeggibile_si_riscrive(tmp_path: Path) -> None:
-    config = str(tmp_path)
-    installatore.installa(config, "sala", "192.168.1.161", VERSIONE)
-    marcatore = installatore.cartella_vmc(config, "sala") / installatore.FILE_MARCATORE
-    corretto = marcatore.read_bytes()
-    marcatore.write_bytes(b"\xff\xfe non UTF-8")
-    esito = installatore.installa(config, "sala", "192.168.1.161", VERSIONE)
-    assert esito.file_scritti == [] and esito.backup is None and esito.file_modificati == []
-    assert marcatore.read_bytes() == corretto
-
-
-def test_prepara_con_un_file_mancante(tmp_path: Path) -> None:
-    """Uno script tolto dal package non impedisce la preparazione: si riscrive."""
-    config = str(tmp_path)
-    installatore.installa(config, "master", IP, "9.0.0b1")
-    script = installatore.cartella_vmc(config, "master") / "vmc_master_script_cambio_nome.sh"
-    script.unlink()
-    assert prepara.da_preparare(config, "master", IP, VERSIONE) is True
-    assert prepara.prepara(config, [["master", IP]], VERSIONE) == ["master"]
-    assert script.is_file()
-
-
-def test_prepara_dalla_riga_di_comando(tmp_path: Path, capsys) -> None:
-    config = str(tmp_path)
-    installatore.installa(config, "master", IP, "9.0.0b1")
-    assert prepara.main([config, json.dumps([["master", IP], ["sala", "192.168.1.161"]])]) == 0
-    assert json.loads(capsys.readouterr().out) == ["master"]
-    assert installatore.leggi_marcatore(config, "master")["versione"] == VERSIONE
-
-
-def test_prepara_avviato_come_modulo(tmp_path: Path, monkeypatch, capsys) -> None:
-    """python -m custom_components.vmc_master.prepara: stesso contratto di main."""
-    monkeypatch.setattr(sys, "argv", ["prepara", str(tmp_path), "[]"])
-    with warnings.catch_warnings():
-        # il modulo è già importato dai test: runpy lo segnala, è previsto
-        warnings.simplefilter("ignore", RuntimeWarning)
-        with pytest.raises(SystemExit) as uscita:
-            runpy.run_module("custom_components.vmc_master.prepara", run_name="__main__")
-    assert uscita.value.code == 0 and json.loads(capsys.readouterr().out) == []

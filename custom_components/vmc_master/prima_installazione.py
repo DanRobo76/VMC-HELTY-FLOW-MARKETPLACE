@@ -1,8 +1,10 @@
 """Collegamento al Wi-Fi di casa di una VMC nuova, senza l'App Air Guard.
 
 Usa il motore della Finestra Prima Installazione VMC della release 8.6.0
-(motore_installa_vmc.py, identico al programma del package) e la stessa cartella
-interna, cosi' un ripristino lasciato a meta' dal package viene completato qui.
+(motore_installa_vmc.py, il programma del package) con la sua cartella interna nell'area
+dei dati di Home Assistant (/config/.storage); un ripristino lasciato a meta' nella
+cartella della 8.6.0 e della beta (/config/.vmc_master_installa_vmc) viene completato
+qui, senza piu' scrivere in quella cartella.
 Con lo stesso motore la VMC si toglie anche dal Wi-Fi di casa (modalita' Access Point).
 Le funzioni sono bloccanti: si chiamano con hass.async_add_executor_job.
 """
@@ -11,18 +13,29 @@ from __future__ import annotations
 
 import ipaddress
 import logging
+import os
 import threading
 import time
+import uuid
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
+
+from homeassistant.helpers.storage import STORAGE_DIR
 
 from . import motore_installa_vmc as motore
 
 _LOGGER = logging.getLogger(__name__)
 
-# Stessa cartella della Finestra Prima Installazione VMC (identity.json, restore.json, ...)
-CARTELLA_MOTORE = ".vmc_master_installa_vmc"
+# La cartella interna del motore (identity.json, restore.json, ...), nell'area dei dati di
+# Home Assistant come gli altri file interni dell'integrazione
+CARTELLA_MOTORE = os.path.join(STORAGE_DIR, "vmc_master_installa_vmc")
+# La cartella della Finestra Prima Installazione VMC della 8.6.0 e della beta: si legge
+# soltanto, una volta, per un ripristino del Wi-Fi del server lasciato a meta'
+# (restore.json); non si scrive mai
+CARTELLA_DELLA_BETA = ".vmc_master_installa_vmc"
+# Nella cartella del motore: il ripristino della cartella della beta e' gia' stato preso
+RIPRISTINO_DELLA_BETA_PRESO = "restore_della_beta_preso"
 
 # Una sola procedura alla volta: il Wi-Fi del server e' uno solo
 _BLOCCO = threading.Lock()
@@ -48,7 +61,34 @@ def cartella(config_dir: str) -> Path:
     return Path(config_dir) / CARTELLA_MOTORE
 
 
+def _prendi_ripristino_della_beta(config_dir: str) -> None:
+    """Un ripristino del Wi-Fi del server lasciato a meta' nella cartella della beta
+    (restore.json, Home Assistant riavviato durante il collegamento di una VMC) passa
+    una volta sola nella cartella del motore, che lo completa come i suoi. La cartella
+    della beta si legge soltanto: il segno che il ripristino e' stato preso resta nella
+    cartella del motore."""
+    radice = cartella(config_dir)
+    vecchio = Path(config_dir) / CARTELLA_DELLA_BETA / "restore.json"
+    try:
+        if (radice / RIPRISTINO_DELLA_BETA_PRESO).exists() or not vecchio.is_file():
+            return
+        dati = vecchio.read_bytes()
+        radice.mkdir(mode=0o700, parents=True, exist_ok=True)
+        if not (radice / "restore.json").exists():  # uno del motore viene prima
+            temporaneo = radice / f"restore.json.{uuid.uuid4().hex}.tmp"
+            fd = os.open(temporaneo, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+            with os.fdopen(fd, "wb") as file:
+                file.write(dati)
+            os.replace(temporaneo, radice / "restore.json")
+        (radice / RIPRISTINO_DELLA_BETA_PRESO).touch(mode=0o600)
+    except OSError as errore:
+        _LOGGER.warning(
+            "Ripristino del Wi-Fi del server della beta (%s) non letto: %s", vecchio, errore
+        )
+
+
 def _motore(config_dir: str, avanzamento: Callable[[int], None] | None) -> motore.Engine:
+    _prendi_ripristino_della_beta(config_dir)
     radice = cartella(config_dir)
     radice.mkdir(mode=0o700, parents=True, exist_ok=True)
     engine = motore.Engine(radice)
@@ -111,7 +151,9 @@ def ultima_vmc(config_dir: str) -> dict[str, Any]:
 
 
 def ripristino_in_sospeso(config_dir: str) -> bool:
-    """True se il Wi-Fi del server e' rimasto sulla rete di una VMC (riavvio a meta' procedura)."""
+    """True se il Wi-Fi del server e' rimasto sulla rete di una VMC (riavvio a meta' procedura),
+    anche con un ripristino lasciato nella cartella della beta."""
+    _prendi_ripristino_della_beta(config_dir)
     return (cartella(config_dir) / "restore.json").exists()
 
 

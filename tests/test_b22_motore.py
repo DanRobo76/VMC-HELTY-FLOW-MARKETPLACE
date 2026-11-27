@@ -370,7 +370,7 @@ def test_restore_scheda_non_collegata(tmp_path: Path) -> None:
 def test_restore_illeggibile(tmp_path: Path, caplog: pytest.LogCaptureFixture, contenuto) -> None:
     """B-8: restore.json illeggibile: messo da parte, causa nel log, la procedura dopo parte."""
     radice = pi.cartella(str(tmp_path))
-    radice.mkdir()
+    radice.mkdir(parents=True)
     file = radice / "restore.json"
     file.write_bytes(contenuto if isinstance(contenuto, bytes) else contenuto.encode())
     with caplog.at_level(logging.WARNING), pytest.raises(Failure) as errore:
@@ -388,7 +388,7 @@ def test_restore_illeggibile_prima_del_collegamento(tmp_path: Path) -> None:
     """configure con restore.json illeggibile: il Wi-Fi non viene toccato, al secondo
     tentativo il file non blocca più."""
     radice = pi.cartella(str(tmp_path))
-    radice.mkdir()
+    radice.mkdir(parents=True)
     (radice / "restore.json").write_text("{")
     supervisor = SupervisorFinto()
     with patch.object(pi.motore, "Supervisor", return_value=supervisor), pytest.raises(Failure) as errore:

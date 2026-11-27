@@ -11,29 +11,36 @@ import asyncio
 import ipaddress
 import itertools
 import logging
-from pathlib import Path
 import threading
+from pathlib import Path
 from types import SimpleNamespace
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 from homeassistant import config_entries
 from homeassistant.components import persistent_notification
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
-from homeassistant.data_entry_flow import EVENT_DATA_ENTRY_FLOW_PROGRESS_UPDATE, FlowResultType
-from homeassistant.helpers import entity_registry as er, issue_registry as ir
-from homeassistant.helpers.storage import Store
+from homeassistant.data_entry_flow import (
+    EVENT_DATA_ENTRY_FLOW_PROGRESS_UPDATE,
+    FlowResultType,
+)
 from homeassistant.setup import async_setup_component
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 import custom_components.vmc_master as integrazione
-from custom_components.vmc_master import config_flow
+from custom_components.vmc_master import config_flow, passaggio
 from custom_components.vmc_master.const import DOMAIN
-from custom_components.vmc_master.installatore import cartella_vmc
 from custom_components.vmc_master.prima_installazione import LED_HINT, Failure
 
-from .test_integrazione import COLLEGATA, RETI, MotoreFinto, _apri_elimina, _avanza, _voce_sala
+from .test_integrazione import (
+    COLLEGATA,
+    RETI,
+    MotoreFinto,
+    _apri_elimina,
+    _avanza,
+    _voce_sala,
+)
 
 PI = "custom_components.vmc_master.prima_installazione"
 HASSIO = "custom_components.vmc_master.config_flow.is_hassio"
@@ -69,85 +76,12 @@ async def test_filtro_ping_gia_presente(hass: HomeAssistant) -> None:
     assert gia not in logging.getLogger(integrazione.LOGGER_COMMAND_LINE).filters
 
 
-def test_versione_su_disco(tmp_path: Path) -> None:
-    """Versione su disco solo se c'è prepara.py e il manifest si legge."""
-    with patch.object(integrazione, "_CARTELLA", tmp_path):
-        assert integrazione._versione_su_disco() is None  # versione senza prepara.py
-        (tmp_path / "prepara.py").write_text("", encoding="utf-8")
-        assert integrazione._versione_su_disco() is None  # manifest assente
-        (tmp_path / "manifest.json").write_text("{rotto", encoding="utf-8")
-        assert integrazione._versione_su_disco() is None
-        (tmp_path / "manifest.json").write_text('{"domain": "vmc_master"}', encoding="utf-8")
-        assert integrazione._versione_su_disco() is None
-        (tmp_path / "manifest.json").write_text('{"version": "9.9.9"}', encoding="utf-8")
-        assert integrazione._versione_su_disco() == "9.9.9"
-
-
-class ProcessoFinto:
-    """Processo separato che prepara i package: risponde, sbaglia o non finisce in tempo."""
-
-    def __init__(self, returncode: int = 0, errori: bytes = b"", lento: bool = False) -> None:
-        self.returncode, self.errori, self.lento = returncode, errori, lento
-        self.kill = MagicMock()
-        self.atteso = False
-
-    async def communicate(self):
-        if self.lento:
-            raise TimeoutError
-        return b"[]", self.errori
-
-    async def wait(self):
-        self.atteso = True
-        return self.returncode
-
-
 def _voce_caricata(hass: HomeAssistant, stato=ConfigEntryState.LOADED) -> MockConfigEntry:
     voce = MockConfigEntry(
         domain=DOMAIN, unique_id="master", data={"nome": "master", "host": IP}, state=stato
     )
     voce.add_to_hass(hass)
     return voce
-
-
-async def _prepara(hass: HomeAssistant, **avvio):
-    with (
-        patch.object(integrazione, "_versione_su_disco", return_value="99.0.0"),
-        patch.object(integrazione.asyncio, "create_subprocess_exec", new=AsyncMock(**avvio)) as finto,
-    ):
-        await integrazione._prepara_aggiornamento(hass, "9.0.0")
-    return finto
-
-
-async def test_prepara_senza_voci_caricate(hass: HomeAssistant) -> None:
-    _voce_caricata(hass, ConfigEntryState.SETUP_ERROR)
-    avvio = await _prepara(hass)
-    avvio.assert_not_called()
-
-
-async def test_prepara_processo_non_avviato(hass: HomeAssistant, caplog) -> None:
-    _voce_caricata(hass)
-    await _prepara(hass, side_effect=OSError("memoria esaurita"))
-    assert "Package non preparati per la versione 99.0.0: memoria esaurita" in caplog.text
-
-
-async def test_prepara_processo_troppo_lento(hass: HomeAssistant, caplog) -> None:
-    """Oltre il tempo massimo il processo si ferma: ogni file resta vecchio o nuovo."""
-    _voce_caricata(hass)
-    processo = ProcessoFinto(lento=True)
-    avvio = await _prepara(hass, return_value=processo)
-    assert avvio.await_args.args[-3:] == (
-        str(integrazione._CARTELLA), hass.config.config_dir, '[["master", "192.168.1.160"]]')
-    processo.kill.assert_called_once()
-    assert processo.atteso and "Package non preparati per la versione 99.0.0" in caplog.text
-
-
-async def test_prepara_processo_con_errore(hass: HomeAssistant, caplog) -> None:
-    _voce_caricata(hass)
-    processo = ProcessoFinto(returncode=1, errori=b"Traceback\nKeyError: 'version'\n")
-    await _prepara(hass, return_value=processo)
-    processo.kill.assert_not_called()
-    assert "Package non preparati per la versione 99.0.0: Traceback\nKeyError: 'version'" in caplog.text
-    assert "Package preparati" not in caplog.text
 
 
 async def test_ripristino_wifi_non_riuscito_in_italiano(hass: HomeAssistant) -> None:
@@ -162,79 +96,12 @@ async def test_ripristino_wifi_non_riuscito_in_italiano(hass: HomeAssistant) -> 
     assert notifica["message"].startswith("Ripristino non riuscito.\n\nIl Wi-Fi del server potrebbe")
 
 
-async def test_disco_pieno_in_italiano(hass: HomeAssistant) -> None:
-    hass.config.language = "it"
-    voce = _voce_caricata(hass, ConfigEntryState.NOT_LOADED)
-    with patch.object(integrazione, "installa", side_effect=OSError(28, "Spazio esaurito")):
-        assert not await hass.config_entries.async_setup(voce.entry_id)
-    assert voce.state is ConfigEntryState.SETUP_ERROR
-    assert voce.reason.startswith("File del package della VMC master non scritti")
-    assert "Controllare lo spazio libero sul disco" in voce.reason
-
-
-async def test_notifica_file_modificati_in_inglese(hass: HomeAssistant) -> None:
-    hass.config.language = "en"
-    voce = _voce_caricata(hass, ConfigEntryState.NOT_LOADED)
-    assert await hass.config_entries.async_setup(voce.entry_id)
-    await hass.async_block_till_done()
-    automazione = cartella_vmc(hass.config.config_dir, "master") / "vmc_master_automazione.yaml"
-    automazione.write_bytes(automazione.read_bytes() + b"# a mano\r\n")
-    with patch("custom_components.vmc_master.persistent_notification.async_create") as notifica:
-        assert await hass.config_entries.async_reload(voce.entry_id)
-        await hass.async_block_till_done()
-    chiamate = [c for c in notifica.call_args_list if "modificati" in c.kwargs["notification_id"]]
-    assert len(chiamate) == 1
-    assert chiamate[0].kwargs["title"] == "VMC Master: files of unit master edited by hand"
-    testo = chiamate[0].args[1]
-    assert testo.startswith("These package files of unit master had been edited by hand")
-    assert "- `vmc_master_automazione.yaml`" in testo
-    assert "`/config/vmc_master_backup/master_modificati_" in testo
-
-
-# ---------------------------------------------------------------- VMC eliminate
-def _elenco_eliminate(hass_storage, nomi: list) -> None:
-    hass_storage[integrazione.CHIAVE_ELIMINATE] = {
-        "version": 1, "minor_version": 1, "key": integrazione.CHIAVE_ELIMINATE, "data": {"nomi": nomi},
-    }
-
-
-async def test_vmc_eliminata_gia_ricordata(hass: HomeAssistant, hass_storage) -> None:
-    """Nome già nell'elenco delle VMC eliminate: l'elenco non si riscrive."""
-    _elenco_eliminate(hass_storage, ["sala", 5])
-    voce = MockConfigEntry(domain=DOMAIN, unique_id="sala", data={"nome": "sala", "host": "192.168.1.161"})
-    with patch.object(integrazione, "_id_del_package_generato", return_value=None):
-        await integrazione.async_remove_entry(hass, voce)
-    assert hass_storage[integrazione.CHIAVE_ELIMINATE]["data"] == {"nomi": ["sala", 5]}
-
-
-async def test_vmc_eliminate_che_restano(hass: HomeAssistant, hass_storage) -> None:
-    """All'avvio restano nell'elenco: cartella di nuovo presente, package non leggibile,
-    entità ancora fornite. Se l'elenco non cambia non si riscrive."""
-    _elenco_eliminate(hass_storage, ["sala", "bagno", "cucina"])
-    cartella_vmc(hass.config.config_dir, "sala").mkdir(parents=True)
-    registro = er.async_get(hass)
-    registro.async_get_or_create(
-        "sensor", "command_line", "vmc_cucina_status_ip", suggested_object_id="vmc_cucina_status_ip"
-    )
-    hass.states.async_set("sensor.vmc_cucina_status_ip", "ON-Line")
-    generato = integrazione._id_del_package_generato
-    with (
-        patch.object(
-            integrazione, "_id_del_package_generato",
-            side_effect=lambda nome: None if nome == "bagno" else generato(nome),
-        ),
-        patch.object(Store, "async_save") as salva,
-    ):
-        await integrazione._togli_entita_vmc_eliminate(hass)
-    salva.assert_not_called()
-    assert registro.async_get("sensor.vmc_cucina_status_ip") is not None
-
-
+# ---------------------------------------------------------------- id del package della beta
 def test_id_di_configurazioni_di_forma_inattesa() -> None:
     id_package: set = set()
-    integrazione._id_della_configurazione(["non", "un", "dizionario"], id_package)
+    passaggio._id_della_configurazione(["non", "un", "dizionario"], id_package)
     assert id_package == set()
-    integrazione._id_della_configurazione({
+    passaggio._id_della_configurazione({
         "automation": [{"alias": "senza id"}, "testo", {"id": 7}],
         "input_boolean": ["non", "un", "dizionario"],
         "template": ["testo", {"unique_id": "blocco", "sensor": [{"unique_id": "uno"}, {"name": "senza"}]}],
@@ -249,20 +116,16 @@ def test_id_di_configurazioni_di_forma_inattesa() -> None:
     }
 
 
-def test_package_generato_illeggibile(caplog) -> None:
-    file = {"vmc_sala.yaml": "sensor: [\n", "vmc_sala_script_cambio_ip.sh": "#!/bin/sh\n"}
-    with patch.object(integrazione, "genera_file", return_value=file):
-        assert integrazione._id_del_package_generato("sala") is None
-    assert "Package della VMC sala non leggibile" in caplog.text
-
-
-def test_rimetti_ip_con_un_file_mancante(tmp_path: Path) -> None:
-    cartella = cartella_vmc(str(tmp_path), "sala")
+def test_cartella_del_package_illeggibile(tmp_path: Path, caplog) -> None:
+    """Un file YAML della cartella che non si legge: restano gli id del package che la
+    beta scriveva, con un avviso nel log."""
+    cartella = passaggio.cartella_package(str(tmp_path), "sala")
     cartella.mkdir(parents=True)
-    (cartella / "vmc_sala.yaml").write_text("sensor:\n  - host: 192.168.1.99\n", encoding="utf-8")
-    integrazione._rimetti_ip_nel_package(str(tmp_path), "sala", "192.168.1.99", "192.168.1.161")
-    assert (cartella / "vmc_sala.yaml").read_text(encoding="utf-8") == "sensor:\n  - host: 192.168.1.161\n"
-    assert not (cartella / "vmc_sala_script_cambio_nome.sh").exists()
+    (cartella / "vmc_sala.yaml").write_text("sensor: [\n", encoding="utf-8")
+    assert passaggio.id_del_package(str(tmp_path), "sala") == (
+        passaggio._id_del_package_della_beta("sala")
+    )
+    assert "File del package in" in caplog.text and "non leggibili" in caplog.text
 
 
 # ---------------------------------------------------------------- filtri dei log
@@ -296,9 +159,9 @@ def _voce_sala_non_caricata(hass: HomeAssistant, **altro) -> MockConfigEntry:
 
 
 async def test_voce_aggiornata_senza_cambio_ip(hass: HomeAssistant) -> None:
-    """Cambia solo il titolo della voce: il package non si reinstalla."""
+    """Cambia solo il titolo della voce: la VMC non riparte."""
     voce = _voce_sala_non_caricata(hass)
-    voce.runtime_data = "192.168.1.161"
+    voce.runtime_data = integrazione.DatiVoce(passaggio.NATIVA, "192.168.1.161")
     with patch.object(hass.config_entries, "async_reload") as ricarica:
         await integrazione._async_aggiornata(hass, voce)
     ricarica.assert_not_called()
@@ -311,25 +174,6 @@ async def test_titolo_con_vmc_che_non_risponde(hass: HomeAssistant) -> None:
         await hass.async_block_till_done(wait_background_tasks=True)
     nome.assert_awaited_once_with("192.168.1.161")
     assert voce.title == "VMC sala" and "titolo" not in voce.data
-
-
-async def test_ricariche_gia_fatte(hass: HomeAssistant) -> None:
-    """Ricariche già fatte insieme a un'altra VMC: nulla da ricaricare."""
-    voce = _voce_sala_non_caricata(hass)
-    with patch.object(integrazione, "_async_ricarica") as ricarica:
-        integrazione._ricarica_dopo_avvio(hass, voce, set())
-        await hass.async_block_till_done()
-    ricarica.assert_not_called()
-
-
-async def test_package_caricato_di_un_altra_vmc(hass: HomeAssistant) -> None:
-    """Package caricato di una VMC che non è la master: niente pulizia della Finestra Clona."""
-    voce = _voce_sala_non_caricata(hass)
-    hass.states.async_set("sensor.vmc_sala_status_ip", "ON-Line")
-    with patch.object(integrazione, "_togli_entita_non_piu_fornite") as togli:
-        integrazione._controlla_packages_dopo_avvio(hass, voce, "sala")
-    togli.assert_not_called()
-    assert ir.async_get(hass).async_get_issue(DOMAIN, "packages_non_abilitati_sala") is None
 
 
 # ---------------------------------------------------------------- config_flow: IP e nome della VMC
@@ -420,21 +264,6 @@ async def test_nomi_e_ip_escludendo_una_voce(hass: HomeAssistant) -> None:
     assert flusso._nomi_e_ip_in_uso(escludi=voce.entry_id) == (set(), set())
 
 
-@pytest.mark.parametrize("riga", ["", "  host: 999.999.999.999\n"])
-async def test_installazione_manuale_senza_ip_valido(hass: HomeAssistant, riga: str) -> None:
-    """Installazione manuale della master senza un IP valido nel package: nessun IP proposto."""
-    cartella = cartella_vmc(hass.config.config_dir, "master")
-    cartella.mkdir(parents=True)
-    (cartella / "vmc_master.yaml").write_text("sensor:\n" + riga, encoding="utf-8")
-    risultato = await _menu(hass)
-    risultato = await hass.config_entries.flow.async_configure(
-        risultato["flow_id"], {"next_step_id": "in_rete"}
-    )
-    assert risultato["step_id"] == "in_rete"
-    campi = {str(k): k for k in risultato["data_schema"].schema}
-    assert campi["host"].default() == ""
-
-
 async def test_continua_senza_sapere_se_risponde(hass: HomeAssistant) -> None:
     """Se non si sa ancora se la VMC risponde, la si prova prima di creare la voce."""
     _voce_caricata(hass, ConfigEntryState.NOT_LOADED)
@@ -443,11 +272,53 @@ async def test_continua_senza_sapere_se_risponde(hass: HomeAssistant) -> None:
     with patch(PROVA_VMC, return_value=False) as prova:
         passo = await flusso._async_continua("sala", "192.168.1.161", None)
     prova.assert_awaited_once_with("192.168.1.161")
-    assert passo["type"] is FlowResultType.FORM and passo["step_id"] == "non_raggiungibile"
+    assert passo["type"] is FlowResultType.MENU and passo["step_id"] == "non_raggiungibile"
     with patch(PROVA_VMC, return_value=True):
         passo = await flusso._async_continua("sala", "192.168.1.161", None)
     assert passo["type"] is FlowResultType.CREATE_ENTRY
-    assert passo["data"] == {"nome": "sala", "host": "192.168.1.161", "titolo": "VMC sala"}
+    assert passo["data"] == {
+        "nome": "sala", "host": "192.168.1.161", "titolo": "VMC sala", "da_inizializzare": True
+    }
+
+
+async def test_aggiungi_comunque_con_il_nome_gia_scelto(hass: HomeAssistant) -> None:
+    """VMC provata dopo il nome e che non risponde: «Aggiungi comunque» crea la voce con
+    quel nome, senza chiederlo di nuovo."""
+    _voce_caricata(hass, ConfigEntryState.NOT_LOADED)
+    risultato = await _menu(hass)
+    flusso = hass.config_entries.flow._progress[risultato["flow_id"]]
+    with patch(PROVA_VMC, return_value=False):
+        passo = await flusso._async_continua("sala", "192.168.1.161", None)
+    assert passo["step_id"] == "non_raggiungibile"
+    passo = await flusso.async_step_aggiungi_comunque()
+    assert passo["type"] is FlowResultType.CREATE_ENTRY
+    assert passo["data"] == {
+        "nome": "sala", "host": "192.168.1.161", "titolo": "VMC sala", "da_inizializzare": True
+    }
+
+
+async def test_prima_vmc_non_raggiungibile(hass: HomeAssistant) -> None:
+    """La prima VMC che non risponde: avviso subito dopo l'IP; con «Aggiungi comunque» si
+    aggiunge come «master», senza domande sul nome."""
+    risultato = await _menu(hass)
+    risultato = await hass.config_entries.flow.async_configure(
+        risultato["flow_id"], {"next_step_id": "in_rete"}
+    )
+    with patch(NOME_VMC, return_value=None):
+        risultato = await hass.config_entries.flow.async_configure(
+            risultato["flow_id"], {"host": "192.168.1.160"}
+        )
+    assert risultato["type"] is FlowResultType.MENU
+    assert risultato["step_id"] == "non_raggiungibile"
+    with patch(PROVA_VMC) as prova:
+        risultato = await hass.config_entries.flow.async_configure(
+            risultato["flow_id"], {"next_step_id": "aggiungi_comunque"}
+        )
+    prova.assert_not_called()
+    assert risultato["type"] is FlowResultType.CREATE_ENTRY
+    assert risultato["data"] == {
+        "nome": "master", "host": "192.168.1.160", "titolo": "VMC master", "da_inizializzare": True
+    }
 
 
 async def test_ricerca_non_riuscita_e_password_del_server(hass: HomeAssistant) -> None:
@@ -488,10 +359,18 @@ async def test_ricerca_non_riuscita_e_password_del_server(hass: HomeAssistant) -
         risultato = await _avanza(hass, risultato)
     assert risultato["step_id"] == "rete_vmc" and risultato["errors"] == {}
     campi = {str(k): k for k in risultato["data_schema"].schema}
-    assert campi["rete_casa"].default() == "CasaMia" and "password_server" in campi
-    assert risultato["description_placeholders"]["rete_del_server"] == "Ufficio"
+    # la password del server si chiede dopo, in un passo a parte, solo se serve
+    assert campi["rete_casa"].default() == "CasaMia" and "password_server" not in campi
     rete_del_server.assert_called_once()
     assert [azione for azione, _dati in motore.azioni] == ["scan", "configure", "scan"]
+    # il server ora è su Ufficio: dopo Invia il passo della sua password
+    risultato = await hass.config_entries.flow.async_configure(risultato["flow_id"], {
+        "rete_vmc": "VMC_12345678", "password_vmc": "12345678",
+        "rete_casa": "CasaMia", "password_casa": "password-di-casa",
+    })
+    assert risultato["step_id"] == "password_server" and risultato["errors"] == {}
+    assert risultato["description_placeholders"]["rete_del_server"] == "Ufficio"
+    assert risultato["description_placeholders"]["rete_casa"] == "CasaMia"
 
 
 async def test_ip_fisso_non_valido(hass: HomeAssistant) -> None:

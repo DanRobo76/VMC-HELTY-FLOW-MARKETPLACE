@@ -6,3 +6,9 @@ __pycache__/
 venv/
 .coverage
 htmlcov/
+
+# anteprima della scheda (strumenti/anteprima_scheda/banco.py)
+/anteprima/
+
+# prova su una copia della configurazione (strumenti/copia_configurazione/banco.py)
+/copia_configurazione/

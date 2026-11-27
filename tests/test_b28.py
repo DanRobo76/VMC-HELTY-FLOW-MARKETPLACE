@@ -7,14 +7,11 @@ from __future__ import annotations
 import asyncio
 import re
 from pathlib import Path
-from unittest.mock import AsyncMock, patch
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 from homeassistant.util import yaml as hay
-from pytest_homeassistant_custom_component.common import async_mock_service
 
-import custom_components.vmc_master as integrazione
 from custom_components.vmc_master.trasforma import per_vmc
 
 PKG = Path(__file__).parent.parent / "custom_components" / "vmc_master" / "package"
@@ -49,34 +46,6 @@ def _riallineamento(hass: HomeAssistant, nome: str, fase: str | None, in_corso: 
     return voce.entity_id
 
 
-async def test_riallineamento_fermato_dalla_ricarica_riparte(hass: HomeAssistant) -> None:
-    """Solo il riallineamento fermo nelle fasi 1-3 (allerte sospese) riparte da capo."""
-    chiamate = async_mock_service(hass, "automation", "trigger")
-    fermo = _riallineamento(hass, "master", "1.0", 0)
-    _riallineamento(hass, "sala", "2.0", 1)  # non cambiato: ancora in corso
-    _riallineamento(hass, "bagno", "0.0", 0)  # gia' finito
-    _riallineamento(hass, "soggiorno", "4.0", 0)  # allerte gia' tutte attive
-    _riallineamento(hass, "cucina", "unknown", 0)  # fase non letta
-    _riallineamento(hass, "studio", None, 0)  # fase assente
-    _riallineamento(hass, "camino", "3.0", None)  # automazione senza stato
-    registro = er.async_get(hass)
-    registro.async_get_or_create("automation", "automation", "automazione_vmc_master")
-    registro.async_get_or_create("sensor", "template", "vmc_master_riallineamento_allerte_al_riavvio")
-    await integrazione._async_riprendi_riallineamento(hass)
-    await hass.async_block_till_done()
-    assert [c.data for c in chiamate] == [{"entity_id": fermo, "skip_condition": True}]
-
-
-async def test_ricarica_delle_automazioni_riprende_il_riallineamento(hass: HomeAssistant) -> None:
-    async_mock_service(hass, "automation", "reload")
-    async_mock_service(hass, "template", "reload")
-    with patch.object(integrazione, "_async_riprendi_riallineamento", AsyncMock()) as riprendi:
-        await integrazione._async_ricarica(hass, ["template.reload"])
-        riprendi.assert_not_awaited()
-        await integrazione._async_ricarica(hass, ["template.reload", "automation.reload"])
-        riprendi.assert_awaited_once_with(hass)
-
-
 async def _attendi(condizione, giri: int = 50) -> None:
     """Lascia lavorare il loop senza aspettare le attese (delay) delle automazioni."""
     for _ in range(giri):
@@ -84,59 +53,6 @@ async def _attendi(condizione, giri: int = 50) -> None:
         if condizione():
             return
     assert condizione()
-
-
-async def test_riallineamento_vero_ripreso_dopo_la_ricarica(hass: HomeAssistant) -> None:
-    """Home Assistant vero: automation.reload ferma il riallineamento cambiato e la fase
-    resta 1; dopo la ripresa l'automazione e' di nuovo in corso."""
-    from homeassistant.setup import async_setup_component
-
-    def configurazione(passo_in_piu: bool) -> dict:
-        azioni = [
-            {"action": "input_number.set_value", "target": {"entity_id": "input_number.vmc_master_fase_riallineamento_al_riavvio"}, "data": {"value": 1}},
-            {"delay": {"seconds": 60}},
-            {"action": "input_number.set_value", "target": {"entity_id": "input_number.vmc_master_fase_riallineamento_al_riavvio"}, "data": {"value": 0}},
-        ]
-        if passo_in_piu:
-            azioni.insert(1, {"delay": {"seconds": 0}})
-        return {
-            "automation": [
-                {
-                    "id": "vmc_master_riallineamento_allerte_al_riavvio",
-                    "alias": "VMC Master - Riallineamento Allerte al Riavvio",
-                    "mode": "restart",
-                    "triggers": [{"trigger": "homeassistant", "event": "start"}],
-                    "actions": azioni,
-                }
-            ]
-        }
-
-    assert await async_setup_component(
-        hass,
-        "input_number",
-        {"input_number": {"vmc_master_fase_riallineamento_al_riavvio": {"min": 0, "max": 4, "step": 1, "initial": 0}}},
-    )
-    assert await async_setup_component(hass, "automation", configurazione(False))
-    entita = "automation.vmc_master_riallineamento_allerte_al_riavvio"
-    # avvio di Home Assistant: il riallineamento parte (async_block_till_done aspetterebbe i 60 s)
-    await hass.services.async_call("automation", "trigger", {"entity_id": entita, "skip_condition": True}, blocking=False)
-    await _attendi(lambda: hass.states.get(entita).attributes["current"] == 1)
-    assert hass.states.get(FASE).state == "1.0"
-
-    with patch(
-        "homeassistant.config.load_yaml_config_file", return_value=configurazione(True)
-    ):
-        await hass.services.async_call("automation", "reload", blocking=True)
-    await _attendi(lambda: True)
-    # il riallineamento cambiato e' stato ricreato: fermo, con le allerte sospese
-    assert hass.states.get(entita).attributes["current"] == 0
-    assert hass.states.get(FASE).state == "1.0"
-
-    await integrazione._async_riprendi_riallineamento(hass)
-    await _attendi(lambda: hass.states.get(entita).attributes["current"] == 1)
-    assert hass.states.get(FASE).state == "1.0"
-    # fine prova: si ferma il riallineamento ripartito (nessuna attesa lasciata in sospeso)
-    await hass.services.async_call("automation", "turn_off", {"entity_id": entita}, blocking=True)
 
 
 # ------------------------------------------------ nessun falso «Non Disponibile»

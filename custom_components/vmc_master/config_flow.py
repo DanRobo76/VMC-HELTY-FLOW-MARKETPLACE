@@ -17,7 +17,6 @@ import unicodedata
 from typing import Any
 
 import voluptuous as vol
-
 from homeassistant.components import persistent_notification
 from homeassistant.config_entries import (
     ConfigEntry,
@@ -26,9 +25,7 @@ from homeassistant.config_entries import (
     OptionsFlow,
 )
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.hassio import is_hassio
-from homeassistant.helpers.translation import async_get_translations
 from homeassistant.helpers.selector import (
     SelectOptionDict,
     SelectSelector,
@@ -38,9 +35,11 @@ from homeassistant.helpers.selector import (
     TextSelectorConfig,
     TextSelectorType,
 )
+from homeassistant.helpers.translation import async_get_translations
 
 from . import prima_installazione as pi
 from .const import (
+    CONF_DA_INIZIALIZZARE,
     CONF_HOST,
     CONF_NOME,
     CONF_TITOLO,
@@ -50,13 +49,6 @@ from .const import (
     NOME_RE,
     PORTA_VMC,
     TIMEOUT_VMC,
-)
-from .installatore import (
-    cartella_vmc,
-    installazione_manuale,
-    ip_nel_package,
-    leggi_marcatore,
-    nome_manuale_con_ip,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -70,11 +62,12 @@ CONF_PASSWORD_CASA = "password_casa"
 CONF_PASSWORD_SERVER = "password_server"
 PASSWORD_VMC_FABBRICA = "12345678"
 
-# Avviso delle Riparazioni «VMC Master: riavviare Home Assistant» (stesso id di __init__.py)
-ISSUE_RIAVVIO = "riavvio_necessario"
-
 # Errori del motore che dicono che questo Home Assistant non puo' usare il Wi-Fi
 _SENZA_WIFI = {"no_wifi", "supervisor_unavailable"}
+
+# Controllo di un apparecchio a un IP che non risponde come una VMC (secondi)
+ATTESA_PORTA = 1  # risposta della porta 5001: in casa arriva in pochi millisecondi
+ATTESA_PING = 5  # il comando ping finisce da solo in circa 2 s
 
 
 def ip_valido(ip: str) -> bool:
@@ -150,9 +143,68 @@ async def async_nome_vmc(ip: str) -> str | None:
     return testo[5:].rstrip("* ").strip() if testo.startswith("VMNM ") else ""
 
 
+async def _async_porta_apre_o_rifiuta(ip: str) -> bool:
+    """True se la porta 5001 si apre o rifiuta subito il collegamento: a quell'IP c'e' un
+    apparecchio acceso (in casa risponde in pochi millisecondi). False se non risponde
+    entro ATTESA_PORTA o se l'IP non si raggiunge."""
+    try:
+        _lettore, scrittore = await asyncio.wait_for(
+            asyncio.open_connection(ip, PORTA_VMC), ATTESA_PORTA
+        )
+    except ConnectionRefusedError:
+        return True
+    except (OSError, TimeoutError):
+        return False
+    scrittore.close()
+    return True
+
+
+async def _async_risponde_al_ping(ip: str) -> bool:
+    """True se l'IP risponde al ping: comando «ping» del sistema, come l'integrazione Ping
+    di Home Assistant quando non usa icmplib (2 richieste, 1 s di attesa per la risposta;
+    opzioni valide sia per iputils sia per busybox).
+    False se non risponde, se il comando manca o non finisce entro ATTESA_PING."""
+    try:
+        processo = await asyncio.create_subprocess_exec(
+            "ping",
+            "-q",
+            "-c",
+            "2",
+            "-W",
+            "1",
+            ip,
+            stdin=asyncio.subprocess.DEVNULL,
+            stdout=asyncio.subprocess.DEVNULL,
+            stderr=asyncio.subprocess.DEVNULL,
+        )
+    except OSError:
+        return False
+    try:
+        async with asyncio.timeout(ATTESA_PING):
+            return await processo.wait() == 0
+    except TimeoutError:
+        processo.kill()
+        await processo.wait()
+        return False
+
+
+async def async_apparecchio_presente(ip: str) -> bool:
+    """True se a quell'IP c'e' un apparecchio acceso anche se non risponde come una VMC
+    (per esempio il router): la porta 5001 si apre o rifiuta il collegamento, oppure l'IP
+    risponde al ping (provato solo se la porta non risponde). False se non risponde niente:
+    VMC spenta, IP libero o apparecchio che non risponde neppure al ping."""
+    return await _async_porta_apre_o_rifiuta(ip) or await _async_risponde_al_ping(ip)
+
+
 async def async_nome_vmc_due_prove(ip: str) -> str | None:
     """Nome della VMC con una seconda prova se la prima non riceve risposta (la prima
     risposta puo' andare persa): stesse attese di async_nome_vmc, nessuna attesa in piu'.
+
+    Se nessuna delle due prove riceve risposta si guarda se a quell'IP c'e' comunque un
+    apparecchio acceso (async_apparecchio_presente): allora non e' una VMC, come chi
+    risponde sulla porta 5001 senza il nome della VMC. Risultato: il nome; "" se risponde
+    un apparecchio che non e' una VMC; None se non risponde niente (VMC spenta o IP
+    sbagliato).
 
     Lo usano tutte le finestre che leggono il nome a un IP (in_rete, ip_fisso senza MAC,
     cambia_ip) e il servizio verifica_ip del campo «Cambia IP VMC» della scheda."""
@@ -160,6 +212,9 @@ async def async_nome_vmc_due_prove(ip: str) -> str | None:
     if nome is None:
         # anche la seconda prova legge il nome, che va confrontato come alla prima
         nome = await async_nome_vmc(ip)
+    if nome is None and await async_apparecchio_presente(ip):
+        # a quell'IP c'e' un apparecchio acceso che non risponde come una VMC
+        return ""
     return nome
 
 
@@ -208,8 +263,9 @@ def esito_verifica_ip(nome_letto: str | None, nome_atteso: str, nome: str = "") 
     """Esito della lettura del nome a un IP nuovo, con le regole dell'ingranaggio
     «Cambia l'IP della VMC» (le usa anche il servizio verifica_ip della scheda):
 
-    - «non_risponde»: nessuna risposta sulla porta 5001 (VMC spenta o IP sbagliato);
-    - «altro_dispositivo»: risponde senza il nome della VMC (non e' una VMC);
+    - «non_risponde»: a quell'IP non risponde niente (VMC spenta o IP sbagliato);
+    - «altro_dispositivo»: risponde un apparecchio che non e' una VMC (sulla porta 5001
+      senza il nome della VMC, oppure solo al ping o rifiutando la porta 5001);
     - «nome_diverso»: risponde una VMC con un nome diverso da nome_atteso (un'altra VMC,
       oppure nome cambiato nell'App Air Guard); senza nome_atteso non si confronta;
     - «ok»: risponde la VMC attesa.
@@ -272,6 +328,8 @@ class VmcMasterConfigFlow(ConfigFlow, domain=DOMAIN):
         self._dati: dict[str, str] = {}
         self._nome_vmc = ""
         self._risponde = True
+        # «Aggiungi comunque» scelto nella finestra «VMC non raggiungibile»
+        self._aggiungi_comunque = False
         # collegamento al Wi-Fi
         self._reti: dict[str, Any] = {}
         self._richiesta: dict[str, str] = {}
@@ -317,7 +375,7 @@ class VmcMasterConfigFlow(ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         errori: dict[str, str] = {}
-        nomi, ips = self._nomi_e_ip_in_uso()
+        _nomi, ips = self._nomi_e_ip_in_uso()
         if user_input is not None:
             ip = user_input[CONF_HOST].strip()
             if not ip_valido(ip):
@@ -327,26 +385,21 @@ class VmcMasterConfigFlow(ConfigFlow, domain=DOMAIN):
             else:
                 # il nome letto serve anche alla prima VMC («master») per il titolo della voce
                 nome_vmc = await async_nome_vmc_due_prove(ip)
-                # risponde senza nome («»): non si sa se e' una VMC, il nome si scrive a mano
-                return await self._async_scegli_nome(ip, nome_vmc or "", bool(nome_vmc))
+                if nome_vmc == "":
+                    # risponde un apparecchio che non e' una VMC (es. il router): si
+                    # corregge l'IP, senza «Aggiungi comunque»
+                    errori[CONF_HOST] = "non_e_una_vmc"
+                elif nome_vmc is None:
+                    # non risponde niente (VMC spenta o IP sbagliato): si avvisa subito,
+                    # prima di chiedere il nome
+                    self._dati = {CONF_HOST: ip}
+                    return await self.async_step_non_raggiungibile()
+                else:
+                    return await self._async_scegli_nome(ip, nome_vmc, True)
 
-        ip_predefinito = ""
-        if NOME_MASTER not in nomi and await self.hass.async_add_executor_job(
-            installazione_manuale, self.hass.config.config_dir, NOME_MASTER
-        ):
-            # Installazione manuale della release 8.6.0: propone l'IP gia' impostato
-            ip_trovato = await self.hass.async_add_executor_job(
-                ip_nel_package, self.hass.config.config_dir, NOME_MASTER
-            )
-            if ip_trovato and ip_valido(ip_trovato):
-                ip_predefinito = ip_trovato
-        schema = vol.Schema(
-            {
-                vol.Required(
-                    CONF_HOST, default=(user_input or {}).get(CONF_HOST, ip_predefinito)
-                ): str
-            }
-        )
+        # da «Correggi l'IP» si riparte dall'IP scritto prima
+        ip_scritto = (user_input or {}).get(CONF_HOST, self._dati.get(CONF_HOST, ""))
+        schema = vol.Schema({vol.Required(CONF_HOST, default=ip_scritto): str})
         return self.async_show_form(step_id="in_rete", data_schema=schema, errors=errori)
 
     async def _async_scegli_nome(
@@ -368,10 +421,7 @@ class VmcMasterConfigFlow(ConfigFlow, domain=DOMAIN):
         errori: dict[str, str] = {}
         nomi, _ips = self._nomi_e_ip_in_uso()
         ip = self._dati[CONF_HOST]
-        # VMC installata a mano con questo IP (migrazione): stesso nome della sua cartella
-        proposta = await self.hass.async_add_executor_job(
-            nome_manuale_con_ip, self.hass.config.config_dir, ip
-        ) or nome_da_vmc(self._nome_vmc)
+        proposta = nome_da_vmc(self._nome_vmc)
         nome = proposta if user_input is None else (user_input.get(CONF_NOME) or "").strip()
         if not NOME_RE.fullmatch(nome):
             errori[CONF_NOME] = "nome_non_valido"
@@ -405,75 +455,44 @@ class VmcMasterConfigFlow(ConfigFlow, domain=DOMAIN):
         await self.async_set_unique_id(nome)
         self._abort_if_unique_id_configured()
         self._dati = {CONF_NOME: nome, CONF_HOST: ip}
-        if await self.hass.async_add_executor_job(
-            installazione_manuale, self.hass.config.config_dir, nome
-        ):
-            return await self.async_step_migra()
         if raggiungibile is None:
             raggiungibile = await async_prova_vmc(ip)
-        if raggiungibile:
+        if raggiungibile or self._aggiungi_comunque:
             return await self._async_crea_voce()
         return await self.async_step_non_raggiungibile()
-
-    async def async_step_migra(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
-        """Trovata un'installazione manuale: la cartella va in backup e la sostituisce l'integrazione."""
-        if user_input is not None:
-            return await self._async_crea_voce()
-        ip_trovato = await self.hass.async_add_executor_job(
-            ip_nel_package, self.hass.config.config_dir, self._dati[CONF_NOME]
-        )
-        return self.async_show_form(
-            step_id="migra",
-            description_placeholders={
-                "nome": self._dati[CONF_NOME],
-                "ip": self._dati[CONF_HOST],
-                "ip_trovato": ip_trovato or "-",
-            },
-        )
 
     async def async_step_non_raggiungibile(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """La VMC non risponde: si puo' aggiungere comunque (es. VMC spenta)."""
-        if user_input is not None:
-            return await self._async_crea_voce()
-        return self.async_show_form(
+        """A quell'IP non risponde una VMC: si corregge l'IP oppure si aggiunge comunque
+        (es. VMC spenta)."""
+        return self.async_show_menu(
             step_id="non_raggiungibile",
+            menu_options=["in_rete", "aggiungi_comunque"],
             description_placeholders={"ip": self._dati[CONF_HOST]},
         )
 
+    async def async_step_aggiungi_comunque(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """VMC che non risponde aggiunta lo stesso: poi il nome, scritto a mano (la prima
+        VMC e' «master», senza domande)."""
+        self._aggiungi_comunque = True
+        nome = self._dati.get(CONF_NOME)
+        if nome:
+            # nome gia' scelto (VMC provata solo dopo il nome)
+            return await self._async_continua(nome, self._dati[CONF_HOST], False)
+        return await self._async_scegli_nome(self._dati[CONF_HOST], "", False)
+
     async def _async_crea_voce(self) -> ConfigFlowResult:
-        """Crea la voce. Se dopo l'installazione del package serve un riavvio (avviso
-        «VMC Master: riavviare Home Assistant»), il messaggio finale dice come farlo."""
+        """Crea la voce: la VMC nativa parte subito, senza riavvio. Il Profilo
+        Inizializzazione parte da solo una volta (CONF_DA_INIZIALIZZARE), se non e' una
+        VMC riaggiunta."""
         titolo = titolo_voce(self._nome_vmc, self._dati[CONF_NOME])
-        if await self._async_serve_riavvio(self._dati[CONF_NOME]):
-            return self.async_create_entry(
-                title=titolo,
-                data={**self._dati, CONF_TITOLO: titolo},
-                description="riavvio",
-                description_placeholders={"titolo": titolo},
-            )
         return self.async_create_entry(
-            title=titolo, data={**self._dati, CONF_TITOLO: titolo}
+            title=titolo,
+            data={**self._dati, CONF_TITOLO: titolo, CONF_DA_INIZIALIZZARE: True},
         )
-
-    async def _async_serve_riavvio(self, nome: str) -> bool:
-        """True se il package della VMC verra' scritto da zero (file nuovi: Home Assistant
-        li carica solo dopo un riavvio) o se un riavvio e' gia' chiesto.
-
-        Package gia' scritto dall'integrazione (marcatore con md5): al massimo si ricarica."""
-        if ir.async_get(self.hass).async_get_issue(DOMAIN, ISSUE_RIAVVIO) is not None:
-            return True
-        config_dir = self.hass.config.config_dir
-
-        def _package_gia_installato() -> bool:
-            return (cartella_vmc(config_dir, nome) / f"vmc_{nome}.yaml").is_file() and isinstance(
-                leggi_marcatore(config_dir, nome).get("md5"), dict
-            )
-
-        return not await self.hass.async_add_executor_job(_package_gia_installato)
 
     # ---- VMC da installare: collegamento al Wi-Fi di casa ----------------------------
     async def async_step_da_installare(
@@ -552,7 +571,6 @@ class VmcMasterConfigFlow(ConfigFlow, domain=DOMAIN):
                 CONF_PASSWORD_VMC: str(user_input.get(CONF_PASSWORD_VMC, "")),
                 CONF_RETE_CASA: str(user_input.get(CONF_RETE_CASA, "")).strip(),
                 CONF_PASSWORD_CASA: str(user_input.get(CONF_PASSWORD_CASA, "")),
-                CONF_PASSWORD_SERVER: str(user_input.get(CONF_PASSWORD_SERVER, "")),
             }
             try:
                 # stessi controlli del motore prima di toccare il Wi-Fi del server
@@ -562,15 +580,10 @@ class VmcMasterConfigFlow(ConfigFlow, domain=DOMAIN):
                 errori["base"] = "motore"
             else:
                 self._errore = ""
-                if (
-                    self._rete_server
-                    and self._rete_server != self._richiesta[CONF_RETE_CASA]
-                    and not self._richiesta[CONF_PASSWORD_SERVER]
-                ):
+                if self._rete_server and self._rete_server != self._richiesta[CONF_RETE_CASA]:
                     # il server e' su un'altra rete Wi-Fi: serve la sua password per tornarci
-                    errori[CONF_PASSWORD_SERVER] = "password_server_mancante"
-                else:
-                    return await self.async_step_collega()
+                    return await self.async_step_password_server()
+                return await self.async_step_collega()
 
         reti_vmc = list(self._reti.get("vmc_networks") or [])
         altre = list(self._reti.get("wifi_networks") or [])
@@ -601,15 +614,6 @@ class VmcMasterConfigFlow(ConfigFlow, domain=DOMAIN):
                 ),
             }
         )
-        if self._rete_server:
-            # solo se il server e' collegato via Wi-Fi a una rete protetta
-            schema = schema.extend(
-                {
-                    vol.Optional(CONF_PASSWORD_SERVER): TextSelector(
-                        TextSelectorConfig(type=TextSelectorType.PASSWORD)
-                    )
-                }
-            )
         return self.async_show_form(
             step_id="rete_vmc",
             data_schema=schema,
@@ -617,7 +621,45 @@ class VmcMasterConfigFlow(ConfigFlow, domain=DOMAIN):
             description_placeholders={
                 "trovate": str(len(reti_vmc)),
                 "errore": self._errore or "-",
+            },
+        )
+
+    async def async_step_password_server(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Solo se il server e' collegato via Wi-Fi a una rete protetta diversa dalla rete di
+        casa scelta: la password di quella rete, per riportarci il server dopo il
+        collegamento della VMC."""
+        errori: dict[str, str] = {}
+        if user_input is not None:
+            password = str(user_input.get(CONF_PASSWORD_SERVER, ""))
+            if not password:
+                errori[CONF_PASSWORD_SERVER] = "password_server_mancante"
+            else:
+                self._richiesta = {**self._richiesta, CONF_PASSWORD_SERVER: password}
+                try:
+                    # i controlli del motore anche sulla password del server
+                    pi.motore.normalize_request(self._dati_motore())
+                except pi.Failure as errore:
+                    self._errore = await async_messaggio_errore(self.hass, errore)
+                    errori["base"] = "motore"
+                else:
+                    self._errore = ""
+                    return await self.async_step_collega()
+        return self.async_show_form(
+            step_id="password_server",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(CONF_PASSWORD_SERVER): TextSelector(
+                        TextSelectorConfig(type=TextSelectorType.PASSWORD)
+                    )
+                }
+            ),
+            errors=errori,
+            description_placeholders={
                 "rete_del_server": self._rete_server or "-",
+                "rete_casa": self._richiesta.get(CONF_RETE_CASA, "") or "-",
+                "errore": self._errore or "-",
             },
         )
 
@@ -863,7 +905,7 @@ class VmcMasterOptionsFlow(OptionsFlow):
                     titolo = ""
                 esito = esito_verifica_ip(nome_letto, titolo, voce.data[CONF_NOME])
                 if esito == "altro_dispositivo":
-                    # risponde sulla porta 5001 ma non come una VMC
+                    # risponde un apparecchio che non e' una VMC: non si salva
                     errori[CONF_HOST] = "ip_altro_dispositivo"
                 elif esito == "non_risponde":
                     # VMC spenta o IP sbagliato
@@ -909,7 +951,7 @@ class VmcMasterOptionsFlow(OptionsFlow):
 
     def _elimina_voce(self) -> None:
         """La voce si elimina appena la finestra si chiude (come «Elimina» del menu ⋮:
-        la cartella della VMC va in /config/vmc_master_backup e Home Assistant chiede il riavvio)."""
+        Home Assistant toglie le entita' della VMC con la voce)."""
         entry_id = self.config_entry.entry_id
         self.hass.async_create_task(
             self.hass.config_entries.async_remove(entry_id), f"{DOMAIN}_elimina_{entry_id}"

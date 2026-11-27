@@ -60,7 +60,8 @@ def test_sezioni_installa_al_loro_posto() -> None:
 @pytest.mark.parametrize("nome", ["master", "soggiorno"])
 def test_pannello_prima_carta_per_ogni_vmc(nome: str) -> None:
     _configurazione_scheda.cache_clear()
-    carte = _configurazione_scheda(nome, "192.168.1.170")["cards"]
+    # la scheda della beta (servita finche' la VMC aspetta il passaggio)
+    carte = _configurazione_scheda(nome, "192.168.1.170", nativa=False)["cards"]
     assert carte[0]["card"]["title"] == TITOLO
     assert f"timer.vmc_{nome}_countdown_riattivazione_allerte" in str(carte[0]["conditions"])
     assert _ridotta(carte[1])
