@@ -1,6 +1,6 @@
 """I sensori calcolati dell'integrazione contro le entità template di Home Assistant.
 
-Le 121 configurazioni vere della VMC «master» (``generato_fase4.sensori``) una volta con le
+Le 120 configurazioni vere della VMC «master» (``generato_fase4.sensori``) una volta con le
 entità template di Home Assistant (``StateSensorEntity``, ``StateBinarySensorEntity``) e una
 volta con quelle dell'integrazione (``SensoreModello``, ``BinarioModello``, da
 ``sensori_template.in_ordine``, che seguono i modelli con ``seguire.traccia_modelli``
@@ -113,10 +113,13 @@ def _domani() -> dict[str, str]:
         return {r["Entità oggi"]: r["Domani"] for r in csv.DictReader(f, delimiter=";")}
 
 
-def _di_domani(entity_id: str, domani: dict[str, str]) -> str:
+def _di_domani(entity_id: str, domani: dict[str, str]) -> str | None:
     """L'entity_id che legge il sensore nativo al posto di quello di oggi (i valori
-    interni, senza memoria interna, tengono quello di oggi)."""
+    interni, senza memoria interna, tengono quello di oggi); None per le voci tolte dalla
+    b46 (il campo «Cambia IP VMC»: nessun sensore nativo le legge)."""
     nuovo = domani.get(entity_id, entity_id)
+    if nuovo.startswith("tolta"):
+        return None
     return entity_id if nuovo.startswith("interna") else nuovo
 
 
@@ -137,7 +140,8 @@ class Copione:
             if oggi.startswith("timer."):
                 self.timer.append(oggi)
                 continue
-            eid = _di_domani(oggi, domani)
+            if (eid := _di_domani(oggi, domani)) is None:
+                continue
             attributi = {**c.attributi_fissi(oggi), **c.attributi_esterni(rng, oggi)}
             self.iniziali[eid] = (valore, attributi)
             self.candidati[eid] = c.candidati(oggi)
@@ -484,7 +488,7 @@ def copione() -> Copione:
 
 
 @pytest.mark.parametrize("avviato", [False, True], ids=["avvio", "avviato"])
-async def test_le_121_configurazioni_come_le_entita_template(
+async def test_le_120_configurazioni_come_le_entita_template(
     freezer: FrozenDateTimeFactory,
     tmp_path: Path,
     caplog: pytest.LogCaptureFixture,
@@ -511,13 +515,13 @@ async def test_le_121_configurazioni_come_le_entita_template(
         )
     ha, nostro = lati
     voci = ha[0]
-    # la prova vede davvero i casi: tutte le 121 entità scritte, molte con più stati,
+    # la prova vede davvero i casi: tutte le 120 entità scritte, molte con più stati,
     # il black-out dopo il ritardo, errori dei modelli
     scritte: dict[str, set[str]] = {}
     for voce in voci:
         if len(voce) > 3:
             scritte.setdefault(voce[2], set()).add(voce[3])
-    assert len(scritte) >= 121
+    assert len(scritte) >= 120
     assert sum(len(s) > 1 for s in scritte.values()) > 80
     assert "on" in scritte["binary_sensor.vmc_master_black_out_rilevato"]
     assert sum("unavailable" in s for s in scritte.values()) > 10
@@ -533,7 +537,7 @@ async def test_le_121_configurazioni_come_le_entita_template(
     _confronta(ha, nostro)
 
 
-# --- casi che le 121 configurazioni non provocano ----------------------------------------------
+# --- casi che le 120 configurazioni non provocano ----------------------------------------------
 
 
 def _modello(testo: Callable[[Contesto, Any], str], nome: str) -> Callable[..., str]:
@@ -547,7 +551,7 @@ def _leggi(c_: Contesto, eid: str) -> str:
 
 
 def _rari(hass: HomeAssistant, contesto: Contesto) -> list[tuple[str, dict[str, Any]]]:
-    """Configurazioni con le stesse chiavi dei 121 sensori per i casi rari: icona non
+    """Configurazioni con le stesse chiavi dei 120 sensori per i casi rari: icona non
     valida, nome con un modello, errori dei modelli di disponibilità, stato e ritardo,
     ritardo che non è una durata, stato numerico non valido."""
     m = contesto.modello
@@ -731,7 +735,7 @@ async def test_stessi_entity_id_unique_id_e_nomi(hass: HomeAssistant) -> None:
         contesto.timer = TimerDelMotore(contesto, {})
         prima = _entita_di_home_assistant(hass, contesto)
         dopo = _entita_dell_integrazione(hass, contesto)
-        assert len(dopo) == 121
+        assert len(dopo) == 120
         for vecchia, nuova in zip(prima, dopo, strict=True):
             for proprieta in (
                 "entity_id",

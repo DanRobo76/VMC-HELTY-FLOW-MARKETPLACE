@@ -67,7 +67,7 @@ async def test_nessuna_entita_ne_servizio(hass: HomeAssistant) -> None:
     }
     assert not [e for e in registrate if any(o in e for o in TOLTI)]
     assert len(vmc.motore.automazioni) == 13
-    assert not [a for a in vmc.motore.automazioni if "cambio_ip" in a.unique_id]
+    assert not [a for a in vmc.motore.automazioni if "cambio_ip" in a.id]
     assert "vmc_master_aggiorna_indirizzo_ip" not in vmc.c.comandi.comandi
     assert not hass.services.has_service(DOMAIN, "verifica_ip")
     assert hass.services.async_services_for_domain(DOMAIN) == {}
