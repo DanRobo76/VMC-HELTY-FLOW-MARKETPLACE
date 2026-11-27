@@ -1,4 +1,5 @@
 riga;colonna;tipo;posto;prima;dopo
+3;107;intestazione;commento;RELEASE [VER. 9.0.0b44];RELEASE [VER. 9.0.0b46]
 11;45;intestazione;commento;(https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE);(https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER)
 47;21;nome;condizione;timer.vmc_master_countdown_riattivazione_allerte;sensor.vmc_master_countdown_riattivazione_allerte
 48;13;condizione timer;condizione;state: active;state_not: [unknown, unavailable]

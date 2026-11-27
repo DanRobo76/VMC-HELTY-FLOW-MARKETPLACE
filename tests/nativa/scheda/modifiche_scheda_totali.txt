@@ -1,7 +1,7 @@
 SCHEDA «VMC MASTER» TRADOTTA AI NOMI DELLE ENTITÀ NATIVE (fase 4) - totali delle modifiche
 
 Righe della scheda master: 14208 -> 13901
-Modifiche: 2393
+Modifiche: 2394
 
   1922  nome
            861  input_boolean -> binary_sensor [modello markdown]
@@ -67,5 +67,5 @@ Modifiche: 2393
              4  input_boolean -> binary_sensor [modello markdown]
      5  chiave tipi
              5  modello tipi
-     1  intestazione
-             1  commento
+     2  intestazione
+             2  commento

@@ -373,6 +373,9 @@ COMMENTI = (
         "(https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE)",
         "(https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER)",
     ),
+    # la scheda nativa è cambiata con la 9.0.0b46 (campo «Cambia IP VMC» tolto): la sua
+    # versione (la scheda del package resta quella della 9.0.0b44)
+    Commento("RELEASE [VER. 9.0.0b44]", "RELEASE [VER. 9.0.0b46]"),
 )
 _CORNICE = re.compile(r"( +)#")
 

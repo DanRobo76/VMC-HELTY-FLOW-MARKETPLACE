@@ -202,9 +202,9 @@ def test_conteggi_delle_modifiche(traduzione) -> None:
         "esclusioni": 20,
         "frammento": 12,
         "chiave tipi": 5,
-        "intestazione": 1,
+        "intestazione": 2,
     }
-    assert sum(per_tipo.values()) == 2393
+    assert sum(per_tipo.values()) == 2394
 
 
 # ------------------------------------------------------------------------ i testi
@@ -291,7 +291,7 @@ def test_link_al_repository_nuovo(traduzione) -> None:
     VMC-HELTY-FLOW-MARKETPLACE): copyright dell'intestazione, pagina del Marketplace e
     GitHub in Informazioni. I 75 indirizzi delle immagini restano quelli (mai spostare
     file: le schede installate puntano a percorsi fissi). L'intestazione resta una cornice di «#» larga
-    uguale."""
+    uguale; dalla 9.0.0b46 cambia anche la versione della scheda nativa (riga 3)."""
     oggi, domani = scheda_master(), traduzione.testo
     assert len(_REPOSITORY_DI_PRIMA.findall(oggi)) == 3
     assert _REPOSITORY_DI_PRIMA.findall(domani) == []
@@ -301,8 +301,10 @@ def test_link_al_repository_nuovo(traduzione) -> None:
     assert len(righe_oggi) == len(righe_domani) == 39
     assert [len(r) for r in righe_domani] == [len(r) for r in righe_oggi]
     assert [i for i, (a, b) in enumerate(zip(righe_oggi, righe_domani)) if a != b] == [
-        10
+        2,
+        10,
     ]
+    assert "RELEASE [VER. 9.0.0b46]" in righe_domani[2]
     assert righe_domani[10].startswith(
         f"# Copyright © 2023-2026 Ing. Danilo Robotti {COMMENTI[0].dopo} "
     )
