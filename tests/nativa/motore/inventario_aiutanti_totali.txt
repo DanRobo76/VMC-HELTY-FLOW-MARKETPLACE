@@ -1,0 +1,820 @@
+INVENTARIO DEGLI AIUTANTI DEL PACKAGE (fase 4) - totali
+
+Le voci
+-------
+  342 voci «da aiutante» (oggi -> domani):
+      77  input_boolean -> binary_sensor
+      38  script -> interna
+      37  input_boolean -> switch
+      35  input_text -> interna
+      34  timer -> sensor
+      32  input_number -> interna
+      30  input_datetime -> time
+      14  input_select -> select
+      13  script -> button
+      12  shell_command -> button
+      10  input_number -> number
+       4  shell_command -> interna
+       2  input_text -> text
+       1  input_boolean -> interna
+       1  input_number -> sensor
+       1  input_select -> sensor
+       1  input_text -> sensor
+  mai toccate da automazioni e script: 2
+          input_select.vmc_master_entita_escluse_recorder -> sensor.vmc_master_entita_escluse_recorder
+          script.vmc_master_pulisci_cronologia_entita -> button.vmc_master_pulisci_cronologia_entita
+
+Automazioni e script validati
+-----------------------------
+  trigger: 541
+     433  template
+     301  template senza for
+     132  template con for
+      79  state
+      18  event
+       6  homeassistant
+       3  time
+       2  time_pattern
+  condizioni: 2519
+    2025  template
+     233  trigger
+     144  and
+      98  state
+      19  or
+  azioni: 5755
+    2923  action
+    1213  delay
+     619  repeat until
+     424  if
+     248  variables
+     238  choose
+      53  stop
+      27  condition
+       6  wait_template
+       2  repeat for_each
+       2  repeat while
+  modelli: 3241 in tutto, 1033 testi distinti
+    2025  condizione
+     433  trigger
+     300  variabili
+     252  dati del servizio
+     133  trigger (for)
+      76  bersaglio del servizio
+      14  nome del servizio
+       6  attesa
+       2  ripetizione (for_each)
+  funzioni chiamate nei modelli:
+   20874  states
+    4277  is_state
+    2118  now
+     270  strptime
+     191  as_timestamp
+      55  state_attr
+      22  expand
+      11  device_name
+      11  entity_name
+      11  namespace
+       3  integration_entities
+
+Letture nei modelli (entity_id costante)
+----------------------------------------
+  totale: 26027
+  per tipo di lettura:
+     20553  states()
+      4263  is_state()
+       956  states.dominio.oggetto
+       182  expand()
+        53  state_attr()
+        10  device_name()
+        10  entity_name()
+  per posizione del modello:
+     15319  condizione
+      9860  trigger
+       294  variabili
+       206  bersaglio del servizio
+       182  dati del servizio
+       133  trigger (for)
+        24  attesa
+         9  nome del servizio
+  per entità letta:
+     14791  aiutanti: input_boolean
+      6453  altre entità del package: template sensor
+      2178  aiutanti: input_number
+      1199  altre entità del package: sensor tcp
+       809  altre entità del package: template binary_sensor
+       270  aiutanti: input_datetime
+       257  aiutanti: input_select
+        57  aiutanti: input_text
+        12  altre entità del package: sensor rest
+         1  altre entità del package: automation
+
+Per tipo di oggi e dominio di domani
+------------------------------------
+  input_boolean -> binary_sensor: 77 voci
+    voci:
+          75  lette in un modello
+           3  soggetto di un trigger di stato
+          73  lette da un trigger a modello
+          76  in un trigger (di stato o a modello)
+           2  lette da un'attesa (wait_template)
+           6  in una condizione di stato
+          74  lette da una condizione a modello
+          77  scritte da un servizio
+          18  id costante altrove
+          22  indicabili da un nome composto
+           0  mai toccate
+    letture: 13985  (expand()=9; is_state()=2287; states()=11685; states.dominio.oggetto=4)
+      per posizione: attesa=4; azioni=54; condizione=6937; trigger=6990
+      states.dominio.oggetto: (oggetto)=2; last_changed=2
+      valori di is_state: 'off'=265; 'on'=2022
+      usi del valore letto:
+          9650  states() == 'off'
+          2021  states() == 'on'
+             9  expand() | selectattr
+             9  states() != 'on'
+             5  states() == <espressione>
+             2  states.dominio.oggetto is none
+             1  states.dominio.oggetto <espressione> <= <stato>
+             1  states.dominio.oggetto argomento di as_timestamp()
+    trigger di stato: 3  (to=off=1; to=on=1; to=on, for=600 s=1)
+    trigger a modello che le leggono: 433
+    attese che le leggono: 2
+    condizioni di stato: 8  (state=off=2; state=on=6)
+    condizioni a modello che le leggono: 603
+    servizi chiamati: 5057
+        4287  input_boolean.turn_off [(senza dati)]
+         693  input_boolean.turn_on [(senza dati)]
+          77  recorder.purge_entities [keep_days=<costante>]
+    id costante altrove: 64
+          50  bersaglio del servizio: in una lista
+           7  bersaglio del servizio: in un dizionario
+           7  variabili: in un dizionario
+    nomi composti che possono indicarle: 136
+    istanti letti: last_changed=2
+  input_boolean -> interna: 1 voci
+    voci:
+           1  lette in un modello
+           0  soggetto di un trigger di stato
+           1  lette da un trigger a modello
+           1  in un trigger (di stato o a modello)
+           0  lette da un'attesa (wait_template)
+           0  in una condizione di stato
+           1  lette da una condizione a modello
+           1  scritte da un servizio
+           0  id costante altrove
+           0  indicabili da un nome composto
+           0  mai toccate
+    letture: 6  (is_state()=2; states()=4)
+      per posizione: condizione=3; trigger=3
+      valori di is_state: 'off'=2
+      usi del valore letto:
+             4  states() == 'on'
+    trigger di stato: 0
+    trigger a modello che le leggono: 3
+    attese che le leggono: 0
+    condizioni di stato: 0
+    condizioni a modello che le leggono: 3
+    servizi chiamati: 54
+          52  input_boolean.turn_off [(senza dati)]
+           1  input_boolean.turn_on [(senza dati)]
+           1  recorder.purge_entities [keep_days=<costante>]
+  input_boolean -> switch: 37 voci
+    voci:
+          35  lette in un modello
+          20  soggetto di un trigger di stato
+           5  lette da un trigger a modello
+          23  in un trigger (di stato o a modello)
+           1  lette da un'attesa (wait_template)
+          22  in una condizione di stato
+          14  lette da una condizione a modello
+          37  scritte da un servizio
+           1  id costante altrove
+           0  indicabili da un nome composto
+           0  mai toccate
+    letture: 800  (expand()=173; is_state()=90; states()=536; states.dominio.oggetto=1)
+      per posizione: attesa=2; azioni=179; condizione=433; trigger=186
+      states.dominio.oggetto: (oggetto)=1
+      valori di is_state: 'off'=1; 'on'=89
+      usi del valore letto:
+           403  states() == 'on'
+           173  expand() | selectattr
+           117  states() == 'off'
+            16  states() assegnato a una variabile
+             1  states.dominio.oggetto assegnato a una variabile
+    trigger di stato: 49  ((qualsiasi cambio)=2; from=off, to=on=18; from=on, to=off=16; from=on, to=off, for=0 s=1; to=on=12)
+    trigger a modello che le leggono: 171
+    attese che le leggono: 2
+    condizioni di stato: 73  (state=off=18; state=on=55)
+    condizioni a modello che le leggono: 320
+    servizi chiamati: 147
+          59  input_boolean.turn_off [(senza dati)]
+          51  input_boolean.turn_on [(senza dati)]
+          37  recorder.purge_entities [keep_days=<costante>]
+    id costante altrove: 3
+           3  condizione: confrontata con trigger.entity_id
+    istanti letti: last_changed=1
+  input_datetime -> time: 30 voci
+    voci:
+          30  lette in un modello
+           0  soggetto di un trigger di stato
+          28  lette da un trigger a modello
+          28  in un trigger (di stato o a modello)
+           0  lette da un'attesa (wait_template)
+           0  in una condizione di stato
+          30  lette da una condizione a modello
+          30  scritte da un servizio
+           0  id costante altrove
+          28  indicabili da un nome composto
+           0  mai toccate
+    letture: 270  (states()=270)
+      per posizione: condizione=102; trigger=168
+      usi del valore letto:
+           238  states() argomento di strptime()
+            32  states() [:5]
+    trigger di stato: 0
+    trigger a modello che le leggono: 84
+    attese che le leggono: 0
+    condizioni di stato: 0
+    condizioni a modello che le leggono: 24
+    servizi chiamati: 60
+          30  input_datetime.set_datetime [time=<costante>]
+          30  recorder.purge_entities [keep_days=<costante>]
+    nomi composti che possono indicarle: 2240
+  input_number -> interna: 32 voci
+    voci:
+          25  lette in un modello
+           0  soggetto di un trigger di stato
+           0  lette da un trigger a modello
+           0  in un trigger (di stato o a modello)
+           0  lette da un'attesa (wait_template)
+           0  in una condizione di stato
+           2  lette da una condizione a modello
+          32  scritte da un servizio
+           8  id costante altrove
+          24  indicabili da un nome composto
+           0  mai toccate
+    letture: 1048  (states()=1048)
+      per posizione: azioni=1; condizione=914; trigger (for)=133
+      usi del valore letto:
+          1047  states() | int
+             1  states() | float
+    trigger di stato: 0
+    trigger a modello che le leggono: 0
+    attese che le leggono: 0
+    condizioni di stato: 0
+    condizioni a modello che le leggono: 554
+    servizi chiamati: 73
+          40  recorder.purge_entities [keep_days=<costante>]
+          33  input_number.set_value [value=<costante>]
+    id costante altrove: 8
+           7  variabili: in un dizionario
+           1  variabili: costante nella configurazione
+    nomi composti che possono indicarle: 24
+  input_number -> number: 10 voci
+    voci:
+           2  lette in un modello
+           0  soggetto di un trigger di stato
+           0  lette da un trigger a modello
+           0  in un trigger (di stato o a modello)
+           0  lette da un'attesa (wait_template)
+           0  in una condizione di stato
+           0  lette da una condizione a modello
+          10  scritte da un servizio
+           0  id costante altrove
+           0  indicabili da un nome composto
+           0  mai toccate
+    letture: 17  (states()=17)
+      per posizione: azioni=17
+      usi del valore letto:
+            17  states() | float
+    trigger di stato: 0
+    trigger a modello che le leggono: 0
+    attese che le leggono: 0
+    condizioni di stato: 0
+    condizioni a modello che le leggono: 0
+    servizi chiamati: 19
+          10  recorder.purge_entities [keep_days=<costante>]
+           9  input_number.set_value [value=<costante>]
+  input_number -> sensor: 1 voci
+    voci:
+           1  lette in un modello
+           0  soggetto di un trigger di stato
+           1  lette da un trigger a modello
+           1  in un trigger (di stato o a modello)
+           0  lette da un'attesa (wait_template)
+           0  in una condizione di stato
+           1  lette da una condizione a modello
+           1  scritte da un servizio
+           0  id costante altrove
+           0  indicabili da un nome composto
+           0  mai toccate
+    letture: 1113  (states()=1104; states.dominio.oggetto=9)
+      per posizione: condizione=305; trigger=808
+      states.dominio.oggetto: (oggetto)=9
+      usi del valore letto:
+          1104  states() | float
+             9  states.dominio.oggetto assegnato a una variabile
+    trigger di stato: 0
+    trigger a modello che le leggono: 404
+    attese che le leggono: 0
+    condizioni di stato: 0
+    condizioni a modello che le leggono: 13
+    servizi chiamati: 6
+           5  input_number.set_value [value=<costante>]
+           1  recorder.purge_entities [keep_days=<costante>]
+    istanti letti: last_changed=9
+  input_select -> select: 14 voci
+    voci:
+           8  lette in un modello
+           7  soggetto di un trigger di stato
+           7  lette da un trigger a modello
+           8  in un trigger (di stato o a modello)
+           0  lette da un'attesa (wait_template)
+           0  in una condizione di stato
+           8  lette da una condizione a modello
+          14  scritte da un servizio
+           0  id costante altrove
+           0  indicabili da un nome composto
+           0  mai toccate
+    letture: 257  (state_attr()=41; states()=216)
+      per posizione: azioni=69; condizione=148; trigger=40
+      attributi (state_attr): options=41
+      usi del valore letto:
+            56  states() scritto {{ }}
+            45  states() assegnato a una variabile
+            33  states() != 'Velocità 0'
+            28  state_attr() assegnato a una variabile
+            22  states() .startswith('Aggiorna Elenco')
+            17  states() == 'Velocità 0'
+            13  state_attr() | reject
+            12  states() == 'Free Cool./Heat.'
+             7  states() != <espressione>
+             4  states() <espressione> == <stato>
+             3  states() ramo di un if
+             2  states() not in <espressione>
+             2  states() not in ['Aggiorna Elenco Dispositivi per Invio Notifica', '', 'sconosciuto', 'unknown', None, 'unavailable', 'Non disponibile']
+             2  states() not in ['unknown', 'unavailable', '']
+             1  states() == 'Iperventilazione'
+             1  states() == 'Notturna'
+             1  states() == 'Velocità 1'
+             1  states() == 'Velocità 2'
+             1  states() == 'Velocità 3'
+             1  states() == 'Velocità 4'
+             1  states() == <espressione>
+             1  states() argomento di device_name()
+             1  states() argomento di entity_name()
+             1  states() argomento di state_attr()
+             1  states() in una lista o dizionario
+    trigger di stato: 7  ((qualsiasi cambio)=7)
+    trigger a modello che le leggono: 29
+    attese che le leggono: 0
+    condizioni di stato: 0
+    condizioni a modello che le leggono: 103
+    servizi chiamati: 60
+          18  homeassistant.update_entity [(senza dati)]
+          14  input_select.select_option [option=<costante>]
+          14  recorder.purge_entities [keep_days=<costante>]
+           7  input_select.select_option [option=<modello>]
+           7  input_select.set_options [options=<modello>]
+  input_select -> sensor: 1 voci
+    voci:
+           0  lette in un modello
+           0  soggetto di un trigger di stato
+           0  lette da un trigger a modello
+           0  in un trigger (di stato o a modello)
+           0  lette da un'attesa (wait_template)
+           0  in una condizione di stato
+           0  lette da una condizione a modello
+           0  scritte da un servizio
+           0  id costante altrove
+           0  indicabili da un nome composto
+           1  mai toccate
+    letture: 0  ()
+      per posizione: 
+    trigger di stato: 0
+    trigger a modello che le leggono: 0
+    attese che le leggono: 0
+    condizioni di stato: 0
+    condizioni a modello che le leggono: 0
+    servizi chiamati: 0
+  input_text -> interna: 35 voci
+    voci:
+          11  lette in un modello
+           2  soggetto di un trigger di stato
+           0  lette da un trigger a modello
+           2  in un trigger (di stato o a modello)
+           0  lette da un'attesa (wait_template)
+           1  in una condizione di stato
+          10  lette da una condizione a modello
+          35  scritte da un servizio
+           0  id costante altrove
+          22  indicabili da un nome composto
+           0  mai toccate
+    letture: 48  (states()=48)
+      per posizione: azioni=27; condizione=21
+      usi del valore letto:
+            19  states() scritto {{ }}
+            16  states() assegnato a una variabile
+            12  states() .split('|')
+             1  states() == <espressione>
+    trigger di stato: 2  ((qualsiasi cambio)=1; to=reset=1)
+    trigger a modello che le leggono: 0
+    attese che le leggono: 0
+    condizioni di stato: 1  (state=reset=1)
+    condizioni a modello che le leggono: 19
+    servizi chiamati: 73
+          35  recorder.purge_entities [keep_days=<costante>]
+          21  input_text.set_value [value=<modello>]
+          14  homeassistant.update_entity [(senza dati)]
+           3  input_text.set_value [value=<costante>]
+    nomi composti che possono indicarle: 66
+  input_text -> sensor: 1 voci
+    voci:
+           1  lette in un modello
+           0  soggetto di un trigger di stato
+           1  lette da un trigger a modello
+           1  in un trigger (di stato o a modello)
+           0  lette da un'attesa (wait_template)
+           0  in una condizione di stato
+           1  lette da una condizione a modello
+           1  scritte da un servizio
+           0  id costante altrove
+           0  indicabili da un nome composto
+           0  mai toccate
+    letture: 5  (states()=5)
+      per posizione: azioni=1; condizione=3; trigger=1
+      usi del valore letto:
+             2  states() not in ['', 'unknown', 'unavailable']
+             1  states() assegnato a una variabile
+             1  states() in ['', 'unknown', 'unavailable']
+             1  states() unito a un testo
+    trigger di stato: 0
+    trigger a modello che le leggono: 1
+    attese che le leggono: 0
+    condizioni di stato: 0
+    condizioni a modello che le leggono: 3
+    servizi chiamati: 272
+         136  input_text.set_value [value=<costante>]
+         135  input_text.set_value [value=<modello>]
+           1  recorder.purge_entities [keep_days=<costante>]
+  input_text -> text: 2 voci
+    voci:
+           2  lette in un modello
+           1  soggetto di un trigger di stato
+           1  lette da un trigger a modello
+           2  in un trigger (di stato o a modello)
+           0  lette da un'attesa (wait_template)
+           0  in una condizione di stato
+           2  lette da una condizione a modello
+           2  scritte da un servizio
+           0  id costante altrove
+           0  indicabili da un nome composto
+           0  mai toccate
+    letture: 4  (states()=4)
+      per posizione: azioni=1; condizione=2; trigger=1
+      usi del valore letto:
+             2  states() is match
+             2  states() | trim
+    trigger di stato: 1  ((qualsiasi cambio)=1)
+    trigger a modello che le leggono: 1
+    attese che le leggono: 0
+    condizioni di stato: 0
+    condizioni a modello che le leggono: 2
+    servizi chiamati: 3
+           2  recorder.purge_entities [keep_days=<costante>]
+           1  input_text.set_value [value=<costante>]
+  script -> button: 13 voci
+    voci:
+           0  lette in un modello
+           0  soggetto di un trigger di stato
+           0  lette da un trigger a modello
+           0  in un trigger (di stato o a modello)
+           0  lette da un'attesa (wait_template)
+           0  in una condizione di stato
+           0  lette da una condizione a modello
+          12  scritte da un servizio
+           0  id costante altrove
+           0  indicabili da un nome composto
+           1  mai toccate
+    letture: 0  ()
+      per posizione: 
+    trigger di stato: 0
+    trigger a modello che le leggono: 0
+    attese che le leggono: 0
+    condizioni di stato: 0
+    condizioni a modello che le leggono: 0
+    servizi chiamati: 20
+          12  recorder.purge_entities [keep_days=<costante>]
+           6  script.<nome> (chiamata diretta) [(senza dati)]
+           2  script.turn_on [(senza dati)]
+  script -> interna: 38 voci
+    voci:
+           0  lette in un modello
+           0  soggetto di un trigger di stato
+           0  lette da un trigger a modello
+           0  in un trigger (di stato o a modello)
+           0  lette da un'attesa (wait_template)
+           0  in una condizione di stato
+           0  lette da una condizione a modello
+          38  scritte da un servizio
+           0  id costante altrove
+           0  indicabili da un nome composto
+           0  mai toccate
+    letture: 0  ()
+      per posizione: 
+    trigger di stato: 0
+    trigger a modello che le leggono: 0
+    attese che le leggono: 0
+    condizioni di stato: 0
+    condizioni a modello che le leggono: 0
+    servizi chiamati: 157
+          80  script.<nome> (chiamata diretta) [(senza dati)]
+          38  recorder.purge_entities [keep_days=<costante>]
+          29  script.turn_on [(senza dati)]
+           7  script.turn_on [variables=<struttura>]
+           2  script.<nome> (chiamata diretta) [comando_non_eseguito_dalle=<modello>]
+           1  script.<nome> (chiamata diretta) [mantieni_pannelli=<costante>]
+  shell_command -> button: 12 voci
+    voci:
+           0  lette in un modello
+           0  soggetto di un trigger di stato
+           0  lette da un trigger a modello
+           0  in un trigger (di stato o a modello)
+           0  lette da un'attesa (wait_template)
+           0  in una condizione di stato
+           0  lette da una condizione a modello
+          10  scritte da un servizio
+           8  id costante altrove
+          12  indicabili da un nome composto
+           0  mai toccate
+    letture: 0  ()
+      per posizione: 
+    trigger di stato: 0
+    trigger a modello che le leggono: 0
+    attese che le leggono: 0
+    condizioni di stato: 0
+    condizioni a modello che le leggono: 0
+    servizi chiamati: 582
+         582  shell_command.<nome> (chiamata diretta) [(senza dati)]
+    id costante altrove: 8
+           8  variabili: in una lista
+    nomi composti che possono indicarle: 48
+    trigger a evento che le guardano: 17
+  shell_command -> interna: 4 voci
+    voci:
+           0  lette in un modello
+           0  soggetto di un trigger di stato
+           0  lette da un trigger a modello
+           0  in un trigger (di stato o a modello)
+           0  lette da un'attesa (wait_template)
+           0  in una condizione di stato
+           0  lette da una condizione a modello
+           4  scritte da un servizio
+           0  id costante altrove
+           4  indicabili da un nome composto
+           0  mai toccate
+    letture: 0  ()
+      per posizione: 
+    trigger di stato: 0
+    trigger a modello che le leggono: 0
+    attese che le leggono: 0
+    condizioni di stato: 0
+    condizioni a modello che le leggono: 0
+    servizi chiamati: 5
+           4  shell_command.<nome> (chiamata diretta) [(senza dati)]
+           1  shell_command.<nome> (chiamata diretta) [ip=<modello>]
+    nomi composti che possono indicarle: 16
+  timer -> sensor: 34 voci
+    voci:
+           0  lette in un modello
+           0  soggetto di un trigger di stato
+           0  lette da un trigger a modello
+           0  in un trigger (di stato o a modello)
+           0  lette da un'attesa (wait_template)
+           0  in una condizione di stato
+           0  lette da una condizione a modello
+          34  scritte da un servizio
+           0  id costante altrove
+          34  indicabili da un nome composto
+           0  mai toccate
+    letture: 0  ()
+      per posizione: 
+    trigger di stato: 0
+    trigger a modello che le leggono: 0
+    attese che le leggono: 0
+    condizioni di stato: 0
+    condizioni a modello che le leggono: 0
+    servizi chiamati: 47
+          34  recorder.purge_entities [keep_days=<costante>]
+           6  timer.start [(senza dati)]
+           5  timer.cancel [(senza dati)]
+           2  timer.start [duration=<costante>]
+    nomi composti che possono indicarle: 68
+
+Servizi chiamati (tutte le chiamate, anche fuori dagli aiutanti)
+----------------------------------------------------------------
+  chiamate: 2923
+     595  homeassistant.update_entity
+     587  shell_command.<nome> (chiamata diretta)
+     584  input_boolean.turn_off
+     575  input_boolean.turn_on
+     298  input_text.set_value
+      89  script.<nome> (chiamata diretta)
+      40  input_number.set_value
+      26  script.turn_on
+      21  input_select.select_option
+      16  media_player.volume_set
+      16  tts.google_translate_say
+      14  <modello>
+      14  persistent_notification.create
+      14  persistent_notification.dismiss
+      10  timer.start
+       7  input_select.set_options
+       6  input_datetime.set_datetime
+       6  timer.cancel
+       2  recorder.purge_entities
+       1  homeassistant.restart
+       1  tts.clear_cache
+       1  vmc_master.verifica_ip
+  entità colpite (entity_id costante), per servizio e dominio dell'entità:
+      4398  input_boolean.turn_off su input_boolean (target.entity_id)
+       745  input_boolean.turn_on su input_boolean (target.entity_id)
+       598  homeassistant.update_entity su sensor (target.entity_id)
+       292  input_text.set_value su input_text (target.entity_id)
+       125  recorder.purge_entities su sensor (data.entity_id)
+       115  recorder.purge_entities su input_boolean (data.entity_id)
+        51  recorder.purge_entities su input_number (data.entity_id)
+        50  recorder.purge_entities su script (data.entity_id)
+        38  recorder.purge_entities su input_text (data.entity_id)
+        38  script.turn_on su script (target.entity_id)
+        34  recorder.purge_entities su timer (data.entity_id)
+        30  input_datetime.set_datetime su input_datetime (target.entity_id)
+        30  recorder.purge_entities su input_datetime (data.entity_id)
+        29  input_number.set_value su input_number (target.entity_id)
+        18  homeassistant.update_entity su input_select (target.entity_id)
+        18  input_number.set_value su input_number (data.entity_id)
+        17  input_select.select_option su input_select (target.entity_id)
+        15  recorder.purge_entities su binary_sensor (data.entity_id)
+        14  homeassistant.update_entity su input_text (target.entity_id)
+        14  recorder.purge_entities su automation (data.entity_id)
+        14  recorder.purge_entities su input_select (data.entity_id)
+         8  timer.start su timer (target.entity_id)
+         7  input_select.set_options su input_select (target.entity_id)
+         5  timer.cancel su timer (target.entity_id)
+         4  input_select.select_option su input_select (data.entity_id)
+         4  input_text.set_value su input_text (data.entity_id)
+
+Entity_id e nomi di servizio dinamici
+-------------------------------------
+  «uso»: un nome non costante dove si legge o si scrive; «costruzione»: il testo
+  composto che lo forma (gli stessi casi visti da dentro: non si sommano agli
+  usi); «elenco»: entità trovate scorrendo gli stati.
+  uso: 431 occorrenze, 66 casi distinti
+       321  states() con entity_id non costante
+        21  bersaglio di input_boolean.turn_off [(senza dati)]: nome letto dallo stato di un'altra entità
+        16  bersaglio di media_player.volume_set [volume_level=<modello>]: nome letto dallo stato di un'altra entità
+        16  bersaglio di tts.google_translate_say [language=<costante>, message=<modello>]: nome letto dallo stato di un'altra entità
+        14  is_state() con entity_id non costante
+         9  nome del servizio: nome letto dallo stato di un'altra entità
+         5  bersaglio di input_boolean.turn_off [(senza dati)]: scelta fra entity_id costanti e un nome composto
+         5  bersaglio di input_boolean.turn_on [(senza dati)]: nome composto (inizio costante + pezzo calcolato)
+         4  nome del servizio: nome composto (inizio costante + pezzo calcolato)
+         3  bersaglio di input_number.set_value [value=<modello>]: nome in una variabile
+         2  bersaglio di input_number.set_value [value=<costante>]: nome in una variabile
+         2  state_attr() con entity_id non costante
+         2  states[...] con entity_id non costante
+         1  bersaglio di input_boolean.turn_off [(senza dati)]: scelta fra entity_id costanti
+         1  bersaglio di input_boolean.turn_on [(senza dati)]: nome in una variabile
+         1  bersaglio di input_boolean.turn_on [(senza dati)]: scelta fra entity_id costanti
+         1  bersaglio di input_text.set_value [value=<costante>]: nome composto (inizio costante + pezzo calcolato)
+         1  bersaglio di input_text.set_value [value=<modello>]: nome composto (inizio costante + pezzo calcolato)
+         1  bersaglio di timer.cancel [(senza dati)]: nome composto (inizio costante + pezzo calcolato)
+         1  bersaglio di timer.start [duration=<modello>]: nome composto (inizio costante + pezzo calcolato)
+         1  bersaglio di timer.start [duration=<modello>]: nome in una variabile
+         1  device_name() con entity_id non costante
+         1  entity_name() con entity_id non costante
+         1  nome del servizio: nome in una variabile
+  costruzione: 353 occorrenze, 33 casi distinti
+       331  testo composto con ~ (frammento)
+        14  testo del modello con espressioni (frammento)
+         5  testo composto con | join (frammento, id)
+         1  testo composto con + (id)
+         1  testo composto con | join (id)
+         1  testo composto con | replace (frammento)
+  elenco: 16 occorrenze, 9 casi distinti
+        11  tutte le entità di un dominio
+         3  entità di un'integrazione (integration_entities)
+         2  | reject('is_state') su un elenco
+  nomi composti (inizio costante + pezzo calcolato), per inizio:
+      10  input_boolean.vmc_master_spia_…: 8 entità possibili (elenco esatto); domani: binary_sensor=8
+       4  input_boolean.vmc_master_spia_calendario_…_1: 7 entità possibili (stesso inizio e fine); domani: binary_sensor=7
+       4  input_boolean.vmc_master_spia_calendario_…_2: 7 entità possibili (stesso inizio e fine); domani: binary_sensor=7
+      79  input_datetime.vmc_master_accensione_…: 14 entità possibili (stesso inizio e fine); domani: time=14
+      79  input_datetime.vmc_master_accensione_…_2: 7 entità possibili (stesso inizio e fine); domani: time=7
+      79  input_datetime.vmc_master_spegnimento_…: 14 entità possibili (stesso inizio e fine); domani: time=14
+      79  input_datetime.vmc_master_spegnimento_…_2: 7 entità possibili (stesso inizio e fine); domani: time=7
+       1  input_number.vmc_master_attesa_…: 24 entità possibili (stesso inizio e fine); domani: interna=24
+       3  input_text.vmc_master_countdown_…: 22 entità possibili (stesso inizio e fine); domani: interna=22
+       4  shell_command.vmc_master_…: 16 entità possibili (stesso inizio e fine); domani: button=12; interna=4
+       2  timer.vmc_master_countdown_…: 29 entità possibili (stesso inizio e fine); domani: sensor=29
+       2  timer.vmc_master_lettura_…: 5 entità possibili (stesso inizio e fine); domani: sensor=5
+  testi con «master» che non sono un entity_id intero, per classe:
+       347  frammento
+        28  nome non di entità
+        25  nome
+  catene da trigger/this/repeat/wait/context:
+       198  trigger.id
+        25  trigger.entity_id
+        23  trigger.to_state.last_changed
+        21  trigger.to_state.state
+        10  trigger.platform
+        10  trigger.to_state.state.split
+         8  trigger.to_state
+         7  repeat.item
+         5  trigger.from_state
+         4  repeat.index
+         3  trigger.event.context.user_id
+         3  trigger.from_state.state.split
+         2  trigger.event.data.entity_id
+         2  trigger.event.data.service
+         2  trigger.from_state.last_changed
+         1  trigger.for
+         1  trigger.from_state.state
+         1  trigger.id.split
+         1  trigger.id.startswith
+
+Contesto e istanti
+------------------
+  usi: 1009  (context=3; last_changed=1005; last_reported=1)
+       917  last_changed in condizione: states.<dominio>.<oggetto>.last_changed
+        21  last_changed in bersaglio del servizio: trigger.to_state.last_changed
+        20  last_changed in condizione: vel.last_changed
+         9  last_changed in condizione: fase.last_changed
+         9  last_changed in condizione: rete.last_changed
+         7  last_changed in bersaglio del servizio: expand(['input_boolean.vmc_master_opzioni_calendario_main', 'input_boolean.vm...
+         4  last_changed in bersaglio del servizio: expand(['input_boolean.vmc_master_opzioni_avvisi', 'input_boolean.vmc_master_...
+         3  context in condizione: trigger.event.context.user_id
+         3  last_changed in bersaglio del servizio: expand(['input_boolean.vmc_master_opzioni_interruttore_monitoraggio_sensori_e...
+         2  last_changed in bersaglio del servizio: expand(['input_boolean.vmc_master_opzioni_free_heating_o_free_cooling', 'inpu...
+         2  last_changed in condizione: trigger.from_state.last_changed
+         2  last_changed in condizione: trigger.to_state.last_changed
+         1  last_changed in bersaglio del servizio: expand(['input_boolean.vmc_master_opzione_finestra_prossime_letture']) | sele...
+         1  last_changed in bersaglio del servizio: expand(['input_boolean.vmc_master_opzione_finestra_tempi_attesa']) | selectat...
+         1  last_changed in bersaglio del servizio: expand(['input_boolean.vmc_master_opzioni_interruttore_offset_sensori', 'inpu...
+         1  last_changed in bersaglio del servizio: expand(['input_boolean.vmc_master_opzioni_lettura_sensori', 'input_boolean.vm...
+         1  last_changed in bersaglio del servizio: expand(['input_boolean.vmc_master_opzioni_vmc', 'input_boolean.vmc_master_opz...
+         1  last_changed in condizione: m.last_changed
+         1  last_changed in condizione: memorie | map(attribute='last_changed')
+         1  last_changed in condizione: pdr.last_changed
+         1  last_changed in variabili: states.<dominio>.<oggetto>.last_changed
+         1  last_reported in variabili: states[letture[repeat.item][0]].last_reported
+  per entità:
+       551  last_changed: sensor.vmc_master_status_ventola
+       369  last_changed: sensor.vmc_master_status_ip_interfaccia
+        47  last_changed: (da trigger o da una variabile)
+        25  last_changed: sensor.vmc_master_status_ventola_lettura_codice_interpretato
+         9  last_changed: input_number.vmc_master_fase_riallineamento_al_riavvio
+         3  context: (da trigger o da una variabile)
+         1  last_changed: input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr
+         1  last_changed: input_boolean.vmc_master_spia_calendario_comando_non_eseguito
+         1  last_changed: input_boolean.vmc_master_spia_co2_o_voc
+         1  last_changed: sensor.vmc_master_status_ventola_memorizzata
+         1  last_reported: (da trigger o da una variabile)
+  variabile «context»: 0 usi
+  variabile «this»: 0 usi
+
+Trigger a evento
+----------------
+  18 trigger a evento:
+         3  call_service {domain: shell_command, service: vmc_master_velocita_1}
+         2  call_service {domain: shell_command, service: vmc_master_freecooling}
+         2  call_service {domain: shell_command, service: vmc_master_iperventilazione}
+         2  call_service {domain: shell_command, service: vmc_master_notturna}
+         2  call_service {domain: shell_command, service: vmc_master_velocita_0}
+         2  call_service {domain: shell_command, service: vmc_master_velocita_2}
+         2  call_service {domain: shell_command, service: vmc_master_velocita_3}
+         2  call_service {domain: shell_command, service: vmc_master_velocita_4}
+         1  timer.finished {}
+         8  automazione «VMC Master - Letture Ravvicinate»: call_service
+         8  automazione «VMC Master - Registro Comandi e Scelte»: call_service
+         1  automazione «Automazione VMC Master»: call_service
+         1  automazione «VMC Master - Countdown Letture VMC»: timer.finished
+
+Timer
+-----
+  timer definiti: 34
+    con duration: 7; con restore: 0
+  trigger sugli eventi dei timer: 1
+    automazione «VMC Master - Countdown Letture VMC» > trigger 2: timer.finished dati {}
+  attributi letti con entity_id costante: nessuno
+  stati confrontati con is_state (costante): nessuno
+  servizi con entity_id costante:
+         6  timer.start [(senza dati)]
+         5  timer.cancel [(senza dati)]
+         2  timer.start [duration=<costante>]
+  letture e servizi con il nome del timer non costante:
+    bersaglio di timer.start [duration=<modello>]: nome composto (inizio costante + pezzo calcolato): timer.vmc_master_countdown_{{ famiglia }}
+    bersaglio di timer.cancel [(senza dati)]: nome composto (inizio costante + pezzo calcolato): timer.vmc_master_countdown_{{ repeat.item }}
+    is_state() con entity_id non costante: is_state(timer_lettura, 'active')
+    state_attr() con entity_id non costante: state_attr(timer_lettura, 'finishes_at')
+    bersaglio di timer.start [duration=<modello>]: nome in una variabile: {{ timer_lettura }}

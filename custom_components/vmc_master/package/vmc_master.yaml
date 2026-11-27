@@ -6307,7 +6307,7 @@ script:
                       # Notifica solo se nell'elenco esiste almeno un'entità sceglibile
                       - if:
                           - condition: template
-                            value_template: "{{ state_attr('input_select.vmc_master_selected_temp_external_entity', 'options') | reject('equalto', 'Aggiorna Elenco Entità Temperatura Esterna') | list | count > 0 }}"
+                            value_template: "{{ not (senza_avvisi | default(false)) and state_attr('input_select.vmc_master_selected_temp_external_entity', 'options') | reject('equalto', 'Aggiorna Elenco Entità Temperatura Esterna') | list | count > 0 }}"
                         then:
                           - action: persistent_notification.create
                             data:
@@ -6358,7 +6358,7 @@ script:
             - input_text.vmc_master_last_temp_external_entity
     mode: restart
     icon: mdi:fingerprint-off
-    description: Permette di selezionare l'entità temperatura preferita tra tutte quelle installate in Home Assistant, inclusi i sensori meteo. Aggiorna l'elenco in circa 5 s (pause di 2 s + 3 s).
+    description: Permette di selezionare l'entità temperatura preferita tra tutte quelle installate in Home Assistant, inclusi i sensori meteo. Aggiorna l'elenco in circa 5 s (pause di 2 s + 3 s). Se manca la scelta avvisa con una notifica (all'avvio di Home Assistant, con la VMC di nuovo ON-Line, accendendo Invio Notifica e con Agg. Sensori); aprendo la finestra Opzioni aggiorna l'elenco senza avvisi.
 
   vmc_master_aggiorna_elenco_entita_temperatura_interna:                        # [CONFIGURAZIONE, 4 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 3 RICHIAMI]
     alias: VMC Master - Aggiorna Elenco Entità Temperatura Interna
@@ -6431,7 +6431,7 @@ script:
                       # Notifica solo se nell'elenco esiste almeno un'entità sceglibile
                       - if:
                           - condition: template
-                            value_template: "{{ state_attr('input_select.vmc_master_selected_temp_internal_entity', 'options') | reject('equalto', 'Aggiorna Elenco Entità Temperatura Interna') | list | count > 0 }}"
+                            value_template: "{{ not (senza_avvisi | default(false)) and state_attr('input_select.vmc_master_selected_temp_internal_entity', 'options') | reject('equalto', 'Aggiorna Elenco Entità Temperatura Interna') | list | count > 0 }}"
                         then:
                           - action: persistent_notification.create
                             data:
@@ -6482,7 +6482,7 @@ script:
             - input_text.vmc_master_last_temp_internal_entity
     mode: restart
     icon: mdi:fingerprint-off
-    description: Permette di selezionare l'entità temperatura preferita tra tutte quelle installate in Home Assistant. Aggiorna l'elenco in circa 5 s (pause di 2 s + 3 s).
+    description: Permette di selezionare l'entità temperatura preferita tra tutte quelle installate in Home Assistant. Aggiorna l'elenco in circa 5 s (pause di 2 s + 3 s). Se manca la scelta avvisa con una notifica (all'avvio di Home Assistant, con la VMC di nuovo ON-Line, accendendo Invio Notifica e con Agg. Sensori); aprendo la finestra Opzioni aggiorna l'elenco senza avvisi.
 
   vmc_master_aggiorna_elenco_entita_umidita_esterna:                            # [CONFIGURAZIONE, 4 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 3 RICHIAMI]
     alias: VMC Master - Aggiorna Elenco Entità Umidità Esterna
@@ -6561,7 +6561,7 @@ script:
                       # Notifica solo se nell'elenco esiste almeno un'entità sceglibile
                       - if:
                           - condition: template
-                            value_template: "{{ state_attr('input_select.vmc_master_selected_humidity_external_entity', 'options') | reject('equalto', 'Aggiorna Elenco Entità Umidità Esterna') | list | count > 0 }}"
+                            value_template: "{{ not (senza_avvisi | default(false)) and state_attr('input_select.vmc_master_selected_humidity_external_entity', 'options') | reject('equalto', 'Aggiorna Elenco Entità Umidità Esterna') | list | count > 0 }}"
                         then:
                           - action: persistent_notification.create
                             data:
@@ -6612,7 +6612,7 @@ script:
             - input_text.vmc_master_last_humidity_external_entity
     mode: restart
     icon: mdi:fingerprint-off
-    description: Permette di selezionare l'entità umidità preferita tra tutte quelle installate in Home Assistant, inclusi i sensori meteo. Aggiorna l'elenco in circa 5 s (pause di 2 s + 3 s).
+    description: Permette di selezionare l'entità umidità preferita tra tutte quelle installate in Home Assistant, inclusi i sensori meteo. Aggiorna l'elenco in circa 5 s (pause di 2 s + 3 s). Se manca la scelta avvisa con una notifica (all'avvio di Home Assistant, con la VMC di nuovo ON-Line, accendendo Invio Notifica e con Agg. Sensori); aprendo la finestra Opzioni aggiorna l'elenco senza avvisi.
 
   vmc_master_aggiorna_elenco_entita_umidita_interna:                            # [CONFIGURAZIONE, 4 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 3 RICHIAMI]
     alias: VMC Master - Aggiorna Elenco Entità Umidità Interna
@@ -6685,7 +6685,7 @@ script:
                       # Notifica solo se nell'elenco esiste almeno un'entità sceglibile
                       - if:
                           - condition: template
-                            value_template: "{{ state_attr('input_select.vmc_master_selected_humidity_internal_entity', 'options') | reject('equalto', 'Aggiorna Elenco Entità Umidità Interna') | list | count > 0 }}"
+                            value_template: "{{ not (senza_avvisi | default(false)) and state_attr('input_select.vmc_master_selected_humidity_internal_entity', 'options') | reject('equalto', 'Aggiorna Elenco Entità Umidità Interna') | list | count > 0 }}"
                         then:
                           - action: persistent_notification.create
                             data:
@@ -6736,7 +6736,7 @@ script:
             - input_text.vmc_master_last_humidity_internal_entity
     mode: restart
     icon: mdi:fingerprint-off
-    description: Permette di selezionare l'entità umidità preferita tra tutte quelle installate in Home Assistant. Aggiorna l'elenco in circa 5 s (pause di 2 s + 3 s).
+    description: Permette di selezionare l'entità umidità preferita tra tutte quelle installate in Home Assistant. Aggiorna l'elenco in circa 5 s (pause di 2 s + 3 s). Se manca la scelta avvisa con una notifica (all'avvio di Home Assistant, con la VMC di nuovo ON-Line, accendendo Invio Notifica e con Agg. Sensori); aprendo la finestra Opzioni aggiorna l'elenco senza avvisi.
 
   vmc_master_aggiorna_elenco_entita_co2_interna:                                # [CONFIGURAZIONE, 4 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 3 RICHIAMI]
     alias: VMC Master - Aggiorna Elenco Entità Anidride Carbonica Interna
@@ -6802,7 +6802,7 @@ script:
                       # Notifica solo se nell'elenco esiste almeno un'entità sceglibile
                       - if:
                           - condition: template
-                            value_template: "{{ state_attr('input_select.vmc_master_selected_co2_internal_entity', 'options') | reject('equalto', 'Aggiorna Elenco Entità CO₂ Interna') | list | count > 0 }}"
+                            value_template: "{{ not (senza_avvisi | default(false)) and state_attr('input_select.vmc_master_selected_co2_internal_entity', 'options') | reject('equalto', 'Aggiorna Elenco Entità CO₂ Interna') | list | count > 0 }}"
                         then:
                           - action: persistent_notification.create
                             data:
@@ -6851,7 +6851,7 @@ script:
             - input_text.vmc_master_last_co2_internal_entity
     mode: restart
     icon: mdi:fingerprint-off
-    description: Permette di selezionare l'entità anidride carbonica preferita tra tutte quelle installate in Home Assistant. Aggiorna l'elenco in circa 5 s (pause di 2 s + 3 s).
+    description: Permette di selezionare l'entità anidride carbonica preferita tra tutte quelle installate in Home Assistant. Aggiorna l'elenco in circa 5 s (pause di 2 s + 3 s). Se manca la scelta avvisa con una notifica (all'avvio di Home Assistant, con la VMC di nuovo ON-Line, accendendo Invio Notifica e con Agg. Sensori); aprendo la finestra Opzioni aggiorna l'elenco senza avvisi.
 
   vmc_master_aggiorna_elenco_entita_notifica_dispositivo:                       # [CONFIGURAZIONE, 4 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 3 RICHIAMI]
     alias: VMC Master - Aggiorna Elenco Entità Notifica Dispositivo
@@ -6914,21 +6914,26 @@ script:
                         data:
                           option: "Aggiorna Elenco Dispositivi per Invio Notifica"
                       # Con almeno un cellulare nell'elenco chiede di sceglierlo; senza cellulari (app Home Assistant non ancora collegata) spiega cosa fare
+                      # Nessun avviso quando gli elenchi si aggiornano aprendo la finestra Opzioni (senza_avvisi)
                       - if:
                           - condition: template
-                            value_template: "{{ state_attr('input_select.vmc_master_selected_notification_device', 'options') | reject('equalto', 'Aggiorna Elenco Dispositivi per Invio Notifica') | list | count > 0 }}"
+                            value_template: "{{ not (senza_avvisi | default(false)) }}"
                         then:
-                          - action: persistent_notification.create
-                            data:
-                              notification_id: vmc_master_aggiorna_entita_dispositivo_notifica
-                              title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
-                              message: "Aggiornare Manualmente l'Entità Dispositivo di Notifica"
-                        else:
-                          - action: persistent_notification.create
-                            data:
-                              notification_id: vmc_master_aggiorna_entita_dispositivo_notifica
-                              title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
-                              message: "Nessun cellulare con l'app Home Assistant: installare l'app sul cellulare, accedere a Home Assistant e poi scegliere il cellulare in Opzioni, «Seleziona Dispositivo per Invio Notifica»"
+                          - if:
+                              - condition: template
+                                value_template: "{{ state_attr('input_select.vmc_master_selected_notification_device', 'options') | reject('equalto', 'Aggiorna Elenco Dispositivi per Invio Notifica') | list | count > 0 }}"
+                            then:
+                              - action: persistent_notification.create
+                                data:
+                                  notification_id: vmc_master_aggiorna_entita_dispositivo_notifica
+                                  title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
+                                  message: "Aggiornare Manualmente l'Entità Dispositivo di Notifica"
+                            else:
+                              - action: persistent_notification.create
+                                data:
+                                  notification_id: vmc_master_aggiorna_entita_dispositivo_notifica
+                                  title: VMC "{{ states('sensor.vmc_master_nome_status') }}"
+                                  message: "Nessun cellulare con l'app Home Assistant: installare l'app sul cellulare, accedere a Home Assistant e poi scegliere il cellulare in Opzioni, «Seleziona Dispositivo per Invio Notifica»"
               # Solo un'entità vera: se l'entità scelta manca per un momento dall'elenco (per esempio non ancora presente in HA all'avvio) l'ultima scelta resta memorizzata e il prossimo aggiornamento dell'elenco la ripristina; un dispositivo soltanto non raggiungibile resta invece nell'elenco e la scelta non si perde
               - if:
                   - condition: template
@@ -6971,7 +6976,7 @@ script:
             - input_text.vmc_master_last_notification_device
     mode: restart
     icon: mdi:fingerprint-off
-    description: Permette di selezionare l'entità dispositivo di notifica preferita tra tutte quelle disponibili tramite l'integrazione Mobile App. Aggiorna l'elenco in circa 5 s (pause di 2 s + 3 s).
+    description: Permette di selezionare l'entità dispositivo di notifica preferita tra tutte quelle disponibili tramite l'integrazione Mobile App. Aggiorna l'elenco in circa 5 s (pause di 2 s + 3 s). Se manca la scelta avvisa con una notifica (all'avvio di Home Assistant, con la VMC di nuovo ON-Line, accendendo Invio Notifica e con Agg. Sensori); aprendo la finestra Opzioni aggiorna l'elenco senza avvisi.
 
   vmc_master_aggiorna_elenco_entita_media_player:                               # [CONFIGURAZIONE, 4 RICHIAMI] [INTERFACCIA, 1 RICHIAMO] [AUTOMAZIONE, 3 RICHIAMI]
     alias: VMC Master - Aggiorna Elenco Entità Media Player

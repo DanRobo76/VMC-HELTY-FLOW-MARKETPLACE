@@ -13,6 +13,9 @@ CONF_HOST: Final = "host"
 # Ultimo titolo della voce scritto dall'integrazione (nome letto dalla VMC): se l'utente
 # rinomina la voce, il suo nome resta
 CONF_TITOLO: Final = "titolo"
+# VMC aggiunta per la prima volta: il Profilo Inizializzazione parte da solo una volta
+# (poi la chiave si toglie); non c'e' per una VMC riaggiunta o passata dalla beta
+CONF_DA_INIZIALIZZARE: Final = "da_inizializzare"
 
 # Nome della prima VMC (nella release 8.6.0 l'unica con la Finestra Prima Installazione VMC)
 NOME_MASTER: Final = "master"
@@ -35,5 +38,5 @@ FILE_SCHEDA_JS: Final = "vmc-master-card.js"
 FILE_SCHEDA: Final = "vmc_master_scheda_manuale_interfaccia.txt"
 
 # Repository dell'integrazione nativa (VMC-HELTY-FLOW-MARKETPLACE, rinominato)
-REPOSITORY: Final = "DanRobo76/VMC-HELTY-FLOW-MARKETPLACE"
+REPOSITORY: Final = "DanRobo76/VMC-HELTY-FLOW-MASTER"
 URL_REPOSITORY: Final = f"https://github.com/{REPOSITORY}"

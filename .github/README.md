@@ -1,6 +1,6 @@
 <p align="center">
-  <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/raw/main/Video/VMC_MASTER_promo_IT.mp4">
-    <img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/main/Video/anteprima_scene_IT.webp" alt="Video di presentazione di VMC MASTER (1 minuto e 17 secondi)" width="100%">
+  <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER/raw/main/Video/VMC_MASTER_promo_IT.mp4">
+    <img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MASTER/main/Video/anteprima_scene_IT.webp" alt="Video di presentazione di VMC MASTER (1 minuto e 17 secondi)" width="100%">
   </a>
   <br>
   <sub>Video di presentazione · 1 minuto e 17 secondi · clicca per scaricarlo</sub>
@@ -48,7 +48,7 @@
 
 | <sub>Funzione</sub> | <sub>Vantaggio</sub> |
 |---|---|
-| <sub>**Installazione dal Marketplace**</sub> | <sub>Nessun file da copiare: basta aggiungere due righe a `configuration.yaml` (altre due per le Notifiche Audio); gli aggiornamenti arrivano dal Marketplace</sub> |
+| <sub>**Installazione dal Marketplace**</sub> | <sub>Nessun file da copiare e nessuna riga da aggiungere a `configuration.yaml` (solo due per le Notifiche Audio); gli aggiornamenti arrivano dal Marketplace</sub> |
 | <sub>**Logiche con priorità**</sub> | <sub>Congelamento, Δ temperatura, inquinanti, punto di rugiada, Free Cooling / Free Heating, umidità e black-out gestiti in un ordine preciso, con ripresa automatica</sub> |
 | <sub>**Controllo del punto di rugiada**</sub> | <sub>La VMC si arresta quando porterebbe in casa umidità dall'esterno</sub> |
 | <sub>**Free Cooling / Free Heating**</sub> | <sub>Nessun raffrescamento o riscaldamento indesiderato nei mesi programmati; aria calda o fresca gratuita quando conviene</sub> |
@@ -59,7 +59,7 @@
 | <sub>**Intestazione animata**</sub> | <sub>Il flusso d'aria scorre in funzione della portata e il colore del LED indica lo stato: bianco normale, giallo allerta (che respira a VMC ferma con Avvisi presenti), blu umidità, rosso inquinanti, grigio OFF-Line; le scritte «Alert», «Alert Δ Temp.» e «Alert Free» sotto i tasti spenti avvisano, prima di avviare la VMC, che un'allerta la bloccherebbe o la ridurrebbe [Pannello Informazioni → voce 22]</sub> |
 | <sub>**Avvisi e notifiche**</sub> | <sub>Su dispositivo mobile e tramite Media Player</sub> |
 | <sub>**Più VMC**</sub> | <sub>Ogni VMC si aggiunge da *Dispositivi e servizi*: per una VMC già in rete basta l'IP</sub> |
-| <sub>**Prima installazione**</sub> | <sub>Collegamento della VMC nuova al Wi-Fi di casa da *Aggiungi dispositivo*, senza l'App Air Guard, che poi resta comunque utilizzabile</sub> |
+| <sub>**Prima installazione**</sub> | <sub>Collegamento della VMC nuova al Wi-Fi di casa direttamente da Home Assistant, senza l'App Air Guard, che poi resta comunque utilizzabile</sub> |
 </details>
 
 <details>
@@ -68,10 +68,10 @@
 - <sub>Indicatore Andamento Rischio Muffa.</sub>
 - <sub>Indicatore che converte il punto di rugiada (TPdR) in una classificazione qualitativa del comfort igrometrico all'interno dell'ambiente.</sub>
 - <sub>Visualizza in tempo reale: il numero totale di ricambi d'aria effettuati nella giornata, il volume totale di aria scambiata (m³) e il tempo rimanente prima del prossimo ricambio completo [Cliccare su Telecomando].</sub>
-- <sub>Mostra in tempo reale il «Tempo Mancante» di ogni attesa dell'automazione (es. «Annullamento Memoria Free Heating», «Cambio Velocità per Lim. Δ PdR», «Ripristino dopo Black-Out») e la «Velocità Registrata» che verrà ripristinata a fine allerta o dopo un Black-Out, in un riquadro compatto sotto il pannello VMC.</sub>
-- <sub>I tempi di attesa dei trigger dell'automazione sono fissi e non vanno modificati: non compaiono nella scheda e tornano ai valori originali a ogni avvio di Home Assistant e con il Profilo Inizializzazione.</sub>
-- <sub>L'automazione esegue gli eventi uno alla volta, nell'ordine in cui arrivano: nessun evento interrompe un comando già avviato (zero collisioni); un evento si esegue solo se la sua condizione è ancora vera quando arriva il suo turno (l'apertura di una finestra della scheda solo se è ancora aperta, chiudendo solo le finestre aperte prima, così resta aperta l'ultima toccata; la chiusura solo se è ancora chiusa; lo spegnimento dell'interruttore dell'Umidità solo se è ancora spento); durante un Black-Out i cicli di conferma della velocità si fermano come prima e, se il Black-Out arriva mentre un'allerta sta finendo, al ripristino la VMC torna alla velocità di fine allerta; una velocità scelta prima del ripristino resta (tranne la Velocità 1 scelta dall'App con la VMC già a Velocità 1); ogni ciclo di conferma si ferma se l'utente sceglie un'altra velocità; una velocità scelta negli ultimi secondi di un'attesa, prima che Home Assistant la legga, vale come scelta dell'utente e una velocità scelta mentre un comando dell'automazione è ancora in viaggio verso una VMC lenta viene rimandata quando quel comando è arrivato; durante una fascia del Calendario si ferma anche se la velocità della VMC non si legge per 32 secondi e riparte appena torna leggibile (vale per i comandi del Calendario e delle allerte); fuori dalle fasce, il ripristino dopo il Black-Out e i comandi dell'Umidità smettono di ripetersi quando arriva l'ora di una fascia con la velocità della VMC non leggibile, così al ritorno della VMC parte la fascia senza il comando vecchio.</sub>
-  > <sub>**Nota:** Home Assistant non vede l'App Air Guard né il telecomando della VMC: scopre la loro scelta leggendo la VMC, ogni 5 secondi e, dopo ogni comando dell'automazione, ogni secondo per 7 secondi. Una velocità scelta da lì mentre un comando è in viaggio verso la VMC va persa solo se dura meno di un secondo o se è la velocità che la VMC ha ancora (es. 0 con la VMC ancora a 0 in attesa del comando). In quei momenti usare la finestra Telecomando, che Home Assistant vede subito.</sub>
+- <sub>Mostra in tempo reale il «Tempo Mancante» di ogni attesa dell'integrazione (es. «Annullamento Memoria Free Heating», «Cambio Velocità per Lim. Δ PdR», «Ripristino dopo Black-Out») e la «Velocità Registrata» che verrà ripristinata a fine allerta o dopo un Black-Out, in un riquadro compatto sotto il pannello VMC.</sub>
+- <sub>I tempi di attesa sono fissi e non si possono modificare: non compaiono nella scheda.</sub>
+- <sub>L'integrazione esegue gli eventi uno alla volta, nell'ordine in cui arrivano: nessun evento interrompe un comando già avviato (zero collisioni); un evento si esegue solo se la sua condizione è ancora vera quando arriva il suo turno (l'apertura di una finestra della scheda solo se è ancora aperta, chiudendo solo le finestre aperte prima, così resta aperta l'ultima toccata; la chiusura solo se è ancora chiusa; lo spegnimento dell'interruttore dell'Umidità solo se è ancora spento); durante un Black-Out i cicli di conferma della velocità si fermano come prima e, se il Black-Out arriva mentre un'allerta sta finendo, al ripristino la VMC torna alla velocità di fine allerta; una velocità scelta prima del ripristino resta (tranne la Velocità 1 scelta dall'App con la VMC già a Velocità 1); ogni ciclo di conferma si ferma se l'utente sceglie un'altra velocità; una velocità scelta negli ultimi secondi di un'attesa, prima che Home Assistant la legga, vale come scelta dell'utente e una velocità scelta mentre un comando dell'integrazione è ancora in viaggio verso una VMC lenta viene rimandata quando quel comando è arrivato; durante una fascia del Calendario si ferma anche se la velocità della VMC non si legge per 32 secondi e riparte appena torna leggibile (vale per i comandi del Calendario e delle allerte); fuori dalle fasce, il ripristino dopo il Black-Out e i comandi dell'Umidità smettono di ripetersi quando arriva l'ora di una fascia con la velocità della VMC non leggibile, così al ritorno della VMC parte la fascia senza il comando vecchio.</sub>
+  > <sub>**Nota:** Home Assistant non vede l'App Air Guard né il telecomando della VMC: scopre la loro scelta leggendo la VMC, ogni 5 secondi e, dopo ogni comando dell'integrazione, ogni secondo per 7 secondi. Una velocità scelta da lì mentre un comando è in viaggio verso la VMC va persa solo se dura meno di un secondo o se è la velocità che la VMC ha ancora (es. 0 con la VMC ancora a 0 in attesa del comando). In quei momenti usare la finestra Telecomando, che Home Assistant vede subito.</sub>
 - <sub>Mostra il tempo che manca alla prossima lettura della VMC da parte di Home Assistant e, sotto ogni voce, da quanto tempo è avvenuta l'ultima lettura: Ping, Sensori Ventilazione, Sensori Ambientali, Sensori Lan e Sensore Nome [Sensori - Selezionati → Timer Lettura Dati VMC].</sub>
 - <sub>Nella finestra Telecomando il tasto della velocità attiva è illuminato e quello della velocità da ripristinare è illuminato con l'icona ↺, anche durante un'allerta (le scritte «Alert» compaiono solo sotto i tasti spenti). I tasti Sensori e Led Pannello illuminano lo stato attuale (On oppure Off); con «Verificare Filtro» il tasto «Led Pannello On» mostra l'icona del filtro.</sub>
 - <sub>Elenca tutte le VMC installate in una tabella, una colonna per VMC [Pannello Informazioni → voce 21].</sub>
@@ -85,7 +85,7 @@
 - <sub>Calcola il tempo di ricambio d'aria in funzione della velocità.</sub>
 - <sub>Calcola la portata d'aria (m³/h) in funzione della velocità.</sub>
 - <sub>Calcola l'umidità assoluta esterna e interna (g/m³).</sub>
-- <sub>Pulisce la cronologia delle entità del Package mostrando prima, in un riquadro di conferma, il numero e l'elenco delle entità coinvolte e quante di esse sono registrate nel database (le entità escluse sono indicate in un unico elenco nella sezione «recorder» del package).</sub>
+- <sub>Pulisce la cronologia delle entità della VMC mostrando prima, in un riquadro di conferma, il numero e l'elenco delle entità coinvolte.</sub>
 - <sub>Mostra avvisi in funzione di:</sub>
   - <sub>sensori CO₂ e/o VOC;</sub>
   - <sub>sensore umidità;</sub>
@@ -98,23 +98,23 @@
 
 <br>
 
-<sub>**Servizi da usare nelle proprie automazioni e script.** Ogni servizio invia un comando alla VMC. Qui la VMC si chiama `master`: per un'altra VMC sostituire `master` con il suo nome.</sub>
+<sub>**Pulsanti da usare nelle proprie automazioni e script.** Ogni pulsante invia un comando alla VMC. Qui la VMC si chiama `master`: per un'altra VMC sostituire `master` con il suo nome.</sub>
 
-| <sub>Servizio</sub> | <sub>Cosa fa</sub> |
+| <sub>Pulsante</sub> | <sub>Cosa fa</sub> |
 |---|---|
-| <sub>`shell_command.vmc_master_velocita_0`</sub> | <sub>Ferma la VMC (Velocità 0)</sub> |
-| <sub>`shell_command.vmc_master_velocita_1`</sub> | <sub>Velocità 1</sub> |
-| <sub>`shell_command.vmc_master_velocita_2`</sub> | <sub>Velocità 2</sub> |
-| <sub>`shell_command.vmc_master_velocita_3`</sub> | <sub>Velocità 3</sub> |
-| <sub>`shell_command.vmc_master_velocita_4`</sub> | <sub>Velocità 4</sub> |
-| <sub>`shell_command.vmc_master_notturna`</sub> | <sub>Velocità Notturna</sub> |
-| <sub>`shell_command.vmc_master_iperventilazione`</sub> | <sub>Iperventilazione</sub> |
-| <sub>`shell_command.vmc_master_freecooling`</sub> | <sub>Free Cooling / Free Heating</sub> |
-| <sub>`shell_command.vmc_master_sensori_on`</sub> | <sub>Accende i sensori della VMC</sub> |
-| <sub>`shell_command.vmc_master_sensori_off`</sub> | <sub>Spegne i sensori della VMC</sub> |
-| <sub>`shell_command.vmc_master_pannello_led_on`</sub> | <sub>Accende i LED del pannello</sub> |
-| <sub>`shell_command.vmc_master_pannello_led_off`</sub> | <sub>Spegne i LED del pannello</sub> |
-| <sub>`shell_command.vmc_master_reset_filtro`</sub> | <sub>Azzera il contatore del filtro</sub> |
+| <sub>`button.vmc_master_velocita_0`</sub> | <sub>Ferma la VMC (Velocità 0)</sub> |
+| <sub>`button.vmc_master_velocita_1`</sub> | <sub>Velocità 1</sub> |
+| <sub>`button.vmc_master_velocita_2`</sub> | <sub>Velocità 2</sub> |
+| <sub>`button.vmc_master_velocita_3`</sub> | <sub>Velocità 3</sub> |
+| <sub>`button.vmc_master_velocita_4`</sub> | <sub>Velocità 4</sub> |
+| <sub>`button.vmc_master_notturna`</sub> | <sub>Velocità Notturna</sub> |
+| <sub>`button.vmc_master_iperventilazione`</sub> | <sub>Iperventilazione</sub> |
+| <sub>`button.vmc_master_freecooling`</sub> | <sub>Free Cooling / Free Heating</sub> |
+| <sub>`button.vmc_master_sensori_on`</sub> | <sub>Accende i sensori della VMC</sub> |
+| <sub>`button.vmc_master_sensori_off`</sub> | <sub>Spegne i sensori della VMC</sub> |
+| <sub>`button.vmc_master_pannello_led_on`</sub> | <sub>Accende i LED del pannello</sub> |
+| <sub>`button.vmc_master_pannello_led_off`</sub> | <sub>Spegne i LED del pannello</sub> |
+| <sub>`button.vmc_master_reset_filtro_vmc`</sub> | <sub>Azzera il contatore del filtro</sub> |
 
 <sub>Esempio: ogni sera alle 22:00 la VMC passa alla Velocità 1.</sub>
 
@@ -124,7 +124,9 @@ triggers:
   - trigger: time
     at: "22:00:00"
 actions:
-  - action: shell_command.vmc_master_velocita_1
+  - action: button.press
+    target:
+      entity_id: button.vmc_master_velocita_1
 ```
 
 <sub>Per usarlo:</sub>
@@ -138,7 +140,7 @@ actions:
 <summary><strong>Scenario tipico</strong></summary>
 
 <sub>Un classico caso d'uso è un'abitazione con:</sub>
-- <sub>VMC Helty Flow Plus o Flow Elite collegata alla rete di casa (con l'App Air Guard oppure da *Aggiungi dispositivo* dell'integrazione)</sub>
+- <sub>VMC Helty Flow Plus o Flow Elite collegata alla rete di casa (con l'App Air Guard oppure dall'integrazione, quando si aggiunge la VMC)</sub>
 - <sub>Home Assistant 2026.11 o successivo</sub>
 - <sub>sensori di temperatura e umidità, interni ed esterni, oppure un servizio meteo</sub>
 - <sub>un dispositivo mobile per le notifiche</sub>
@@ -161,19 +163,11 @@ actions:
 <details>
 <summary><strong>Installazione</strong></summary>
 
-1. **Modificare `configuration.yaml`** (una volta sola):
+1. **Solo per le Notifiche Audio, modificare `configuration.yaml`** (una volta sola):
    - installare l'app **File editor**: *Impostazioni → Applicazioni → Installa app → File editor → Installa*;
    - premere **Avvia**, poi **Apri l'interfaccia web**;
    - premere l'icona della **cartella** in alto a sinistra e scegliere `configuration.yaml`;
    - aggiungere in fondo:
-
-     ```yaml
-     homeassistant:
-       packages: !include_dir_named packages/
-     ```
-
-     Se la riga `homeassistant:` c'è già, aggiungere subito sotto solo la seconda riga, con due spazi davanti;
-   - solo per le Notifiche Audio, aggiungere in fondo anche:
 
      ```yaml
      tts:
@@ -184,17 +178,17 @@ actions:
    - salvare con l'icona del **dischetto**.
 2. **Aggiungere il repository**:
    - aprire *Impostazioni → Marketplace → ⋮ → Repository personalizzate → Aggiungi dal collegamento*;
-   - incollare `https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE`;
+   - incollare `https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER`;
    - premere **Aggiungi**, poi **Continue**;
    - seguire le indicazioni di Home Assistant, autorizzando HACS.
 3. **Installare**: cercare **VMC Master** nel Marketplace e premere **Installa**.
-4. **Aggiungere la VMC**: *Impostazioni → Dispositivi e servizi → + Aggiungi integrazione → VMC Master*.
+4. **Aggiungere la VMC**: *Impostazioni → Dispositivi e servizi → pulsante «Aggiungi integrazione» in basso a destra → VMC Master*.
    - VMC nuova, mai collegata: vedere **VMC nuova** qui sotto.
    - VMC già collegata al Wi-Fi di casa:
      1. scegliere **«Sì, è già collegata: scrivo solo l'IP»**;
      2. scrivere l'IP: si legge nell'elenco dei dispositivi del router (l'App Air Guard non lo mostra);
      3. premere **Invia**;
-     4. se la VMC è spenta compare «VMC non raggiungibile»: premere **Invia**, la VMC si aggiunge lo stesso;
+     4. se la VMC è spenta compare «VMC non raggiungibile»: scegliere **Aggiungi comunque**;
      5. premere **Finito**.
 
      Suggerimento: usare lo stesso nome della VMC per conservare la cronologia.
@@ -202,24 +196,20 @@ actions:
      L'integrazione controlla:
      - che l'IP non sia già usato da un'altra VMC;
      - che a quell'IP la VMC risponda sulla porta 5001.
-5. **Riavviare**:
-   1. aprire *Impostazioni*;
-   2. cliccare **«VMC Master: riavviare Home Assistant»**;
-   3. premere **Invia**.
-6. **Aggiungere la scheda**:
+5. **Aggiungere la scheda**:
    - premere **Ctrl+F5**;
    - nella plancia (va bene anche **Panoramica**) premere **matita → Aggiungi scheda → Sfoglia tutte le schede**;
    - nel campo **Cerca schede** digitare `vmc`;
    - cliccare su **VMC Master**;
    - scegliere la VMC nel campo **VMC\***;
    - premere **Salva**, poi **Fatto**.
-7. **Una volta per ogni VMC**, nel pannello **Opzioni** della scheda:
-   - premere **Esegui** su **«VMC ‹nome› - Profilo Inizializzazione»**;
-   - confermare con **OK** e attendere 10 s;
+6. **Una volta per ogni VMC**, nel pannello **Opzioni** della scheda:
    - premere **Sensori Opzionati** (icona chip di memoria);
    - scegliere i sensori.
 
-**Altre VMC**: *Impostazioni → Dispositivi e servizi → VMC Master → Aggiungi dispositivo*, poi come dal punto 4. Si possono aggiungere più VMC e riavviare una volta sola.
+   Il **Profilo Inizializzazione** parte da solo, una volta, 140 s dopo l'aggiunta di una VMC nuova (se la VMC è spenta, quando si accende).
+
+**Altre VMC**: ripetere il punto 4.
 
 **VMC nuova** (senza l'App Air Guard, vedere *Requisiti*):
 1. accendere la VMC: crea la rete `VMC_xxxxxxxx`;
@@ -255,10 +245,75 @@ Se il collegamento non riesce, la finestra mostra il motivo e permette di riprov
 
 Per controllare subito se c'è una nuova versione: pagina di VMC Master **⋮ → Aggiorna le informazioni**.
 
-I file del package non vanno modificati: un file modificato a mano viene ripristinato all'avvio (la copia resta in `/config/vmc_master_backup`).
-
 Se subito dopo un riavvio di Home Assistant la scheda mostra «Custom element doesn't exist», ricaricare la pagina.
 
+</details>
+
+<details>
+<summary><strong>Passaggio dalla beta</strong></summary>
+
+Per chi ha una beta che scrive i file in `/config/packages`.
+
+**Prima**: fare un backup di Home Assistant (*Impostazioni → Sistema → Backup*).
+
+**Passaggio**, una volta sola per tutte le VMC:
+1. quando il Marketplace segnala la nuova versione, premere **Aggiorna**;
+2. riavviare Home Assistant;
+3. in *Impostazioni → Riparazioni* aprire **«VMC Master: finire il passaggio dalla beta»** e premere **Invia**;
+4. premere di nuovo **Invia** per riavviare Home Assistant.
+
+Le impostazioni restano.
+
+La scheda si aggiorna da sola.
+
+Nel Marketplace il repository ora si chiama VMC-HELTY-FLOW-MASTER: non serve fare niente.
+
+**Cosa cambia**
+- In `/config/packages` non restano file della VMC.
+- La riga `packages:` aggiunta in `configuration.yaml` per la beta non serve più: può restare.
+- I sensori tengono nome e cronologia.
+- Le impostazioni cambiano dominio: cambia solo la parte prima del punto. Esempio: `input_boolean.vmc_‹nome›_opzioni_accendi_spegni_vmc_vs_calendario` diventa `switch.vmc_‹nome›_opzioni_accendi_spegni_vmc_vs_calendario`.
+- La cronologia delle impostazioni riparte da zero.
+- I timer diventano sensori con l'ora di fine: lo stato è `unknown` quando il timer è fermo.
+- I servizi `shell_command.vmc_‹nome›_…` diventano pulsanti: tabella in *Funzionalità complete*.
+- Automazioni, script e plance personali con i vecchi nomi vanno aggiornati.
+
+<!-- inizio riepilogo dei nomi (generato da tests/nativa/genera_elenco_nomi.py) -->
+
+| <sub>Oggi</sub> | <sub>Versione nativa</sub> | <sub>Quante</sub> |
+|---|---|---:|
+| <sub>`input_boolean`</sub> | <sub>`binary_sensor`</sub> | <sub>77</sub> |
+| <sub>`input_boolean`</sub> | <sub>`switch`</sub> | <sub>37</sub> |
+| <sub>`input_datetime`</sub> | <sub>`time`</sub> | <sub>30</sub> |
+| <sub>`input_number`</sub> | <sub>`number`</sub> | <sub>10</sub> |
+| <sub>`input_number`</sub> | <sub>`sensor`</sub> | <sub>1</sub> |
+| <sub>`input_select`</sub> | <sub>`select`</sub> | <sub>14</sub> |
+| <sub>`input_select`</sub> | <sub>`sensor`</sub> | <sub>1</sub> |
+| <sub>`input_text`</sub> | <sub>`sensor`</sub> | <sub>1</sub> |
+| <sub>`input_text`</sub> | <sub>`text`</sub> | <sub>2</sub> |
+| <sub>`timer`</sub> | <sub>`sensor` (ora di fine)</sub> | <sub>34</sub> |
+| <sub>`script`</sub> | <sub>`button`</sub> | <sub>13</sub> |
+| <sub>`shell_command`</sub> | <sub>`button`</sub> | <sub>12</sub> |
+| <sub>`input_boolean`</sub> | <sub>non più entità</sub> | <sub>1</sub> |
+| <sub>`input_number`</sub> | <sub>non più entità</sub> | <sub>32</sub> |
+| <sub>`input_text`</sub> | <sub>non più entità</sub> | <sub>35</sub> |
+| <sub>`script`</sub> | <sub>non più entità</sub> | <sub>38</sub> |
+| <sub>`shell_command`</sub> | <sub>non più entità</sub> | <sub>4</sub> |
+
+<!-- fine riepilogo dei nomi -->
+
+Elenco completo, voce per voce: **[Nomi cambiati](https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER/blob/main/NOMI_NATIVI.md)**.
+
+**Se un sensore o un sensore binario ha «_2» in fondo al nome** (es. `sensor.vmc_‹nome›_status_ip_2`):
+1. aprire *Impostazioni → Dispositivi e servizi → Entità*;
+2. cercare il nome senza «_2»;
+3. aprire la vecchia entità, quella con stato **Non fornito**;
+4. ingranaggio → **Elimina**;
+5. aprire l'entità con «_2»;
+6. ingranaggio → nel campo **ID entità** togliere «_2»;
+7. premere **Aggiorna**.
+
+La cronologia di prima continua.
 </details>
 
 <details>
@@ -275,10 +330,10 @@ Dopo l'installazione tutto si regola dall'interfaccia, senza modificare lo YAML.
 - interruttori ON/OFF di ogni funzione: inquinanti, punto di rugiada, Free Cooling, Free Heating, umidità, calendario;
 - Notifiche Audio: Media Player, volume, orari e categorie di allerta.
 
-Ogni script chiede conferma con il popup «Vuoi Procedere?». Per i dettagli aprire il **Pannello Informazioni** della scheda, con 22 voci illustrate.
+Ogni pulsante chiede conferma con il popup «Vuoi Procedere?». Per i dettagli aprire il **Pannello Informazioni** della scheda, con 22 voci illustrate.
 
 **Da *Impostazioni → Dispositivi e servizi → VMC Master*:**
-- **nome della VMC**: la riga mostra il nome dell'App Air Guard e si aggiorna a ogni avvio; con **tre puntini → Rinomina** se ne può mostrare un altro. Il nome interno (cartella, entità, scheda) non cambia;
+- **nome della VMC**: la riga mostra il nome dell'App Air Guard e si aggiorna a ogni avvio; con **tre puntini → Rinomina** se ne può mostrare un altro. Il nome interno (entità, scheda) non cambia;
 - **cambiare l'IP** (in alternativa al campo della scheda):
   1. icona ingranaggio sulla riga della VMC → **«Cambia l'IP della VMC»**;
   2. scrivere il nuovo IP;
@@ -297,10 +352,9 @@ Ogni script chiede conferma con il popup «Vuoi Procedere?». Per i dettagli apr
      - **«Anche dalla rete (torna in Access Point)»**: la VMC mostra di nuovo la sua rete VMC_…; per ricollegarla scegliere **«No, va installata da zero (senza l'App Air Guard)»**, oppure usare l'App Air Guard.
 
   In tutti e due i casi:
-  - la cartella della VMC va in `/config/vmc_master_backup`;
-  - le entità della VMC spariscono subito, poi riavviare Home Assistant;
+  - le entità della VMC spariscono subito;
   - togliere la sua scheda dalla plancia;
-  - per riaggiungere la VMC: **Aggiungi dispositivo** (**Aggiungi integrazione** se non restano altre VMC).
+  - per riaggiungere la VMC: *Impostazioni → Dispositivi e servizi → pulsante «Aggiungi integrazione» in basso a destra → VMC Master*.
 
   Anche **tre puntini → Elimina** funziona, ma elimina la VMC solo da Home Assistant.
 </details>
@@ -310,7 +364,7 @@ Ogni script chiede conferma con il popup «Vuoi Procedere?». Per i dettagli apr
 
 <sub>La tabella riassume priorità, comportamento della VMC e tempi di intervento di ogni allerta. Il dettaglio completo è nel Pannello Informazioni, voce 17.</sub>
 
-<img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/main/immagini/README/logiche_it.png" alt="Logiche di funzionamento" width="100%">
+<img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MASTER/main/immagini/README/logiche_it.png" alt="Logiche di funzionamento" width="100%">
 </details>
 
 <details>
@@ -318,13 +372,13 @@ Ogni script chiede conferma con il popup «Vuoi Procedere?». Per i dettagli apr
 
 <sub>Le schermate possono variare in funzione dell'ultima versione rilasciata.</sub>
 
-<img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/main/immagini/README/schermate_it.png" alt="Schermate VMC MASTER" width="100%">
+<img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MASTER/main/immagini/README/schermate_it.png" alt="Schermate VMC MASTER" width="100%">
 </details>
 
 <details>
 <summary><strong>Licenza</strong></summary>
 
-<sub>**[GNU General Public License v3.0](https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/blob/main/LICENSE)**. Copyright © 2023-2026 Ing. Danilo Robotti. È consentito usare, copiare, modificare e distribuire il software, anche per scopi commerciali; chi lo distribuisce, anche modificato, deve renderne disponibile il codice sorgente con la stessa licenza e mantenere la nota di copyright. Il software è fornito senza alcuna garanzia.</sub>
+<sub>**[GNU General Public License v3.0](https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER/blob/main/LICENSE)**. Copyright © 2023-2026 Ing. Danilo Robotti. È consentito usare, copiare, modificare e distribuire il software, anche per scopi commerciali; chi lo distribuisce, anche modificato, deve renderne disponibile il codice sorgente con la stessa licenza e mantenere la nota di copyright. Il software è fornito senza alcuna garanzia.</sub>
 
 <sub>**Impiego dell'Intelligenza Artificiale:** nello sviluppo del software l'autore si è avvalso anche di strumenti di intelligenza artificiale.</sub>
 </details>
@@ -345,7 +399,7 @@ Ogni script chiede conferma con il popup «Vuoi Procedere?». Per i dettagli apr
   Clicca sul link oppure scansiona il QR code qui sotto.
   <br><br>
   <a href="https://www.paypal.com/ncp/payment/8LT4JJW7MHW6U">
-    <img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/main/immagini/Informazioni/VMC-HELTY-FLOW-qrcode.png"
+    <img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MASTER/main/immagini/Informazioni/VMC-HELTY-FLOW-qrcode.png"
          alt="QR code PayPal per sostenere VMC MASTER"
          width="200">
   </a>
@@ -374,8 +428,8 @@ Ogni script chiede conferma con il popup «Vuoi Procedere?». Per i dettagli apr
 </p>
 
 <p align="center">
-  <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/raw/main/Video/VMC_MASTER_promo_EN.mp4">
-    <img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/main/Video/anteprima_scene_EN.webp" alt="VMC MASTER presentation video (1 minute 17 seconds)" width="720">
+  <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER/raw/main/Video/VMC_MASTER_promo_EN.mp4">
+    <img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MASTER/main/Video/anteprima_scene_EN.webp" alt="VMC MASTER presentation video (1 minute 17 seconds)" width="720">
   </a>
   <br>
   <sub>Presentation video · 1 minute 17 seconds · click to download</sub>
@@ -399,7 +453,7 @@ Ogni script chiede conferma con il popup «Vuoi Procedere?». Per i dettagli apr
 
 | <sub>Function</sub> | <sub>Advantage</sub> |
 |---|---|
-| <sub>**Marketplace install**</sub> | <sub>No files to copy: just add two lines to `configuration.yaml` (two more for audio notifications); updates come from the Marketplace</sub> |
+| <sub>**Marketplace install**</sub> | <sub>No files to copy and no lines to add to `configuration.yaml` (only two for audio notifications); updates come from the Marketplace</sub> |
 | <sub>**Prioritized logic**</sub> | <sub>Freezing, temperature Δ, pollutants, dew point, Free Cooling / Free Heating, humidity and power failure handled in a precise order, with automatic recovery</sub> |
 | <sub>**Dew point control**</sub> | <sub>The unit stops when it would bring outdoor humidity indoors</sub> |
 | <sub>**Free Cooling / Free Heating**</sub> | <sub>No unwanted cooling or heating in the scheduled months; free warm or cool air when it pays off</sub> |
@@ -410,7 +464,7 @@ Ogni script chiede conferma con il popup «Vuoi Procedere?». Per i dettagli apr
 | <sub>**Animated header**</sub> | <sub>The airflow moves according to the flow rate and the LED colour shows the state: white normal, yellow alert (breathing when the unit is stopped with warnings present), blue humidity, red pollutants, grey off-line; the «Alert», «Alert Δ Temp.» and «Alert Free» labels under the unlit buttons warn, before you start the unit, that an alert would stop it or slow it down [Pannello Informazioni → item 22]</sub> |
 | <sub>**Alerts and notifications**</sub> | <sub>On mobile devices and through Media Players</sub> |
 | <sub>**Multiple units**</sub> | <sub>Each unit is added from *Devices & services*: for a unit already on the network the IP is enough</sub> |
-| <sub>**First installation**</sub> | <sub>Connect a new unit to the home Wi-Fi from *Add device*, without the Air Guard app; afterwards the unit can still be used from the Air Guard app</sub> |
+| <sub>**First installation**</sub> | <sub>Connect a new unit to the home Wi-Fi directly from Home Assistant, without the Air Guard app; afterwards the unit can still be used from the Air Guard app</sub> |
 </details>
 
 <details>
@@ -419,10 +473,10 @@ Ogni script chiede conferma con il popup «Vuoi Procedere?». Per i dettagli apr
 - <sub>Mould risk trend indicator.</sub>
 - <sub>Indicator that turns the dew point (TPdR) into a qualitative rating of indoor hygrometric comfort.</sub>
 - <sub>Shows in real time: the total number of air changes made during the day, the total volume of air exchanged (m³) and the time left before the next full air change [click on Telecomando].</sub>
-- <sub>Shows in real time the «Tempo Mancante» (time left) of each automation wait (e.g. «Annullamento Memoria Free Heating», «Cambio Velocità per Lim. Δ PdR», «Ripristino dopo Black-Out») and the «Velocità Registrata» (stored speed) that is restored when the alert ends or after a power failure, in a compact box below the VMC panel.</sub>
-- <sub>The automation trigger wait times are fixed and must not be changed: they do not appear on the card and are reset to the original values at every Home Assistant start and by the Profilo Inizializzazione.</sub>
-- <sub>The automation runs events one at a time, in the order they arrive: no event interrupts a command already started (zero collisions); an event runs only if its condition is still true when its turn comes (opening a card window only if it is still open, and it closes only the windows opened before it, so the last one tapped stays open; closing a window only if it is still closed; turning off the Humidity switch only if it is still off); during a power failure the speed confirmation cycles stop as before and, if the power failure arrives while an alert is ending, on recovery the unit goes back to the end-of-alert speed; a speed picked before the recovery is kept (except Speed 1 picked from the App while the unit is already at Speed 1); each confirmation cycle stops if the user picks another speed; a speed picked in the last seconds of a wait, before Home Assistant reads it, still counts as the user's choice, and a speed picked while an automation command is still on its way to a slow unit is sent again once that command has arrived; during a Calendar slot it also stops if the unit's speed cannot be read for 32 seconds, and restarts as soon as it can be read again (for both Calendar and alert commands); outside Calendar slots, the power-failure recovery and Humidity commands stop repeating when a slot's start time arrives while the unit's speed cannot be read, so when the unit comes back the slot starts without the old command.</sub>
-  > <sub>**Note:** Home Assistant cannot see the Air Guard App or the unit's own remote: it finds out about their choice by reading the unit, every 5 seconds and, after each automation command, every second for 7 seconds. A speed picked from there while a command is on its way to the unit is lost only if it lasts less than one second or if it is the speed the unit still has (e.g. 0 with the unit still at 0 waiting for the command). At those moments use the Telecomando window, which Home Assistant sees at once.</sub>
+- <sub>Shows in real time the «Tempo Mancante» (time left) of each integration wait (e.g. «Annullamento Memoria Free Heating», «Cambio Velocità per Lim. Δ PdR», «Ripristino dopo Black-Out») and the «Velocità Registrata» (stored speed) that is restored when the alert ends or after a power failure, in a compact box below the VMC panel.</sub>
+- <sub>The wait times are fixed and cannot be changed: they do not appear on the card.</sub>
+- <sub>The integration runs events one at a time, in the order they arrive: no event interrupts a command already started (zero collisions); an event runs only if its condition is still true when its turn comes (opening a card window only if it is still open, and it closes only the windows opened before it, so the last one tapped stays open; closing a window only if it is still closed; turning off the Humidity switch only if it is still off); during a power failure the speed confirmation cycles stop as before and, if the power failure arrives while an alert is ending, on recovery the unit goes back to the end-of-alert speed; a speed picked before the recovery is kept (except Speed 1 picked from the App while the unit is already at Speed 1); each confirmation cycle stops if the user picks another speed; a speed picked in the last seconds of a wait, before Home Assistant reads it, still counts as the user's choice, and a speed picked while an integration command is still on its way to a slow unit is sent again once that command has arrived; during a Calendar slot it also stops if the unit's speed cannot be read for 32 seconds, and restarts as soon as it can be read again (for both Calendar and alert commands); outside Calendar slots, the power-failure recovery and Humidity commands stop repeating when a slot's start time arrives while the unit's speed cannot be read, so when the unit comes back the slot starts without the old command.</sub>
+  > <sub>**Note:** Home Assistant cannot see the Air Guard App or the unit's own remote: it finds out about their choice by reading the unit, every 5 seconds and, after each integration command, every second for 7 seconds. A speed picked from there while a command is on its way to the unit is lost only if it lasts less than one second or if it is the speed the unit still has (e.g. 0 with the unit still at 0 waiting for the command). At those moments use the Telecomando window, which Home Assistant sees at once.</sub>
 - <sub>Shows the time left until Home Assistant next reads the unit and, under each item, how long ago the last read happened: Ping, Sensori Ventilazione, Sensori Ambientali, Sensori Lan and Sensore Nome [Sensori - Selezionati → Timer Lettura Dati VMC].</sub>
 - <sub>In the Telecomando window the button of the active speed is lit and the button of the speed to restore is lit with the ↺ icon, also during an alert (the «Alert» labels appear only under the unlit buttons). The Sensori and Led Pannello buttons light up the current state (On or Off); with «Verificare Filtro» the «Led Pannello On» button shows the filter icon.</sub>
 - <sub>Lists all installed units in a table, one column per unit [Pannello Informazioni → item 21].</sub>
@@ -436,7 +490,7 @@ Ogni script chiede conferma con il popup «Vuoi Procedere?». Per i dettagli apr
 - <sub>Calculates the air change time based on the speed.</sub>
 - <sub>Calculates the airflow (m³/h) based on the speed.</sub>
 - <sub>Calculates outdoor and indoor absolute humidity (g/m³).</sub>
-- <sub>Clears the history of the package entities, first showing in a confirmation box the number and list of the entities involved and how many of them are stored in the database (excluded entities are listed in a single list in the «recorder» section of the package).</sub>
+- <sub>Clears the history of the unit's entities, first showing in a confirmation box the number and list of the entities involved.</sub>
 - <sub>Shows warnings based on:</sub>
   - <sub>CO₂ and/or VOC sensors;</sub>
   - <sub>humidity sensor;</sub>
@@ -449,23 +503,23 @@ Ogni script chiede conferma con il popup «Vuoi Procedere?». Per i dettagli apr
 
 <br>
 
-<sub>**Services to use in your own automations and scripts.** Each service sends a command to the unit. Here the unit is called `master`: for another unit replace `master` with its name.</sub>
+<sub>**Buttons to use in your own automations and scripts.** Each button sends a command to the unit. Here the unit is called `master`: for another unit replace `master` with its name.</sub>
 
-| <sub>Service</sub> | <sub>What it does</sub> |
+| <sub>Button</sub> | <sub>What it does</sub> |
 |---|---|
-| <sub>`shell_command.vmc_master_velocita_0`</sub> | <sub>Stops the unit (Speed 0)</sub> |
-| <sub>`shell_command.vmc_master_velocita_1`</sub> | <sub>Speed 1</sub> |
-| <sub>`shell_command.vmc_master_velocita_2`</sub> | <sub>Speed 2</sub> |
-| <sub>`shell_command.vmc_master_velocita_3`</sub> | <sub>Speed 3</sub> |
-| <sub>`shell_command.vmc_master_velocita_4`</sub> | <sub>Speed 4</sub> |
-| <sub>`shell_command.vmc_master_notturna`</sub> | <sub>Night speed</sub> |
-| <sub>`shell_command.vmc_master_iperventilazione`</sub> | <sub>Hyperventilation (boost)</sub> |
-| <sub>`shell_command.vmc_master_freecooling`</sub> | <sub>Free Cooling / Free Heating</sub> |
-| <sub>`shell_command.vmc_master_sensori_on`</sub> | <sub>Turns the unit's sensors on</sub> |
-| <sub>`shell_command.vmc_master_sensori_off`</sub> | <sub>Turns the unit's sensors off</sub> |
-| <sub>`shell_command.vmc_master_pannello_led_on`</sub> | <sub>Turns the panel LEDs on</sub> |
-| <sub>`shell_command.vmc_master_pannello_led_off`</sub> | <sub>Turns the panel LEDs off</sub> |
-| <sub>`shell_command.vmc_master_reset_filtro`</sub> | <sub>Resets the filter counter</sub> |
+| <sub>`button.vmc_master_velocita_0`</sub> | <sub>Stops the unit (Speed 0)</sub> |
+| <sub>`button.vmc_master_velocita_1`</sub> | <sub>Speed 1</sub> |
+| <sub>`button.vmc_master_velocita_2`</sub> | <sub>Speed 2</sub> |
+| <sub>`button.vmc_master_velocita_3`</sub> | <sub>Speed 3</sub> |
+| <sub>`button.vmc_master_velocita_4`</sub> | <sub>Speed 4</sub> |
+| <sub>`button.vmc_master_notturna`</sub> | <sub>Night speed</sub> |
+| <sub>`button.vmc_master_iperventilazione`</sub> | <sub>Hyperventilation (boost)</sub> |
+| <sub>`button.vmc_master_freecooling`</sub> | <sub>Free Cooling / Free Heating</sub> |
+| <sub>`button.vmc_master_sensori_on`</sub> | <sub>Turns the unit's sensors on</sub> |
+| <sub>`button.vmc_master_sensori_off`</sub> | <sub>Turns the unit's sensors off</sub> |
+| <sub>`button.vmc_master_pannello_led_on`</sub> | <sub>Turns the panel LEDs on</sub> |
+| <sub>`button.vmc_master_pannello_led_off`</sub> | <sub>Turns the panel LEDs off</sub> |
+| <sub>`button.vmc_master_reset_filtro_vmc`</sub> | <sub>Resets the filter counter</sub> |
 
 <sub>Example: every evening at 22:00 the unit switches to Speed 1.</sub>
 
@@ -475,7 +529,9 @@ triggers:
   - trigger: time
     at: "22:00:00"
 actions:
-  - action: shell_command.vmc_master_velocita_1
+  - action: button.press
+    target:
+      entity_id: button.vmc_master_velocita_1
 ```
 
 <sub>To use it:</sub>
@@ -489,7 +545,7 @@ actions:
 <summary><strong>Typical scenario</strong></summary>
 
 <sub>A typical use case is a home with:</sub>
-- <sub>a Helty Flow Plus or Flow Elite unit connected to the home network (with the Air Guard app or from the integration's *Add device*)</sub>
+- <sub>a Helty Flow Plus or Flow Elite unit connected to the home network (with the Air Guard app or from the integration, when the unit is added)</sub>
 - <sub>Home Assistant 2026.11 or later</sub>
 - <sub>indoor and outdoor temperature and humidity sensors, or a weather service</sub>
 - <sub>a mobile device for notifications</sub>
@@ -511,19 +567,11 @@ actions:
 <details>
 <summary><strong>Installation</strong></summary>
 
-1. **Edit `configuration.yaml`** (once):
+1. **Only for audio notifications, edit `configuration.yaml`** (once):
    - install the **File editor** app: *Settings → Apps → Install app → File editor → Install*;
    - press **Start**, then **Open web UI**;
    - press the **folder** icon at the top left and choose `configuration.yaml`;
    - add at the end:
-
-     ```yaml
-     homeassistant:
-       packages: !include_dir_named packages/
-     ```
-
-     If the `homeassistant:` line is already there, add only the second line right below it, with two spaces in front;
-   - only for audio notifications, also add at the end:
 
      ```yaml
      tts:
@@ -534,17 +582,17 @@ actions:
    - save with the **disk** icon.
 2. **Add the repository**:
    - open *Settings → Marketplace → ⋮ → Custom repositories → Add from link*;
-   - paste `https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE`;
+   - paste `https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER`;
    - press **Add**, then **Continue**;
    - follow Home Assistant's instructions, authorizing HACS.
 3. **Install**: search for **VMC Master** in the Marketplace and press **Install**.
-4. **Add the unit**: *Settings → Devices & services → + Add integration → VMC Master*.
+4. **Add the unit**: *Settings → Devices & services → «Add integration» button at the bottom right → VMC Master*.
    - New unit, never connected: see **New unit** below.
    - Unit already on the home Wi-Fi:
      1. choose **«Yes, it is connected: I only enter the IP»**;
      2. type the IP: it is shown in the router's device list (the Air Guard app does not show it);
      3. press **Submit**;
-     4. if the unit is off, «Unit not reachable» appears: press **Submit**, the unit is added anyway;
+     4. if the unit is off, «Unit not reachable» appears: choose **Add anyway**;
      5. press **Finish**.
 
      Tip: use the same VMC name to keep the history.
@@ -552,24 +600,20 @@ actions:
      The integration checks:
      - that no other unit uses the IP;
      - that the unit answers at that IP on port 5001.
-5. **Restart**:
-   1. open *Settings*;
-   2. click **«VMC Master: restart Home Assistant»**;
-   3. press **Submit**.
-6. **Add the card**:
+5. **Add the card**:
    - press **Ctrl+F5**;
    - on the dashboard (**Overview** is fine too) press **pencil → Add card → Browse all cards**;
    - in the **Search cards** field type `vmc`;
    - click **VMC Master**;
    - pick the unit in the **VMC\*** field;
    - press **Save**, then **Done**.
-7. **Once per unit**, in the card's **Opzioni** panel:
-   - press **Esegui** on **«VMC ‹name› - Profilo Inizializzazione»**;
-   - confirm with **OK** and wait 10 s;
+6. **Once per unit**, in the card's **Opzioni** panel:
    - press **Sensori Opzionati** (memory chip icon);
    - pick the sensors.
 
-**More units**: *Settings → Devices & services → VMC Master → Add device*, then as from step 4. You can add several units and restart once.
+   The **Profilo Inizializzazione** runs by itself, once, 140 s after a new unit is added (if the unit is off, when it is switched on).
+
+**More units**: repeat step 4.
 
 **New unit** (without the Air Guard app, see *Requirements*):
 1. power on the unit: it creates the `VMC_xxxxxxxx` network;
@@ -605,10 +649,75 @@ If the connection fails, the window shows the reason and lets you retry.
 
 To check at once for a new version: VMC Master page **⋮ → Refresh information**.
 
-Do not edit the package files: a hand-edited file is restored at startup (the copy stays in `/config/vmc_master_backup`).
-
 If the card shows «Custom element doesn't exist» right after a Home Assistant restart, reload the page.
 
+</details>
+
+<details>
+<summary><strong>Switching from the beta</strong></summary>
+
+For those with a beta that writes files to `/config/packages`.
+
+**First**: make a Home Assistant backup (*Settings → System → Backups*).
+
+**Switch**, once for all units:
+1. when the Marketplace shows the new version, press **Update**;
+2. restart Home Assistant;
+3. in *Settings → Repairs* open **«VMC Master: finish the switch from the beta»** and press **Submit**;
+4. press **Submit** again to restart Home Assistant.
+
+Settings are kept.
+
+The card updates by itself.
+
+In the Marketplace the repository is now called VMC-HELTY-FLOW-MASTER: nothing to do.
+
+**What changes**
+- No unit files are left in `/config/packages`.
+- The `packages:` line added to `configuration.yaml` for the beta is no longer needed: it can stay.
+- Sensors keep their name and history.
+- Settings change domain: only the part before the dot changes. Example: `input_boolean.vmc_‹name›_opzioni_accendi_spegni_vmc_vs_calendario` becomes `switch.vmc_‹name›_opzioni_accendi_spegni_vmc_vs_calendario`.
+- Settings history starts again from zero.
+- Timers become end-time sensors: the state is `unknown` while the timer is stopped.
+- The `shell_command.vmc_‹name›_…` services become buttons: table in *Full feature list*.
+- Your own automations, scripts and dashboards that use the old names must be updated.
+
+<!-- inizio riepilogo dei nomi (generato da tests/nativa/genera_elenco_nomi.py) -->
+
+| <sub>Today</sub> | <sub>Native version</sub> | <sub>How many</sub> |
+|---|---|---:|
+| <sub>`input_boolean`</sub> | <sub>`binary_sensor`</sub> | <sub>77</sub> |
+| <sub>`input_boolean`</sub> | <sub>`switch`</sub> | <sub>37</sub> |
+| <sub>`input_datetime`</sub> | <sub>`time`</sub> | <sub>30</sub> |
+| <sub>`input_number`</sub> | <sub>`number`</sub> | <sub>10</sub> |
+| <sub>`input_number`</sub> | <sub>`sensor`</sub> | <sub>1</sub> |
+| <sub>`input_select`</sub> | <sub>`select`</sub> | <sub>14</sub> |
+| <sub>`input_select`</sub> | <sub>`sensor`</sub> | <sub>1</sub> |
+| <sub>`input_text`</sub> | <sub>`sensor`</sub> | <sub>1</sub> |
+| <sub>`input_text`</sub> | <sub>`text`</sub> | <sub>2</sub> |
+| <sub>`timer`</sub> | <sub>`sensor` (end time)</sub> | <sub>34</sub> |
+| <sub>`script`</sub> | <sub>`button`</sub> | <sub>13</sub> |
+| <sub>`shell_command`</sub> | <sub>`button`</sub> | <sub>12</sub> |
+| <sub>`input_boolean`</sub> | <sub>no longer an entity</sub> | <sub>1</sub> |
+| <sub>`input_number`</sub> | <sub>no longer an entity</sub> | <sub>32</sub> |
+| <sub>`input_text`</sub> | <sub>no longer an entity</sub> | <sub>35</sub> |
+| <sub>`script`</sub> | <sub>no longer an entity</sub> | <sub>38</sub> |
+| <sub>`shell_command`</sub> | <sub>no longer an entity</sub> | <sub>4</sub> |
+
+<!-- fine riepilogo dei nomi -->
+
+Full list, item by item: **[Changed names](https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER/blob/main/NOMI_NATIVI.md)**.
+
+**If a sensor or binary sensor has «_2» at the end of its name** (e.g. `sensor.vmc_‹name›_status_ip_2`):
+1. open *Settings → Devices & services → Entities*;
+2. search for the name without «_2»;
+3. open the old entity, the one with status **Not provided**;
+4. gear → **Delete**;
+5. open the entity with «_2»;
+6. gear → in the **Entity ID** field remove «_2»;
+7. press **Update**.
+
+The earlier history continues.
 </details>
 
 <details>
@@ -625,10 +734,10 @@ After installation everything is set from the interface, without editing YAML.
 - ON/OFF switches for each function: pollutants, dew point, Free Cooling, Free Heating, humidity, calendar;
 - audio notifications («Notifiche Audio»): Media Player, volume, time window and alert categories.
 
-Every script asks for confirmation with the «Vuoi Procedere?» popup. For details open the card's **Pannello Informazioni**, with 22 illustrated items.
+Every button asks for confirmation with the «Vuoi Procedere?» popup. For details open the card's **Pannello Informazioni**, with 22 illustrated items.
 
 **From *Settings → Devices & services → VMC Master*:**
-- **unit name**: the row shows the Air Guard name and is refreshed at every start; **three dots → Rename** shows another one. The internal name (folder, entities, card) never changes;
+- **unit name**: the row shows the Air Guard name and is refreshed at every start; **three dots → Rename** shows another one. The internal name (entities, card) never changes;
 - **change the IP** (as an alternative to the card field):
   1. gear icon on the unit's row → **«Change the unit's IP»**;
   2. enter the new IP;
@@ -647,10 +756,9 @@ Every script asks for confirmation with the «Vuoi Procedere?» popup. For detai
      - **«From the network too (back to Access Point)»**: the unit shows its VMC_… network again; to connect it again choose **«No, it must be set up from scratch (without the Air Guard app)»**, or use the Air Guard app.
 
   In both cases:
-  - the unit's folder goes to `/config/vmc_master_backup`;
-  - the unit's entities disappear right away, then restart Home Assistant;
+  - the unit's entities disappear right away;
   - remove its card from the dashboard;
-  - to add the unit again: **Add device** (**Add integration** if no other unit is left).
+  - to add the unit again: *Settings → Devices & services → «Add integration» button at the bottom right → VMC Master*.
 
   **Three dots → Delete** also works, but only removes the unit from Home Assistant.
 </details>
@@ -660,7 +768,7 @@ Every script asks for confirmation with the «Vuoi Procedere?» popup. For detai
 
 <sub>The table summarises priority, unit behaviour and reaction time of each alert. Full details are in the card's Pannello Informazioni, item 17.</sub>
 
-<img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/main/immagini/README/logiche_en.png" alt="Operating logic" width="100%">
+<img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MASTER/main/immagini/README/logiche_en.png" alt="Operating logic" width="100%">
 </details>
 
 <details>
@@ -668,13 +776,13 @@ Every script asks for confirmation with the «Vuoi Procedere?» popup. For detai
 
 <sub>Screenshots may change with the latest release. The interface of the card is in Italian.</sub>
 
-<img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/main/immagini/README/schermate_en.png" alt="VMC MASTER screenshots" width="100%">
+<img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MASTER/main/immagini/README/schermate_en.png" alt="VMC MASTER screenshots" width="100%">
 </details>
 
 <details>
 <summary><strong>License</strong></summary>
 
-<sub>**[GNU General Public License v3.0](https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/blob/main/LICENSE)**. Copyright © 2023-2026 Ing. Danilo Robotti. You may use, copy, modify and distribute the software, also for commercial purposes; whoever distributes it, even modified, must make the source code available under the same licence and keep the copyright notice. The software comes with no warranty.</sub>
+<sub>**[GNU General Public License v3.0](https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER/blob/main/LICENSE)**. Copyright © 2023-2026 Ing. Danilo Robotti. You may use, copy, modify and distribute the software, also for commercial purposes; whoever distributes it, even modified, must make the source code available under the same licence and keep the copyright notice. The software comes with no warranty.</sub>
 
 <sub>**Use of Artificial Intelligence:** in developing the software the author also used artificial intelligence tools.</sub>
 </details>
@@ -695,7 +803,7 @@ Every script asks for confirmation with the «Vuoi Procedere?» popup. For detai
   Click the link or scan the QR code below.
   <br><br>
   <a href="https://www.paypal.com/ncp/payment/8LT4JJW7MHW6U">
-    <img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/main/immagini/Informazioni/VMC-HELTY-FLOW-qrcode.png"
+    <img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MASTER/main/immagini/Informazioni/VMC-HELTY-FLOW-qrcode.png"
          alt="PayPal QR code to support VMC MASTER"
          width="200">
   </a>

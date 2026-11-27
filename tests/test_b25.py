@@ -54,23 +54,6 @@ async def test_prima_installazione_con_riavvio_del_marketplace(hass: HomeAssista
     assert ir.async_get(hass).async_get_issue(MARKETPLACE, RIAVVIO_MARKETPLACE) is not None
 
 
-async def test_riavvio_del_marketplace_dopo_quello_della_vmc(hass: HomeAssistant) -> None:
-    """La VMC chiede il riavvio, poi lo chiede il Marketplace: resta solo il suo."""
-    await async_setup_component(hass, "http", {})
-    risultato = await _aggiungi(hass, "master", "192.168.1.160")
-    assert risultato["type"] is FlowResultType.CREATE_ENTRY
-    await hass.async_block_till_done()
-    assert _riparazione_vmc(hass) is not None
-    _riavvio_del_marketplace(hass)
-    await hass.async_block_till_done()
-    assert _riparazione_vmc(hass) is None
-    assert ir.async_get(hass).async_get_issue(MARKETPLACE, RIAVVIO_MARKETPLACE) is not None
-    # quando il Marketplace la toglie, la VMC non la rimette da sola
-    ir.async_delete_issue(hass, MARKETPLACE, RIAVVIO_MARKETPLACE)
-    await hass.async_block_till_done()
-    assert _riparazione_vmc(hass) is None
-
-
 @pytest.mark.parametrize(
     ("dominio", "issue_id", "issue_domain"),
     [
@@ -92,6 +75,14 @@ async def test_altre_riparazioni_non_contano(
     _riavvio_del_marketplace(hass, dominio, issue_id, issue_domain)
     await hass.async_block_till_done()
     assert _riparazione_vmc(hass) is not None
+
+
+async def test_riavvio_gia_chiesto_dal_marketplace(hass: HomeAssistant) -> None:
+    """Il Marketplace chiede gia' il riavvio (riparazione attiva): la VMC non aggiunge la sua."""
+    assert await async_setup_component(hass, DOMAIN, {})
+    _riavvio_del_marketplace(hass)
+    _segnala_riavvio(hass)
+    assert _riparazione_vmc(hass) is None
 
 
 async def test_riavvio_del_marketplace_non_attivo(hass: HomeAssistant) -> None:

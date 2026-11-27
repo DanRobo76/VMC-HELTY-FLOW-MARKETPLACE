@@ -761,6 +761,6 @@ if (!window.customCards.some((scheda) => scheda.type === TIPO)) {
     name: "VMC Master",
     description: "Scheda completa della VMC Helty Flow Plus/Elite gestita dall'integrazione VMC Master.",
     preview: false,
-    documentationURL: "https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE",
+    documentationURL: "https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER",
   });
 }

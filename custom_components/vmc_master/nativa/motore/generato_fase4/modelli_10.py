@@ -9,7 +9,7 @@ Generato da tests/nativa/motore/traduci.py dal package della b42: non modificare
 from .. import jinja as J
 
 
-def m1163(c, V):
+def m1164(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_weekday = V.get('weekday', J.MANCANTE)
     v_stati = J.MANCANTE
@@ -42,7 +42,7 @@ def m1163(c, V):
     return ''.join(_o)
 
 
-def m1164(c, V):
+def m1165(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_weekday = V.get('weekday', J.MANCANTE)
     v_stati = J.MANCANTE
@@ -75,7 +75,7 @@ def m1164(c, V):
     return ''.join(_o)
 
 
-def m1165(c, V):
+def m1166(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_weekday = V.get('weekday', J.MANCANTE)
     v_stati = J.MANCANTE
@@ -108,7 +108,7 @@ def m1165(c, V):
     return ''.join(_o)
 
 
-def m1166(c, V):
+def m1167(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_weekday = V.get('weekday', J.MANCANTE)
     v_stati = J.MANCANTE
@@ -141,7 +141,7 @@ def m1166(c, V):
     return ''.join(_o)
 
 
-def m1167(c, V):
+def m1168(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_weekday = V.get('weekday', J.MANCANTE)
     v_stati = J.MANCANTE
@@ -174,7 +174,7 @@ def m1167(c, V):
     return ''.join(_o)
 
 
-def m1168(c, V):
+def m1169(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_input1 = V.get('input1', J.MANCANTE)
     v_input2 = V.get('input2', J.MANCANTE)
@@ -359,7 +359,7 @@ def m1168(c, V):
     return ''.join(_o)
 
 
-def m1169(c, V):
+def m1170(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_input1_freeheating = V.get('input1_freeheating', J.MANCANTE)
     v_input2_freeheating = V.get('input2_freeheating', J.MANCANTE)
@@ -474,7 +474,7 @@ def m1169(c, V):
     return ''.join(_o)
 
 
-def m1170(c, V):
+def m1171(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_input1_freecooling = V.get('input1_freecooling', J.MANCANTE)
     v_input2_freecooling = V.get('input2_freecooling', J.MANCANTE)
@@ -589,7 +589,7 @@ def m1170(c, V):
     return ''.join(_o)
 
 
-def m1171(c, V):
+def m1172(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_input1 = V.get('input1', J.MANCANTE)
     v_input2 = V.get('input2', J.MANCANTE)
@@ -626,42 +626,42 @@ def m1171(c, V):
     return ''.join(_o)
 
 
-def m1172(c, V):
+def m1173(c, V):
     # {{ states('input_select.vmc_master_speed_1_fascia_calendario') | default('') }}
     _o = []
     _o.append(J.testo(J.f_default(c.states(c.N('select.vmc_master_speed_1_fascia_calendario')), '')))
     return ''.join(_o)
 
 
-def m1173(c, V):
+def m1174(c, V):
     # {{ states('input_select.vmc_master_speed_2_fascia_calendario') | default('') }}
     _o = []
     _o.append(J.testo(J.f_default(c.states(c.N('select.vmc_master_speed_2_fascia_calendario')), '')))
     return ''.join(_o)
 
 
-def m1174(c, V):
+def m1175(c, V):
     # {{ states('input_select.vmc_master_mese_1_fascia_freeheating') | default('') }}
     _o = []
     _o.append(J.testo(J.f_default(c.states(c.N('select.vmc_master_mese_1_fascia_freeheating')), '')))
     return ''.join(_o)
 
 
-def m1175(c, V):
+def m1176(c, V):
     # {{ states('input_select.vmc_master_mese_2_fascia_freeheating') | default('') }}
     _o = []
     _o.append(J.testo(J.f_default(c.states(c.N('select.vmc_master_mese_2_fascia_freeheating')), '')))
     return ''.join(_o)
 
 
-def m1176(c, V):
+def m1177(c, V):
     # {{ states('input_select.vmc_master_mese_1_fascia_freecooling') | default('') }}
     _o = []
     _o.append(J.testo(J.f_default(c.states(c.N('select.vmc_master_mese_1_fascia_freecooling')), '')))
     return ''.join(_o)
 
 
-def m1177(c, V):
+def m1178(c, V):
     # {{ states('input_select.vmc_master_mese_2_fascia_freecooling') | default('') }}
     _o = []
     _o.append(J.testo(J.f_default(c.states(c.N('select.vmc_master_mese_2_fascia_freecooling')), '')))

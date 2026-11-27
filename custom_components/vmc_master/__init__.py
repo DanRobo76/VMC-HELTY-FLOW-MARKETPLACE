@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import importlib
 import logging
 import re
 import threading
@@ -37,6 +38,7 @@ from homeassistant.components.lovelace import LOVELACE_DATA
 from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.const import Platform
 from homeassistant.core import (
+    CALLBACK_TYPE,
     Event,
     HomeAssistant,
     ServiceCall,
@@ -55,6 +57,7 @@ from homeassistant.helpers import (
 )
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.entity_platform import EntityPlatform
+from homeassistant.helpers.event import async_call_later, async_track_state_change_event
 from homeassistant.helpers.http import KEY_HASS
 from homeassistant.helpers.start import async_at_started
 from homeassistant.helpers.storage import Store
@@ -63,6 +66,7 @@ from homeassistant.loader import async_get_integration
 
 from . import config_flow, passaggio, prima_installazione
 from .const import (
+    CONF_DA_INIZIALIZZARE,
     CONF_HOST,
     CONF_NOME,
     CONF_TITOLO,
@@ -104,7 +108,7 @@ PREFISSO_RIAVVIO_MARKETPLACE = "restart_required_"
 ISSUE_PASSAGGIO: Final = "passaggio_dalla_beta"
 # Dopo il passaggio: dove l'utente usa ancora i vecchi nomi delle impostazioni
 ISSUE_RINOMINATE: Final = "impostazioni_rinominate"
-URL_NOMI_NATIVI: Final = "https://github.com/DanRobo76/VMC-HELTY-FLOW-NATIVA/blob/claude/project-thread-ni3xq9/NOMI_NATIVI.md"
+URL_NOMI_NATIVI: Final = f"{URL_REPOSITORY}/blob/main/NOMI_NATIVI.md"
 # Installazione fatta a mano in /config/packages/vmc_helty_flow/<nome>: non si tocca
 ISSUE_MANUALE: Final = "installazione_manuale"
 # VMC eliminata con il package della beta ancora in /config/packages
@@ -199,11 +203,12 @@ async def _async_togli_resti_della_beta(hass: HomeAssistant) -> None:
 
 async def _async_verifica_ip(chiamata: ServiceCall) -> ServiceResponse:
     """Servizio verifica_ip: legge il nome della VMC a quell'IP (porta 5001, due prove come
-    l'ingranaggio «Cambia l'IP della VMC») senza cambiare nulla.
+    l'ingranaggio «Cambia l'IP della VMC»; se non risponde, guarda se a quell'IP c'e' un
+    altro apparecchio: porta 5001 e ping) senza cambiare nulla.
 
-    Risposta: «risponde» (qualcosa risponde sulla porta 5001), «nome» (nome della VMC,
-    vuoto se non e' una VMC) ed «esito» (config_flow.esito_verifica_ip, oppure
-    «ip_non_valido» senza nessuna prova se l'IP non e' valido per ip_valido)."""
+    Risposta: «risponde» (a quell'IP risponde qualcosa), «nome» (nome della VMC, vuoto se
+    non e' una VMC) ed «esito» (config_flow.esito_verifica_ip, oppure «ip_non_valido»
+    senza nessuna prova se l'IP non e' valido per ip_valido)."""
     ip = chiamata.data["ip"].strip()
     if not config_flow.ip_valido(ip):
         return {"risponde": False, "nome": "", "esito": "ip_non_valido"}
@@ -507,14 +512,25 @@ async def async_conferma_passaggio(
     return esiti
 
 
+def _importa_motore() -> None:
+    """Il motore e il codice tradotto (moduli grandi: secondi di importazione)."""
+    from .nativa import assemblaggio  # nell'esecutore delle importazioni
+
+    importlib.import_module(assemblaggio.CODICE_FASE4)
+    importlib.import_module(assemblaggio.CODICE_SENSORI)
+
+
 async def _async_avvia_nativa(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """La VMC nativa della voce: piattaforme, poi tutte le parti nell'ordine
     dell'assemblaggio. Dopo il passaggio dalla beta parte con i valori della beta."""
-    from .nativa.assemblaggio import VMCAssemblata  # il motore si carica solo qui
+    # il motore si carica solo qui, nell'esecutore delle importazioni di Home Assistant:
+    # nel ciclo degli eventi lo bloccherebbe (Home Assistant lo segnala nel registro)
+    await hass.async_add_import_executor_job(_importa_motore)
+    from .nativa.assemblaggio import VMCAssemblata  # già importato: nessuna attesa
 
     dati: DatiVoce = entry.runtime_data
     nome: str = entry.data[CONF_NOME]
-    await passaggio.async_memoria_di_una_vmc_eliminata(hass, nome)
+    riaggiunta = await passaggio.async_memoria_di_una_vmc_eliminata(hass, nome)
     archivio = await passaggio.archivio(hass, nome).async_load() or {}
     vmc = VMCAssemblata(
         hass,
@@ -537,6 +553,12 @@ async def _async_avvia_nativa(hass: HomeAssistant, entry: ConfigEntry) -> None:
         await _async_ferma_nativa(hass, entry)
         raise
     _lega_automazioni_alla_voce(hass, entry, vmc)
+    if entry.data.get(CONF_DA_INIZIALIZZARE):
+        if riaggiunta or confermato:
+            # VMC riaggiunta con la sua memoria, o passata dalla beta: tiene i suoi valori
+            _inizializzata(hass, entry)
+        else:
+            entry.async_on_unload(_inizializza_una_volta(hass, entry, vmc))
     if confermato:
 
         @callback
@@ -549,6 +571,65 @@ async def _async_avvia_nativa(hass: HomeAssistant, entry: ConfigEntry) -> None:
             )
 
         entry.async_on_unload(async_at_started(hass, _avviato))
+
+
+# Il Profilo Inizializzazione automatico di una VMC nuova parte dopo i 140 s dell'avvio
+# (come la riattivazione di tutte le allerte dopo un riavvio di Home Assistant)
+ATTESA_INIZIALIZZAZIONE: Final = 140
+
+
+@callback
+def _inizializzata(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """La voce non chiede piu' il Profilo Inizializzazione automatico."""
+    hass.config_entries.async_update_entry(
+        entry,
+        data={k: v for k, v in entry.data.items() if k != CONF_DA_INIZIALIZZARE},
+    )
+
+
+@callback
+def _inizializza_una_volta(
+    hass: HomeAssistant, entry: ConfigEntry, vmc: Any
+) -> CALLBACK_TYPE:
+    """Profilo Inizializzazione automatico, una sola volta per una VMC aggiunta per la
+    prima volta: dopo i 140 s dell'avvio, appena la VMC e' ON-Line (se e' spenta aspetta
+    che si accenda). Come il pulsante della scheda; poi la voce non lo chiede piu', anche
+    dopo un riavvio di Home Assistant. Se Home Assistant si ferma prima, riparte al
+    prossimo avvio."""
+    nome = entry.data[CONF_NOME]
+    registro = er.async_get(hass)
+    stato_vmc = registro.async_get_entity_id(
+        "sensor", DOMAIN, f"vmc_{nome}_status_ip_interfaccia"
+    ) or f"sensor.vmc_{nome}_status_ip_interfaccia"
+    pulsante = next(
+        p for p in vmc.pulsanti if p.unique_id == f"vmc_{nome}_profilo_inizializzazione"
+    )
+    annulla: list[CALLBACK_TYPE] = []
+
+    @callback
+    def _ferma() -> None:
+        while annulla:
+            annulla.pop()()
+
+    @callback
+    def _prova(_evento: Event | None = None) -> None:
+        if not hass.states.is_state(stato_vmc, "ON-Line"):
+            return
+        _ferma()
+        _inizializzata(hass, entry)
+        _LOGGER.info("VMC %s: Profilo Inizializzazione automatico (VMC nuova)", nome)
+        entry.async_create_background_task(
+            hass, pulsante.async_press(), f"{DOMAIN}_inizializzazione_{nome}"
+        )
+
+    @callback
+    def _dopo_l_avvio(_ora: Any) -> None:
+        annulla.clear()  # l'attesa e' finita
+        annulla.append(async_track_state_change_event(hass, [stato_vmc], _prova))
+        _prova()
+
+    annulla.append(async_call_later(hass, ATTESA_INIZIALIZZAZIONE, _dopo_l_avvio))
+    return _ferma
 
 
 @callback

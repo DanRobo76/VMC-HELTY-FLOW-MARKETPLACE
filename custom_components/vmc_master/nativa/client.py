@@ -28,6 +28,19 @@ class ErroreVMC(Exception):
     """La VMC non risponde: connessione, invio o lettura non riusciti."""
 
 
+def motivo_errore(err: BaseException, attesa: float | None = None) -> str:
+    """Il motivo di un errore per il registro, mai vuoto: un'attesa scaduta non ha testo
+    («TimeoutError()») e il messaggio finirebbe con «:»."""
+    testo = str(err).strip()
+    if testo:
+        return testo
+    if isinstance(err, TimeoutError):
+        if attesa:
+            return f"nessuna risposta entro {attesa:g} secondi"
+        return "nessuna risposta in tempo"
+    return type(err).__name__
+
+
 class ClientVMC:
     """Scambi TCP con una VMC, uno alla volta."""
 
@@ -51,11 +64,15 @@ class ClientVMC:
                     scrittore.write(richiesta.encode())
                     await asyncio.wait_for(scrittore.drain(), self.attesa)
                 except (OSError, TimeoutError) as err:
-                    raise ErroreVMC(f"invio di {richiesta!r} non riuscito: {err}") from err
+                    raise ErroreVMC(
+                        f"invio di {richiesta!r} non riuscito: {motivo_errore(err, self.attesa)}"
+                    ) from err
                 try:
                     dati = await asyncio.wait_for(lettore.read(DIMENSIONE), self.attesa)
                 except (OSError, TimeoutError) as err:
-                    raise ErroreVMC(f"nessuna risposta a {richiesta!r}: {err}") from err
+                    raise ErroreVMC(
+                        f"nessuna risposta a {richiesta!r}: {motivo_errore(err, self.attesa)}"
+                    ) from err
             finally:
                 await self._chiudi(scrittore)
         try:
@@ -63,7 +80,9 @@ class ClientVMC:
         except UnicodeDecodeError as err:
             # Il sensore tcp qui si fermava con un errore nel registro: la lettura
             # non vale e il sensore resta com'era. Qui la lettura risulta non riuscita.
-            raise ErroreVMC(f"risposta a {richiesta!r} non leggibile: {err}") from err
+            raise ErroreVMC(
+                f"risposta a {richiesta!r} non leggibile: {motivo_errore(err)}"
+            ) from err
 
     async def comanda(self, comando: str) -> str:
         """Invia un comando (es. «VMWH0000002») con l'a capo, come gli shell_command.
@@ -80,7 +99,10 @@ class ClientVMC:
                         scrittore.write(f"{comando}\n".encode())
                         await asyncio.wait_for(scrittore.drain(), self.attesa)
                     except (OSError, TimeoutError) as err:
-                        raise ErroreVMC(f"invio di {comando!r} non riuscito: {err}") from err
+                        raise ErroreVMC(
+                            f"invio di {comando!r} non riuscito: "
+                            f"{motivo_errore(err, self.attesa)}"
+                        ) from err
                     try:
                         dati = await asyncio.wait_for(lettore.read(DIMENSIONE), self.attesa)
                     except (OSError, TimeoutError):
@@ -96,7 +118,10 @@ class ClientVMC:
                 asyncio.open_connection(self.host, self.porta), self.attesa
             )
         except (OSError, TimeoutError, UnicodeError) as err:
-            raise ErroreVMC(f"VMC {self.host}:{self.porta} non raggiungibile: {err}") from err
+            raise ErroreVMC(
+                f"VMC {self.host}:{self.porta} non raggiungibile: "
+                f"{motivo_errore(err, self.attesa)}"
+            ) from err
 
     async def _chiudi(self, scrittore: asyncio.StreamWriter) -> None:
         """Chiude la connessione senza far fallire lo scambio già concluso."""

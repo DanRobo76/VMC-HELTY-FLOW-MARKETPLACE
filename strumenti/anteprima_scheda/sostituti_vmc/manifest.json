@@ -1,0 +1,10 @@
+{
+  "domain": "sostituti_vmc",
+  "name": "Sostituti delle entità native (anteprima della scheda)",
+  "codeowners": [],
+  "dependencies": [],
+  "documentation": "https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE",
+  "iot_class": "local_push",
+  "requirements": [],
+  "version": "0.0.1"
+}

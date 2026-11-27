@@ -52,7 +52,7 @@ from homeassistant.helpers.script import CONFIGURATION_ERRORS
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
-from .client import ClientVMC, ErroreVMC, maschera_lan
+from .client import ClientVMC, ErroreVMC, maschera_lan, motivo_errore
 from .memoria import (
     GIORNI_STATISTICHE,
     STATISTICA_TEMPERATURA,
@@ -66,7 +66,7 @@ ON_LINE = "ON-Line"
 OFF_LINE = "OFF-Line"
 ERRORE_CONNESSIONE = "Errore Connessione"
 URL_VERSIONE = (
-    "https://api.github.com/repos/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/releases/latest"
+    "https://api.github.com/repos/DanRobo76/VMC-HELTY-FLOW-MASTER/releases/latest"
 )
 INTESTAZIONI_VERSIONE = {
     "Accept": "application/vnd.github.v3+json",
@@ -182,11 +182,13 @@ class LetturaPeriodica[T](DataUpdateCoordinator[T]):
         if self._in_corso is None:
             self._in_corso = asyncio.Lock()
         if self._in_corso.locked():
-            _LOGGER.warning(
-                "Lettura %s più lunga dell'intervallo di %s s",
-                self.name,
-                self.intervallo,
-            )
+            if self.last_update_success:
+                # VMC già segnalata come non raggiungibile: niente avviso a ogni giro
+                _LOGGER.warning(
+                    "Lettura %s più lunga dell'intervallo di %s s",
+                    self.name,
+                    self.intervallo,
+                )
             return
         async with self._in_corso:
             await self.async_refresh()
@@ -328,7 +330,9 @@ class LetturaVersione(LetturaPeriodica[str]):
             ) as risposta:
                 testo = await risposta.text()
         except (aiohttp.ClientError, TimeoutError) as err:
-            raise UpdateFailed(f"GitHub non risponde: {err}") from err
+            raise UpdateFailed(
+                f"GitHub non risponde: {motivo_errore(err, ATTESA_VERSIONE)}"
+            ) from err
         try:
             dati = json.loads(testo)
         except ValueError:
@@ -362,11 +366,15 @@ async def leggi_statistiche(hass: HomeAssistant, nome: str) -> dict[str, Any] | 
         )
     except HomeAssistantError as err:
         if isinstance(err, CONFIGURATION_ERRORS):
-            raise UpdateFailed(f"Statistiche per le medie non lette: {err}") from err
+            raise UpdateFailed(
+                f"Statistiche per le medie non lette: {motivo_errore(err)}"
+            ) from err
         _LOGGER.debug("Statistiche per le medie non lette", exc_info=True)
         return None
     except Exception as err:
-        raise UpdateFailed(f"Statistiche per le medie non lette: {err}") from err
+        raise UpdateFailed(
+            f"Statistiche per le medie non lette: {motivo_errore(err)}"
+        ) from err
 
 
 class LetturaMedie(DataUpdateCoordinator[dict[str, float | int | None]]):

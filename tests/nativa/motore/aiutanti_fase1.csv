@@ -1,0 +1,343 @@
+N.;Tipo oggi;Entità oggi;Nome;Uso nella scheda;Scritta da automazioni o script;Dopo un riavvio;Esclusa dal registro;Domani
+1;input_boolean;input_boolean.vmc_master_attese_inizializzate;Tempi di Attesa Inizializzati;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_attese_inizializzate
+2;input_boolean;input_boolean.vmc_master_avvio_home_assistant_in_corso_per_audio;Spia Audio all'Avvio di Home Assistant;mostrata dalla scheda;sì;riparte da off;sì;binary_sensor.vmc_master_avvio_home_assistant_in_corso_per_audio
+3;input_boolean;input_boolean.vmc_master_conferma_pulizia_cronologia;Conferma Pulizia Cronologia Entità;comandata dalla scheda;sì;riparte da off;sì;switch.vmc_master_conferma_pulizia_cronologia
+4;input_boolean;input_boolean.vmc_master_congelamento_verifica_soglia_valore_spia;Spia VMC Congelamento ≤ -18 [°C] Temp. Esterna ?;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_congelamento_verifica_soglia_valore_spia
+5;input_boolean;input_boolean.vmc_master_delta_temp_verifica_soglia_valore_spia;Spia VMC Sensori Int. Δ Temp. > 23 [°C] ?;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_delta_temp_verifica_soglia_valore_spia
+6;input_boolean;input_boolean.vmc_master_notifica_allerta_black_out;Notifica ON/OFF Allerta Black-Out;comandata dalla scheda;sì;conserva il valore;sì;switch.vmc_master_notifica_allerta_black_out
+7;input_boolean;input_boolean.vmc_master_notifica_allerta_congelamento;Notifica ON/OFF Allerta Congelamento;comandata dalla scheda;sì;conserva il valore;sì;switch.vmc_master_notifica_allerta_congelamento
+8;input_boolean;input_boolean.vmc_master_notifica_allerta_differenza_temp_int_est;Notifica ON/OFF Allerta Diff. Temp. Int-Est > 23 [°C];comandata dalla scheda;sì;conserva il valore;sì;switch.vmc_master_notifica_allerta_differenza_temp_int_est
+9;input_boolean;input_boolean.vmc_master_notifica_allerta_freecooling_heating;Notifica ON/OFF Allerta Free Cool./Heat.;comandata dalla scheda;sì;conserva il valore;sì;switch.vmc_master_notifica_allerta_freecooling_heating
+10;input_boolean;input_boolean.vmc_master_notifica_allerta_inquinanti;Notifica ON/OFF Allerta Inquinanti;comandata dalla scheda;sì;conserva il valore;sì;switch.vmc_master_notifica_allerta_inquinanti
+11;input_boolean;input_boolean.vmc_master_notifica_allerta_pdr;Notifica ON/OFF Allerta Lim. Δ P. di Rugiada;comandata dalla scheda;sì;conserva il valore;sì;switch.vmc_master_notifica_allerta_pdr
+12;input_boolean;input_boolean.vmc_master_notifica_allerta_riepilogo;Notifica ON/OFF Riepilogo Allerte;comandata dalla scheda;sì;conserva il valore;sì;switch.vmc_master_notifica_allerta_riepilogo
+13;input_boolean;input_boolean.vmc_master_notifica_allerta_status_velocita;Notifica ON/OFF Status Velocità;comandata dalla scheda;sì;conserva il valore;sì;switch.vmc_master_notifica_allerta_status_velocita
+14;input_boolean;input_boolean.vmc_master_notifica_allerta_umidita;Notifica ON/OFF Allerta Umidità;comandata dalla scheda;sì;conserva il valore;sì;switch.vmc_master_notifica_allerta_umidita
+15;input_boolean;input_boolean.vmc_master_notifica_audio;Invio Notifica Audio;comandata dalla scheda;sì;conserva il valore;sì;switch.vmc_master_notifica_audio
+16;input_boolean;input_boolean.vmc_master_notifica_status_vmc;Invio Notifica;comandata dalla scheda;sì;conserva il valore;sì;switch.vmc_master_notifica_status_vmc
+17;input_boolean;input_boolean.vmc_master_opzione_finestra_audio;Finestra Audio;comandata dalla scheda;sì;conserva il valore;sì;switch.vmc_master_opzione_finestra_audio
+18;input_boolean;input_boolean.vmc_master_opzione_finestra_prossime_letture;Timer Lettura Dati VMC;comandata dalla scheda;sì;conserva il valore;sì;switch.vmc_master_opzione_finestra_prossime_letture
+19;input_boolean;input_boolean.vmc_master_opzione_finestra_tempi_attesa;Finestra Tempi di Attesa;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_opzione_finestra_tempi_attesa
+20;input_boolean;input_boolean.vmc_master_opzioni_accendi_spegni_avvisi;Mostra o Nascondi gli Avvisi;comandata dalla scheda;sì;conserva il valore;sì;switch.vmc_master_opzioni_accendi_spegni_avvisi
+21;input_boolean;input_boolean.vmc_master_opzioni_accendi_spegni_avvisi_spia;Spia Avvisi;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_opzioni_accendi_spegni_avvisi_spia
+22;input_boolean;input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_calendario;VMC ON/OFF, in Funzione del Calendario;comandata dalla scheda;sì;conserva il valore;sì;switch.vmc_master_opzioni_accendi_spegni_vmc_vs_calendario
+23;input_boolean;input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc;VMC ON/OFF, in Funzione del Lim. CO₂ e/o VOC;comandata dalla scheda;sì;conserva il valore;sì;switch.vmc_master_opzioni_accendi_spegni_vmc_vs_co2_e_voc
+24;input_boolean;input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_freecooling;VMC ON/OFF, in Funzione della Vel. Free Cooling;comandata dalla scheda;sì;conserva il valore;sì;switch.vmc_master_opzioni_accendi_spegni_vmc_vs_freecooling
+25;input_boolean;input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_freeheating;VMC ON/OFF, in Funzione della Vel. Free Heating;comandata dalla scheda;sì;conserva il valore;sì;switch.vmc_master_opzioni_accendi_spegni_vmc_vs_freeheating
+26;input_boolean;input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr;VMC ON/OFF, in Funzione del Lim. Δ P. di Rugiada;comandata dalla scheda;sì;conserva il valore;sì;switch.vmc_master_opzioni_accendi_spegni_vmc_vs_pdr
+27;input_boolean;input_boolean.vmc_master_opzioni_accendi_spegni_vmc_vs_umidita;VMC ON/OFF, in Funzione dell'Umidità Interna;comandata dalla scheda;sì;conserva il valore;sì;switch.vmc_master_opzioni_accendi_spegni_vmc_vs_umidita
+28;input_boolean;input_boolean.vmc_master_opzioni_avvisi;Avvisi;comandata dalla scheda;sì;riparte da off;sì;switch.vmc_master_opzioni_avvisi
+29;input_boolean;input_boolean.vmc_master_opzioni_avvisi_grafici;Grafici;comandata dalla scheda;sì;riparte da off;sì;switch.vmc_master_opzioni_avvisi_grafici
+30;input_boolean;input_boolean.vmc_master_opzioni_calendario;Programmazione Calendario;comandata dalla scheda;sì;riparte da off;sì;switch.vmc_master_opzioni_calendario
+31;input_boolean;input_boolean.vmc_master_opzioni_calendario_main;Calendario;comandata dalla scheda;sì;riparte da off;sì;switch.vmc_master_opzioni_calendario_main
+32;input_boolean;input_boolean.vmc_master_opzioni_elementi_chimici;Elementi Chimici;comandata dalla scheda;sì;riparte da off;sì;switch.vmc_master_opzioni_elementi_chimici
+33;input_boolean;input_boolean.vmc_master_opzioni_free_heating_o_free_cooling;Calendario Free Heating / Free Cooling;comandata dalla scheda;sì;riparte da off;sì;switch.vmc_master_opzioni_free_heating_o_free_cooling
+34;input_boolean;input_boolean.vmc_master_opzioni_interruttore_calendario;Status Programmazione Giornaliera;comandata dalla scheda;sì;riparte da off;sì;switch.vmc_master_opzioni_interruttore_calendario
+35;input_boolean;input_boolean.vmc_master_opzioni_interruttore_monitoraggio_sensori_extra;Sensori - Extra;comandata dalla scheda;sì;riparte da off;sì;switch.vmc_master_opzioni_interruttore_monitoraggio_sensori_extra
+36;input_boolean;input_boolean.vmc_master_opzioni_interruttore_offset_sensori;Sensori Selezionati - Offset;comandata dalla scheda;sì;riparte da off;sì;switch.vmc_master_opzioni_interruttore_offset_sensori
+37;input_boolean;input_boolean.vmc_master_opzioni_interruttore_sensori_vmc_interni;Sensori - VMC Interni;comandata dalla scheda;sì;riparte da off;sì;switch.vmc_master_opzioni_interruttore_sensori_vmc_interni
+38;input_boolean;input_boolean.vmc_master_opzioni_lettura_sensori;Informazioni;comandata dalla scheda;sì;riparte da off;sì;switch.vmc_master_opzioni_lettura_sensori
+39;input_boolean;input_boolean.vmc_master_opzioni_monitoraggio_sensori;Sensori;comandata dalla scheda;sì;riparte da off;sì;switch.vmc_master_opzioni_monitoraggio_sensori
+40;input_boolean;input_boolean.vmc_master_opzioni_offset_sensori;Opzioni;comandata dalla scheda;sì;riparte da off;sì;switch.vmc_master_opzioni_offset_sensori
+41;input_boolean;input_boolean.vmc_master_opzioni_punto_di_rugiada;Lim. Δ P. di Rugiada;comandata dalla scheda;sì;riparte da off;sì;switch.vmc_master_opzioni_punto_di_rugiada
+42;input_boolean;input_boolean.vmc_master_opzioni_scelta_sensori;Sensori Opzionati;comandata dalla scheda;sì;riparte da off;sì;switch.vmc_master_opzioni_scelta_sensori
+43;input_boolean;input_boolean.vmc_master_opzioni_vmc;Telecomando;comandata dalla scheda;sì;riparte da off;sì;switch.vmc_master_opzioni_vmc
+44;input_boolean;input_boolean.vmc_master_popup_versione_corrente_vs_repository;PopUp Notifica Aggiornamento Package;mostrata dalla scheda;sì;riparte da off;sì;binary_sensor.vmc_master_popup_versione_corrente_vs_repository
+45;input_boolean;input_boolean.vmc_master_spia_calendario_black_out;Spia Black-Out all'interno del Calendario;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_calendario_black_out
+46;input_boolean;input_boolean.vmc_master_spia_calendario_comando_non_eseguito;Spia Comando non eseguito all'interno del Calendario;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_calendario_comando_non_eseguito
+47;input_boolean;input_boolean.vmc_master_spia_calendario_domenica_1;Spia all'interno del Calendario Domenica 1°;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_calendario_domenica_1
+48;input_boolean;input_boolean.vmc_master_spia_calendario_domenica_2;Spia all'interno del Calendario Domenica 2°;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_calendario_domenica_2
+49;input_boolean;input_boolean.vmc_master_spia_calendario_giovedi_1;Spia all'interno del Calendario Giovedì 1°;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_calendario_giovedi_1
+50;input_boolean;input_boolean.vmc_master_spia_calendario_giovedi_2;Spia all'interno del Calendario Giovedì 2°;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_calendario_giovedi_2
+51;input_boolean;input_boolean.vmc_master_spia_calendario_lunedi_1;Spia all'interno del Calendario Lunedì 1°;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_calendario_lunedi_1
+52;input_boolean;input_boolean.vmc_master_spia_calendario_lunedi_2;Spia all'interno del Calendario Lunedì 2°;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_calendario_lunedi_2
+53;input_boolean;input_boolean.vmc_master_spia_calendario_martedi_1;Spia all'interno del Calendario Martedì 1°;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_calendario_martedi_1
+54;input_boolean;input_boolean.vmc_master_spia_calendario_martedi_2;Spia all'interno del Calendario Martedì 2°;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_calendario_martedi_2
+55;input_boolean;input_boolean.vmc_master_spia_calendario_mercoledi_1;Spia all'interno del Calendario Mercoledì 1°;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_calendario_mercoledi_1
+56;input_boolean;input_boolean.vmc_master_spia_calendario_mercoledi_2;Spia all'interno del Calendario Mercoledì 2°;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_calendario_mercoledi_2
+57;input_boolean;input_boolean.vmc_master_spia_calendario_sabato_1;Spia all'interno del Calendario Sabato 1°;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_calendario_sabato_1
+58;input_boolean;input_boolean.vmc_master_spia_calendario_sabato_2;Spia all'interno del Calendario Sabato 2°;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_calendario_sabato_2
+59;input_boolean;input_boolean.vmc_master_spia_calendario_venerdi_1;Spia all'interno del Calendario Venerdì 1°;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_calendario_venerdi_1
+60;input_boolean;input_boolean.vmc_master_spia_calendario_venerdi_2;Spia all'interno del Calendario Venerdì 2°;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_calendario_venerdi_2
+61;input_boolean;input_boolean.vmc_master_spia_co2_o_voc;Spia Inquinanti CO₂ e/o VOC;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_co2_o_voc
+62;input_boolean;input_boolean.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0;Spia di Richiamo Vel. 0 CO₂ e/o VOC;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_co2_o_voc_partenza_ritorno_velocita_0
+63;input_boolean;input_boolean.vmc_master_spia_umidita_mantenuta_velocita_0;Spia Umidità Velocità 0 Mantenuta;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+64;input_boolean;input_boolean.vmc_master_spia_umidita_velocita_0;Spia Umidità Velocità 0;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_umidita_velocita_0
+65;input_boolean;input_boolean.vmc_master_spia_umidita_velocita_1;Spia Umidità Velocità 1;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_umidita_velocita_1
+66;input_boolean;input_boolean.vmc_master_spia_umidita_velocita_2;Spia Umidità Velocità 2;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_umidita_velocita_2
+67;input_boolean;input_boolean.vmc_master_spia_umidita_velocita_3;Spia Umidità Velocità 3;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_umidita_velocita_3
+68;input_boolean;input_boolean.vmc_master_spia_umidita_velocita_4;Spia Umidità Velocità 4;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_umidita_velocita_4
+69;input_boolean;input_boolean.vmc_master_spia_umidita_velocita_freecooling;Spia Umidità Velocità Free Cool./Heat.;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_umidita_velocita_freecooling
+70;input_boolean;input_boolean.vmc_master_spia_umidita_velocita_iperventilazione;Spia Umidità Velocità Iperventilazione;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_umidita_velocita_iperventilazione
+71;input_boolean;input_boolean.vmc_master_spia_umidita_velocita_notturna;Spia Umidità Velocità Notturna;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_umidita_velocita_notturna
+72;input_boolean;input_boolean.vmc_master_spia_velocita_0;Spia Velocità 0;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_0
+73;input_boolean;input_boolean.vmc_master_spia_velocita_0_co2_o_voc;Spia Velocità 0 CO₂ e/o VOC;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_0_co2_o_voc
+74;input_boolean;input_boolean.vmc_master_spia_velocita_0_congelamento;Spia Velocità 0 Congelamento;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_0_congelamento
+75;input_boolean;input_boolean.vmc_master_spia_velocita_0_delta_temp_verifica_soglia_valore;Spia Velocità 0 Diff. Temp. Int-Est > 23 [°C];mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_0_delta_temp_verifica_soglia_valore
+76;input_boolean;input_boolean.vmc_master_spia_velocita_0_un_solo_avvio;Spia Velocità 0 1° Avvio;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_0_un_solo_avvio
+77;input_boolean;input_boolean.vmc_master_spia_velocita_1;Spia Velocità 1;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_1
+78;input_boolean;input_boolean.vmc_master_spia_velocita_1_co2_o_voc;Spia Velocità 1 CO₂ e/o VOC;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_1_co2_o_voc
+79;input_boolean;input_boolean.vmc_master_spia_velocita_1_co2_o_voc_pdr;Spia Velocità 1 CO₂ e/o VOC Vs PdR;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_1_co2_o_voc_pdr
+80;input_boolean;input_boolean.vmc_master_spia_velocita_1_congelamento;Spia Velocità 1 Congelamento;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_1_congelamento
+81;input_boolean;input_boolean.vmc_master_spia_velocita_1_delta_temp_verifica_soglia_valore;Spia Velocità 1 Diff. Temp. Int-Est > 23 [°C];mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_1_delta_temp_verifica_soglia_valore
+82;input_boolean;input_boolean.vmc_master_spia_velocita_1_un_solo_avvio;Spia Velocità 1 1° Avvio;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_1_un_solo_avvio
+83;input_boolean;input_boolean.vmc_master_spia_velocita_2;Spia Velocità 2;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_2
+84;input_boolean;input_boolean.vmc_master_spia_velocita_2_co2_o_voc;Spia Velocità 2 CO₂ e/o VOC;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_2_co2_o_voc
+85;input_boolean;input_boolean.vmc_master_spia_velocita_2_congelamento;Spia Velocità 2 Congelamento;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_2_congelamento
+86;input_boolean;input_boolean.vmc_master_spia_velocita_2_delta_temp_verifica_soglia_valore;Spia Velocità 2 Diff. Temp. Int-Est > 23 [°C];mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_2_delta_temp_verifica_soglia_valore
+87;input_boolean;input_boolean.vmc_master_spia_velocita_2_un_solo_avvio;Spia Velocità 2 1° Avvio;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_2_un_solo_avvio
+88;input_boolean;input_boolean.vmc_master_spia_velocita_3;Spia Velocità 3;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_3
+89;input_boolean;input_boolean.vmc_master_spia_velocita_3_co2_o_voc;Spia Velocità 3 CO₂ e/o VOC;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_3_co2_o_voc
+90;input_boolean;input_boolean.vmc_master_spia_velocita_3_congelamento;Spia Velocità 3 Congelamento;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_3_congelamento
+91;input_boolean;input_boolean.vmc_master_spia_velocita_3_delta_temp_verifica_soglia_valore;Spia Velocità 3 Diff. Temp. Int-Est > 23 [°C];mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_3_delta_temp_verifica_soglia_valore
+92;input_boolean;input_boolean.vmc_master_spia_velocita_3_un_solo_avvio;Spia Velocità 3 1° Avvio;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_3_un_solo_avvio
+93;input_boolean;input_boolean.vmc_master_spia_velocita_4;Spia Velocità 4;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_4
+94;input_boolean;input_boolean.vmc_master_spia_velocita_4_co2_o_voc;Spia Velocità 4 CO₂ e/o VOC;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_4_co2_o_voc
+95;input_boolean;input_boolean.vmc_master_spia_velocita_4_congelamento;Spia Velocità 4 Congelamento;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_4_congelamento
+96;input_boolean;input_boolean.vmc_master_spia_velocita_4_delta_temp_verifica_soglia_valore;Spia Velocità 4 Diff. Temp. Int-Est > 23 [°C];mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_4_delta_temp_verifica_soglia_valore
+97;input_boolean;input_boolean.vmc_master_spia_velocita_4_un_solo_avvio;Spia Velocità 4 1° Avvio;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_4_un_solo_avvio
+98;input_boolean;input_boolean.vmc_master_spia_velocita_freecooling;Spia Velocità Free Cool./Heat.;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_freecooling
+99;input_boolean;input_boolean.vmc_master_spia_velocita_freecooling_co2_o_voc;Spia Velocità Free Cool./Heat. CO₂ e/o VOC;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_freecooling_co2_o_voc
+100;input_boolean;input_boolean.vmc_master_spia_velocita_freecooling_congelamento;Spia Velocità Free Cool./Heat. Congelamento;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_freecooling_congelamento
+101;input_boolean;input_boolean.vmc_master_spia_velocita_freecooling_delta_temp_verifica_soglia_valore;Spia Velocità Free Cool./Heat. Diff. Temp. Int-Est > 23 [°C];mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_freecooling_delta_temp_verifica_soglia_valore
+102;input_boolean;input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio;Spia Velocità freecooling 1° Avvio;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_freecooling_un_solo_avvio
+103;input_boolean;input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling;Spia su Programmazione Velocità Free Cooling 1° Avvio;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freecooling
+104;input_boolean;input_boolean.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating;Spia su Programmazione Velocità Free Heating 1° Avvio;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_freecooling_un_solo_avvio_per_programmazione_freeheating
+105;input_boolean;input_boolean.vmc_master_spia_velocita_iperventilazione;Spia Velocità Iperventilazione;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_iperventilazione
+106;input_boolean;input_boolean.vmc_master_spia_velocita_iperventilazione_co2_o_voc;Spia Velocità Iperventilazione CO₂ e/o VOC;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_iperventilazione_co2_o_voc
+107;input_boolean;input_boolean.vmc_master_spia_velocita_iperventilazione_congelamento;Spia Velocità Iperventilazione Congelamento;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_iperventilazione_congelamento
+108;input_boolean;input_boolean.vmc_master_spia_velocita_iperventilazione_delta_temp_verifica_soglia_valore;Spia Velocità Iperventilazione Diff. Temp. Int-Est > 23 [°C];mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_iperventilazione_delta_temp_verifica_soglia_valore
+109;input_boolean;input_boolean.vmc_master_spia_velocita_iperventilazione_un_solo_avvio;Spia Velocità Iperventilazione 1° Avvio;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_iperventilazione_un_solo_avvio
+110;input_boolean;input_boolean.vmc_master_spia_velocita_notturna;Spia Velocità Notturna;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_notturna
+111;input_boolean;input_boolean.vmc_master_spia_velocita_notturna_co2_o_voc;Spia Velocità Notturna CO₂ e/o VOC;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_notturna_co2_o_voc
+112;input_boolean;input_boolean.vmc_master_spia_velocita_notturna_congelamento;Spia Velocità Notturna Congelamento;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_notturna_congelamento
+113;input_boolean;input_boolean.vmc_master_spia_velocita_notturna_delta_temp_verifica_soglia_valore;Spia Velocità Notturna Diff. Temp. Int-Est > 23 [°C];mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_notturna_delta_temp_verifica_soglia_valore
+114;input_boolean;input_boolean.vmc_master_spia_velocita_notturna_un_solo_avvio;Spia Velocità notturna 1° Avvio;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_spia_velocita_notturna_un_solo_avvio
+115;input_boolean;input_boolean.vmc_master_umidita_verifica_soglia_valore_spia;Spia VMC Umidità;mostrata dalla scheda;sì;conserva il valore;sì;binary_sensor.vmc_master_umidita_verifica_soglia_valore_spia
+116;input_number;input_number.vmc_master_aria_scambiata_freecooling;Aria Scambiata a Vel. Free Heating/Cooling;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+117;input_number;input_number.vmc_master_aria_scambiata_iperventilazione;Aria Scambiata a Vel. Iperventilazione;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+118;input_number;input_number.vmc_master_aria_scambiata_notte;Aria Scambiata a Vel. Notturna;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+119;input_number;input_number.vmc_master_aria_scambiata_ricomincio;Aria Scambiata Ricomincio;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+120;input_number;input_number.vmc_master_aria_scambiata_v1;Aria Scambiata a Velocità 1;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+121;input_number;input_number.vmc_master_aria_scambiata_v2;Aria Scambiata a Velocità 2;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+122;input_number;input_number.vmc_master_aria_scambiata_v3;Aria Scambiata a Velocità 3;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+123;input_number;input_number.vmc_master_aria_scambiata_v4;Aria Scambiata a Velocità 4;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+124;input_number;input_number.vmc_master_attesa_avvisi;Attesa Aggiornamento Avvisi;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+125;input_number;input_number.vmc_master_attesa_blackout_rilevazione;Attesa Rilevazione Black-Out;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+126;input_number;input_number.vmc_master_attesa_blackout_ripristino;Attesa Ripristino dopo Black-Out;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+127;input_number;input_number.vmc_master_attesa_calendario_fine;Attesa Fine Fascia;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+128;input_number;input_number.vmc_master_attesa_calendario_inizio;Attesa Inizio Fascia;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+129;input_number;input_number.vmc_master_attesa_delta_avvio;Attesa Avvio Allerta Δ Temp.;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+130;input_number;input_number.vmc_master_attesa_delta_fine;Attesa Fine Allerta Δ Temp.;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+131;input_number;input_number.vmc_master_attesa_delta_memoria;Attesa Memorizzazione Velocità (Δ Temp.);solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+132;input_number;input_number.vmc_master_attesa_free_annullamento;Attesa Annullamento Memoria Free Heating/Cooling;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+133;input_number;input_number.vmc_master_attesa_free_ripristino;Attesa Ripristino Free Heating/Cooling;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+134;input_number;input_number.vmc_master_attesa_free_ripristino_inquinanti;Attesa Ripristino Free Heating/Cooling (con Inquinanti);solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+135;input_number;input_number.vmc_master_attesa_free_sospensione;Attesa Sospensione Free Heating/Cooling;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+136;input_number;input_number.vmc_master_attesa_free_sospensione_inquinanti;Attesa Sospensione Free Heating/Cooling (con Inquinanti);solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+137;input_number;input_number.vmc_master_attesa_inquinanti_avvio;Attesa Avvio Allerta Inquinanti;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+138;input_number;input_number.vmc_master_attesa_inquinanti_avvio_spia_pdr;Attesa Avvio Allerta Inquinanti (con Spia PdR);solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+139;input_number;input_number.vmc_master_attesa_inquinanti_fine;Attesa Fine Allerta Inquinanti;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+140;input_number;input_number.vmc_master_attesa_inquinanti_memoria;Attesa Memorizzazione Velocità (Inquinanti);solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+141;input_number;input_number.vmc_master_attesa_pdr_cambio;Attesa Cambio Velocità per Lim. Δ PdR;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+142;input_number;input_number.vmc_master_attesa_pdr_cambio_inquinanti;Attesa Cambio Velocità per Lim. Δ PdR (con Inquinanti);solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+143;input_number;input_number.vmc_master_attesa_pdr_ripristino;Attesa Ripristino dopo Lim. Δ PdR;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+144;input_number;input_number.vmc_master_attesa_pdr_ripristino_inquinanti;Attesa Ripristino dopo Lim. Δ PdR (con Inquinanti);solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+145;input_number;input_number.vmc_master_attesa_umidita_avvio;Attesa Avvio Allerta Umidità;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+146;input_number;input_number.vmc_master_attesa_umidita_fine;Attesa Fine Allerta Umidità;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+147;input_number;input_number.vmc_master_attesa_umidita_memoria;Attesa Memorizzazione Velocità (Umidità);solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+148;input_number;input_number.vmc_master_audio_volume;Volume Media Player;comandata dalla scheda;sì;conserva il valore;sì;number.vmc_master_audio_volume
+149;input_number;input_number.vmc_master_fase_riallineamento_al_riavvio;Fase Riallineamento Allerte al Riavvio;mostrata dalla scheda;sì;riparte da 0;sì;sensor.vmc_master_fase_riallineamento_al_riavvio
+150;input_number;input_number.vmc_master_offset_co2;Offset CO₂ Int.;comandata dalla scheda;sì;conserva il valore;sì;number.vmc_master_offset_co2
+151;input_number;input_number.vmc_master_offset_temp_esterna;Offset Temperatura Ext.;comandata dalla scheda;sì;conserva il valore;sì;number.vmc_master_offset_temp_esterna
+152;input_number;input_number.vmc_master_offset_temp_interna;Offset Temperatura;comandata dalla scheda;sì;conserva il valore;sì;number.vmc_master_offset_temp_interna
+153;input_number;input_number.vmc_master_offset_umidita_esterna;Offset Umidità Ext.;comandata dalla scheda;sì;conserva il valore;sì;number.vmc_master_offset_umidita_esterna
+154;input_number;input_number.vmc_master_offset_umidita_interna;Offset Umidità Int.;comandata dalla scheda;sì;conserva il valore;sì;number.vmc_master_offset_umidita_interna
+155;input_number;input_number.vmc_master_offset_verifica_impiego_vmc;Set Lim. Δ Punto di Rugiada;comandata dalla scheda;sì;conserva il valore;sì;number.vmc_master_offset_verifica_impiego_vmc
+156;input_number;input_number.vmc_master_offset_voc;Offset VOC Int.;comandata dalla scheda;sì;conserva il valore;sì;number.vmc_master_offset_voc
+157;input_number;input_number.vmc_master_umidita_avvio;Avvio VMC per Umidità ≥;comandata dalla scheda;sì;conserva il valore;sì;number.vmc_master_umidita_avvio
+158;input_number;input_number.vmc_master_volume_da_inserire;Volume ambiente Int.;comandata dalla scheda;no;conserva il valore;sì;number.vmc_master_volume_da_inserire
+159;input_select;input_select.vmc_master_entita_escluse_recorder;Entità escluse dal Recorder;mostrata dalla scheda;no;conserva il valore;sì;sensor.vmc_master_entita_escluse_recorder
+160;input_select;input_select.vmc_master_mese_1_fascia_freecooling;Set Inizio Mese Free Cooling;comandata dalla scheda;sì;conserva il valore;sì;select.vmc_master_mese_1_fascia_freecooling
+161;input_select;input_select.vmc_master_mese_1_fascia_freeheating;Set Inizio Mese Free Heating;comandata dalla scheda;sì;conserva il valore;sì;select.vmc_master_mese_1_fascia_freeheating
+162;input_select;input_select.vmc_master_mese_2_fascia_freecooling;Set Fine Mese Free Cooling;comandata dalla scheda;sì;conserva il valore;sì;select.vmc_master_mese_2_fascia_freecooling
+163;input_select;input_select.vmc_master_mese_2_fascia_freeheating;Set Fine Mese Free Heating;comandata dalla scheda;sì;conserva il valore;sì;select.vmc_master_mese_2_fascia_freeheating
+164;input_select;input_select.vmc_master_selected_co2_internal_entity;Seleziona Entità CO₂ Interna;comandata dalla scheda;sì;conserva il valore;sì;select.vmc_master_selected_co2_internal_entity
+165;input_select;input_select.vmc_master_selected_humidity_external_entity;Seleziona Entità Umidità Esterna;comandata dalla scheda;sì;conserva il valore;sì;select.vmc_master_selected_humidity_external_entity
+166;input_select;input_select.vmc_master_selected_humidity_internal_entity;Seleziona Entità Umidità Interna;comandata dalla scheda;sì;conserva il valore;sì;select.vmc_master_selected_humidity_internal_entity
+167;input_select;input_select.vmc_master_selected_media_player_entity;Seleziona Media Player;comandata dalla scheda;sì;conserva il valore;sì;select.vmc_master_selected_media_player_entity
+168;input_select;input_select.vmc_master_selected_notification_device;Seleziona Dispositivo per Invio Notifica;comandata dalla scheda;sì;conserva il valore;sì;select.vmc_master_selected_notification_device
+169;input_select;input_select.vmc_master_selected_temp_external_entity;Seleziona Entità Temperatura Esterna;comandata dalla scheda;sì;conserva il valore;sì;select.vmc_master_selected_temp_external_entity
+170;input_select;input_select.vmc_master_selected_temp_internal_entity;Seleziona Entità Temperatura Interna;comandata dalla scheda;sì;conserva il valore;sì;select.vmc_master_selected_temp_internal_entity
+171;input_select;input_select.vmc_master_speed_1_fascia_calendario;Set Velocità 1° Fascia Calendario;comandata dalla scheda;sì;conserva il valore;sì;select.vmc_master_speed_1_fascia_calendario
+172;input_select;input_select.vmc_master_speed_2_fascia_calendario;Set Velocità 2° Fascia Calendario;comandata dalla scheda;sì;conserva il valore;sì;select.vmc_master_speed_2_fascia_calendario
+173;input_select;input_select.vmc_master_speed_umidita;Set Velocità Umidità di Avvio;comandata dalla scheda;sì;conserva il valore;sì;select.vmc_master_speed_umidita
+174;input_text;input_text.vmc_master_comando_non_eseguito;Comando non Eseguito durante una Fascia;mostrata dalla scheda;sì;riparte vuoto;sì;sensor.vmc_master_comando_non_eseguito
+175;input_text;input_text.vmc_master_countdown_avvisi;Aggiornamento Avvisi - Trigger in Attesa;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+176;input_text;input_text.vmc_master_countdown_blackout_rilevazione;Rilevazione Black-Out - Trigger in Attesa;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+177;input_text;input_text.vmc_master_countdown_blackout_ripristino;Ripristino dopo Black-Out - Trigger in Attesa;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+178;input_text;input_text.vmc_master_countdown_calendario_fine;Fine Fascia - Trigger in Attesa;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+179;input_text;input_text.vmc_master_countdown_calendario_inizio;Inizio Fascia - Trigger in Attesa;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+180;input_text;input_text.vmc_master_countdown_delta_avvio;Avvio Allerta Δ Temp. - Trigger in Attesa;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+181;input_text;input_text.vmc_master_countdown_delta_fine;Fine Allerta Δ Temp. - Trigger in Attesa;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+182;input_text;input_text.vmc_master_countdown_delta_memoria;Memorizzazione Velocità (Δ Temp.) - Trigger in Attesa;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+183;input_text;input_text.vmc_master_countdown_free_cooling_annullamento;Annullamento Memoria Free Cooling - Trigger in Attesa;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+184;input_text;input_text.vmc_master_countdown_free_cooling_ripristino;Ripristino Free Cooling - Trigger in Attesa;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+185;input_text;input_text.vmc_master_countdown_free_cooling_sospensione;Sospensione Free Cooling - Trigger in Attesa;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+186;input_text;input_text.vmc_master_countdown_free_heating_annullamento;Annullamento Memoria Free Heating - Trigger in Attesa;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+187;input_text;input_text.vmc_master_countdown_free_heating_ripristino;Ripristino Free Heating - Trigger in Attesa;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+188;input_text;input_text.vmc_master_countdown_free_heating_sospensione;Sospensione Free Heating - Trigger in Attesa;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+189;input_text;input_text.vmc_master_countdown_inquinanti_avvio;Avvio Allerta Inquinanti - Trigger in Attesa;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+190;input_text;input_text.vmc_master_countdown_inquinanti_fine;Fine Allerta Inquinanti - Trigger in Attesa;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+191;input_text;input_text.vmc_master_countdown_inquinanti_memoria;Memorizzazione Velocità (Inquinanti) - Trigger in Attesa;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+192;input_text;input_text.vmc_master_countdown_pdr_cambio;Cambio Velocità per Lim. Δ PdR - Trigger in Attesa;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+193;input_text;input_text.vmc_master_countdown_pdr_ripristino;Ripristino dopo Lim. Δ PdR - Trigger in Attesa;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+194;input_text;input_text.vmc_master_countdown_umidita_avvio;Avvio Allerta Umidità - Trigger in Attesa;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+195;input_text;input_text.vmc_master_countdown_umidita_fine;Fine Allerta Umidità - Trigger in Attesa;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+196;input_text;input_text.vmc_master_countdown_umidita_memoria;Memorizzazione Velocità (Umidità) - Trigger in Attesa;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+197;input_text;input_text.vmc_master_ip_insert;Cambia IP VMC (Riavvio di H.A.);comandata dalla scheda;no;riparte vuoto;sì;text.vmc_master_ip_insert
+198;input_text;input_text.vmc_master_ip_insert_esito;Esito Verifica VMC al Nuovo IP;solo elenco Pulisci cronologia;sì;riparte vuoto;sì;interna (stato del motore)
+199;input_text;input_text.vmc_master_last_co2_internal_entity;Ultima Entità CO₂ interna Selezionata;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+200;input_text;input_text.vmc_master_last_humidity_external_entity;Ultima Entità Umidità esterna Selezionata;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+201;input_text;input_text.vmc_master_last_humidity_internal_entity;Ultima Entità Umidità interna Selezionata;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+202;input_text;input_text.vmc_master_last_media_player_entity;Ultima Entità Media Player Selezionato;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+203;input_text;input_text.vmc_master_last_notification_device;Ultimo Dispositivo per Invio Notifica Selezionato;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+204;input_text;input_text.vmc_master_last_temp_external_entity;Ultima Entità Temperatura esterna Selezionata;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+205;input_text;input_text.vmc_master_last_temp_internal_entity;Ultima Entità Temperatura interna Selezionata;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+206;input_text;input_text.vmc_master_nome_da_inserire;Cambia Nome VMC;comandata dalla scheda;sì;riparte vuoto;sì;text.vmc_master_nome_da_inserire
+207;input_text;input_text.vmc_master_tempo_mancante_reset;Reset Countdown Ricambio;solo elenco Pulisci cronologia;sì;conserva il valore;sì;interna (stato del motore)
+208;input_text;input_text.vmc_master_ultima_scelta_utente;Ultima Scelta di Velocità dell'Utente;solo elenco Pulisci cronologia;sì;riparte vuoto;sì;interna (stato del motore)
+209;input_text;input_text.vmc_master_ultime_letture_velocita;Ultime Letture di Velocità della VMC;solo elenco Pulisci cronologia;sì;riparte vuoto;sì;interna (stato del motore)
+210;input_text;input_text.vmc_master_ultimi_comandi_automazione;Ultimi Comandi di Velocità dell'Automazione;solo elenco Pulisci cronologia;sì;riparte vuoto;sì;interna (stato del motore)
+211;input_text;input_text.vmc_master_velocita_precedente;Velocità precedente VMC;solo elenco Pulisci cronologia;sì;riparte vuoto;sì;interna (stato del motore)
+212;input_datetime;input_datetime.vmc_master_accensione_domenica;Dom. 1°;comandata dalla scheda;sì;conserva il valore;sì;time.vmc_master_accensione_domenica
+213;input_datetime;input_datetime.vmc_master_accensione_domenica_2;Dom. 2°;comandata dalla scheda;sì;conserva il valore;sì;time.vmc_master_accensione_domenica_2
+214;input_datetime;input_datetime.vmc_master_accensione_giovedi;Gio. 1°;comandata dalla scheda;sì;conserva il valore;sì;time.vmc_master_accensione_giovedi
+215;input_datetime;input_datetime.vmc_master_accensione_giovedi_2;Gio. 2°;comandata dalla scheda;sì;conserva il valore;sì;time.vmc_master_accensione_giovedi_2
+216;input_datetime;input_datetime.vmc_master_accensione_lunedi;Lun. 1°;comandata dalla scheda;sì;conserva il valore;sì;time.vmc_master_accensione_lunedi
+217;input_datetime;input_datetime.vmc_master_accensione_lunedi_2;Lun. 2°;comandata dalla scheda;sì;conserva il valore;sì;time.vmc_master_accensione_lunedi_2
+218;input_datetime;input_datetime.vmc_master_accensione_martedi;Mar. 1°;comandata dalla scheda;sì;conserva il valore;sì;time.vmc_master_accensione_martedi
+219;input_datetime;input_datetime.vmc_master_accensione_martedi_2;Mar. 2°;comandata dalla scheda;sì;conserva il valore;sì;time.vmc_master_accensione_martedi_2
+220;input_datetime;input_datetime.vmc_master_accensione_mercoledi;Mer. 1°;comandata dalla scheda;sì;conserva il valore;sì;time.vmc_master_accensione_mercoledi
+221;input_datetime;input_datetime.vmc_master_accensione_mercoledi_2;Mer. 2°;comandata dalla scheda;sì;conserva il valore;sì;time.vmc_master_accensione_mercoledi_2
+222;input_datetime;input_datetime.vmc_master_accensione_sabato;Sab. 1°;comandata dalla scheda;sì;conserva il valore;sì;time.vmc_master_accensione_sabato
+223;input_datetime;input_datetime.vmc_master_accensione_sabato_2;Sab. 2°;comandata dalla scheda;sì;conserva il valore;sì;time.vmc_master_accensione_sabato_2
+224;input_datetime;input_datetime.vmc_master_accensione_venerdi;Ven. 1°;comandata dalla scheda;sì;conserva il valore;sì;time.vmc_master_accensione_venerdi
+225;input_datetime;input_datetime.vmc_master_accensione_venerdi_2;Ven. 2°;comandata dalla scheda;sì;conserva il valore;sì;time.vmc_master_accensione_venerdi_2
+226;input_datetime;input_datetime.vmc_master_audio_end_time;Notifica Audio - Ora Fine;comandata dalla scheda;sì;conserva il valore;sì;time.vmc_master_audio_end_time
+227;input_datetime;input_datetime.vmc_master_audio_start_time;Notifica Audio - Ora Inizio;comandata dalla scheda;sì;conserva il valore;sì;time.vmc_master_audio_start_time
+228;input_datetime;input_datetime.vmc_master_spegnimento_domenica;Dom. 1°;comandata dalla scheda;sì;conserva il valore;sì;time.vmc_master_spegnimento_domenica
+229;input_datetime;input_datetime.vmc_master_spegnimento_domenica_2;Dom. 2°;comandata dalla scheda;sì;conserva il valore;sì;time.vmc_master_spegnimento_domenica_2
+230;input_datetime;input_datetime.vmc_master_spegnimento_giovedi;Gio. 1°;comandata dalla scheda;sì;conserva il valore;sì;time.vmc_master_spegnimento_giovedi
+231;input_datetime;input_datetime.vmc_master_spegnimento_giovedi_2;Gio. 2°;comandata dalla scheda;sì;conserva il valore;sì;time.vmc_master_spegnimento_giovedi_2
+232;input_datetime;input_datetime.vmc_master_spegnimento_lunedi;Lun. 1°;comandata dalla scheda;sì;conserva il valore;sì;time.vmc_master_spegnimento_lunedi
+233;input_datetime;input_datetime.vmc_master_spegnimento_lunedi_2;Lun. 2°;comandata dalla scheda;sì;conserva il valore;sì;time.vmc_master_spegnimento_lunedi_2
+234;input_datetime;input_datetime.vmc_master_spegnimento_martedi;Mar. 1°;comandata dalla scheda;sì;conserva il valore;sì;time.vmc_master_spegnimento_martedi
+235;input_datetime;input_datetime.vmc_master_spegnimento_martedi_2;Mar. 2°;comandata dalla scheda;sì;conserva il valore;sì;time.vmc_master_spegnimento_martedi_2
+236;input_datetime;input_datetime.vmc_master_spegnimento_mercoledi;Mer. 1°;comandata dalla scheda;sì;conserva il valore;sì;time.vmc_master_spegnimento_mercoledi
+237;input_datetime;input_datetime.vmc_master_spegnimento_mercoledi_2;Mer. 2°;comandata dalla scheda;sì;conserva il valore;sì;time.vmc_master_spegnimento_mercoledi_2
+238;input_datetime;input_datetime.vmc_master_spegnimento_sabato;Sab. 1°;comandata dalla scheda;sì;conserva il valore;sì;time.vmc_master_spegnimento_sabato
+239;input_datetime;input_datetime.vmc_master_spegnimento_sabato_2;Sab. 2°;comandata dalla scheda;sì;conserva il valore;sì;time.vmc_master_spegnimento_sabato_2
+240;input_datetime;input_datetime.vmc_master_spegnimento_venerdi;Ven. 1°;comandata dalla scheda;sì;conserva il valore;sì;time.vmc_master_spegnimento_venerdi
+241;input_datetime;input_datetime.vmc_master_spegnimento_venerdi_2;Ven. 2°;comandata dalla scheda;sì;conserva il valore;sì;time.vmc_master_spegnimento_venerdi_2
+242;timer;timer.vmc_master_countdown_avvio_home_assistant;Avvio di Home Assistant;mostrata dalla scheda;sì;si ferma;sì;sensor.vmc_master_countdown_avvio_home_assistant
+243;timer;timer.vmc_master_countdown_avvisi;Aggiornamento Avvisi;mostrata dalla scheda;sì;si ferma;sì;sensor.vmc_master_countdown_avvisi
+244;timer;timer.vmc_master_countdown_blackout_rilevazione;Rilevazione Black-Out;mostrata dalla scheda;sì;si ferma;sì;sensor.vmc_master_countdown_blackout_rilevazione
+245;timer;timer.vmc_master_countdown_blackout_ripristino;Ripristino dopo Black-Out;mostrata dalla scheda;sì;si ferma;sì;sensor.vmc_master_countdown_blackout_ripristino
+246;timer;timer.vmc_master_countdown_calendario_fine;Fine Fascia;mostrata dalla scheda;sì;si ferma;sì;sensor.vmc_master_countdown_calendario_fine
+247;timer;timer.vmc_master_countdown_calendario_inizio;Inizio Fascia;mostrata dalla scheda;sì;si ferma;sì;sensor.vmc_master_countdown_calendario_inizio
+248;timer;timer.vmc_master_countdown_delta_avvio;Avvio Allerta Δ Temp.;mostrata dalla scheda;sì;si ferma;sì;sensor.vmc_master_countdown_delta_avvio
+249;timer;timer.vmc_master_countdown_delta_fine;Fine Allerta Δ Temp.;mostrata dalla scheda;sì;si ferma;sì;sensor.vmc_master_countdown_delta_fine
+250;timer;timer.vmc_master_countdown_delta_memoria;Memorizzazione Velocità (Δ Temp.);mostrata dalla scheda;sì;si ferma;sì;sensor.vmc_master_countdown_delta_memoria
+251;timer;timer.vmc_master_countdown_fase_allerte;Riattivazione Gruppo di Allerte;mostrata dalla scheda;sì;si ferma;sì;sensor.vmc_master_countdown_fase_allerte
+252;timer;timer.vmc_master_countdown_free_cooling_annullamento;Annullamento Memoria Free Cooling;mostrata dalla scheda;sì;si ferma;sì;sensor.vmc_master_countdown_free_cooling_annullamento
+253;timer;timer.vmc_master_countdown_free_cooling_ripristino;Ripristino Free Cooling;mostrata dalla scheda;sì;si ferma;sì;sensor.vmc_master_countdown_free_cooling_ripristino
+254;timer;timer.vmc_master_countdown_free_cooling_sospensione;Sospensione Free Cooling;mostrata dalla scheda;sì;si ferma;sì;sensor.vmc_master_countdown_free_cooling_sospensione
+255;timer;timer.vmc_master_countdown_free_heating_annullamento;Annullamento Memoria Free Heating;mostrata dalla scheda;sì;si ferma;sì;sensor.vmc_master_countdown_free_heating_annullamento
+256;timer;timer.vmc_master_countdown_free_heating_ripristino;Ripristino Free Heating;mostrata dalla scheda;sì;si ferma;sì;sensor.vmc_master_countdown_free_heating_ripristino
+257;timer;timer.vmc_master_countdown_free_heating_sospensione;Sospensione Free Heating;mostrata dalla scheda;sì;si ferma;sì;sensor.vmc_master_countdown_free_heating_sospensione
+258;timer;timer.vmc_master_countdown_inquinanti_avvio;Avvio Allerta Inquinanti;mostrata dalla scheda;sì;si ferma;sì;sensor.vmc_master_countdown_inquinanti_avvio
+259;timer;timer.vmc_master_countdown_inquinanti_fine;Fine Allerta Inquinanti;mostrata dalla scheda;sì;si ferma;sì;sensor.vmc_master_countdown_inquinanti_fine
+260;timer;timer.vmc_master_countdown_inquinanti_memoria;Memorizzazione Velocità (Inquinanti);mostrata dalla scheda;sì;si ferma;sì;sensor.vmc_master_countdown_inquinanti_memoria
+261;timer;timer.vmc_master_countdown_pdr_cambio;Cambio Velocità per Lim. Δ PdR;mostrata dalla scheda;sì;si ferma;sì;sensor.vmc_master_countdown_pdr_cambio
+262;timer;timer.vmc_master_countdown_pdr_ripristino;Ripristino dopo Lim. Δ PdR;mostrata dalla scheda;sì;si ferma;sì;sensor.vmc_master_countdown_pdr_ripristino
+263;timer;timer.vmc_master_countdown_riattivazione_allerte;Riattivazione Allerte;mostrata dalla scheda;sì;si ferma;sì;sensor.vmc_master_countdown_riattivazione_allerte
+264;timer;timer.vmc_master_countdown_script_agg_sensori;Agg. Sensori in corso;mostrata dalla scheda;sì;si ferma;sì;sensor.vmc_master_countdown_script_agg_sensori
+265;timer;timer.vmc_master_countdown_script_inizializzazione;Profilo Inizializzazione in corso;mostrata dalla scheda;sì;si ferma;sì;sensor.vmc_master_countdown_script_inizializzazione
+266;timer;timer.vmc_master_countdown_script_panic_button;Panic Button in corso;mostrata dalla scheda;sì;si ferma;sì;sensor.vmc_master_countdown_script_panic_button
+267;timer;timer.vmc_master_countdown_script_reset_filtro;Reset Filtro in corso;mostrata dalla scheda;sì;si ferma;sì;sensor.vmc_master_countdown_script_reset_filtro
+268;timer;timer.vmc_master_countdown_umidita_avvio;Avvio Allerta Umidità;mostrata dalla scheda;sì;si ferma;sì;sensor.vmc_master_countdown_umidita_avvio
+269;timer;timer.vmc_master_countdown_umidita_fine;Fine Allerta Umidità;mostrata dalla scheda;sì;si ferma;sì;sensor.vmc_master_countdown_umidita_fine
+270;timer;timer.vmc_master_countdown_umidita_memoria;Memorizzazione Velocità (Umidità);mostrata dalla scheda;sì;si ferma;sì;sensor.vmc_master_countdown_umidita_memoria
+271;timer;timer.vmc_master_lettura_ambientali;Prossima Lettura Sensori Ambientali;mostrata dalla scheda;no;si ferma;sì;sensor.vmc_master_lettura_ambientali
+272;timer;timer.vmc_master_lettura_lan;Prossima Lettura Sensori Lan;mostrata dalla scheda;no;si ferma;sì;sensor.vmc_master_lettura_lan
+273;timer;timer.vmc_master_lettura_nome;Prossima Lettura Sensore Nome;mostrata dalla scheda;no;si ferma;sì;sensor.vmc_master_lettura_nome
+274;timer;timer.vmc_master_lettura_ping;Prossima Lettura Verifica On-Line (Ping);mostrata dalla scheda;no;si ferma;sì;sensor.vmc_master_lettura_ping
+275;timer;timer.vmc_master_lettura_ventilazione;Prossima Lettura Sensori Ventilazione;mostrata dalla scheda;no;si ferma;sì;sensor.vmc_master_lettura_ventilazione
+276;script;script.vmc_master_aggiorna_elenco_entita_co2_interna;VMC Master - Aggiorna Elenco Entità Anidride Carbonica Interna;solo elenco Pulisci cronologia;sì;;sì;interna (stato del motore)
+277;script;script.vmc_master_aggiorna_elenco_entita_media_player;VMC Master - Aggiorna Elenco Entità Media Player;solo elenco Pulisci cronologia;sì;;sì;interna (stato del motore)
+278;script;script.vmc_master_aggiorna_elenco_entita_notifica_dispositivo;VMC Master - Aggiorna Elenco Entità Notifica Dispositivo;solo elenco Pulisci cronologia;sì;;sì;interna (stato del motore)
+279;script;script.vmc_master_aggiorna_elenco_entita_temperatura_esterna;VMC Master - Aggiorna Elenco Entità Temperatura Esterna;solo elenco Pulisci cronologia;sì;;sì;interna (stato del motore)
+280;script;script.vmc_master_aggiorna_elenco_entita_temperatura_interna;VMC Master - Aggiorna Elenco Entità Temperatura Interna;solo elenco Pulisci cronologia;sì;;sì;interna (stato del motore)
+281;script;script.vmc_master_aggiorna_elenco_entita_umidita_esterna;VMC Master - Aggiorna Elenco Entità Umidità Esterna;solo elenco Pulisci cronologia;sì;;sì;interna (stato del motore)
+282;script;script.vmc_master_aggiorna_elenco_entita_umidita_interna;VMC Master - Aggiorna Elenco Entità Umidità Interna;solo elenco Pulisci cronologia;sì;;sì;interna (stato del motore)
+283;script;script.vmc_master_audio_allerta_black_out;VMC Master - Audio Black-Out;solo elenco Pulisci cronologia;sì;;sì;interna (stato del motore)
+284;script;script.vmc_master_audio_allerta_co2;VMC Master - Audio CO₂;solo elenco Pulisci cronologia;sì;;sì;interna (stato del motore)
+285;script;script.vmc_master_audio_allerta_congelamento;VMC Master - Audio Congelamento;solo elenco Pulisci cronologia;sì;;sì;interna (stato del motore)
+286;script;script.vmc_master_audio_allerta_diff_temp;VMC Master - Audio Diff. Temp. Int-Est > 23 [°C];solo elenco Pulisci cronologia;sì;;sì;interna (stato del motore)
+287;script;script.vmc_master_audio_allerta_pdr;VMC Master - Audio Punto di Rugiada;solo elenco Pulisci cronologia;sì;;sì;interna (stato del motore)
+288;script;script.vmc_master_audio_allerta_umidita_interna;VMC Master - Audio Umidità Interna;solo elenco Pulisci cronologia;sì;;sì;interna (stato del motore)
+289;script;script.vmc_master_audio_allerta_voc;VMC Master - Audio VOC;solo elenco Pulisci cronologia;sì;;sì;interna (stato del motore)
+290;script;script.vmc_master_audio_free_heating_o_free_cooling;VMC Master - Audio Free Heating/Cooling;solo elenco Pulisci cronologia;sì;;sì;interna (stato del motore)
+291;script;script.vmc_master_audio_nessuna_allerta_black_out;VMC Master - Audio Assenza Black-Out;solo elenco Pulisci cronologia;sì;;sì;interna (stato del motore)
+292;script;script.vmc_master_audio_nessuna_allerta_co2;VMC Master - Audio Assenza CO₂;solo elenco Pulisci cronologia;sì;;sì;interna (stato del motore)
+293;script;script.vmc_master_audio_nessuna_allerta_congelamento;VMC Master - Audio Assenza Congelamento;solo elenco Pulisci cronologia;sì;;sì;interna (stato del motore)
+294;script;script.vmc_master_audio_nessuna_allerta_diff_temp;VMC Master - Audio Assenza Diff. Temp. Int-Est > 23 [°C];solo elenco Pulisci cronologia;sì;;sì;interna (stato del motore)
+295;script;script.vmc_master_audio_nessuna_allerta_pdr;VMC Master - Audio Assenza Punto di Rugiada;solo elenco Pulisci cronologia;sì;;sì;interna (stato del motore)
+296;script;script.vmc_master_audio_nessuna_allerta_umidita_interna;VMC Master - Audio Assenza Umidità Interna;solo elenco Pulisci cronologia;sì;;sì;interna (stato del motore)
+297;script;script.vmc_master_audio_nessuna_allerta_voc;VMC Master - Audio Assenza VOC;solo elenco Pulisci cronologia;sì;;sì;interna (stato del motore)
+298;script;script.vmc_master_audio_profilo;VMC Master - Profilo Audio;comandata dalla scheda;sì;;sì;button.vmc_master_audio_profilo
+299;script;script.vmc_master_audio_status_velocita;VMC Master - Audio Status Velocità;solo elenco Pulisci cronologia;sì;;sì;interna (stato del motore)
+300;script;script.vmc_master_azzera_aria_scambiata;VMC Master - Azzera Totale Aria Scambiata;comandata dalla scheda;sì;;sì;button.vmc_master_azzera_aria_scambiata
+301;script;script.vmc_master_azzera_aria_scambiata_puntuale;VMC Master - Azzera Totale Aria Scambiata Puntuale;solo elenco Pulisci cronologia;sì;;sì;interna (stato del motore)
+302;script;script.vmc_master_azzera_booleans;VMC Master - Booleans Off;solo elenco Pulisci cronologia;sì;;sì;interna (stato del motore)
+303;script;script.vmc_master_azzera_offset_sensors;VMC Master - Azzera gli Offset dei Sensori;comandata dalla scheda;sì;;sì;button.vmc_master_azzera_offset_sensors
+304;script;script.vmc_master_bottone_panico;VMC Master - Panic Button;comandata dalla scheda;no;;sì;button.vmc_master_bottone_panico
+305;script;script.vmc_master_calendario_fascia_1_o_2_off;VMC Master - Calendario Fascia 1 o 2 Off;solo elenco Pulisci cronologia;sì;;sì;interna (stato del motore)
+306;script;script.vmc_master_calendario_fascia_1_on;VMC Master - Calendario Fascia 1 On;solo elenco Pulisci cronologia;sì;;sì;interna (stato del motore)
+307;script;script.vmc_master_calendario_fascia_2_on;VMC Master - Calendario Fascia 2 On;solo elenco Pulisci cronologia;sì;;sì;interna (stato del motore)
+308;script;script.vmc_master_notifica_cambio_filtro;VMC Master - Invia notifica Cambio Filtro;solo elenco Pulisci cronologia;sì;;sì;interna (stato del motore)
+309;script;script.vmc_master_notifica_errore_co2_interna;VMC Master - Invia notifica Errore CO₂ Interna;solo elenco Pulisci cronologia;sì;;sì;interna (stato del motore)
+310;script;script.vmc_master_notifica_errore_media_player;VMC Master - Invia notifica Errore Media Player;solo elenco Pulisci cronologia;no;;sì;interna (stato del motore)
+311;script;script.vmc_master_notifica_errore_temp_esterna;VMC Master - Invia notifica Errore Temp. Esterna;solo elenco Pulisci cronologia;sì;;sì;interna (stato del motore)
+312;script;script.vmc_master_notifica_errore_temp_interna;VMC Master - Invia notifica Errore Temp. Interna;solo elenco Pulisci cronologia;sì;;sì;interna (stato del motore)
+313;script;script.vmc_master_notifica_errore_umidita_esterna;VMC Master - Invia notifica Errore Umidità Esterna;solo elenco Pulisci cronologia;sì;;sì;interna (stato del motore)
+314;script;script.vmc_master_notifica_errore_umidita_interna;VMC Master - Invia notifica Errore Umidità Interna;solo elenco Pulisci cronologia;sì;;sì;interna (stato del motore)
+315;script;script.vmc_master_notifica_velocita_0;VMC Master - Invia notifica Velocità 0;solo elenco Pulisci cronologia;sì;;sì;interna (stato del motore)
+316;script;script.vmc_master_notifica_velocita_diversa_da_0;VMC Master - Invia notifica VMC in Funzione;solo elenco Pulisci cronologia;sì;;sì;interna (stato del motore)
+317;script;script.vmc_master_profilo_calendario;VMC Master - Profilo Calendario;comandata dalla scheda;sì;;sì;button.vmc_master_profilo_calendario
+318;script;script.vmc_master_profilo_free_heating_cooling;VMC Master - Profilo Free Heating/Cooling;comandata dalla scheda;sì;;sì;button.vmc_master_profilo_free_heating_cooling
+319;script;script.vmc_master_profilo_inizializzazione;VMC Master - Profilo Inizializzazione;comandata dalla scheda;no;;sì;button.vmc_master_profilo_inizializzazione
+320;script;script.vmc_master_profilo_pdr;VMC Master - Profilo Lim. Δ P. di Rugiada;comandata dalla scheda;sì;;sì;button.vmc_master_profilo_pdr
+321;script;script.vmc_master_profilo_umidita;VMC Master - Profilo Umidità Interna di Avvio;comandata dalla scheda;sì;;sì;button.vmc_master_profilo_umidita
+322;script;script.vmc_master_pulisci_cronologia_audio;VMC Master - Pulisci cronologia Audio;comandata dalla scheda;no;;sì;button.vmc_master_pulisci_cronologia_audio
+323;script;script.vmc_master_pulisci_cronologia_entita;VMC Master - Pulisci cronologia Entità;comandata dalla scheda;no;;sì;button.vmc_master_pulisci_cronologia_entita
+324;script;script.vmc_master_reset_filtro_vmc;VMC Master - Reset Filtro;comandata dalla scheda;no;;sì;button.vmc_master_reset_filtro_vmc
+325;script;script.vmc_master_ripristina_tempi_attesa;VMC Master - Ripristina Tempi di Attesa Originali;solo elenco Pulisci cronologia;sì;;sì;interna (stato del motore)
+326;script;script.vmc_master_upgrade_sensors;VMC Master - Agg. Sensori;comandata dalla scheda;sì;;sì;button.vmc_master_upgrade_sensors
+327;shell_command;shell_command.vmc_master_aggiorna_indirizzo_ip;;non usata dalla scheda;sì;;no;interna (stato del motore)
+328;shell_command;shell_command.vmc_master_cambia_nome;;non usata dalla scheda;sì;;no;interna (stato del motore)
+329;shell_command;shell_command.vmc_master_freecooling;;comandata dalla scheda;sì;;no;button.vmc_master_freecooling
+330;shell_command;shell_command.vmc_master_iperventilazione;;comandata dalla scheda;sì;;no;button.vmc_master_iperventilazione
+331;shell_command;shell_command.vmc_master_notturna;;comandata dalla scheda;sì;;no;button.vmc_master_notturna
+332;shell_command;shell_command.vmc_master_pannello_led_off;;comandata dalla scheda;sì;;no;button.vmc_master_pannello_led_off
+333;shell_command;shell_command.vmc_master_pannello_led_on;;comandata dalla scheda;sì;;no;button.vmc_master_pannello_led_on
+334;shell_command;shell_command.vmc_master_reset_filtro;;non usata dalla scheda;sì;;no;interna (stato del motore)
+335;shell_command;shell_command.vmc_master_rimuovi_caratteri_di_ritorno;;non usata dalla scheda;sì;;no;interna (stato del motore)
+336;shell_command;shell_command.vmc_master_sensori_off;;comandata dalla scheda;sì;;no;button.vmc_master_sensori_off
+337;shell_command;shell_command.vmc_master_sensori_on;;comandata dalla scheda;sì;;no;button.vmc_master_sensori_on
+338;shell_command;shell_command.vmc_master_velocita_0;;comandata dalla scheda;sì;;no;button.vmc_master_velocita_0
+339;shell_command;shell_command.vmc_master_velocita_1;;comandata dalla scheda;sì;;no;button.vmc_master_velocita_1
+340;shell_command;shell_command.vmc_master_velocita_2;;comandata dalla scheda;sì;;no;button.vmc_master_velocita_2
+341;shell_command;shell_command.vmc_master_velocita_3;;comandata dalla scheda;sì;;no;button.vmc_master_velocita_3
+342;shell_command;shell_command.vmc_master_velocita_4;;comandata dalla scheda;sì;;no;button.vmc_master_velocita_4

@@ -9,7 +9,7 @@ Generato da tests/nativa/motore/traduci.py dal package della b42: non modificare
 from .. import jinja as J
 
 
-def m1032(c, V):
+def m1033(c, V):
     # {% set mp = states('input_select.vmc_master_selected_media_player_entity') %} {% set in...
     v_mp = v_invalid = v_audio_interruttore = v_now_time = v_start_raw = v_end_raw = v_start_time = v_end_time = J.MANCANTE
     _o = []
@@ -41,21 +41,21 @@ def m1032(c, V):
     return ''.join(_o)
 
 
-def m1033(c, V):
+def m1034(c, V):
     # {{ ip | default('') }}
     _o = []
     _o.append(J.testo(J.f_default(V['ip'], '')))
     return ''.join(_o)
 
 
-def m1034(c, V):
+def m1035(c, V):
     # "{{ states('input_text.vmc_master_nome_da_inserire') | replace('"', '') | replace('\\',...
     _o = []
     _o.extend(('"', J.testo(J.f_replace(J.f_replace(c.states(c.N('text.vmc_master_nome_da_inserire')), '"', ''), '\\', '')), '"'))
     return ''.join(_o)
 
 
-def m1035(c, V):
+def m1036(c, V):
     # {% set entity_id = states('input_select.vmc_master_selected_temp_external_entity') %} {...
     v_temp = V.get('temp', J.MANCANTE)
     v_entity_id = J.MANCANTE
@@ -83,7 +83,7 @@ def m1035(c, V):
     return ''.join(_o)
 
 
-def m1036(c, V):
+def m1037(c, V):
     # {% set entity_id = states('input_select.vmc_master_selected_temp_internal_entity') %} {...
     v_entity_id = J.MANCANTE
     _o = []
@@ -96,7 +96,7 @@ def m1036(c, V):
     return ''.join(_o)
 
 
-def m1037(c, V):
+def m1038(c, V):
     # {% set entity_id = states('input_select.vmc_master_selected_humidity_external_entity') ...
     v_hum = V.get('hum', J.MANCANTE)
     v_entity_id = J.MANCANTE
@@ -124,7 +124,7 @@ def m1037(c, V):
     return ''.join(_o)
 
 
-def m1038(c, V):
+def m1039(c, V):
     # {% set entity_id = states('input_select.vmc_master_selected_humidity_internal_entity') ...
     v_entity_id = J.MANCANTE
     _o = []
@@ -137,7 +137,7 @@ def m1038(c, V):
     return ''.join(_o)
 
 
-def m1039(c, V):
+def m1040(c, V):
     # {% set entity_id = states('input_select.vmc_master_selected_co2_internal_entity') %} {%...
     v_entity_id = J.MANCANTE
     _o = []
@@ -155,7 +155,7 @@ def m1039(c, V):
     return ''.join(_o)
 
 
-def m1040(c, V):
+def m1041(c, V):
     # {%- set ip = states('input_text.vmc_master_ip_insert') | trim -%} {%- set esito = state...
     v_ip = v_esito = v_ottetti = v_ns = J.MANCANTE
     _o = []
@@ -187,7 +187,7 @@ def m1040(c, V):
     return ''.join(_o)
 
 
-def m1041(c, V):
+def m1042(c, V):
     # {% set stati = ['OFF-Line'] %} {{ 'OFF-Line' if states('sensor.vmc_master_status_ip') i...
     v_stati = J.MANCANTE
     _o = []
@@ -196,7 +196,7 @@ def m1041(c, V):
     return ''.join(_o)
 
 
-def m1042(c, V):
+def m1043(c, V):
     # {% if states('sensor.vmc_master_status_ip') == 'OFF-Line' %} mdi:fan-alert {% else %} m...
     _o = []
     if (c.states(c.N('sensor.vmc_master_status_ip')) == 'OFF-Line'):
@@ -206,7 +206,7 @@ def m1042(c, V):
     return ''.join(_o)
 
 
-def m1043(c, V):
+def m1044(c, V):
     # {#- Trigger «Black-Out a Velocità 0» -#} {%- set t1 = ( ( states('sensor.vmc_master_sta...
     v_t1 = v_t2 = v_t3 = v_t4 = v_t5 = v_t6 = v_t7 = v_t8 = v_t9 = v_t10 = v_t11 = J.MANCANTE
     _o = []
@@ -225,14 +225,14 @@ def m1043(c, V):
     return ''.join(_o)
 
 
-def m1044(c, V):
+def m1045(c, V):
     # {{ 'mdi:power-plug-off' if is_state('binary_sensor.vmc_master_black_out_rilevato', 'on'...
     _o = []
     _o.append(J.testo(('mdi:power-plug-off' if c.is_state(c.N('binary_sensor.vmc_master_black_out_rilevato'), 'on') else 'mdi:power-plug')))
     return ''.join(_o)
 
 
-def m1045(c, V):
+def m1046(c, V):
     # {% set invalid = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"]...
     v_parts = V.get('parts', J.MANCANTE)
     v_invalid = v_vmc_nome = J.MANCANTE
@@ -255,7 +255,7 @@ def m1045(c, V):
     return ''.join(_o)
 
 
-def m1046(c, V):
+def m1047(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_componenti = V.get('componenti', J.MANCANTE)
     v_codice_status = V.get('codice_status', J.MANCANTE)
@@ -281,7 +281,7 @@ def m1046(c, V):
     return ''.join(_o)
 
 
-def m1047(c, V):
+def m1048(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_componenti = V.get('componenti', J.MANCANTE)
     v_codice = V.get('codice', J.MANCANTE)
@@ -307,168 +307,168 @@ def m1047(c, V):
     return ''.join(_o)
 
 
-def m1048(c, V):
+def m1049(c, V):
     # {{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') =...
     _o = []
     _o.append(J.testo(((c.states(c.N('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')) == 'Velocità 0') or ('Velocità 0' in J.chiama(J.attributo(c.states(c.N('sensor.vmc_master_velocita_registrata')), 'split'), ' · ')))))
     return ''.join(_o)
 
 
-def m1049(c, V):
+def m1050(c, V):
     # {{ 'mdi:numeric-0-box' if states('sensor.vmc_master_status_ventola_lettura_codice_inter...
     _o = []
     _o.append(J.testo(('mdi:numeric-0-box' if ((c.states(c.N('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')) == 'Velocità 0') or (not ('Velocità 0' in J.chiama(J.attributo(c.states(c.N('sensor.vmc_master_velocita_registrata')), 'split'), ' · ')))) else 'mdi:restore')))
     return ''.join(_o)
 
 
-def m1050(c, V):
+def m1051(c, V):
     # {{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') =...
     _o = []
     _o.append(J.testo(((c.states(c.N('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')) == 'Velocità 1') or ('Velocità 1' in J.chiama(J.attributo(c.states(c.N('sensor.vmc_master_velocita_registrata')), 'split'), ' · ')))))
     return ''.join(_o)
 
 
-def m1051(c, V):
+def m1052(c, V):
     # {{ 'mdi:numeric-1-box' if states('sensor.vmc_master_status_ventola_lettura_codice_inter...
     _o = []
     _o.append(J.testo(('mdi:numeric-1-box' if ((c.states(c.N('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')) == 'Velocità 1') or (not ('Velocità 1' in J.chiama(J.attributo(c.states(c.N('sensor.vmc_master_velocita_registrata')), 'split'), ' · ')))) else 'mdi:restore')))
     return ''.join(_o)
 
 
-def m1052(c, V):
+def m1053(c, V):
     # {{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') =...
     _o = []
     _o.append(J.testo(((c.states(c.N('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')) == 'Velocità 2') or ('Velocità 2' in J.chiama(J.attributo(c.states(c.N('sensor.vmc_master_velocita_registrata')), 'split'), ' · ')))))
     return ''.join(_o)
 
 
-def m1053(c, V):
+def m1054(c, V):
     # {{ 'mdi:numeric-2-box' if states('sensor.vmc_master_status_ventola_lettura_codice_inter...
     _o = []
     _o.append(J.testo(('mdi:numeric-2-box' if ((c.states(c.N('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')) == 'Velocità 2') or (not ('Velocità 2' in J.chiama(J.attributo(c.states(c.N('sensor.vmc_master_velocita_registrata')), 'split'), ' · ')))) else 'mdi:restore')))
     return ''.join(_o)
 
 
-def m1054(c, V):
+def m1055(c, V):
     # {{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') =...
     _o = []
     _o.append(J.testo(((c.states(c.N('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')) == 'Velocità 3') or ('Velocità 3' in J.chiama(J.attributo(c.states(c.N('sensor.vmc_master_velocita_registrata')), 'split'), ' · ')))))
     return ''.join(_o)
 
 
-def m1055(c, V):
+def m1056(c, V):
     # {{ 'mdi:numeric-3-box' if states('sensor.vmc_master_status_ventola_lettura_codice_inter...
     _o = []
     _o.append(J.testo(('mdi:numeric-3-box' if ((c.states(c.N('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')) == 'Velocità 3') or (not ('Velocità 3' in J.chiama(J.attributo(c.states(c.N('sensor.vmc_master_velocita_registrata')), 'split'), ' · ')))) else 'mdi:restore')))
     return ''.join(_o)
 
 
-def m1056(c, V):
+def m1057(c, V):
     # {{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') =...
     _o = []
     _o.append(J.testo(((c.states(c.N('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')) == 'Velocità 4') or ('Velocità 4' in J.chiama(J.attributo(c.states(c.N('sensor.vmc_master_velocita_registrata')), 'split'), ' · ')))))
     return ''.join(_o)
 
 
-def m1057(c, V):
+def m1058(c, V):
     # {{ 'mdi:numeric-4-box' if states('sensor.vmc_master_status_ventola_lettura_codice_inter...
     _o = []
     _o.append(J.testo(('mdi:numeric-4-box' if ((c.states(c.N('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')) == 'Velocità 4') or (not ('Velocità 4' in J.chiama(J.attributo(c.states(c.N('sensor.vmc_master_velocita_registrata')), 'split'), ' · ')))) else 'mdi:restore')))
     return ''.join(_o)
 
 
-def m1058(c, V):
+def m1059(c, V):
     # {{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') =...
     _o = []
     _o.append(J.testo(((c.states(c.N('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')) == 'Notturna') or ('Notturna' in J.chiama(J.attributo(c.states(c.N('sensor.vmc_master_velocita_registrata')), 'split'), ' · ')))))
     return ''.join(_o)
 
 
-def m1059(c, V):
+def m1060(c, V):
     # {{ 'mdi:weather-night' if states('sensor.vmc_master_status_ventola_lettura_codice_inter...
     _o = []
     _o.append(J.testo(('mdi:weather-night' if ((c.states(c.N('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')) == 'Notturna') or (not ('Notturna' in J.chiama(J.attributo(c.states(c.N('sensor.vmc_master_velocita_registrata')), 'split'), ' · ')))) else 'mdi:restore')))
     return ''.join(_o)
 
 
-def m1060(c, V):
+def m1061(c, V):
     # {{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia') =...
     _o = []
     _o.append(J.testo(((c.states(c.N('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')) == 'Iperventilazione') or ('Iperventilazione' in J.chiama(J.attributo(c.states(c.N('sensor.vmc_master_velocita_registrata')), 'split'), ' · ')))))
     return ''.join(_o)
 
 
-def m1061(c, V):
+def m1062(c, V):
     # {{ 'mdi:wind-power' if states('sensor.vmc_master_status_ventola_lettura_codice_interpre...
     _o = []
     _o.append(J.testo(('mdi:wind-power' if ((c.states(c.N('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')) == 'Iperventilazione') or (not ('Iperventilazione' in J.chiama(J.attributo(c.states(c.N('sensor.vmc_master_velocita_registrata')), 'split'), ' · ')))) else 'mdi:restore')))
     return ''.join(_o)
 
 
-def m1062(c, V):
+def m1063(c, V):
     # {{ states('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia').s...
     _o = []
     _o.append(J.testo((J.chiama(J.attributo(c.states(c.N('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')), 'startswith'), 'Free') or (J.f_count(J.f_list(J.f_select(J.chiama(J.attributo(c.states(c.N('sensor.vmc_master_velocita_registrata')), 'split'), ' · '), 'match', 'Free'))) > 0))))
     return ''.join(_o)
 
 
-def m1063(c, V):
+def m1064(c, V):
     # {{ 'mdi:weather-sunny' if states('sensor.vmc_master_status_ventola_lettura_codice_inter...
     _o = []
     _o.append(J.testo(('mdi:weather-sunny' if (J.chiama(J.attributo(c.states(c.N('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')), 'startswith'), 'Free') or (not (J.f_count(J.f_list(J.f_select(J.chiama(J.attributo(c.states(c.N('sensor.vmc_master_velocita_registrata')), 'split'), ' · '), 'match', 'Free'))) > 0))) else 'mdi:restore')))
     return ''.join(_o)
 
 
-def m1064(c, V):
+def m1065(c, V):
     # {{ 'mdi:snowflake' if states('sensor.vmc_master_status_ventola_lettura_codice_interpret...
     _o = []
     _o.append(J.testo(('mdi:snowflake' if (J.chiama(J.attributo(c.states(c.N('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')), 'startswith'), 'Free') or (not (J.f_count(J.f_list(J.f_select(J.chiama(J.attributo(c.states(c.N('sensor.vmc_master_velocita_registrata')), 'split'), ' · '), 'match', 'Free'))) > 0))) else 'mdi:restore')))
     return ''.join(_o)
 
 
-def m1065(c, V):
+def m1066(c, V):
     # {{ 'mdi:sun-snowflake-variant' if states('sensor.vmc_master_status_ventola_lettura_codi...
     _o = []
     _o.append(J.testo(('mdi:sun-snowflake-variant' if (J.chiama(J.attributo(c.states(c.N('sensor.vmc_master_status_ventola_lettura_codice_interpretato_interfaccia')), 'startswith'), 'Free') or (not (J.f_count(J.f_list(J.f_select(J.chiama(J.attributo(c.states(c.N('sensor.vmc_master_velocita_registrata')), 'split'), ' · '), 'match', 'Free'))) > 0))) else 'mdi:restore')))
     return ''.join(_o)
 
 
-def m1066(c, V):
+def m1067(c, V):
     # {{ states('sensor.vmc_master_status_sensori_lettura_codice_interpretato') == 'Accesi' }}
     _o = []
     _o.append(J.testo((c.states(c.N('sensor.vmc_master_status_sensori_lettura_codice_interpretato')) == 'Accesi')))
     return ''.join(_o)
 
 
-def m1067(c, V):
+def m1068(c, V):
     # {{ states('sensor.vmc_master_status_sensori_lettura_codice_interpretato') == 'Spenti' }}
     _o = []
     _o.append(J.testo((c.states(c.N('sensor.vmc_master_status_sensori_lettura_codice_interpretato')) == 'Spenti')))
     return ''.join(_o)
 
 
-def m1068(c, V):
+def m1069(c, V):
     # {{ states('sensor.vmc_master_status_led_pannello_lettura_codice_interpretato') in ['Acc...
     _o = []
     _o.append(J.testo((c.states(c.N('sensor.vmc_master_status_led_pannello_lettura_codice_interpretato')) in ['Acceso', 'Verificare Filtro'])))
     return ''.join(_o)
 
 
-def m1069(c, V):
+def m1070(c, V):
     # {{ 'mdi:air-filter' if states('sensor.vmc_master_status_led_pannello_lettura_codice_int...
     _o = []
     _o.append(J.testo(('mdi:air-filter' if (c.states(c.N('sensor.vmc_master_status_led_pannello_lettura_codice_interpretato')) == 'Verificare Filtro') else 'mdi:led-on')))
     return ''.join(_o)
 
 
-def m1070(c, V):
+def m1071(c, V):
     # {{ states('sensor.vmc_master_status_led_pannello_lettura_codice_interpretato') == 'Spen...
     _o = []
     _o.append(J.testo((c.states(c.N('sensor.vmc_master_status_led_pannello_lettura_codice_interpretato')) == 'Spento')))
     return ''.join(_o)
 
 
-def m1071(c, V):
+def m1072(c, V):
     # {%- set mese_free = states('sensor.vmc_master_status_mese_corrente_freeheating_o_freeco...
     v_mese_free = v_nome_free = v_nomi = v_annullata = v_att = v_att_k = v_allerte = v_ns = J.MANCANTE
     _o = []
@@ -489,7 +489,7 @@ def m1071(c, V):
     return ''.join(_o)
 
 
-def m1072(c, V):
+def m1073(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_codici = V.get('codici', J.MANCANTE)
     v_componenti = V.get('componenti', J.MANCANTE)
@@ -535,7 +535,7 @@ def m1072(c, V):
     return ''.join(_o)
 
 
-def m1073(c, V):
+def m1074(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_componenti = V.get('componenti', J.MANCANTE)
     v_codice = V.get('codice', J.MANCANTE)
@@ -561,7 +561,7 @@ def m1073(c, V):
     return ''.join(_o)
 
 
-def m1074(c, V):
+def m1075(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_componenti = V.get('componenti', J.MANCANTE)
     v_codice = V.get('codice', J.MANCANTE)
@@ -592,7 +592,7 @@ def m1074(c, V):
     return ''.join(_o)
 
 
-def m1075(c, V):
+def m1076(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_componenti = V.get('componenti', J.MANCANTE)
     v_first_digit = V.get('first_digit', J.MANCANTE)
@@ -621,7 +621,7 @@ def m1075(c, V):
     return ''.join(_o)
 
 
-def m1076(c, V):
+def m1077(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_componenti = V.get('componenti', J.MANCANTE)
     v_first_digit = V.get('first_digit', J.MANCANTE)
@@ -650,7 +650,7 @@ def m1076(c, V):
     return ''.join(_o)
 
 
-def m1077(c, V):
+def m1078(c, V):
     # {% set stati = ['unknown', 'unavailable', '-100', 'Non disponibile'] %} {% set temp_ext...
     v_vmc = V.get('vmc', J.MANCANTE)
     v_temp_float = V.get('temp_float', J.MANCANTE)
@@ -675,7 +675,7 @@ def m1077(c, V):
     return ''.join(_o)
 
 
-def m1078(c, V):
+def m1079(c, V):
     # {% set stati = ['unknown', 'unavailable', '-100', 'Non disponibile'] %} {% set sensor_v...
     v_componenti = V.get('componenti', J.MANCANTE)
     v_raw_temp = V.get('raw_temp', J.MANCANTE)
@@ -717,7 +717,7 @@ def m1078(c, V):
     return ''.join(_o)
 
 
-def m1079(c, V):
+def m1080(c, V):
     # {% set stati = ['unknown', 'unavailable', '-100', 'Non disponibile'] %} {% set temp_int...
     v_vmc = V.get('vmc', J.MANCANTE)
     v_temp_float = V.get('temp_float', J.MANCANTE)
@@ -742,7 +742,7 @@ def m1079(c, V):
     return ''.join(_o)
 
 
-def m1080(c, V):
+def m1081(c, V):
     # {% set stati = ['unknown', 'unavailable', '-100', 'Non disponibile'] %} {% set sensor_v...
     v_componenti = V.get('componenti', J.MANCANTE)
     v_raw_temp = V.get('raw_temp', J.MANCANTE)
@@ -784,7 +784,7 @@ def m1080(c, V):
     return ''.join(_o)
 
 
-def m1081(c, V):
+def m1082(c, V):
     # {% set stati = ['unknown', 'unavailable', '-100', 'Non disponibile'] %} {% if states('s...
     v_humidity = V.get('humidity', J.MANCANTE)
     v_umidita_relativa_esterna = V.get('umidita_relativa_esterna', J.MANCANTE)
@@ -815,7 +815,7 @@ def m1081(c, V):
     return ''.join(_o)
 
 
-def m1082(c, V):
+def m1083(c, V):
     # {% set stati = ['unknown', 'unavailable', '-100', 'Non disponibile'] %} {% set umidita_...
     v_vmc = V.get('vmc', J.MANCANTE)
     v_umidita_float = V.get('umidita_float', J.MANCANTE)
@@ -852,7 +852,7 @@ def m1082(c, V):
     return ''.join(_o)
 
 
-def m1083(c, V):
+def m1084(c, V):
     # {% set stati = ['unknown', 'unavailable', '-100', 'Non disponibile'] %} {% set dati_sen...
     v_componenti = V.get('componenti', J.MANCANTE)
     v_umidita_relativa = V.get('umidita_relativa', J.MANCANTE)
@@ -885,7 +885,7 @@ def m1083(c, V):
     return ''.join(_o)
 
 
-def m1084(c, V):
+def m1085(c, V):
     # {% set stati = ['unknown', 'unavailable', '-100', 'Non disponibile'] %} {% set co2_int ...
     v_vmc = V.get('vmc', J.MANCANTE)
     v_co2_float = V.get('co2_float', J.MANCANTE)
@@ -923,7 +923,7 @@ def m1084(c, V):
     return ''.join(_o)
 
 
-def m1085(c, V):
+def m1086(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_componenti = V.get('componenti', J.MANCANTE)
     v_co2 = V.get('co2', J.MANCANTE)
@@ -954,7 +954,7 @@ def m1085(c, V):
     return ''.join(_o)
 
 
-def m1086(c, V):
+def m1087(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_componenti = V.get('componenti', J.MANCANTE)
     v_voc = V.get('voc', J.MANCANTE)
@@ -984,7 +984,7 @@ def m1086(c, V):
     return ''.join(_o)
 
 
-def m1087(c, V):
+def m1088(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_componenti = V.get('componenti', J.MANCANTE)
     v_voc = V.get('voc', J.MANCANTE)
@@ -1015,231 +1015,231 @@ def m1087(c, V):
     return ''.join(_o)
 
 
-def m1088(c, V):
+def m1089(c, V):
     # {{ is_number(states('sensor.vmc_master_temp_esterna_status')) }}
     _o = []
     _o.append(J.testo(J.f_is_number(c.states(c.N('sensor.vmc_master_temp_esterna_status')))))
     return ''.join(_o)
 
 
-def m1089(c, V):
+def m1090(c, V):
     # {{ states('sensor.vmc_master_temp_esterna_status') }}
     _o = []
     _o.append(J.testo(c.states(c.N('sensor.vmc_master_temp_esterna_status'))))
     return ''.join(_o)
 
 
-def m1090(c, V):
+def m1091(c, V):
     # {{ is_number(states('sensor.vmc_master_temp_interna_status')) }}
     _o = []
     _o.append(J.testo(J.f_is_number(c.states(c.N('sensor.vmc_master_temp_interna_status')))))
     return ''.join(_o)
 
 
-def m1091(c, V):
+def m1092(c, V):
     # {{ states('sensor.vmc_master_temp_interna_status') }}
     _o = []
     _o.append(J.testo(c.states(c.N('sensor.vmc_master_temp_interna_status'))))
     return ''.join(_o)
 
 
-def m1092(c, V):
+def m1093(c, V):
     # {{ is_number(states('sensor.vmc_master_umidita_esterna_status')) }}
     _o = []
     _o.append(J.testo(J.f_is_number(c.states(c.N('sensor.vmc_master_umidita_esterna_status')))))
     return ''.join(_o)
 
 
-def m1093(c, V):
+def m1094(c, V):
     # {{ states('sensor.vmc_master_umidita_esterna_status') }}
     _o = []
     _o.append(J.testo(c.states(c.N('sensor.vmc_master_umidita_esterna_status'))))
     return ''.join(_o)
 
 
-def m1094(c, V):
+def m1095(c, V):
     # {{ is_number(states('sensor.vmc_master_umidita_interna_status')) }}
     _o = []
     _o.append(J.testo(J.f_is_number(c.states(c.N('sensor.vmc_master_umidita_interna_status')))))
     return ''.join(_o)
 
 
-def m1095(c, V):
+def m1096(c, V):
     # {{ states('sensor.vmc_master_umidita_interna_status') }}
     _o = []
     _o.append(J.testo(c.states(c.N('sensor.vmc_master_umidita_interna_status'))))
     return ''.join(_o)
 
 
-def m1096(c, V):
+def m1097(c, V):
     # {{ is_number(states('sensor.vmc_master_co2_status')) }}
     _o = []
     _o.append(J.testo(J.f_is_number(c.states(c.N('sensor.vmc_master_co2_status')))))
     return ''.join(_o)
 
 
-def m1097(c, V):
+def m1098(c, V):
     # {{ states('sensor.vmc_master_co2_status') }}
     _o = []
     _o.append(J.testo(c.states(c.N('sensor.vmc_master_co2_status'))))
     return ''.join(_o)
 
 
-def m1098(c, V):
+def m1099(c, V):
     # {{ is_number(states('sensor.vmc_master_voc_status')) }}
     _o = []
     _o.append(J.testo(J.f_is_number(c.states(c.N('sensor.vmc_master_voc_status')))))
     return ''.join(_o)
 
 
-def m1099(c, V):
+def m1100(c, V):
     # {{ states('sensor.vmc_master_voc_status') }}
     _o = []
     _o.append(J.testo(c.states(c.N('sensor.vmc_master_voc_status'))))
     return ''.join(_o)
 
 
-def m1100(c, V):
+def m1101(c, V):
     # {{ is_number(states('sensor.vmc_master_punto_di_rugiada_esterno')) }}
     _o = []
     _o.append(J.testo(J.f_is_number(c.states(c.N('sensor.vmc_master_punto_di_rugiada_esterno')))))
     return ''.join(_o)
 
 
-def m1101(c, V):
+def m1102(c, V):
     # {{ states('sensor.vmc_master_punto_di_rugiada_esterno') }}
     _o = []
     _o.append(J.testo(c.states(c.N('sensor.vmc_master_punto_di_rugiada_esterno'))))
     return ''.join(_o)
 
 
-def m1102(c, V):
+def m1103(c, V):
     # {{ is_number(states('sensor.vmc_master_punto_di_rugiada_interno')) }}
     _o = []
     _o.append(J.testo(J.f_is_number(c.states(c.N('sensor.vmc_master_punto_di_rugiada_interno')))))
     return ''.join(_o)
 
 
-def m1103(c, V):
+def m1104(c, V):
     # {{ states('sensor.vmc_master_punto_di_rugiada_interno') }}
     _o = []
     _o.append(J.testo(c.states(c.N('sensor.vmc_master_punto_di_rugiada_interno'))))
     return ''.join(_o)
 
 
-def m1104(c, V):
+def m1105(c, V):
     # {{ is_number(states('sensor.vmc_master_punto_di_rugiada_valore')) }}
     _o = []
     _o.append(J.testo(J.f_is_number(c.states(c.N('sensor.vmc_master_punto_di_rugiada_valore')))))
     return ''.join(_o)
 
 
-def m1105(c, V):
+def m1106(c, V):
     # {{ states('sensor.vmc_master_punto_di_rugiada_valore') }}
     _o = []
     _o.append(J.testo(c.states(c.N('sensor.vmc_master_punto_di_rugiada_valore'))))
     return ''.join(_o)
 
 
-def m1106(c, V):
+def m1107(c, V):
     # {{ is_number(states('sensor.vmc_master_umidita_assoluta_esterna')) }}
     _o = []
     _o.append(J.testo(J.f_is_number(c.states(c.N('sensor.vmc_master_umidita_assoluta_esterna')))))
     return ''.join(_o)
 
 
-def m1107(c, V):
+def m1108(c, V):
     # {{ states('sensor.vmc_master_umidita_assoluta_esterna') }}
     _o = []
     _o.append(J.testo(c.states(c.N('sensor.vmc_master_umidita_assoluta_esterna'))))
     return ''.join(_o)
 
 
-def m1108(c, V):
+def m1109(c, V):
     # {{ is_number(states('sensor.vmc_master_umidita_assoluta_interna')) }}
     _o = []
     _o.append(J.testo(J.f_is_number(c.states(c.N('sensor.vmc_master_umidita_assoluta_interna')))))
     return ''.join(_o)
 
 
-def m1109(c, V):
+def m1110(c, V):
     # {{ states('sensor.vmc_master_umidita_assoluta_interna') }}
     _o = []
     _o.append(J.testo(c.states(c.N('sensor.vmc_master_umidita_assoluta_interna'))))
     return ''.join(_o)
 
 
-def m1110(c, V):
+def m1111(c, V):
     # {{ is_number(states('sensor.vmc_master_temp_esterna_status_senza_offset')) }}
     _o = []
     _o.append(J.testo(J.f_is_number(c.states(c.N('sensor.vmc_master_temp_esterna_status_senza_offset')))))
     return ''.join(_o)
 
 
-def m1111(c, V):
+def m1112(c, V):
     # {{ states('sensor.vmc_master_temp_esterna_status_senza_offset') }}
     _o = []
     _o.append(J.testo(c.states(c.N('sensor.vmc_master_temp_esterna_status_senza_offset'))))
     return ''.join(_o)
 
 
-def m1112(c, V):
+def m1113(c, V):
     # {{ is_number(states('sensor.vmc_master_temp_interna_status_senza_offset')) }}
     _o = []
     _o.append(J.testo(J.f_is_number(c.states(c.N('sensor.vmc_master_temp_interna_status_senza_offset')))))
     return ''.join(_o)
 
 
-def m1113(c, V):
+def m1114(c, V):
     # {{ states('sensor.vmc_master_temp_interna_status_senza_offset') }}
     _o = []
     _o.append(J.testo(c.states(c.N('sensor.vmc_master_temp_interna_status_senza_offset'))))
     return ''.join(_o)
 
 
-def m1114(c, V):
+def m1115(c, V):
     # {{ is_number(states('sensor.vmc_master_umidita_interna_status_senza_offset')) }}
     _o = []
     _o.append(J.testo(J.f_is_number(c.states(c.N('sensor.vmc_master_umidita_interna_status_senza_offset')))))
     return ''.join(_o)
 
 
-def m1115(c, V):
+def m1116(c, V):
     # {{ states('sensor.vmc_master_umidita_interna_status_senza_offset') }}
     _o = []
     _o.append(J.testo(c.states(c.N('sensor.vmc_master_umidita_interna_status_senza_offset'))))
     return ''.join(_o)
 
 
-def m1116(c, V):
+def m1117(c, V):
     # {{ is_number(states('sensor.vmc_master_co2_status_senza_offset')) }}
     _o = []
     _o.append(J.testo(J.f_is_number(c.states(c.N('sensor.vmc_master_co2_status_senza_offset')))))
     return ''.join(_o)
 
 
-def m1117(c, V):
+def m1118(c, V):
     # {{ states('sensor.vmc_master_co2_status_senza_offset') }}
     _o = []
     _o.append(J.testo(c.states(c.N('sensor.vmc_master_co2_status_senza_offset'))))
     return ''.join(_o)
 
 
-def m1118(c, V):
+def m1119(c, V):
     # {{ is_number(states('sensor.vmc_master_voc_status_senza_offset')) }}
     _o = []
     _o.append(J.testo(J.f_is_number(c.states(c.N('sensor.vmc_master_voc_status_senza_offset')))))
     return ''.join(_o)
 
 
-def m1119(c, V):
+def m1120(c, V):
     # {{ states('sensor.vmc_master_voc_status_senza_offset') }}
     _o = []
     _o.append(J.testo(c.states(c.N('sensor.vmc_master_voc_status_senza_offset'))))
     return ''.join(_o)
 
 
-def m1120(c, V):
+def m1121(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_umidita_soglia_float = V.get('umidita_soglia_float', J.MANCANTE)
     v_stati = v_umidita_soglia = v_umidita_soglia_limite = J.MANCANTE
@@ -1273,7 +1273,7 @@ def m1120(c, V):
     return ''.join(_o)
 
 
-def m1121(c, V):
+def m1122(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_PdRi_str = V.get('PdRi_str', J.MANCANTE)
     v_PdRe_str = V.get('PdRe_str', J.MANCANTE)
@@ -1338,7 +1338,7 @@ def m1121(c, V):
     return ''.join(_o)
 
 
-def m1122(c, V):
+def m1123(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_PdRi_str = V.get('PdRi_str', J.MANCANTE)
     v_PdRe_str = V.get('PdRe_str', J.MANCANTE)
@@ -1387,7 +1387,7 @@ def m1122(c, V):
     return ''.join(_o)
 
 
-def m1123(c, V):
+def m1124(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_umidita_soglia = V.get('umidita_soglia', J.MANCANTE)
     v_umidita_soglia_limite = V.get('umidita_soglia_limite', J.MANCANTE)
@@ -1428,7 +1428,7 @@ def m1123(c, V):
     return ''.join(_o)
 
 
-def m1124(c, V):
+def m1125(c, V):
     # {% set co2_raw = states('sensor.vmc_master_co2_status') %} {% set stati = ["sconosciuto...
     v_co2 = V.get('co2', J.MANCANTE)
     v_co2_raw = v_stati = J.MANCANTE
@@ -1464,7 +1464,7 @@ def m1124(c, V):
     return ''.join(_o)
 
 
-def m1125(c, V):
+def m1126(c, V):
     # {% set voc_raw = states('sensor.vmc_master_voc_status') %} {% set stati = ["sconosciuto...
     v_voc = V.get('voc', J.MANCANTE)
     v_voc_raw = v_stati = J.MANCANTE
@@ -1498,7 +1498,7 @@ def m1125(c, V):
     return ''.join(_o)
 
 
-def m1126(c, V):
+def m1127(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_congelamento = V.get('congelamento', J.MANCANTE)
     v_congelamento_vmc = V.get('congelamento_vmc', J.MANCANTE)
@@ -1525,7 +1525,7 @@ def m1126(c, V):
     return ''.join(_o)
 
 
-def m1127(c, V):
+def m1128(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_temperatura_esterna = V.get('temperatura_esterna', J.MANCANTE)
     v_temperatura_interna = V.get('temperatura_interna', J.MANCANTE)
@@ -1575,7 +1575,7 @@ def m1127(c, V):
     return ''.join(_o)
 
 
-def m1128(c, V):
+def m1129(c, V):
     # {% set stati = ['unknown','unavailable'] %} {% if states('sensor.vmc_master_sensori_mem...
     v_Rh = V.get('Rh', J.MANCANTE)
     v_Tc = V.get('Tc', J.MANCANTE)
@@ -1613,7 +1613,7 @@ def m1128(c, V):
     return ''.join(_o)
 
 
-def m1129(c, V):
+def m1130(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_Rh = V.get('Rh', J.MANCANTE)
     v_Tc = V.get('Tc', J.MANCANTE)
@@ -1651,7 +1651,7 @@ def m1129(c, V):
     return ''.join(_o)
 
 
-def m1130(c, V):
+def m1131(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_PdRi = V.get('PdRi', J.MANCANTE)
     v_PdRe = V.get('PdRe', J.MANCANTE)
@@ -1677,7 +1677,7 @@ def m1130(c, V):
     return ''.join(_o)
 
 
-def m1131(c, V):
+def m1132(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_PdRi = V.get('PdRi', J.MANCANTE)
     v_PdRe = V.get('PdRe', J.MANCANTE)
@@ -1722,7 +1722,7 @@ def m1131(c, V):
     return ''.join(_o)
 
 
-def m1132(c, V):
+def m1133(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_h_str = V.get('h_str', J.MANCANTE)
     v_t_str = V.get('t_str', J.MANCANTE)
@@ -1759,7 +1759,7 @@ def m1132(c, V):
     return ''.join(_o)
 
 
-def m1133(c, V):
+def m1134(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_h_str = V.get('h_str', J.MANCANTE)
     v_t_str = V.get('t_str', J.MANCANTE)
@@ -1796,7 +1796,7 @@ def m1133(c, V):
     return ''.join(_o)
 
 
-def m1134(c, V):
+def m1135(c, V):
     # {%- set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] ...
     v_dp_raw = V.get('dp_raw', J.MANCANTE)
     v_dp = V.get('dp', J.MANCANTE)
@@ -1835,7 +1835,7 @@ def m1134(c, V):
     return ''.join(_o)
 
 
-def m1135(c, V):
+def m1136(c, V):
     # {%- set invalidi = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile...
     v_congelamento = V.get('congelamento', J.MANCANTE)
     v_delta = V.get('delta', J.MANCANTE)
@@ -1872,7 +1872,7 @@ def m1135(c, V):
     return ''.join(_o)
 
 
-def m1136(c, V):
+def m1137(c, V):
     # {#- Alert = PdR sfavorevole (interruttore PdR ON) o Congelamento: tutti i tasti di velo...
     v_congelamento = V.get('congelamento', J.MANCANTE)
     v_delta = V.get('delta', J.MANCANTE)
@@ -1902,7 +1902,7 @@ def m1136(c, V):
     return ''.join(_o)
 
 
-def m1137(c, V):
+def m1138(c, V):
     # {% set v = states('sensor.vmc_master_temp_interna_status') | float(none) %} {{ v if v i...
     v_v = J.MANCANTE
     _o = []
@@ -1911,7 +1911,7 @@ def m1137(c, V):
     return ''.join(_o)
 
 
-def m1138(c, V):
+def m1139(c, V):
     # {% set v = states('sensor.vmc_master_umidita_interna_status') | float(none) %} {{ v if ...
     v_v = J.MANCANTE
     _o = []
@@ -1920,7 +1920,7 @@ def m1138(c, V):
     return ''.join(_o)
 
 
-def m1139(c, V):
+def m1140(c, V):
     # {%- set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] ...
     v_c1 = V.get('c1', J.MANCANTE)
     v_c2 = V.get('c2', J.MANCANTE)
@@ -1956,7 +1956,7 @@ def m1139(c, V):
     return ''.join(_o)
 
 
-def m1140(c, V):
+def m1141(c, V):
     # {%- set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] ...
     v_c1 = V.get('c1', J.MANCANTE)
     v_c2 = V.get('c2', J.MANCANTE)
@@ -1992,7 +1992,7 @@ def m1140(c, V):
     return ''.join(_o)
 
 
-def m1141(c, V):
+def m1142(c, V):
     # {%- set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] ...
     v_c1 = V.get('c1', J.MANCANTE)
     v_c2 = V.get('c2', J.MANCANTE)
@@ -2028,7 +2028,7 @@ def m1141(c, V):
     return ''.join(_o)
 
 
-def m1142(c, V):
+def m1143(c, V):
     # {%- set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] ...
     v_stati = v_map = v_s12 = v_s8 = v_s4 = J.MANCANTE
     _o = []
@@ -2054,7 +2054,7 @@ def m1142(c, V):
     return ''.join(_o)
 
 
-def m1143(c, V):
+def m1144(c, V):
     # {%- set stati = ["sconosciuto","unknown","","unavailable",none,"Non disponibile", "[Non...
     v_m = V.get('m', J.MANCANTE)
     v_stati = v_txt = J.MANCANTE
@@ -2069,7 +2069,7 @@ def m1143(c, V):
     return ''.join(_o)
 
 
-def m1144(c, V):
+def m1145(c, V):
     # {% set v = states('sensor.vmc_master_trend_muffa_level') | float(none) %} {{ v if v is ...
     v_v = J.MANCANTE
     _o = []
@@ -2078,7 +2078,7 @@ def m1144(c, V):
     return ''.join(_o)
 
 
-def m1145(c, V):
+def m1146(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_componenti = V.get('componenti', J.MANCANTE)
     v_codice = V.get('codice', J.MANCANTE)
@@ -2105,7 +2105,7 @@ def m1145(c, V):
     return ''.join(_o)
 
 
-def m1146(c, V):
+def m1147(c, V):
     # {% set stati_invalidi = ["sconosciuto", "unknown", "", none, "unavailable", "Non dispon...
     v_portata = V.get('portata', J.MANCANTE)
     v_volume = V.get('volume', J.MANCANTE)
@@ -2152,14 +2152,14 @@ def m1146(c, V):
     return ''.join(_o)
 
 
-def m1147(c, V):
+def m1148(c, V):
     # {{ ( states('input_number.vmc_master_aria_scambiata_v1') | float(0) + states('input_num...
     _o = []
     _o.append(J.testo(J.f_round(((((((J.f_float(c.states(c.N('input_number.vmc_master_aria_scambiata_v1')), 0) + J.f_float(c.states(c.N('input_number.vmc_master_aria_scambiata_v2')), 0)) + J.f_float(c.states(c.N('input_number.vmc_master_aria_scambiata_v3')), 0)) + J.f_float(c.states(c.N('input_number.vmc_master_aria_scambiata_v4')), 0)) + J.f_float(c.states(c.N('input_number.vmc_master_aria_scambiata_iperventilazione')), 0)) + J.f_float(c.states(c.N('input_number.vmc_master_aria_scambiata_notte')), 0)) + J.f_float(c.states(c.N('input_number.vmc_master_aria_scambiata_freecooling')), 0)), 3)))
     return ''.join(_o)
 
 
-def m1148(c, V):
+def m1149(c, V):
     # {% set volume = states('input_number.vmc_master_volume_da_inserire') | float(1) %} {% s...
     v_volume = v_aria_totale = J.MANCANTE
     _o = []
@@ -2174,7 +2174,7 @@ def m1148(c, V):
     return ''.join(_o)
 
 
-def m1149(c, V):
+def m1150(c, V):
     # {% set portata_str = states('sensor.vmc_master_status_portata_ventola_lettura_codice_in...
     v_portata = V.get('portata', J.MANCANTE)
     v_volume = V.get('volume', J.MANCANTE)
@@ -2248,7 +2248,7 @@ def m1149(c, V):
     return ''.join(_o)
 
 
-def m1150(c, V):
+def m1151(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_umidità = V.get('umidità', J.MANCANTE)
     v_stati = J.MANCANTE
@@ -2269,7 +2269,7 @@ def m1150(c, V):
     return ''.join(_o)
 
 
-def m1151(c, V):
+def m1152(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_co2 = V.get('co2', J.MANCANTE)
     v_stati = J.MANCANTE
@@ -2290,7 +2290,7 @@ def m1151(c, V):
     return ''.join(_o)
 
 
-def m1152(c, V):
+def m1153(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_voc = V.get('voc', J.MANCANTE)
     v_stati = J.MANCANTE
@@ -2311,7 +2311,7 @@ def m1152(c, V):
     return ''.join(_o)
 
 
-def m1153(c, V):
+def m1154(c, V):
     # {% set stati_non_validi = ["sconosciuto", "unknown", "", none, "unavailable", "Non disp...
     v_stati_non_validi = v_PdRvc = J.MANCANTE
     _o = []
@@ -2333,7 +2333,7 @@ def m1153(c, V):
     return ''.join(_o)
 
 
-def m1154(c, V):
+def m1155(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_congelamento = V.get('congelamento', J.MANCANTE)
     v_stati = J.MANCANTE
@@ -2354,7 +2354,7 @@ def m1154(c, V):
     return ''.join(_o)
 
 
-def m1155(c, V):
+def m1156(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_delta = V.get('delta', J.MANCANTE)
     v_stati = J.MANCANTE
@@ -2375,7 +2375,7 @@ def m1155(c, V):
     return ''.join(_o)
 
 
-def m1156(c, V):
+def m1157(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_automazione_free_cooling = V.get('automazione_free_cooling', J.MANCANTE)
     v_automazione_free_heating = V.get('automazione_free_heating', J.MANCANTE)
@@ -2442,7 +2442,7 @@ def m1156(c, V):
     return ''.join(_o)
 
 
-def m1157(c, V):
+def m1158(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_spia_free_cooling = V.get('spia_free_cooling', J.MANCANTE)
     v_spia_free_heating = V.get('spia_free_heating', J.MANCANTE)
@@ -2597,7 +2597,7 @@ def m1157(c, V):
     return ''.join(_o)
 
 
-def m1158(c, V):
+def m1159(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_avviso_disabilitato = V.get('avviso_disabilitato', J.MANCANTE)
     v_stati = J.MANCANTE
@@ -2618,7 +2618,7 @@ def m1158(c, V):
     return ''.join(_o)
 
 
-def m1159(c, V):
+def m1160(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_valore_minimo_temp_esterna = V.get('valore_minimo_temp_esterna', J.MANCANTE)
     v_valore_minimo_temp_interna = V.get('valore_minimo_temp_interna', J.MANCANTE)
@@ -2654,7 +2654,7 @@ def m1159(c, V):
     return ''.join(_o)
 
 
-def m1160(c, V):
+def m1161(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_stati = J.MANCANTE
     _o = []
@@ -2672,7 +2672,7 @@ def m1160(c, V):
     return ''.join(_o)
 
 
-def m1161(c, V):
+def m1162(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_umidità = V.get('umidità', J.MANCANTE)
     v_umidità_non_calcolabile = V.get('umidità_non_calcolabile', J.MANCANTE)
@@ -2729,7 +2729,7 @@ def m1161(c, V):
     return ''.join(_o)
 
 
-def m1162(c, V):
+def m1163(c, V):
     # {% set stati = ["sconosciuto", "unknown", "", none, "unavailable", "Non disponibile"] %...
     v_monitoraggio = V.get('monitoraggio', J.MANCANTE)
     v_spia_avvisi = V.get('spia_avvisi', J.MANCANTE)

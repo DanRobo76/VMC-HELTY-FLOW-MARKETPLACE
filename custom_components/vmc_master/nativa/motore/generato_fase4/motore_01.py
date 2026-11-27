@@ -2927,7 +2927,7 @@ def k0728(c, V):
 
 
 def k0729(c, V):
-    return C.modello(c, M.m0943, V)
+    return C.modello(c, M.m0942, V)
 
 
 def k0730(c, V):
@@ -2935,7 +2935,7 @@ def k0730(c, V):
 
 
 def k0731(c, V):
-    return C.modello(c, M.m0947, V)
+    return C.modello(c, M.m0945, V)
 
 
 def k0732(c, V):
@@ -2943,7 +2943,7 @@ def k0732(c, V):
 
 
 def k0733(c, V):
-    return C.modello(c, M.m0950, V)
+    return C.modello(c, M.m0949, V)
 
 
 def k0734(c, V):
@@ -2951,11 +2951,11 @@ def k0734(c, V):
 
 
 def k0735(c, V):
-    return C.modello(c, M.m0955, V)
+    return C.modello(c, M.m0952, V)
 
 
 def k0736(c, V):
-    return C.modello(c, M.m0962, V)
+    return C.modello(c, M.m0956, V)
 
 
 def k0737(c, V):
@@ -2963,7 +2963,7 @@ def k0737(c, V):
 
 
 def k0738(c, V):
-    return C.modello(c, M.m0965, V)
+    return C.modello(c, M.m0964, V)
 
 
 def k0739(c, V):
@@ -2971,7 +2971,7 @@ def k0739(c, V):
 
 
 def k0740(c, V):
-    return C.modello(c, M.m0970, V)
+    return C.modello(c, M.m0967, V)
 
 
 def k0741(c, V):
@@ -2979,7 +2979,7 @@ def k0741(c, V):
 
 
 def k0742(c, V):
-    return C.modello(c, M.m0973, V)
+    return C.modello(c, M.m0972, V)
 
 
 def k0743(c, V):
@@ -3019,111 +3019,111 @@ def k0751(c, V):
 
 
 def k0752(c, V):
-    return C.e(c, V, (k0750, k0751, ))
-
-
-def k0753(c, V):
     return C.modello(c, M.m0983, V)
 
 
+def k0753(c, V):
+    return C.e(c, V, (k0751, k0752, ))
+
+
 def k0754(c, V):
-    return C.e(c, V, (k0750, k0753, ))
-
-
-def k0755(c, V):
     return C.modello(c, M.m0984, V)
 
 
+def k0755(c, V):
+    return C.e(c, V, (k0751, k0754, ))
+
+
 def k0756(c, V):
-    return C.e(c, V, (k0755, k0751, ))
-
-
-def k0757(c, V):
-    return C.e(c, V, (k0755, k0753, ))
-
-
-def k0758(c, V):
-    return C.stato(c, V, [c.N('sensor.vmc_master_speed_1_fascia_calendario')], ['Velocità 0'])
-
-
-def k0759(c, V):
     return C.modello(c, M.m0985, V)
 
 
+def k0757(c, V):
+    return C.e(c, V, (k0756, k0752, ))
+
+
+def k0758(c, V):
+    return C.e(c, V, (k0756, k0754, ))
+
+
+def k0759(c, V):
+    return C.stato(c, V, [c.N('sensor.vmc_master_speed_1_fascia_calendario')], ['Velocità 0'])
+
+
 def k0760(c, V):
-    return C.e(c, V, (k0758, k0759, ))
-
-
-def k0761(c, V):
-    return C.stato(c, V, [c.N('sensor.vmc_master_speed_1_fascia_calendario')], ['Velocità 1'])
-
-
-def k0762(c, V):
-    return C.e(c, V, (k0761, k0759, ))
-
-
-def k0763(c, V):
     return C.modello(c, M.m0986, V)
 
 
+def k0761(c, V):
+    return C.e(c, V, (k0759, k0760, ))
+
+
+def k0762(c, V):
+    return C.stato(c, V, [c.N('sensor.vmc_master_speed_1_fascia_calendario')], ['Velocità 1'])
+
+
+def k0763(c, V):
+    return C.e(c, V, (k0762, k0760, ))
+
+
 def k0764(c, V):
-    return C.stato(c, V, [c.N('sensor.vmc_master_speed_1_fascia_calendario')], ['Velocità 2'])
-
-
-def k0765(c, V):
-    return C.e(c, V, (k0764, k0759, ))
-
-
-def k0766(c, V):
     return C.modello(c, M.m0987, V)
 
 
+def k0765(c, V):
+    return C.stato(c, V, [c.N('sensor.vmc_master_speed_1_fascia_calendario')], ['Velocità 2'])
+
+
+def k0766(c, V):
+    return C.e(c, V, (k0765, k0760, ))
+
+
 def k0767(c, V):
-    return C.stato(c, V, [c.N('sensor.vmc_master_speed_1_fascia_calendario')], ['Velocità 3'])
-
-
-def k0768(c, V):
-    return C.e(c, V, (k0767, k0759, ))
-
-
-def k0769(c, V):
     return C.modello(c, M.m0988, V)
 
 
+def k0768(c, V):
+    return C.stato(c, V, [c.N('sensor.vmc_master_speed_1_fascia_calendario')], ['Velocità 3'])
+
+
+def k0769(c, V):
+    return C.e(c, V, (k0768, k0760, ))
+
+
 def k0770(c, V):
-    return C.stato(c, V, [c.N('sensor.vmc_master_speed_1_fascia_calendario')], ['Velocità 4'])
-
-
-def k0771(c, V):
-    return C.e(c, V, (k0770, k0759, ))
-
-
-def k0772(c, V):
     return C.modello(c, M.m0989, V)
 
 
+def k0771(c, V):
+    return C.stato(c, V, [c.N('sensor.vmc_master_speed_1_fascia_calendario')], ['Velocità 4'])
+
+
+def k0772(c, V):
+    return C.e(c, V, (k0771, k0760, ))
+
+
 def k0773(c, V):
-    return C.stato(c, V, [c.N('sensor.vmc_master_speed_1_fascia_calendario')], ['Notturna'])
-
-
-def k0774(c, V):
-    return C.e(c, V, (k0773, k0759, ))
-
-
-def k0775(c, V):
     return C.modello(c, M.m0990, V)
 
 
+def k0774(c, V):
+    return C.stato(c, V, [c.N('sensor.vmc_master_speed_1_fascia_calendario')], ['Notturna'])
+
+
+def k0775(c, V):
+    return C.e(c, V, (k0774, k0760, ))
+
+
 def k0776(c, V):
-    return C.stato(c, V, [c.N('sensor.vmc_master_speed_1_fascia_calendario')], ['Iperventilazione'])
+    return C.modello(c, M.m0991, V)
 
 
 def k0777(c, V):
-    return C.e(c, V, (k0776, k0759, ))
+    return C.stato(c, V, [c.N('sensor.vmc_master_speed_1_fascia_calendario')], ['Iperventilazione'])
 
 
 def k0778(c, V):
-    return C.modello(c, M.m0991, V)
+    return C.e(c, V, (k0777, k0760, ))
 
 
 def k0779(c, V):
@@ -3171,124 +3171,128 @@ def k0789(c, V):
 
 
 def k0790(c, V):
-    return C.stato(c, V, [c.N('sensor.vmc_master_speed_1_fascia_calendario')], ['Free Cool./Heat.'])
-
-
-def k0791(c, V):
-    return C.e(c, V, (k0790, k0759, ))
-
-
-def k0792(c, V):
     return C.modello(c, M.m1003, V)
 
 
+def k0791(c, V):
+    return C.stato(c, V, [c.N('sensor.vmc_master_speed_1_fascia_calendario')], ['Free Cool./Heat.'])
+
+
+def k0792(c, V):
+    return C.e(c, V, (k0791, k0760, ))
+
+
 def k0793(c, V):
-    return C.stato(c, V, [c.N('sensor.vmc_master_speed_2_fascia_calendario')], ['Velocità 0'])
+    return C.modello(c, M.m1004, V)
 
 
 def k0794(c, V):
-    return C.e(c, V, (k0793, k0759, ))
+    return C.stato(c, V, [c.N('sensor.vmc_master_speed_2_fascia_calendario')], ['Velocità 0'])
 
 
 def k0795(c, V):
-    return C.stato(c, V, [c.N('sensor.vmc_master_speed_2_fascia_calendario')], ['Velocità 1'])
+    return C.e(c, V, (k0794, k0760, ))
 
 
 def k0796(c, V):
-    return C.e(c, V, (k0795, k0759, ))
+    return C.stato(c, V, [c.N('sensor.vmc_master_speed_2_fascia_calendario')], ['Velocità 1'])
 
 
 def k0797(c, V):
-    return C.stato(c, V, [c.N('sensor.vmc_master_speed_2_fascia_calendario')], ['Velocità 2'])
+    return C.e(c, V, (k0796, k0760, ))
 
 
 def k0798(c, V):
-    return C.e(c, V, (k0797, k0759, ))
+    return C.stato(c, V, [c.N('sensor.vmc_master_speed_2_fascia_calendario')], ['Velocità 2'])
 
 
 def k0799(c, V):
-    return C.stato(c, V, [c.N('sensor.vmc_master_speed_2_fascia_calendario')], ['Velocità 3'])
+    return C.e(c, V, (k0798, k0760, ))
 
 
 def k0800(c, V):
-    return C.e(c, V, (k0799, k0759, ))
+    return C.stato(c, V, [c.N('sensor.vmc_master_speed_2_fascia_calendario')], ['Velocità 3'])
 
 
 def k0801(c, V):
-    return C.stato(c, V, [c.N('sensor.vmc_master_speed_2_fascia_calendario')], ['Velocità 4'])
+    return C.e(c, V, (k0800, k0760, ))
 
 
 def k0802(c, V):
-    return C.e(c, V, (k0801, k0759, ))
+    return C.stato(c, V, [c.N('sensor.vmc_master_speed_2_fascia_calendario')], ['Velocità 4'])
 
 
 def k0803(c, V):
-    return C.stato(c, V, [c.N('sensor.vmc_master_speed_2_fascia_calendario')], ['Notturna'])
+    return C.e(c, V, (k0802, k0760, ))
 
 
 def k0804(c, V):
-    return C.e(c, V, (k0803, k0759, ))
+    return C.stato(c, V, [c.N('sensor.vmc_master_speed_2_fascia_calendario')], ['Notturna'])
 
 
 def k0805(c, V):
-    return C.stato(c, V, [c.N('sensor.vmc_master_speed_2_fascia_calendario')], ['Iperventilazione'])
+    return C.e(c, V, (k0804, k0760, ))
 
 
 def k0806(c, V):
-    return C.e(c, V, (k0805, k0759, ))
+    return C.stato(c, V, [c.N('sensor.vmc_master_speed_2_fascia_calendario')], ['Iperventilazione'])
 
 
 def k0807(c, V):
-    return C.stato(c, V, [c.N('sensor.vmc_master_speed_2_fascia_calendario')], ['Free Cool./Heat.'])
+    return C.e(c, V, (k0806, k0760, ))
 
 
 def k0808(c, V):
-    return C.e(c, V, (k0807, k0759, ))
+    return C.stato(c, V, [c.N('sensor.vmc_master_speed_2_fascia_calendario')], ['Free Cool./Heat.'])
 
 
 def k0809(c, V):
-    return C.modello(c, M.m1006, V)
+    return C.e(c, V, (k0808, k0760, ))
 
 
 def k0810(c, V):
-    return C.modello(c, M.m1008, V)
+    return C.modello(c, M.m1007, V)
 
 
 def k0811(c, V):
-    return C.modello(c, M.m1010, V)
+    return C.modello(c, M.m1009, V)
 
 
 def k0812(c, V):
-    return C.modello(c, M.m1012, V)
+    return C.modello(c, M.m1011, V)
 
 
 def k0813(c, V):
-    return C.modello(c, M.m1014, V)
+    return C.modello(c, M.m1013, V)
 
 
 def k0814(c, V):
-    return C.modello(c, M.m1016, V)
+    return C.modello(c, M.m1015, V)
 
 
 def k0815(c, V):
-    return C.modello(c, M.m1019, V)
+    return C.modello(c, M.m1017, V)
 
 
 def k0816(c, V):
-    return C.modello(c, M.m1022, V)
+    return C.modello(c, M.m1020, V)
 
 
 def k0817(c, V):
-    return C.modello(c, M.m1025, V)
+    return C.modello(c, M.m1023, V)
 
 
 def k0818(c, V):
-    return C.modello(c, M.m1027, V)
+    return C.modello(c, M.m1026, V)
 
 
 def k0819(c, V):
-    return C.modello(c, M.m1030, V)
+    return C.modello(c, M.m1028, V)
 
 
 def k0820(c, V):
-    return C.modello(c, M.m1032, V)
+    return C.modello(c, M.m1031, V)
+
+
+def k0821(c, V):
+    return C.modello(c, M.m1033, V)

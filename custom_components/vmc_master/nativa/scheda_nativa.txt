@@ -1,6 +1,6 @@
 ###########################################################################################################################################################################################################################
 #                                                                                                                                                                                                                         #
-#                                                          SCHEDA MANUALE INTERFACCIA VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b41]                                                                                         #
+#                                                          SCHEDA MANUALE INTERFACCIA VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b44]                                                                                         #
 #                                                                                                                                                                                                                         #
 # SVILUPPATO DA ING. DANILO ROBOTTI, ALLE PRIME ARMI CON HOME ASSISTANT :)                                                                                                                                                #
 #                                                                                                                                                                                                                         #
@@ -8,7 +8,7 @@
 #                                                                                                                                                                                                                         #
 # LICENZA: GNU GENERAL PUBLIC LICENSE VERSIONE 3 (GPL-3.0), PER LA VERSIONE DISTRIBUITA CON L'INTEGRAZIONE VMC MASTER (MARKETPLACE)                                                                                       #
 # TESTO UFFICIALE DELLA LICENZA (IN INGLESE, L'UNICO CHE FA FEDE): https://www.gnu.org/licenses/gpl-3.0.html                                                                                                              #
-# Copyright © 2023-2026 Ing. Danilo Robotti (https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE)                                                                                                                          #
+# Copyright © 2023-2026 Ing. Danilo Robotti (https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER)                                                                                                                          #
 #                                                                                                                                                                                                                         #
 # LA LICENZA GPL-3.0 SI APPLICA AI SEGUENTI FILES DISTRIBUITI CON L'INTEGRAZIONE VMC MASTER:                                                                                                                              #
 #   - VMC_MASTER.YAML                                                                                                                                                                                                     #
@@ -635,7 +635,7 @@ cards:
               state: Non è una VMC
           row:
             type: section
-            label: "A questo IP risponde un dispositivo che non è una VMC (non manda il nome della VMC): non è stato cambiato nulla. Controlla l'IP."
+            label: "A questo IP risponde un apparecchio che non è una VMC (non risponde come una VMC sulla porta 5001): non è stato cambiato nulla. Controlla l'IP."
         - type: conditional
           conditions:
             - condition: state
@@ -10736,7 +10736,7 @@ cards:
                         state: Non è una VMC
                     row:
                       type: section
-                      label: "A questo IP risponde un dispositivo che non è una VMC (non manda il nome della VMC): non è stato cambiato nulla. Controlla l'IP."
+                      label: "A questo IP risponde un apparecchio che non è una VMC (non risponde come una VMC sulla porta 5001): non è stato cambiato nulla. Controlla l'IP."
                   - type: conditional
                     conditions:
                       - condition: state
@@ -11642,11 +11642,11 @@ cards:
             cards:
               - type: markdown
                 content: >-
-                  <table align="center" width="100%"><tr><td width="45%"><a href="/marketplace/repository?owner=DanRobo76&repository=VMC-HELTY-FLOW-MARKETPLACE&category=integration"><img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/Video/anteprima_scene_IT.webp?v=20261114" width="100%" alt="Apri la pagina del Marketplace"></a></td><td>
+                  <table align="center" width="100%"><tr><td width="45%"><a href="/marketplace/repository?owner=DanRobo76&repository=VMC-HELTY-FLOW-MASTER&category=integration"><img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW/main/Video/anteprima_scene_IT.webp?v=20261114" width="100%" alt="Apri la pagina del Marketplace"></a></td><td>
                   <b>VMC HELTY FLOW Plus/Elite</b><br>
                   Release installata: <b>{{ states('sensor.vmc_master_versione_corrente') }}</b><br>
                   {% set _i = states('sensor.vmc_master_versione_corrente') | trim | regex_replace('^[^0-9]*', '') %}{% set _rr = states('sensor.vmc_master_versione_repository') | trim %}{% set _r = _rr | regex_replace('^[^0-9]*', '') %}{% if not (_i is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and _r is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$')) %}<ha-icon icon="mdi:cloud-alert-outline"></ha-icon> {% if _i is match('^[0-9]+([.][0-9]+)*(b[0-9]+)?$') and _rr in ['Errore Connessione', 'unavailable'] %}Controllo aggiornamenti non riuscito (nessuna connessione a GitHub){% else %}Controllo aggiornamenti non riuscito{% endif %}{% else %}{% set _nr = (_r.split('b'))[0].split('.') | map('int') | list %}{% set _ni = (_i.split('b'))[0].split('.') | map('int') | list %}{% if _nr + [0] * (3 - _nr | length) + ([0, (_r.split('b'))[1] | int] if 'b' in _r else [1, 0]) > _ni + [0] * (3 - _ni | length) + ([0, (_i.split('b'))[1] | int] if 'b' in _i else [1, 0]) %}<ha-icon icon="mdi:arrow-up-bold-circle-outline"></ha-icon> <b>Aggiornamento disponibile: {{ states('sensor.vmc_master_versione_repository') }}</b>{% else %}<ha-icon icon="mdi:check-circle-outline"></ha-icon> Nessun aggiornamento{% endif %}{% endif %}<br>
-                  <ha-icon icon="mdi:email-fast"></ha-icon> <a href="mailto:danilo.robotti@gmail.com">Mail</a> &nbsp; <ha-icon icon="mdi:github"></ha-icon> <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE">GitHub</a>
+                  <ha-icon icon="mdi:email-fast"></ha-icon> <a href="mailto:danilo.robotti@gmail.com">Mail</a> &nbsp; <ha-icon icon="mdi:github"></ha-icon> <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER">GitHub</a>
                   </td></tr></table>
                   <br>
                   <details><summary><b>Informazioni</b></summary>
@@ -12764,11 +12764,8 @@ cards:
                   VMC sulla porta 5001. Sono ammessi quattro numeri da 0 a 255
                   separati da punti, senza zeri iniziali. Non sono ammessi
                   0.x.x.x, 127.x.x.x, 169.254.x.x e gli indirizzi da 224.x.x.x
-                  in su. L'IP non deve essere già usato da un'altra VMC. Questo
-                  controllo vede solo le VMC già attive: una VMC appena
-                  aggiunta, in attesa del riavvio di Home Assistant, non viene
-                  vista. In quel caso, dopo il riavvio l'integrazione rimette
-                  l'IP di prima e lo segnala. Poi l'integrazione controlla che a
+                  in su. L'IP non deve essere già usato da un'altra VMC. Poi
+                  l'integrazione controlla che a
                   quell'IP risponda la VMC con il suo nome. Se il nome della VMC
                   non è ancora stato letto, basta che risponda una VMC. Se un
                   controllo non va bene, non cambia nulla e sotto il campo
@@ -12806,7 +12803,7 @@ cards:
 
                   <strong>VMC Master - Profilo Inizializzazione</strong>
 
-                  Da impiegare solo la prima volta, appena installata l'integrazione.
+                  Parte da solo una volta, 140 s dopo l'aggiunta di una VMC nuova (se la VMC è spenta, quando si accende); non parte per una VMC riaggiunta o passata dalla versione Marketplace. Il pulsante serve per rifarlo.
 
                   Attiva i 6 Profili sopra Esposti,
                   Azzera gli Offset dei Sensori, Attiva gli Avvisi e la
@@ -12815,13 +12812,6 @@ cards:
                   Inizializza tutte le Spie e tutti gli Interruttori su Off e Attiva
                   gli Interruttori VMC ON/OFF. Attendere il termine del processo
                   (10 s). Non riavvia Home Assistant.
-
-                  <br>
-
-                  <strong>VMC Master - Ripristina Tempi di Attesa Originali</strong>
-
-                  Non ha un pulsante nella scheda: i 24 Tempi di Attesa sono fissi e non si possono
-                  modificare.
 
                   <br>
 
@@ -13519,13 +13509,11 @@ cards:
                   is_state('switch.vmc_master_notifica_allerta_umidita', 'on') or
                   is_state('switch.vmc_master_notifica_allerta_black_out', 'on') or
                   is_state('switch.vmc_master_notifica_allerta_status_velocita', 'on') or
-                  is_state('switch.vmc_master_notifica_allerta_riepilogo', 'on') or
-                  is_state('binary_sensor.vmc_master_popup_versione_corrente_vs_repository', 'on') %}
+                  is_state('switch.vmc_master_notifica_allerta_riepilogo', 'on') %}
 
 
                   <pre style="font-size: 1px; background-color:
-                  #d9ffcc"><details open><summary><b>NOTIFICHE AUDIO [Categorie]
-                  E POPUP AGGIORNAMENTO</b></summary>{% if
+                  #d9ffcc"><details open><summary><b>NOTIFICHE AUDIO [Categorie]</b></summary>{% if
                   is_state('switch.vmc_master_notifica_allerta_congelamento', 'on')
                   %}vmc_master_notifica_allerta_congelamento: On <br>{% endif %}{% if
                   is_state('switch.vmc_master_notifica_allerta_differenza_temp_int_est', 'on')
@@ -13543,7 +13531,20 @@ cards:
                   is_state('switch.vmc_master_notifica_allerta_status_velocita', 'on')
                   %}vmc_master_notifica_allerta_status_velocita: On <br>{% endif %}{% if
                   is_state('switch.vmc_master_notifica_allerta_riepilogo', 'on')
-                  %}vmc_master_notifica_allerta_riepilogo: On <br>{% endif %}{% if
+                  %}vmc_master_notifica_allerta_riepilogo: On <br>{% endif %}</pre>
+
+                  {% endif %}
+
+
+
+
+
+                  {% if
+                  is_state('binary_sensor.vmc_master_popup_versione_corrente_vs_repository', 'on') %}
+
+
+                  <pre style="font-size: 1px; background-color:
+                  #d9ffcc"><details open><summary><b>POPUP AGGIORNAMENTO</b></summary>{% if
                   is_state('binary_sensor.vmc_master_popup_versione_corrente_vs_repository', 'on')
                   %}vmc_master_popup_versione_corrente_vs_repository: On <br>{% endif %}</pre>
 
@@ -14119,7 +14120,7 @@ cards:
                         state: Non è una VMC
                     row:
                       type: section
-                      label: "A questo IP risponde un dispositivo che non è una VMC (non manda il nome della VMC): non è stato cambiato nulla. Controlla l'IP."
+                      label: "A questo IP risponde un apparecchio che non è una VMC (non risponde come una VMC sulla porta 5001): non è stato cambiato nulla. Controlla l'IP."
                   - type: conditional
                     conditions:
                       - condition: state

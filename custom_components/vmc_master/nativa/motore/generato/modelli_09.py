@@ -9,7 +9,7 @@ Generato da tests/nativa/motore/traduci.py dal package della b42: non modificare
 from .. import jinja as J
 
 
-def m1030(c, V):
+def m1031(c, V):
     # {% set mp = states('input_select.vmc_master_selected_media_player_entity') %} {% set in...
     v_mp = v_invalid = v_audio_interruttore = v_now_time = v_start_raw = v_end_raw = v_start_time = v_end_time = J.MANCANTE
     _o = []
@@ -41,14 +41,14 @@ def m1030(c, V):
     return ''.join(_o)
 
 
-def m1031(c, V):
+def m1032(c, V):
     # VMC {{ states('sensor.vmc_master_nome_status') }} in Linea
     _o = []
     _o.extend(('VMC ', J.testo(c.states(c.N('sensor.vmc_master_nome_status'))), '  in Linea'))
     return ''.join(_o)
 
 
-def m1032(c, V):
+def m1033(c, V):
     # {% set mp = states('input_select.vmc_master_selected_media_player_entity') %} {% set in...
     v_mp = v_invalid = v_audio_interruttore = v_now_time = v_start_raw = v_end_raw = v_start_time = v_end_time = J.MANCANTE
     _o = []

@@ -1,0 +1,69 @@
+SCHEDA «VMC MASTER» TRADOTTA AI NOMI DELLE ENTITÀ NATIVE (fase 4) - totali delle modifiche
+
+Righe della scheda master: 14208 -> 14155
+Modifiche: 2373
+
+  1929  nome
+           861  input_boolean -> binary_sensor [modello markdown]
+           175  input_boolean -> switch [entity]
+           169  input_boolean -> binary_sensor [condizione]
+           160  input_boolean -> switch [modello markdown]
+            77  input_boolean -> binary_sensor [elenco]
+            62  timer -> sensor [condizione]
+            50  input_boolean -> switch [entity_id]
+            39  timer -> sensor [entity]
+            37  input_boolean -> switch [elenco]
+            34  timer -> sensor [elenco]
+            30  input_datetime -> time [elenco]
+            30  input_datetime -> time [entity]
+            29  input_boolean -> switch [condizione]
+            27  input_select -> select [modello markdown]
+            23  input_number -> number [modello markdown]
+            16  script -> button [entity]
+            16  script -> button [entity_id]
+            14  input_select -> select [elenco]
+            14  input_select -> select [entity]
+            13  input_number -> sensor [condizione]
+            12  script -> button [elenco]
+            10  input_number -> number [elenco]
+            10  input_number -> number [entity]
+             4  input_number -> sensor [modello markdown]
+             4  input_text -> text [entity]
+             3  input_number -> number [condizione]
+             3  input_text -> sensor [condizione]
+             3  input_text -> text [condizione]
+             2  input_text -> text [elenco]
+             1  input_number -> sensor [elenco]
+             1  input_text -> sensor [elenco]
+   120  elenco
+            38  script -> (tolta) [elenco]
+            35  input_text -> (tolta) [elenco]
+            32  input_number -> (tolta) [elenco]
+            14  automation -> (tolta) [elenco]
+             1  input_boolean -> (tolta) [elenco]
+    66  servizio
+            48  input_boolean -> switch.toggle
+            16  script -> button.press
+             1  input_boolean -> switch.turn_off
+             1  input_boolean -> switch.turn_on
+    62  condizione timer
+            58  state: active
+             4  state: idle
+    57  testo
+            54  modello markdown
+             3  label
+    39  colore riga conto alla rovescia
+            39  riga
+    39  riga conto alla rovescia
+            39  riga
+    23  comando
+            23  shell_command -> button.press
+    20  esclusioni
+            20  modello markdown
+    12  frammento
+             8  input_datetime -> time [modello markdown]
+             4  input_boolean -> binary_sensor [modello markdown]
+     5  chiave tipi
+             5  modello tipi
+     1  intestazione
+             1  commento

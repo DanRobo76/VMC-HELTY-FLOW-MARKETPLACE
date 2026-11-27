@@ -15,10 +15,10 @@
     "lovelace",
     "repairs"
   ],
-  "documentation": "https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE",
+  "documentation": "https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER",
   "integration_type": "device",
   "iot_class": "local_polling",
-  "issue_tracker": "https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE/issues",
+  "issue_tracker": "https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER/issues",
   "requirements": [],
-  "version": "9.0.0b43"
+  "version": "9.0.0b44"
 }

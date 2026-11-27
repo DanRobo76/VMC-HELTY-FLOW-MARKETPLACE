@@ -114,7 +114,7 @@ def rimuovi_sezioni_solo_master(testo: str) -> str:
 # - i nomi con il trattino della scheda nativa: i tipi delle schede personalizzate
 #   («custom:vmc-master-conto-alla-rovescia», «vmc-master-card»), definiti una volta
 #   sola dal JavaScript della scheda (gli entity_id hanno solo trattini bassi);
-# - il nome del repository dell'integrazione nativa (VMC-HELTY-FLOW-MARKETPLACE) nei link
+# - il nome del repository dell'integrazione nativa (VMC-HELTY-FLOW-MASTER) nei link
 #   e nella pagina del Marketplace.
 # Nei file della beta (cartella «package») le ultime due non ci sono: restano identici.
 _VIDEO_PROMO = "VMC_MASTER_promo_"
@@ -185,7 +185,7 @@ def adatta_versione(yaml_vmc: str, versione: str) -> str:
 _RE_LINK_REPOSITORY_8 = re.compile(r"DanRobo76/VMC-HELTY-FLOW(?![-\w])")
 # Il repository della beta: solo per rifare i file che la beta scriveva (installatore,
 # per riconoscere i suoi elementi e per le prove); la scheda servita dall'integrazione
-# usa const.REPOSITORY (VMC-HELTY-FLOW-MARKETPLACE)
+# usa const.REPOSITORY (VMC-HELTY-FLOW-MASTER)
 REPOSITORY_INTEGRAZIONE = "DanRobo76/VMC-HELTY-FLOW-MARKETPLACE"
 
 
@@ -193,7 +193,7 @@ def adatta_link_repository(testo: str, repository: str = REPOSITORY_INTEGRAZIONE
     """Tutti i link a github.com/DanRobo76/VMC-HELTY-FLOW (anche api.github.com e
     raw.githubusercontent.com) diventano link a ``repository`` (di norma
     VMC-HELTY-FLOW-MARKETPLACE, quello della beta; la scheda dell'integrazione nativa
-    passa VMC-HELTY-FLOW-MARKETPLACE)."""
+    passa VMC-HELTY-FLOW-MASTER)."""
     return _RE_LINK_REPOSITORY_8.sub(repository, testo)
 
 

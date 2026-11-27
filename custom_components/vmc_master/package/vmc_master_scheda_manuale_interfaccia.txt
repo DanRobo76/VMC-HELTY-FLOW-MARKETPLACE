@@ -1,6 +1,6 @@
 ###########################################################################################################################################################################################################################
 #                                                                                                                                                                                                                         #
-#                                                          SCHEDA MANUALE INTERFACCIA VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b41]                                                                                         #
+#                                                          SCHEDA MANUALE INTERFACCIA VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b44]                                                                                         #
 #                                                                                                                                                                                                                         #
 # SVILUPPATO DA ING. DANILO ROBOTTI, ALLE PRIME ARMI CON HOME ASSISTANT :)                                                                                                                                                #
 #                                                                                                                                                                                                                         #
@@ -623,7 +623,7 @@ cards:
               state: Non è una VMC
           row:
             type: section
-            label: "A questo IP risponde un dispositivo che non è una VMC (non manda il nome della VMC): non è stato cambiato nulla. Controlla l'IP."
+            label: "A questo IP risponde un apparecchio che non è una VMC (non risponde come una VMC sulla porta 5001): non è stato cambiato nulla. Controlla l'IP."
         - type: conditional
           conditions:
             - condition: state
@@ -10960,7 +10960,7 @@ cards:
                         state: Non è una VMC
                     row:
                       type: section
-                      label: "A questo IP risponde un dispositivo che non è una VMC (non manda il nome della VMC): non è stato cambiato nulla. Controlla l'IP."
+                      label: "A questo IP risponde un apparecchio che non è una VMC (non risponde come una VMC sulla porta 5001): non è stato cambiato nulla. Controlla l'IP."
                   - type: conditional
                     conditions:
                       - condition: state
@@ -14513,13 +14513,11 @@ cards:
                   is_state('input_boolean.vmc_master_notifica_allerta_umidita', 'on') or
                   is_state('input_boolean.vmc_master_notifica_allerta_black_out', 'on') or
                   is_state('input_boolean.vmc_master_notifica_allerta_status_velocita', 'on') or
-                  is_state('input_boolean.vmc_master_notifica_allerta_riepilogo', 'on') or
-                  is_state('input_boolean.vmc_master_popup_versione_corrente_vs_repository', 'on') %}
+                  is_state('input_boolean.vmc_master_notifica_allerta_riepilogo', 'on') %}
 
 
                   <pre style="font-size: 1px; background-color:
-                  #d9ffcc"><details open><summary><b>NOTIFICHE AUDIO [Categorie]
-                  E POPUP AGGIORNAMENTO</b></summary>{% if
+                  #d9ffcc"><details open><summary><b>NOTIFICHE AUDIO [Categorie]</b></summary>{% if
                   is_state('input_boolean.vmc_master_notifica_allerta_congelamento', 'on')
                   %}vmc_master_notifica_allerta_congelamento: On <br>{% endif %}{% if
                   is_state('input_boolean.vmc_master_notifica_allerta_differenza_temp_int_est', 'on')
@@ -14537,7 +14535,20 @@ cards:
                   is_state('input_boolean.vmc_master_notifica_allerta_status_velocita', 'on')
                   %}vmc_master_notifica_allerta_status_velocita: On <br>{% endif %}{% if
                   is_state('input_boolean.vmc_master_notifica_allerta_riepilogo', 'on')
-                  %}vmc_master_notifica_allerta_riepilogo: On <br>{% endif %}{% if
+                  %}vmc_master_notifica_allerta_riepilogo: On <br>{% endif %}</pre>
+
+                  {% endif %}
+
+
+
+
+
+                  {% if
+                  is_state('input_boolean.vmc_master_popup_versione_corrente_vs_repository', 'on') %}
+
+
+                  <pre style="font-size: 1px; background-color:
+                  #d9ffcc"><details open><summary><b>POPUP AGGIORNAMENTO</b></summary>{% if
                   is_state('input_boolean.vmc_master_popup_versione_corrente_vs_repository', 'on')
                   %}vmc_master_popup_versione_corrente_vs_repository: On <br>{% endif %}</pre>
 
@@ -15266,7 +15277,7 @@ cards:
                         state: Non è una VMC
                     row:
                       type: section
-                      label: "A questo IP risponde un dispositivo che non è una VMC (non manda il nome della VMC): non è stato cambiato nulla. Controlla l'IP."
+                      label: "A questo IP risponde un apparecchio che non è una VMC (non risponde come una VMC sulla porta 5001): non è stato cambiato nulla. Controlla l'IP."
                   - type: conditional
                     conditions:
                       - condition: state

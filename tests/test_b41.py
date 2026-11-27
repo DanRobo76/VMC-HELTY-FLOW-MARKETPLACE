@@ -127,8 +127,8 @@ def test_testi_dei_tempi_riportati_a_ogni_avvio() -> None:
     radice = PKG.parent.parent.parent
     for readme in (radice / "README.md", radice / ".github" / "README.md"):
         testo = readme.read_text(encoding="utf-8")
-        assert ("non compaiono nella scheda e tornano ai valori originali a ogni avvio di Home Assistant e con il "
-                "Profilo Inizializzazione.</sub>") in testo
-        assert ("they do not appear on the card and are reset to the original values at every Home Assistant start "
-                "and by the Profilo Inizializzazione.</sub>") in testo
+        # versione nativa: le attese sono interne e non si possono modificare
+        assert "I tempi di attesa sono fissi e non si possono modificare: non compaiono nella scheda.</sub>" in testo
+        assert "The wait times are fixed and cannot be changed: they do not appear on the card.</sub>" in testo
+        assert "tornano ai valori originali a ogni avvio" not in testo
         assert "il Profilo Inizializzazione li riporta ai valori originali" not in testo

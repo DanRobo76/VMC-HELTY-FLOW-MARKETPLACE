@@ -8,6 +8,10 @@ source = custom_components/vmc_master
 # percorso durante un'eccezione (motore_installa_vmc.py, Engine.ap_session: errore prima di
 # modificare il Wi-Fi, con restore.json già tolto) e la segnala come ramo mai percorso.
 core = ctrace
+# Versione nativa in costruzione (fase 2 della riscrittura): entra nella copertura al 100 %
+# quando sostituisce il package; fino ad allora la provano i suoi test di confronto.
+omit =
+    custom_components/vmc_master/nativa/*
 
 [report]
 show_missing = True

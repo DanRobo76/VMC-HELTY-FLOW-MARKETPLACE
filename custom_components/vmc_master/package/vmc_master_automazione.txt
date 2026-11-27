@@ -1,6 +1,6 @@
 ###########################################################################################################################################################################################################################
 #                                                                                                                                                                                                                         #
-#                                                          AUTOMAZIONE VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b42]                                                                                                        #
+#                                                          AUTOMAZIONE VMC HELTY FLOW PLUS RELEASE [VER. 9.0.0b44]                                                                                                        #
 #                                                                                                                                                                                                                         #
 # SVILUPPATO DA ING. DANILO ROBOTTI, ALLE PRIME ARMI CON HOME ASSISTANT :)                                                                                                                                                #
 #                                                                                                                                                                                                                         #
@@ -11620,7 +11620,14 @@ actions:
           - alias: >-
               Aggiorna gli elenchi delle Entità selezionabili (Temperatura,
               Umidità, Anidride Carbonica, Dispositivo Mobile, Media Player)
+              senza avvisi: gli avvisi «Aggiornare Manualmente l'Entità…» e «Nessun
+              cellulare…» compaiono all'avvio di Home Assistant, con la VMC di nuovo
+              ON-Line, accendendo Invio Notifica e con Agg. Sensori, non a ogni
+              apertura della finestra Opzioni
             action: script.turn_on
+            data:
+              variables:
+                senza_avvisi: true
             target:
               entity_id:
                 - script.vmc_master_aggiorna_elenco_entita_temperatura_esterna

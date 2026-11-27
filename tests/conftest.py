@@ -30,3 +30,31 @@ def cartella_config_temporanea(hass, tmp_path):
     """Ogni test scrive packages e backup in una cartella sua."""
     hass.config.config_dir = str(tmp_path)
     yield
+
+
+@pytest.fixture(autouse=True)
+def vmc_nativa_senza_rete(request):
+    """Fuori da tests/nativa nessuna prova parla con una VMC: una voce aggiunta avvia la
+    VMC nativa con la VMC finta del banco del passaggio (non risponde), il ping fuori
+    linea e la versione fissa. Il nome letto dalla VMC resta quello di ogni prova."""
+    if "nativa" in request.node.path.parts:
+        yield
+        return
+    from tests.nativa.passaggio.banco import senza_rete
+
+    with senza_rete(anche_il_nome=False):
+        yield
+
+
+@pytest.fixture(autouse=True)
+def nessun_apparecchio_agli_ip():
+    """Nessuna prova apre la porta 5001 o fa il ping per vedere se a un IP c'è un
+    apparecchio che non è una VMC: per tutte a quell'IP non risponde niente. Le prove di
+    quel controllo usano la funzione vera (tests/test_b44_apparecchio.py)."""
+    from unittest.mock import AsyncMock, patch
+
+    with patch(
+        "custom_components.vmc_master.config_flow.async_apparecchio_presente",
+        AsyncMock(return_value=False),
+    ):
+        yield

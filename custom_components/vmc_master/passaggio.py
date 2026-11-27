@@ -439,18 +439,22 @@ async def async_togli_archivi(hass: HomeAssistant, nome: str) -> None:
         await memoria.async_save({**dati, "eliminata": dt_util.utcnow().isoformat()})
 
 
-async def async_memoria_di_una_vmc_eliminata(hass: HomeAssistant, nome: str) -> None:
+async def async_memoria_di_una_vmc_eliminata(hass: HomeAssistant, nome: str) -> bool:
     """All'avvio della VMC nativa: la memoria interna di una VMC eliminata vale se la VMC
-    torna entro ``STATE_EXPIRATION`` (come gli stati delle entità), poi si toglie."""
+    torna entro ``STATE_EXPIRATION`` (come gli stati delle entità), poi si toglie.
+
+    True se la VMC torna con la sua memoria (VMC riaggiunta: niente Profilo
+    Inizializzazione automatico)."""
     memoria = _memoria_interna(hass, nome)
     dati = await memoria.async_load()
     if not isinstance(dati, dict) or "eliminata" not in dati:
-        return
+        return False
     eliminata = dt_util.parse_datetime(str(dati["eliminata"]))
     if eliminata is None or dt_util.utcnow() - eliminata > STATE_EXPIRATION:
         await memoria.async_remove()
-        return
+        return False
     await memoria.async_save({k: v for k, v in dati.items() if k != "eliminata"})
+    return True
 
 
 # --- la conferma ----------------------------------------------------------------------------------

@@ -36,21 +36,33 @@
       },
       "non_raggiungibile": {
         "title": "Unit not reachable",
-        "description": "The unit at {ip} does not answer on port 5001 or does not send its name.\n\nYou can add it anyway, for example if it is switched off now: press Submit. The IP can be changed later from the gear icon on the unit's row → «Change the unit's IP». If the unit is not on the home Wi-Fi yet, close this window, add it again («Add integration» for the first unit, «Add device» for the others) and choose «No, it must be set up from scratch»."
+        "description": "No device answers at this IP address ({ip}): the unit is switched off or the IP is wrong.\n\n- **Correct the IP**: if the IP is wrong. The right one is shown in the router's device list.\n- **Add anyway**: if the unit is switched off. It will work when it is switched on again.\n\nIf the unit has never been connected to the home Wi-Fi, close with the **X** and start again from: *Settings → Devices & services → «Add integration» button at the bottom right → VMC Master*. Then choose «No, it must be set up from scratch».",
+        "menu_options": {
+          "in_rete": "Correct the IP",
+          "aggiungi_comunque": "Add anyway"
+        }
       },
       "rete_vmc": {
         "title": "Connect the unit to the home Wi-Fi",
-        "description": "Unit networks found: {trovate}.\n\n1. **Unit network**: VMC_ followed by the serial number, as the smartphone sees it. You can also type the name. If it is missing:\n   1. move the server closer to the unit;\n   2. with the filter alarm LED on, reset the filters;\n   3. if the unit was already connected to another network, do the Wi-Fi reset below.\n2. **Unit network password**: the factory one is 12345678.\n3. **Home Wi-Fi network** and its **password**: the network the unit will join.\n\n**Wi-Fi reset** (the unit network password goes back to 12345678):\n1. switch the unit off;\n2. cut the power upstream;\n3. restore the power **while holding the Night button**;\n4. keep it pressed until all LEDs have flashed 7 times.",
+        "description": "Unit networks found: {trovate}.\n\n**All four fields are required.**\n\n1. **Unit network**: VMC_ followed by the serial number, as the smartphone sees it. You can also type the name. If it is missing:\n   1. move the server closer to the unit;\n   2. with the filter alarm LED on, reset the filters;\n   3. if the unit was already connected to another network, do the Wi-Fi reset below.\n2. **Unit network password**: the factory one is 12345678.\n3. **Home Wi-Fi network** and its **password**: the network the unit will join. If the server is connected through Wi-Fi to another network, after Submit the password of that network is asked too.\n\n**Wi-Fi reset** (the unit network password goes back to 12345678):\n1. switch the unit off;\n2. cut the power upstream;\n3. restore the power **while holding the Night button**;\n4. keep it pressed until all LEDs have flashed 7 times.",
         "data": {
           "rete_vmc": "Unit network",
           "password_vmc": "Unit network password",
           "rete_casa": "Home Wi-Fi network",
-          "password_casa": "Home Wi-Fi password",
+          "password_casa": "Home Wi-Fi password"
+        },
+        "data_description": {
+          "password_casa": "Used only for the connection: it is not stored in the integration."
+        }
+      },
+      "password_server": {
+        "title": "Current server Wi-Fi password",
+        "description": "The server is now connected to the **{rete_del_server}** Wi-Fi network, but the unit must join the **{rete_casa}** network.\n\nDuring the connection the server leaves its network for about a minute. To go back it needs the **{rete_del_server}** password.\n\nWarning: with a wrong password the server does not go back to its network.\n\nIf the network chosen for the unit is wrong, close with the **X** and start again from: *Settings → Devices & services → «Add integration» button at the bottom right → VMC Master*.",
+        "data": {
           "password_server": "Current server Wi-Fi password"
         },
         "data_description": {
-          "password_casa": "Used only for the connection: it is not stored in the integration.",
-          "password_server": "The server is now connected to the {rete_del_server} network. If the chosen home network is different, enter the {rete_del_server} password here: it is needed to bring the server back to that network. Check it carefully: with a wrong password the server does not go back to its network. It is not stored."
+          "password_server": "Required. Used only for the connection: it is not stored in the integration."
         }
       },
       "errore": {
@@ -80,7 +92,7 @@
     },
     "progress": {
       "cerca": "Searching the VMC_xxxxxxxx Wi-Fi networks: a few seconds.",
-      "collega": "Connecting the unit to the {rete_casa} network: 1 to 3 minutes.\n\nThe server Wi-Fi switches to the {rete_vmc} network for about a minute, then goes back as it was. If Home Assistant reaches the home network only through Wi-Fi, this page may lose the connection meanwhile: the procedure goes on anyway. If the window closes, open «Add integration» (first unit) or «Add device» (other units) again and choose «Continue with the unit just connected».",
+      "collega": "Connecting the unit to the {rete_casa} network: 1 to 3 minutes.\n\nThe server Wi-Fi switches to the {rete_vmc} network for about a minute, then goes back as it was. If Home Assistant reaches the home network only through Wi-Fi, this page may lose the connection meanwhile: the procedure goes on anyway. If the window closes, open *Settings → Devices & services → «Add integration» button at the bottom right → VMC Master* again and choose «Continue with the unit just connected».",
       "verifica": "Checking IP {ip}: the same unit must answer (up to 30 seconds)."
     },
     "error": {
@@ -88,15 +100,16 @@
       "nome_in_uso": "Name already used by another unit.",
       "ip_non_valido": "Invalid IP: four numbers from 0 to 255 separated by dots, without leading zeros.\n0.x.x.x, 127.x.x.x, 169.254.x.x and the addresses from 224.0.0.0 up are not allowed.",
       "ip_in_uso": "IP already used by another unit.",
+      "non_e_una_vmc": "A device that is not a unit answers at this IP (for example the router): it does not answer like a unit on port 5001. Check the unit's IP.",
       "motore": "{errore}",
-      "password_server_mancante": "The server is now connected to the {rete_del_server} network, which differs from the chosen home network: enter the {rete_del_server} password in «Current server Wi-Fi password».",
+      "password_server_mancante": "Enter the password of the {rete_del_server} network.",
       "ip_non_risponde_riavvia": "The unit does not answer at this IP. Switch it off and on from its switch so it takes the reserved IP, then press Submit again.",
       "ip_altro_dispositivo": "Another device or unit answers at this IP, not {nome_vmc}. Check the reservation on the router."
     },
     "abort": {
       "already_configured": "This unit is already configured.",
-      "senza_supervisor": "Connecting a unit to the Wi-Fi from here needs Home Assistant OS (with the Supervisor) and a Wi-Fi adapter on the server. This Home Assistant has no Supervisor: connect the unit once with the Air Guard app, then add it again («Add integration» for the first unit, «Add device» for the others) and choose «Yes, it is connected».",
-      "senza_wifi": "Home Assistant OS finds no Wi-Fi adapter on the server. You need a computer with built-in Wi-Fi or a recognised USB Wi-Fi dongle (Settings → System → Network). Otherwise connect the unit once with the Air Guard app, then add it again («Add integration» for the first unit, «Add device» for the others) and choose «Yes, it is connected».",
+      "senza_supervisor": "Connecting a unit to the Wi-Fi from here needs Home Assistant OS (with the Supervisor) and a Wi-Fi adapter on the server. This Home Assistant has no Supervisor: connect the unit once with the Air Guard app, then add it again from *Settings → Devices & services → «Add integration» button at the bottom right → VMC Master* and choose «Yes, it is connected».",
+      "senza_wifi": "Home Assistant OS finds no Wi-Fi adapter on the server. You need a computer with built-in Wi-Fi or a recognised USB Wi-Fi dongle (Settings → System → Network). Otherwise connect the unit once with the Air Guard app, then add it again from *Settings → Devices & services → «Add integration» button at the bottom right → VMC Master* and choose «Yes, it is connected».",
       "already_in_progress": "This unit is already being added in another window."
     }
   },
@@ -119,7 +132,7 @@
       },
       "elimina": {
         "title": "Delete the unit",
-        "description": "Delete **{titolo}** only from Home Assistant or from the network too?\n\n- **Only from Home Assistant**: the unit stays on the home Wi-Fi. To add it again only the IP is needed («Yes, it is connected»).\n- **From the network too**: the unit leaves the home Wi-Fi and goes back to Access Point mode (its VMC_… network is visible again). To add it again: «No, it must be set up from scratch», or connect it first with the Air Guard app.\n\nIt is added again from «Add device» («Add integration» if no other unit is left).\n\nIn both cases the unit's entities are deleted with it.",
+        "description": "Delete **{titolo}** only from Home Assistant or from the network too?\n\n- **Only from Home Assistant**: the unit stays on the home Wi-Fi. To add it again only the IP is needed («Yes, it is connected»).\n- **From the network too**: the unit leaves the home Wi-Fi and goes back to Access Point mode (its VMC_… network is visible again). To add it again: «No, it must be set up from scratch», or connect it first with the Air Guard app.\n\nIt is added again from *Settings → Devices & services → «Add integration» button at the bottom right → VMC Master*.\n\nIn both cases the unit's entities are deleted with it.",
         "menu_options": {
           "elimina_solo_ha": "Only from Home Assistant (stays on the home network)",
           "elimina_dalla_rete": "From the network too (back to Access Point)"
@@ -144,7 +157,7 @@
       "ip_non_valido": "Invalid IP: four numbers from 0 to 255 separated by dots, without leading zeros.\n0.x.x.x, 127.x.x.x, 169.254.x.x and the addresses from 224.0.0.0 up are not allowed.",
       "ip_in_uso": "IP already used by another unit.",
       "ip_non_risponde": "The unit does not answer at this IP on port 5001. Check the IP; to save it anyway press Submit again.",
-      "ip_altro_dispositivo": "A device that is not a unit answers at this IP (it does not send a unit name). Check the IP.",
+      "ip_altro_dispositivo": "A device that is not a unit answers at this IP (it does not answer like a unit on port 5001). Check the IP.",
       "ip_nome_diverso": "Unit «{nome_letto}» answers at this IP, not {titolo}. Check the IP. If the name was changed in the Air Guard app, press Submit again to save it."
     },
     "abort": {
@@ -347,7 +360,7 @@
   "services": {
     "verifica_ip": {
       "name": "Check unit IP",
-      "description": "Checks whether a unit answers at this IP on port 5001 and reads its name, with two tries. It changes nothing. The «Cambia IP VMC» field of the card uses it before restarting Home Assistant. It responds with risponde (something answers on port 5001), nome (empty if it is not a unit) and esito: ok, non_risponde, altro_dispositivo, nome_diverso or ip_non_valido.",
+      "description": "Checks whether a unit answers at this IP on port 5001 and reads its name, with two tries; if it does not answer, it checks whether another device is at this IP (port 5001 and ping). It changes nothing. The «Cambia IP VMC» field of the card uses it before restarting Home Assistant. It responds with risponde (something answers at this IP), nome (empty if it is not a unit) and esito: ok, non_risponde, altro_dispositivo, nome_diverso or ip_non_valido.",
       "fields": {
         "ip": {
           "name": "IP",
