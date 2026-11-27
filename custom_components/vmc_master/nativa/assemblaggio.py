@@ -5,9 +5,10 @@ package di oggi (aiutanti, timer, script, comandi di shell, automazioni, sensori
 template, tcp, ping e rest):
 
 - ``VMCNativa`` (vmc.py): coordinatori delle letture e ``StatoVMC``, con i 121 modelli;
-- le 137 entità dei sensori: 121 sensori template di Home Assistant con i modelli
-  tradotti (sensori_template.py: stessi istanti e stesso ordine dei sensori template di
-  oggi; i cambi dei timer del motore arrivano a chi li legge con ``AnnunciDeiTimer``),
+- le 137 entità dei sensori: 121 sensori calcolati con i modelli tradotti, entità
+  dell'integrazione che si comportano come i sensori template (sensori_template.py,
+  sensori_modello.py: stessi istanti e stesso ordine dei sensori template di oggi; i
+  cambi dei timer del motore arrivano a chi li legge con ``AnnunciDeiTimer``),
   gli altri 16 (letture, sensori con memoria) viste su ``StatoVMC`` (entita.py);
 - le 173 impostazioni native (comandi.py), viste su ``StatoVMC``;
 - la memoria interna (motore/memoria_interna.py): i 68 valori interni, con il loro
