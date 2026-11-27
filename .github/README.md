@@ -163,12 +163,12 @@ actions:
 <details>
 <summary><strong>Installazione</strong></summary>
 
-> [!IMPORTANT]
-> **1. Aggiungere il repository** (primo passo):
-> - aprire *Impostazioni → Marketplace → ⋮ → Repository personalizzate → Aggiungi dal collegamento*;
-> - incollare `https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER`;
-> - premere **Aggiungi**, poi **Continue**;
-> - seguire le indicazioni di Home Assistant, autorizzando HACS.
+| 📌 **1. Aggiungere il repository** (primo passo) |
+|---|
+| aprire *Impostazioni → Marketplace → ⋮ → Repository personalizzate → Aggiungi dal collegamento* |
+| incollare `https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER` |
+| premere **Aggiungi**, poi **Continue** |
+| seguire le indicazioni di Home Assistant, autorizzando HACS |
 
 2. **Solo per le Notifiche Audio, controllare `configuration.yaml`** (una volta sola):
    - installare l'app **File editor**: *Impostazioni → Applicazioni → Installa app → File editor → Installa*;
@@ -501,12 +501,12 @@ actions:
 <details>
 <summary><strong>Installation</strong></summary>
 
-> [!IMPORTANT]
-> **1. Add the repository** (first step):
-> - open *Settings → Marketplace → ⋮ → Custom repositories → Add from link*;
-> - paste `https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER`;
-> - press **Add**, then **Continue**;
-> - follow Home Assistant's instructions, authorizing HACS.
+| 📌 **1. Add the repository** (first step) |
+|---|
+| open *Settings → Marketplace → ⋮ → Custom repositories → Add from link* |
+| paste `https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER` |
+| press **Add**, then **Continue** |
+| follow Home Assistant's instructions, authorizing HACS |
 
 2. **Only for audio notifications, check `configuration.yaml`** (once):
    - install the **File editor** app: *Settings → Apps → Install app → File editor → Install*;

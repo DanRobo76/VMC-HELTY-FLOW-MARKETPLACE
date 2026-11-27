@@ -629,8 +629,8 @@ def test_readme_marketplace_e_github() -> None:
     ha già aggiunto il repository e non vede i passi per farlo."""
     marketplace = (RADICE / "README.md").read_text(encoding="utf-8")
     github = (RADICE / ".github" / "README.md").read_text(encoding="utf-8")
-    for testo in ("> [!IMPORTANT]\n> **1. Aggiungere il repository** (primo passo):",
-                  "> [!IMPORTANT]\n> **1. Add the repository** (first step):",
+    for testo in ("| 📌 **1. Aggiungere il repository** (primo passo) |\n|---|\n",
+                  "| 📌 **1. Add the repository** (first step) |\n|---|\n",
                   "3. **Installare**: cercare **VMC Master** nel Marketplace e premere **Installa**.",
                   "3. **Install**: search for **VMC Master** in the Marketplace and press **Install**.",
                   "6. **Una volta per ogni VMC**, nel pannello **Opzioni** della scheda:",
