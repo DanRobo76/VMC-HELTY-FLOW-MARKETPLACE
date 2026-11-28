@@ -8,10 +8,11 @@ motore. Finché c'è, la VMC nativa non parte (``IN_ATTESA``) e la VMC continua 
 package com'era.
 
 1. Ad avvio finito si leggono dal package ancora caricato i valori che servono alla VMC
-   nativa (``leggi_valori``): le 173 impostazioni visibili (valore di partenza delle
-   entità native, come il ripristino dopo un riavvio), i 68 valori interni (archivio della
+   nativa (``leggi_valori``): le 172 impostazioni visibili (valore di partenza delle
+   entità native, come il ripristino dopo un riavvio), i 67 valori interni (archivio della
    memoria interna del motore) e i 10 sensori con memoria. Si salvano nell'archivio
-   dell'integrazione (``.storage``), niente in /config.
+   dell'integrazione (``.storage``), niente in /config. Le voci tolte (``tabelle.TOLTE``:
+   il campo «Cambia IP VMC» della scheda e chi lo serve) non passano.
 2. Una riparazione chiede di confermare la rimozione della cartella del package e dei
    suoi elementi del registro delle entità (``async_conferma``): solo dopo il clic
    dell'utente, e solo per le cartelle scritte dalla beta. Alla conferma i valori si
@@ -30,7 +31,7 @@ import json
 import logging
 import re
 import shutil
-from collections.abc import Iterable, Iterator, Mapping
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path
@@ -38,13 +39,20 @@ from typing import Any, Final
 
 import yaml
 from homeassistant.components.lovelace import LOVELACE_DATA
+from homeassistant.config import (
+    YAML_CONFIG_FILE,
+    extract_domain_configs,
+    load_yaml_config_file,
+)
 from homeassistant.const import EntityStateAttribute
 from homeassistant.core import HomeAssistant, State, callback
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.restore_state import STATE_EXPIRATION
 from homeassistant.helpers.restore_state import async_get as memoria_ripristino
 from homeassistant.helpers.storage import Store
 from homeassistant.util import dt as dt_util
+from homeassistant.util.yaml import Secrets
 
 from .nativa.comandi import chiavi_comandi
 from .nativa.memoria import IN_ORDINE as SENSORI_CON_MEMORIA
@@ -55,7 +63,7 @@ from .nativa.motore.memoria_interna import (
     VERSIONE_ARCHIVIO as VERSIONE_MEMORIA_INTERNA,
 )
 from .nativa.motore.memoria_interna import da_stato
-from .nativa.tabelle import DOMANI
+from .nativa.tabelle import DOMANI, TOLTE
 from .nativa.vmc import ATTRIBUTO_INTERRUZIONE
 
 _LOGGER = logging.getLogger(__name__)
@@ -264,9 +272,9 @@ def entity_id_di_oggi(chiave: str, nome: str) -> str:
 
 
 def entity_id_di_domani(chiave: str, nome: str) -> str | None:
-    """L'entity_id nativo di una voce del package (None se è interna al motore)."""
+    """L'entity_id nativo di una voce del package (None se è interna al motore o tolta)."""
     dominio = DOMANI[chiave]
-    if dominio == "interna":
+    if dominio in ("interna", "tolta"):
         return None
     return f"{dominio}.vmc_{nome}_{chiave.split('.', 1)[1]}"
 
@@ -314,22 +322,23 @@ class Letti:
 def leggi_valori(hass: HomeAssistant, nome: str) -> Letti:
     """I valori del package della VMC ``nome`` che servono alla VMC nativa.
 
-    - le 173 impostazioni visibili: lo stato dell'aiutante, che l'entità nativa riprende
+    - le 172 impostazioni visibili: lo stato dell'aiutante, che l'entità nativa riprende
       con le regole dell'aiutante (``initial`` vince, numero fuori dai limiti al minimo,
       opzione che non c'è alla prima...), come dopo un riavvio della beta;
-    - i 68 valori interni: il valore come lo salva la memoria interna (``da_stato``);
+    - i 67 valori interni: il valore come lo salva la memoria interna (``da_stato``);
     - i 10 sensori con memoria: stato e attributo dell'ultima lettura prima
       dell'interruzione.
 
     I 34 timer non passano: nessun timer del package ha ``restore``, quindi dopo il
     riavvio del passaggio ripartono fermi come dopo ogni riavvio della beta (si annotano
-    solo quelli attivi). Script e comandi di shell non hanno valori.
+    solo quelli attivi). Script e comandi di shell non hanno valori; le voci tolte non
+    passano.
     """
     letti = Letti()
     visibili = set(chiavi_comandi())
     for chiave in DOMANI:
         dominio = chiave.split(".", 1)[0]
-        if dominio in ("script", "shell_command"):
+        if dominio in ("script", "shell_command") or chiave in TOLTE:
             continue
         entity_id = entity_id_di_oggi(chiave, nome)
         stato = stato_della_beta(hass, entity_id)
@@ -526,26 +535,104 @@ async def async_conferma(hass: HomeAssistant, nome: str) -> EsitoConferma:
 _RE_ENTITY_ID = re.compile(r"(?<![\w.])([a-z_]+\.vmc_[a-z]+_[a-z0-9_]+)(?![\w])")
 
 
-def _configurazioni_personali(
-    hass: HomeAssistant, del_package: set[str]
-) -> Iterator[tuple[str, str]]:
-    """(entity_id, testo) di ogni automazione e script caricato che non è del package:
-    la configurazione come l'utente l'ha scritta (``raw_config``), gli ingressi dei
-    progetti (blueprint) e le entità che Home Assistant vi trova."""
-    for dominio in ("automation", "script"):
-        componente = hass.data.get(dominio)
-        for entita in getattr(componente, "entities", ()):
-            if entita.entity_id in del_package:
-                continue
-            parti = [
-                getattr(entita, "raw_config", None),
-                getattr(entita, "_raw_blueprint_inputs", None),
-                sorted(getattr(entita, "referenced_entities", ())),
+_DOMINI_PERSONALI: Final = ("automation", "script")
+
+
+def _leggi_configurazioni_personali(
+    config_dir: str,
+) -> list[tuple[str, str | None, str | None, str]]:
+    """(dominio, id o chiave, alias, testo) di ogni automazione e script scritto nella
+    configurazione YAML di Home Assistant: configuration.yaml con i file che include e i
+    package, quindi anche quelli creati dall'interfaccia (automations.yaml, scripts.yaml).
+    Il testo è la configurazione come l'utente l'ha scritta, più il file del progetto
+    (blueprint) che usa. Legge i file: nell'esecutore."""
+    cartella = Path(config_dir)
+    config = load_yaml_config_file(str(cartella / YAML_CONFIG_FILE), Secrets(cartella))
+    blocchi: list[dict[Any, Any]] = [config]
+    generale = config.get("homeassistant")
+    pacchetti = generale.get("packages") if isinstance(generale, dict) else None
+    if isinstance(pacchetti, dict):
+        blocchi.extend(p for p in pacchetti.values() if isinstance(p, dict))
+    trovate: list[tuple[str, str | None, str | None, str]] = []
+    for blocco in blocchi:
+        for dominio in _DOMINI_PERSONALI:
+            for chiave in extract_domain_configs(blocco, dominio):
+                valore = blocco[chiave]
+                if dominio == "automation":
+                    voci = [
+                        (None if v.get("id") is None else str(v["id"]), v)
+                        for v in _come_lista(valore)
+                        if isinstance(v, dict) and v
+                    ]
+                else:
+                    voci = [
+                        (str(k), v)
+                        for k, v in (valore.items() if isinstance(valore, dict) else ())
+                        if isinstance(v, dict)
+                    ]
+                for nome, voce in voci:
+                    alias = voce.get("alias")
+                    parti: list[Any] = [voce]
+                    progetto = voce.get("use_blueprint")
+                    percorso = (
+                        progetto.get("path") if isinstance(progetto, dict) else None
+                    )
+                    if isinstance(percorso, str):
+                        try:
+                            parti.append(
+                                (cartella / "blueprints" / dominio / percorso).read_text(
+                                    encoding="utf-8"
+                                )
+                            )
+                        except (OSError, UnicodeDecodeError) as errore:
+                            _LOGGER.debug("Progetto %s non letto: %s", percorso, errore)
+                    trovate.append(
+                        (
+                            dominio,
+                            nome,
+                            None if alias is None else str(alias),
+                            json.dumps(parti, ensure_ascii=False, default=str),
+                        )
+                    )
+    return trovate
+
+
+async def _async_configurazioni_personali(
+    hass: HomeAssistant, id_package: Iterable[tuple[str, str, str]]
+) -> list[tuple[str, str]]:
+    """(dove, testo) di ogni automazione e script dell'utente (non del package): dove è
+    l'entity_id che Home Assistant gli ha dato (dal registro delle entità o, per
+    un'automazione senza id, dallo stato con il suo nome), altrimenti il suo nome."""
+    try:
+        trovate = await hass.async_add_executor_job(
+            _leggi_configurazioni_personali, hass.config.config_dir
+        )
+    except (HomeAssistantError, OSError) as errore:
+        _LOGGER.warning("Configurazione di Home Assistant non letta: %s", errore)
+        return []
+    ids = set(id_package)
+    registro = er.async_get(hass)
+    personali: list[tuple[str, str]] = []
+    for dominio, nome, alias, testo in trovate:
+        if nome is not None:
+            if (dominio, dominio, nome) in ids:
+                continue  # del package
+            dove = registro.async_get_entity_id(dominio, dominio, nome)
+        else:  # automazione senza id: nessuna voce nel registro
+            con_il_nome = [
+                s.entity_id
+                for s in hass.states.async_all(dominio)
+                if "id" not in s.attributes and s.name == alias
             ]
-            yield (
-                entita.entity_id,
-                json.dumps([p for p in parti if p], ensure_ascii=False, default=str),
+            dove = con_il_nome[0] if len(con_il_nome) == 1 else None
+        if dove is None:
+            dove = (
+                f"{dominio}.{nome}"
+                if dominio == "script"
+                else f"{dominio}: {alias or nome or '-'}"
             )
+        personali.append((dove, testo))
+    return personali
 
 
 async def async_riferimenti_personali(
@@ -558,11 +645,12 @@ async def async_riferimenti_personali(
     Si cerca nel testo della configurazione, quindi ogni uso: entità (anche nei modelli
     e come bersaglio dei servizi ``input_*.*``, ``timer.*``, ``script.turn_on``) e
     servizi del package che non ci sono più (``script.‹id›`` e ``shell_command.‹id›``
-    come azione)."""
+    come azione). Anche le voci tolte che non sono in ``DOMANI`` (il sensore e
+    l'automazione del campo «Cambia IP VMC»): domani non ci sono."""
     vecchi = {entity_id_di_oggi(c, nome): entity_id_di_domani(c, nome) for c in DOMANI}
-    del_package = set(voci_del_package(hass, id_package))
+    vecchi |= {entity_id_di_oggi(c, nome): None for c in TOLTE if c not in DOMANI}
     trovati: list[tuple[str, str, str | None]] = []
-    for dove, testo in _configurazioni_personali(hass, del_package):
+    for dove, testo in await _async_configurazioni_personali(hass, id_package):
         for vecchio in sorted(set(_RE_ENTITY_ID.findall(testo)) & set(vecchi)):
             trovati.append((dove, vecchio, vecchi[vecchio]))
     dati = hass.data.get(LOVELACE_DATA)

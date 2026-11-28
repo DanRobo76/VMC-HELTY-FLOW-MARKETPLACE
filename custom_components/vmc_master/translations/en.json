@@ -355,21 +355,5 @@
     "worker_start": {
       "message": "The procedure could not be started."
     }
-  },
-  "services": {
-    "verifica_ip": {
-      "name": "Check unit IP",
-      "description": "Checks whether a unit answers at this IP on port 5001 and reads its name, with two tries; if it does not answer, it checks whether another device is at this IP (port 5001 and ping). It changes nothing. The «Cambia IP VMC» field of the card uses it before restarting Home Assistant. It responds with risponde (something answers at this IP), nome (empty if it is not a unit) and esito: ok, non_risponde, altro_dispositivo, nome_diverso or ip_non_valido.",
-      "fields": {
-        "ip": {
-          "name": "IP",
-          "description": "IP to check."
-        },
-        "nome": {
-          "name": "Expected name",
-          "description": "Name of the unit that must answer. If empty, any unit is fine."
-        }
-      }
-    }
   }
 }

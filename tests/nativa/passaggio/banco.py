@@ -13,12 +13,13 @@ funzioni di caricamento (``EntityRegistry.async_load``,
 from __future__ import annotations
 
 import json
-from collections.abc import AsyncIterator, Iterable
-from contextlib import ExitStack, asynccontextmanager
+from collections.abc import AsyncIterator, Iterable, Iterator
+from contextlib import ExitStack, asynccontextmanager, contextmanager
 from pathlib import Path
 from typing import Any
 from unittest.mock import AsyncMock, patch
 
+import yaml
 from homeassistant import loader
 from homeassistant.core import CoreState, HomeAssistant, State
 from homeassistant.helpers import entity_registry as er
@@ -119,7 +120,7 @@ def _da_json(dati: Any) -> Any:
 
 def entity_id_attesi(nome: str) -> set[str]:
     """Gli entity_id delle entità native di una VMC, come devono essere (niente «_2»): i
-    137 sensori con l'entity_id di oggi; impostazioni, sensori dei timer e pulsanti con
+    136 sensori con l'entity_id di oggi; impostazioni, sensori dei timer e pulsanti con
     l'oggetto di oggi e il dominio di domani."""
     from custom_components.vmc_master.nativa.tabelle import (
         DOMANI,
@@ -128,19 +129,18 @@ def entity_id_attesi(nome: str) -> set[str]:
 
     attesi = {f"{k.split('.', 1)[0]}.vmc_{nome}_{k.split('.', 1)[1]}" for k in SENSORI}
     for chiave, dominio in DOMANI.items():
-        if dominio != "interna":
+        if dominio not in ("interna", "tolta"):
             attesi.add(f"{dominio}.vmc_{nome}_{chiave.split('.', 1)[1]}")
     return attesi
 
 
-# Le 14 automazioni del motore (nel componente automation, con gli entity_id della beta):
-# la loro voce del registro è legata alla voce della VMC
+# Le 13 automazioni del motore: logiche dell'integrazione con gli entity_id della beta per
+# i loro stati interni (nessuna entità automation, nessuna voce del registro)
 AUTOMAZIONI_DEL_MOTORE = (
     "aggiorna_aria_scambiata_e_gestisci_countdown",
     "riepilogo_audio_avvio",
     "audio_allerte_e_stato",
     "riallineamento_allerte_al_riavvio",
-    "cambio_ip_vmc_riavvio_di_h_a",
     "countdown_attese_automazione",
     "countdown_letture_vmc",
     "registro_comandi_e_scelte",
@@ -153,16 +153,34 @@ AUTOMAZIONI_DEL_MOTORE = (
 
 
 def automazioni_attese(nome: str) -> set[str]:
-    """Gli entity_id delle 14 automazioni del motore della VMC."""
+    """Gli entity_id delle 13 automazioni del motore della VMC (gli stati interni delle
+    logiche)."""
     return {f"automation.vmc_{nome}_{a}" for a in AUTOMAZIONI_DEL_MOTORE} | {
         f"automation.automazione_vmc_{nome}"
     }
 
 
+@contextmanager
+def logiche_spente() -> Iterator[None]:
+    """Le logiche del motore scrivono il loro stato («off») ma non agganciano i trigger,
+    come le automazioni del package della beta della prova (``initial_state: false``,
+    ``configurazione_package``), che fino alla 9.0.0b45 il motore riprendeva spente: i
+    valori portati dalla beta restano come sono. (Le logiche non si spengono: nella VMC
+    nativa vera girano sempre.)"""
+
+    async def solo_stato(logica: Any) -> None:
+        logica.scrivi_stato()
+
+    with patch(
+        "custom_components.vmc_master.nativa.motore.logiche.Logica.avvia", solo_stato
+    ):
+        yield
+
+
 def voci_attese(nome: str) -> set[str]:
-    """Le voci del registro legate alla voce della VMC: le 369 entità native e le 14
-    automazioni del motore."""
-    return entity_id_attesi(nome) | automazioni_attese(nome)
+    """Le voci del registro legate alla voce della VMC: le 367 entità native (le
+    automazioni del motore sono logiche senza entità)."""
+    return entity_id_attesi(nome)
 
 
 def file_scritti(cartella: Path) -> dict[str, float]:
@@ -292,6 +310,31 @@ def _senza_ora_delle_medie(blocco: dict[str, Any]) -> dict[str, Any]:
     return {**blocco, chiave: trigger}
 
 
+def scrivi_configurazione(
+    config_dir: str,
+    automazioni_personali: Iterable[dict[str, Any]] = (),
+    script_personali: dict[str, Any] | None = None,
+) -> None:
+    """configuration.yaml di chi ha la beta: i package della cartella packages (come
+    chiede la guida della beta) e le automazioni e gli script dell'utente nei file
+    dell'interfaccia (automations.yaml, scripts.yaml)."""
+    cartella = Path(config_dir)
+    (cartella / "configuration.yaml").write_text(
+        "homeassistant:\n"
+        "  packages: !include_dir_named packages/\n"
+        "automation: !include automations.yaml\n"
+        "script: !include scripts.yaml\n",
+        encoding="utf-8",
+    )
+    (cartella / "automations.yaml").write_text(
+        yaml.safe_dump(list(automazioni_personali), allow_unicode=True),
+        encoding="utf-8",
+    )
+    (cartella / "scripts.yaml").write_text(
+        yaml.safe_dump(script_personali or {}, allow_unicode=True), encoding="utf-8"
+    )
+
+
 async def carica_package(
     hass: HomeAssistant,
     cartelle: Iterable[Path],
@@ -302,7 +345,13 @@ async def carica_package(
     script, sensori template e automazioni con le integrazioni vere; i sensori rest,
     command_line (voce nel registro) e tcp (senza unique_id) solo come stati, perché
     vanno in rete. ``automazioni_personali`` e ``script_personali``: quelli dell'utente
-    (automations.yaml, scripts.yaml)."""
+    (automations.yaml, scripts.yaml), scritti anche nella configurazione YAML
+    (``scrivi_configurazione``)."""
+    automazioni_personali = list(automazioni_personali)
+    if automazioni_personali or script_personali:
+        scrivi_configurazione(
+            hass.config.config_dir, automazioni_personali, script_personali
+        )
     config = configurazione_package(cartelle)
     if not hass.services.has_service("recorder", "get_statistics"):
         config["template"] = [_senza_ora_delle_medie(b) for b in config["template"]]

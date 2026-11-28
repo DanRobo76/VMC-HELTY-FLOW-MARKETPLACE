@@ -51,7 +51,6 @@ class Script:
 # I tipi di comando (``Comando.tipo``): cosa faceva lo shell_command del package.
 COMANDO_VMC = "vmc"  # printf '<testo>\n' | timeout 5 nc -w 3 <ip> 5001
 COMANDO_NOME = "nome"  # bash vmc_<nome>_script_cambio_nome.sh "<nome nuovo>"
-COMANDO_IP = "ip"  # bash vmc_<nome>_script_cambio_ip.sh <ip nuovo>
 COMANDO_NESSUNO = "nessuno"  # toglieva i caratteri di ritorno dai file .sh
 
 
@@ -60,8 +59,8 @@ class Comando:
     """Uno shell_command del package (``shell_command.<nome>``), come comando del motore.
 
     ``testo``: il comando per la VMC (tipo ``vmc``). ``argomenti``: il modello degli
-    argomenti del file .sh, senza il percorso del file (tipi ``nome`` e ``ip``), reso
-    con i dati della chiamata come lo rendeva ``shell_command``.
+    argomenti del file .sh, senza il percorso del file (tipo ``nome``), reso con i dati
+    della chiamata come lo rendeva ``shell_command``.
     """
 
     nome: str

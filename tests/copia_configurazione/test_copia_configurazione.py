@@ -114,12 +114,12 @@ def test_risposta_lan_ha_i_campi_della_vmc_vera() -> None:
 
 # ------------------------------------------------------------ mappa dei nomi
 def test_mappa_dei_nomi_della_fase_1() -> None:
-    """Le chiavi lette dalla colonna «Domani» (tabelle.py): 173 impostazioni visibili,
-    68 valori interni, 34 timer, 137 sensori per VMC."""
-    assert len(controlli.VISIBILI) == 173
-    assert len(controlli.INTERNI) == 68
+    """Le chiavi lette dalla colonna «Domani» (tabelle.py): 172 impostazioni visibili,
+    67 valori interni, 34 timer, 136 sensori per VMC."""
+    assert len(controlli.VISIBILI) == 172
+    assert len(controlli.INTERNI) == 67
     assert len(controlli.TIMER) == 34
-    assert len(controlli.SENSORI) == 137
+    assert len(controlli.SENSORI) == 136
     assert controlli.nuovo_id("input_boolean.notifica_audio", "nord") == (
         "switch.vmc_nord_notifica_audio"
     )

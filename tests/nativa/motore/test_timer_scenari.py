@@ -43,13 +43,14 @@ from homeassistant.util import dt as dt_util
 from pytest_homeassistant_custom_component.common import async_test_home_assistant
 
 from custom_components.vmc_master.nativa.motore import generato
-from custom_components.vmc_master.nativa.motore.ha import Motore
+from custom_components.vmc_master.nativa.motore.stati_logiche import stati_logiche
 from custom_components.vmc_master.nativa.motore.timer import (
     EVENTI_TIMER,
     bus_del_motore,
 )
 
-from .test_semantica import _carica, _gira, moduli  # noqa: F401
+from .fase3 import MotoreFase3
+from .test_semantica import _carica, _gira, della_pulizia, moduli  # noqa: F401
 from .test_semantica_tempi import (  # noqa: F401
     EVENTI,
     T0,
@@ -361,10 +362,13 @@ async def _corsa(
     stato_iniziale = CoreState.not_running if prova["avvio"] else CoreState.running
     try:
         async with async_test_home_assistant(initial_state=stato_iniziale) as hass:
+            pulizia = False
 
             @callback
             def annota(evento: Event) -> None:
                 if evento.event_type not in EVENTI:
+                    return
+                if pulizia and della_pulizia(evento):
                     return
                 dati = evento.data
                 if evento.event_type == EVENT_STATE_CHANGED:
@@ -417,7 +421,7 @@ async def _corsa(
                 moduli.append(f"{generato.__name__}.timer_{nome}_motore")
                 _carica(f"timer_{nome}_modelli", testo_modelli)
                 codice = _carica(f"timer_{nome}_motore", testo_motore)
-                m = Motore(hass)
+                m = MotoreFase3(hass)
                 await m.avvia(crea=codice.crea, timer=TIMER_PACKAGE)
                 assert m.c.timer is not None
                 m.c.timer.ascolta(
@@ -474,6 +478,15 @@ async def _corsa(
             await _gira(hass)
             _pulisci_timer(hass, chiave)
             hass.bus.async_listen(MATCH_ALL, annota)
+            if motore:
+                # gli stati delle logiche (le automazioni del motore) non sono nella
+                # macchina degli stati: entrano nel registro nel punto del bus di
+                # state_changed
+                stati_logiche(hass).osserva(
+                    callback(
+                        lambda e: annota(e) if e.event_type == EVENT_STATE_CHANGED else None
+                    )
+                )
             if prova["avvio"]:
                 avvio = asyncio.ensure_future(hass.async_start())
                 await _fino_alla_fine(hass, freezer, avvio)
@@ -491,9 +504,15 @@ async def _corsa(
                     await _gira(hass)
                 else:
                     await _avanza(hass, freezer, passo[1], a_passi)
-            await hass.services.async_call(
-                "automation", "turn_off", {"entity_id": "all"}, blocking=True
-            )
+            # con Home Assistant spegne le automazioni (automation.turn_off), con il motore
+            # ferma le logiche: i loro stati non si confrontano
+            pulizia = True
+            if motore:
+                await m.ferma()
+            else:
+                await hass.services.async_call(
+                    "automation", "turn_off", {"entity_id": "all"}, blocking=True
+                )
             await hass.services.async_call(
                 "script", "turn_off", {"entity_id": "all"}, blocking=True
             )

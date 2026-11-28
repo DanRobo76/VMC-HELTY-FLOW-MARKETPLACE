@@ -2,7 +2,7 @@
 1;automation.automazione_vmc_master;elenco Pulisci cronologia;motore Python (tolta dalla scheda);
 2;automation.vmc_master_aggiorna_aria_scambiata_e_gestisci_countdown;elenco Pulisci cronologia;motore Python (tolta dalla scheda);
 3;automation.vmc_master_audio_allerte_e_stato;elenco Pulisci cronologia;motore Python (tolta dalla scheda);
-4;automation.vmc_master_cambio_ip_vmc_riavvio_di_h_a;elenco Pulisci cronologia;motore Python (tolta dalla scheda);
+4;automation.vmc_master_cambio_ip_vmc_riavvio_di_h_a;elenco Pulisci cronologia;tolta (tolta dalla scheda);b46: tolta, l'IP si cambia dall'ingranaggio della VMC
 5;automation.vmc_master_countdown_attese_automazione;elenco Pulisci cronologia;motore Python (tolta dalla scheda);
 6;automation.vmc_master_countdown_letture_vmc;elenco Pulisci cronologia;motore Python (tolta dalla scheda);
 7;automation.vmc_master_esclusivita_finestre_opzioni;elenco Pulisci cronologia;motore Python (tolta dalla scheda);
@@ -254,8 +254,8 @@
 253;input_text.vmc_master_countdown_umidita_avvio;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
 254;input_text.vmc_master_countdown_umidita_fine;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
 255;input_text.vmc_master_countdown_umidita_memoria;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
-256;input_text.vmc_master_ip_insert;condizione, elenco Pulisci cronologia, riga;text.vmc_master_ip_insert;
-257;input_text.vmc_master_ip_insert_esito;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
+256;input_text.vmc_master_ip_insert;condizione, elenco Pulisci cronologia, riga;tolta (tolta dalla scheda);b46: tolta, l'IP si cambia dall'ingranaggio della VMC
+257;input_text.vmc_master_ip_insert_esito;elenco Pulisci cronologia;tolta (tolta dalla scheda);b46: tolta, l'IP si cambia dall'ingranaggio della VMC
 258;input_text.vmc_master_last_co2_internal_entity;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
 259;input_text.vmc_master_last_humidity_external_entity;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
 260;input_text.vmc_master_last_humidity_internal_entity;elenco Pulisci cronologia;interna (tolta dalla scheda);tolta dall'elenco: non ha più cronologia
@@ -434,7 +434,7 @@
 433;sensor.vmc_master_umidita_interna_status_verifica_soglia;elenco Pulisci cronologia, riga, testo;sensor.vmc_master_umidita_interna_status_verifica_soglia;
 434;sensor.vmc_master_umidita_interna_status_verifica_soglia_valore;elenco Pulisci cronologia, testo;sensor.vmc_master_umidita_interna_status_verifica_soglia_valore;
 435;sensor.vmc_master_velocita_registrata;condizione, elenco Pulisci cronologia, riga condizionale;sensor.vmc_master_velocita_registrata;
-436;sensor.vmc_master_verifica_ip_inserito;condizione, elenco Pulisci cronologia;sensor.vmc_master_verifica_ip_inserito;
+436;sensor.vmc_master_verifica_ip_inserito;condizione, elenco Pulisci cronologia;tolta (tolta dalla scheda);b46: tolta, l'IP si cambia dall'ingranaggio della VMC
 437;sensor.vmc_master_versione_corrente;elenco Pulisci cronologia, testo;sensor.vmc_master_versione_corrente;
 438;sensor.vmc_master_versione_repository;elenco Pulisci cronologia, testo;sensor.vmc_master_versione_repository;
 439;sensor.vmc_master_voc_status;elenco Pulisci cronologia, scheda sensore, riga, testo;sensor.vmc_master_voc_status;

@@ -5,7 +5,7 @@ shell di Home Assistant): lo usano i banchi della fase 3 e la variante ``nativa`
 simulatore. Il motore dell'integrazione nativa (``nativa/assemblaggio.py``) usa invece
 ``motore/generato_fase4/``, lo stesso package tradotto con:
 
-- la mappa dei nomi (``rinomina.da_fase_1``) per i 173 aiutanti che domani sono entità
+- la mappa dei nomi (``rinomina.da_fase_1``) per i 172 aiutanti che domani sono entità
   native (colonna «Domani» della fase 1): letture, trigger, condizioni e bersagli con gli
   entity_id di domani; i nomi dei servizi restano quelli degli aiutanti
   (``input_boolean.turn_on``...): il motore li manda alle entità native
@@ -17,10 +17,23 @@ simulatore. Il motore dell'integrazione nativa (``nativa/assemblaggio.py``) usa 
 
 Il modulo ``sensori.py`` ha in più i sensori template del package (sezione ``template:``
 senza trigger) con la configurazione che Home Assistant valida e i modelli tradotti al
-posto dei Template: l'assemblaggio ne fa entità ``StateSensorEntity`` e
-``StateBinarySensorEntity`` di Home Assistant, così i sensori si ricalcolano negli stessi
-istanti e nello stesso ordine dei sensori template di oggi (ognuno segue le entità che il
-suo modello ha letto l'ultima volta, timer del motore compresi).
+posto dei Template: l'assemblaggio ne fa entità ``SensoreModello`` e ``BinarioModello``
+dell'integrazione (come i sensori template di Home Assistant), così i sensori si
+ricalcolano negli stessi istanti e nello stesso ordine dei sensori template di oggi
+(ognuno segue le entità che il suo modello ha letto l'ultima volta, timer del motore
+compresi).
+
+Dalla b46 il motore nativo non ha le parti del package di ``escluse()``: il campo «Cambia IP
+VMC» della scheda e ciò che serviva solo a lui (l'automazione che cambiava l'IP e
+riavviava Home Assistant, il comando che scriveva l'IP nei file, il sensore che controllava
+il campo; ``genera_tabelle.TOLTE``). L'IP si cambia solo dall'ingranaggio della VMC. Il
+package si traduce lo stesso intero, nello stesso ordine, così i nomi delle funzioni
+(``mNNNN``, ``kNNNN``, ``sNNNN``) restano quelli di prima; poi escono dal codice le parti
+escluse, con le condizioni, le sequenze e i modelli che servono solo a loro
+(``togli_escluse``), e le entità tolte escono dagli elenchi delle chiamate (la pulizia
+della cronologia). Nessun'altra parte del codice le nomina; la frase della descrizione
+dell'Automazione VMC Master che rimandava all'automazione tolta dice dove si cambia l'IP
+(``DESCRIZIONI``).
 
 Si rigenera con ``VMC_RIGENERA=1 pytest tests/nativa/motore/test_traduzione_fase4.py``.
 """
@@ -28,13 +41,18 @@ Si rigenera con ``VMC_RIGENERA=1 pytest tests/nativa/motore/test_traduzione_fase
 from __future__ import annotations
 
 import enum
+import functools
 import inspect
+import re
+from collections.abc import Iterable, Mapping
+from dataclasses import dataclass
 from typing import Any
 
 import yaml
 from homeassistant.components.template.config import async_validate_config
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.template import Template
+from homeassistant.util import slugify
 
 from custom_components.vmc_master.trasforma import (
     adatta_link_repository,
@@ -42,7 +60,7 @@ from custom_components.vmc_master.trasforma import (
     rimuovi_sezioni_solo_master,
 )
 
-from ..genera_tabelle import NOMI_NATIVI
+from ..genera_tabelle import NOMI_NATIVI, TOLTE
 from .rinomina import Rinomina, da_fase_1
 from .traduci import (
     INTESTAZIONE,
@@ -71,8 +89,169 @@ TIPI_MAPPA = (
 )
 
 
+@dataclass(frozen=True)
+class Escluse:
+    """Le parti del package che il motore nativo non ha (nomi della Master)."""
+
+    automazioni: frozenset[str]
+    """Gli id delle automazioni escluse."""
+    comandi: frozenset[str]
+    """I nomi dei comandi di shell esclusi."""
+    sensori: frozenset[str]
+    """I ``default_entity_id`` dei sensori template esclusi."""
+    entita: frozenset[str]
+    """Tutti gli entity_id tolti (``genera_tabelle.TOLTE``)."""
+
+
+@functools.cache
+def escluse() -> Escluse:
+    """Le parti del package che il motore nativo non ha (b46), da ``genera_tabelle.TOLTE``
+    (un'automazione tolta è quella con l'entity_id che le dà il suo alias)."""
+    entita = frozenset(
+        f"{dominio}.vmc_master_{oggetto}"
+        for dominio, _, oggetto in (k.partition(".") for k in TOLTE)
+    )
+    ids = frozenset(
+        str(a["id"])
+        for a in leggi_package()[0]
+        if f"automation.{slugify(a['alias'])}" in entita
+    )
+    if len(ids) != sum(e.startswith("automation.") for e in entita):
+        raise NonTraducibile("automazioni tolte non trovate nel package")
+    return Escluse(
+        automazioni=ids,
+        comandi=frozenset(
+            e.split(".", 1)[1] for e in entita if e.startswith("shell_command.")
+        ),
+        sensori=frozenset(e for e in entita if e.startswith("sensor.")),
+        entita=entita,
+    )
+
+
+def senza_entita_tolte(valore: Any, entita: frozenset[str] | None = None) -> Any:
+    """La configurazione ``valore`` senza le entità tolte negli elenchi ``entity_id`` (la
+    pulizia della cronologia le elenca con le altre). Un'entità tolta scritta da sola
+    ferma la traduzione: la parte che la usa andrebbe esclusa."""
+    if entita is None:
+        entita = escluse().entita
+    if isinstance(valore, Mapping):
+        uscita = {}
+        for chiave, voce in valore.items():
+            if chiave == "entity_id" and isinstance(voce, list):
+                voce = [e for e in voce if e not in entita]
+            elif chiave == "entity_id" and voce in entita:
+                raise NonTraducibile(f"entità tolta usata da sola: {voce}")
+            uscita[chiave] = senza_entita_tolte(voce, entita)
+        return uscita
+    if isinstance(valore, list):
+        return [senza_entita_tolte(v, entita) for v in valore]
+    return valore
+
+
+# Le frasi delle descrizioni che rimandano a una parte tolta (b46), ognuna in una sola
+# descrizione, e la frase della versione nativa.
+DESCRIZIONI = {
+    (
+        "- Il Cambio dell'IP non è in questa automazione: lo esegue subito l'automazione «VMC"
+        " Master - Cambio IP VMC (Riavvio di H.A.)» del Package."
+    ): (
+        "- Il Cambio dell'IP non è in questa automazione: si fa da Impostazioni → Dispositivi"
+        " e servizi → VMC Master → ⚙️ → Cambia l'IP della VMC."
+    ),
+}
+
+
+def _descrizione_nativa(automazione: dict[str, Any], trovate: list[str]) -> dict[str, Any]:
+    """L'automazione con le frasi di ``DESCRIZIONI`` della versione nativa (in
+    ``trovate`` quelle cambiate)."""
+    descrizione = automazione.get("description")
+    if not isinstance(descrizione, str):
+        return automazione
+    for prima, dopo in DESCRIZIONI.items():
+        if prima in descrizione:
+            trovate.append(prima)
+            descrizione = descrizione.replace(prima, dopo)
+    return {**automazione, "description": descrizione}
+
+
+def package_nativo() -> tuple[list[dict[str, Any]], dict[str, dict[str, Any]]]:
+    """Automazioni e script del package (``leggi_package``) come li traduce la fase 4: le
+    entità tolte escono dagli elenchi delle parti che restano e le descrizioni non
+    rimandano alle parti tolte (le automazioni escluse restano come sono: escono dal
+    codice dopo, ``togli_escluse``)."""
+    automazioni, script = leggi_package()
+    trovate: list[str] = []
+    native = [
+        a
+        if str(a.get("id")) in escluse().automazioni
+        else _descrizione_nativa(senza_entita_tolte(a), trovate)
+        for a in automazioni
+    ]
+    if sorted(trovate) != sorted(DESCRIZIONI):
+        raise NonTraducibile(f"frasi delle descrizioni trovate: {trovate}")
+    return native, {chiave: senza_entita_tolte(s) for chiave, s in script.items()}
+
+
+_NOME_FUNZIONE = re.compile(r"\b[ksm]\d{4}\b")
+
+
+def _usati(testi: Iterable[str], blocchi: Mapping[str, str]) -> set[str]:
+    """I nomi delle funzioni (``kNNNN``, ``sNNNN``, ``mNNNN``) che usano i ``testi``,
+    con quelli che usano le condizioni e le sequenze usate (``blocchi``: nome -> codice;
+    un modello non usa altre funzioni)."""
+    visti: set[str] = set()
+    da_vedere = [n for testo in testi for n in _NOME_FUNZIONE.findall(testo)]
+    while da_vedere:
+        if (nome := da_vedere.pop()) in visti:
+            continue
+        visti.add(nome)
+        da_vedere += _NOME_FUNZIONE.findall(blocchi.get(nome, ""))
+    return visti
+
+
+def togli_escluse(
+    g: Generatore, motore: str, sensori: list[str], sensori_esclusi: list[str]
+) -> tuple[str, frozenset[str]]:
+    """``motore`` senza le automazioni e i comandi di ``escluse()`` (una riga ciascuno in
+    ``crea`` e in ``comandi``) e i nomi delle condizioni, delle sequenze e dei modelli che
+    servono solo alle parti escluse (con i sensori esclusi: ``sensori_esclusi``), da
+    togliere dal codice. Quello che resta (``motore``, ``sensori``) non deve nominare
+    nessuna entità tolta."""
+    prima, separatore, crea = motore.partition("\n\n\ndef crea(c):\n")
+    righe = crea.splitlines(keepends=True)
+    segni = [f"id=c.N({a!r})" for a in escluse().automazioni] + [
+        f"Comando(nome=c.N({c!r})" for c in escluse().comandi
+    ]
+    righe_escluse = []
+    for segno in segni:
+        trovate = [r for r in righe if segno in r]
+        if len(trovate) != 1:
+            raise NonTraducibile(f"{segno}: {len(trovate)} righe in crea/comandi")
+        righe_escluse += trovate
+        righe.remove(trovate[0])
+    crea = "".join(righe)
+    blocchi = {
+        re.match(r"(?:async )?def ([ks]\d{4})\(", b).group(1): b
+        for b in g.condizioni + g.sequenze
+    }
+    tenuti = _usati([crea, *sensori], blocchi)
+    tolti = frozenset(_usati(righe_escluse + sensori_esclusi, blocchi) - tenuti)
+    restano = [crea, *sensori] + [blocchi[n] for n in tenuti if n in blocchi]
+    restano += [
+        codice
+        for codice in g.jinja.codice
+        if re.match(r"def (m\d{4})\(", codice).group(1) in tenuti
+    ]
+    for entita in escluse().entita:
+        # anche con il dominio di domani (la mappa dei nomi)
+        oggetto = entita.split(".", 1)[1]
+        if any(oggetto in testo for testo in restano):
+            raise NonTraducibile(f"{entita}: ancora nel codice della fase 4")
+    return prima + separatore + crea, tolti
+
+
 def mappa_fase4() -> Rinomina:
-    """La mappa dei nomi della fase 4: 173 aiutanti -> entità native (nessun servizio)."""
+    """La mappa dei nomi della fase 4: 172 aiutanti -> entità native (nessun servizio)."""
     return da_fase_1(TIPI_MAPPA, {})
 
 
@@ -88,7 +267,7 @@ def _opzioni_interni() -> dict[str, Any]:
 async def traduci_fase4(hass: HomeAssistant) -> dict[str, str]:
     """I moduli di ``generato_fase4/`` (nome file -> testo), divisi come quelli di
     ``generato/`` (``traduci.traduci``)."""
-    automazioni, script = leggi_package()
+    automazioni, script = package_nativo()
     jinja, g, _, motore = await traduzione(
         hass,
         automazioni,
@@ -98,11 +277,12 @@ async def traduci_fase4(hass: HomeAssistant) -> dict[str, str]:
         timer_motore=True,
         **_opzioni_interni(),
     )
-    sensori = await modulo_sensori(hass, g)
+    sensori, voci, voci_escluse = await modulo_sensori(hass, g)
+    motore, tolti = togli_escluse(g, motore, voci, voci_escluse)
     return {
         "__init__.py": '"""Codice generato dal package (fase 4: entità native)."""\n',
-        **_moduli_modelli(jinja),
-        **_moduli_motore(g, motore),
+        **_moduli_modelli(jinja, tolti),
+        **_moduli_motore(g, motore, tolti),
         "sensori.py": sensori,
     }
 
@@ -154,10 +334,14 @@ def _valore_sensore(g: Generatore, valore: Any) -> str:
     return g.valore(valore, trigger=True)
 
 
-async def modulo_sensori(hass: HomeAssistant, g: Generatore) -> str:
+async def modulo_sensori(
+    hass: HomeAssistant, g: Generatore
+) -> tuple[str, list[str], list[str]]:
     """``sensori.py``: ``sensori(c, ip)``, i sensori template del package senza trigger come
     (dominio, configurazione validata da Home Assistant con i modelli tradotti), nel loro
-    ordine nel package."""
+    ordine nel package; con le voci del modulo e quelle dei sensori esclusi
+    (``escluse().sensori``: tradotte come le altre, così i modelli dopo di loro tengono il
+    loro numero, ma fuori dal modulo)."""
     # come leggi_package: il package come lo installa l'integrazione per la Master, con la
     # versione dell'integrazione nel sensore «Package Ver.» (adatta_versione): nel codice
     # quella di tabelle.py, come il modello della fase 2
@@ -174,6 +358,7 @@ async def modulo_sensori(hass: HomeAssistant, g: Generatore) -> str:
         hass, {"template": _sensori_template(package)}
     )
     voci: list[str] = []
+    voci_escluse: list[str] = []
     # i nomi visibili che la versione nativa cambia (genera_tabelle.NOMI_NATIVI)
     da_rinominare = {
         k for k in NOMI_NATIVI if k.split(".", 1)[0] in ("sensor", "binary_sensor")
@@ -196,7 +381,11 @@ async def modulo_sensori(hass: HomeAssistant, g: Generatore) -> str:
                         f"{g.valore(k, trigger=True)}: {_valore_sensore(g, v)}"
                         for k, v in config.items()
                     )
-                    voci.append(f"        ({dominio!r}, {{{campi}}}),\n")
+                    voce = f"        ({dominio!r}, {{{campi}}}),\n"
+                    if config.get("default_entity_id") in escluse().sensori:
+                        voci_escluse.append(voce)
+                    else:
+                        voci.append(voce)
     finally:
         TIMER_MOTORE.reset(gettone_timer)
         RINOMINA.reset(gettone)
@@ -216,6 +405,8 @@ async def modulo_sensori(hass: HomeAssistant, g: Generatore) -> str:
     ):
         raise NonTraducibile("l'IP del package non è solo nel sensore «IP configurato»")
     voci = [v.replace(segnaposto, "c.statico(ip)") for v in voci]
+    if len(voci_escluse) != len(escluse().sensori):
+        raise NonTraducibile("sensori esclusi non trovati nel package")
     return (
         INTESTAZIONE.format(
             titolo="Sensori template del package con i modelli tradotti (fase 4)."
@@ -227,5 +418,7 @@ async def modulo_sensori(hass: HomeAssistant, g: Generatore) -> str:
         + '    l\'indirizzo ``ip``, in ordine."""\n'
         + "    return [\n"
         + "".join(voci)
-        + "    ]\n"
+        + "    ]\n",
+        voci,
+        voci_escluse,
     )

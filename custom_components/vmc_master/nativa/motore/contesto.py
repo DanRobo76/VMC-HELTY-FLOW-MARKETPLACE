@@ -16,8 +16,10 @@ regole di sempre (``async_render_to_info``, ``TrackTemplateResultInfo``...).
 
 from __future__ import annotations
 
+import re
+from ast import literal_eval
 from collections.abc import Callable, Iterable, Mapping
-from functools import partial
+from functools import lru_cache, partial
 from typing import TYPE_CHECKING, Any
 
 import probatio
@@ -32,12 +34,11 @@ from homeassistant.core import (
 )
 from homeassistant.exceptions import TemplateError
 from homeassistant.helpers import config_validation as cv
-from homeassistant.helpers.event import async_track_template
 from homeassistant.helpers.template import (
     MAX_TEMPLATE_OUTPUT,
+    RESULT_WRAPPERS,
     Template,
     TemplateEnvironment,
-    _parse_result,
     template_cv,
 )
 from homeassistant.util import dt as dt_util
@@ -47,7 +48,9 @@ from jinja2.utils import _PassArg
 from ...trasforma import rinomina
 from . import jinja as J
 from .esecuzione import ErroreCondizione, Modello
-from .memoria_interna import MemoriaInterna
+from .memoria_interna import HassConMemoria, MemoriaInterna, StatiConMemoria
+from .seguire import segui_modello
+from .stati_logiche import stati_logiche
 from .timer import DOMINIO_SERVIZI, DOMINIO_TIMER
 
 if TYPE_CHECKING:
@@ -152,6 +155,65 @@ class VistaModello:
             return predefinito
 
 
+# --- come Home Assistant interpreta un modello reso ------------------------------------------
+#
+# Da homeassistant/helpers/template/__init__.py di Home Assistant 2026.11.2 (Apache-2.0):
+# ``_parse_result``, ``_copy_literal`` e ``_cached_parse_result``, le stesse righe.
+
+_IS_NUMERIC = re.compile(r"^[+-]?(?!0\d)\d*(?:\.\d*)?$", re.ASCII)
+_EVAL_CACHE_SIZE = 512
+
+
+def interpreta_resa(render_result: str) -> Any:
+    """Il risultato di un modello reso, interpretato come ``Template.async_render``."""
+    if _IS_NUMERIC.match(render_result):
+        if "." in render_result:
+            try:
+                return float(render_result)
+            except ValueError:
+                pass
+        else:
+            try:
+                return int(render_result)
+            except ValueError:
+                pass
+    result = _interpretato(render_result)
+    # The cached result is shared, so hand out containers the caller can mutate
+    if (wrapper := RESULT_WRAPPERS.get(type(result))) is not None:
+        return wrapper(_copia_letterale(result), render_result=render_result)
+    return result
+
+
+def _copia_letterale(value: Any) -> Any:
+    """Copy the containers of a literal_eval result, sharing immutable leaves."""
+    value_type = type(value)
+    if value_type is list:
+        return [_copia_letterale(item) for item in value]
+    if value_type is dict:
+        return {key: _copia_letterale(item) for key, item in value.items()}
+    if value_type is tuple:
+        return tuple([_copia_letterale(item) for item in value])
+    if value_type is set:
+        return value.copy()
+    return value
+
+
+@lru_cache(maxsize=_EVAL_CACHE_SIZE)
+def _interpretato(render_result: str) -> Any:
+    """Parse a result and cache the result (containers unwrapped)."""
+    try:
+        result = literal_eval(render_result)
+    except (ValueError, TypeError, SyntaxError, MemoryError, RecursionError):
+        return render_result
+    if not isinstance(result, (str, complex)) and (
+        not isinstance(result, (int, float))
+        or isinstance(result, bool)
+        or _IS_NUMERIC.match(render_result) is not None
+    ):
+        return result
+    return render_result
+
+
 class ModelloHA(Template):
     """Un modello tradotto con l'interfaccia di ``Template`` (come lo usa Home Assistant).
 
@@ -180,7 +242,6 @@ class ModelloHA(Template):
         **kwargs: Any,
     ) -> Any:
         """Come ``Template.async_render``: testo senza spazi ai bordi, poi interpretato."""
-        self._renders += 1
         # come ``kwargs.update(variables)``, senza copiare le variabili quando non ci sono
         # altri argomenti per nome (sempre, dal motore e da Home Assistant)
         if kwargs:
@@ -192,7 +253,7 @@ class ModelloHA(Template):
         resa = self._c.testo(self._funzione, variables)
         if not parse_result:
             return resa
-        return _parse_result(resa)
+        return interpreta_resa(resa)
 
 
 class Contesto:
@@ -209,7 +270,11 @@ class Contesto:
         self._statici: dict[str, Template] = {}
         # la memoria interna (fase 4): senza, i valori interni sono gli aiutanti di oggi
         self.memoria: MemoriaInterna | None = None
-        self._funzioni_dei_modelli(hass)
+        # senza memoria interna i modelli vedono gli stati di Home Assistant e quelli
+        # delle logiche (le automazioni del package, che non sono entità)
+        self._funzioni_dei_modelli(
+            HassConMemoria(hass, StatiConMemoria(hass.states, stati_logiche(hass).stati))
+        )
         # script del motore per nome di servizio (script.<nome>), li registra ha.py
         self.script: dict[str, Any] = {}
         # fase 4: gli script e i comandi di shell del package dentro il motore (li mette
@@ -227,8 +292,9 @@ class Contesto:
     def _funzioni_dei_modelli(self, hass: Any) -> None:
         """Le funzioni dei modelli che leggono Home Assistant: quelle del motore dei
         modelli di Home Assistant, con le stesse letture annotate per trigger e attese.
-        ``hass`` è Home Assistant, o con la memoria interna ``HassConMemoria``: lo stesso
-        Home Assistant con una macchina degli stati che vede anche i valori interni."""
+        ``hass`` è ``HassConMemoria``: lo stesso Home Assistant con una macchina degli
+        stati che vede anche i valori interni (gli stati delle logiche e, con la memoria
+        interna, i suoi valori)."""
         # la macchina degli stati che leggono le condizioni «state»
         self.stati = hass.states
         ambiente = self._ambiente = TemplateEnvironment(hass)
@@ -490,7 +556,7 @@ class Contesto:
     def resa_complessa(self, valore: Any, variabili: Mapping[str, Any]) -> Any:
         """Come ``template.render_complex``: liste, dizionari e modelli (interpretati).
 
-        Un modello si interpreta come ``Template.async_render`` (``_parse_result``): una
+        Un modello si interpreta come ``Template.async_render`` (``interpreta_resa``): una
         lista, un dizionario, un insieme o una tupla resi sono quelli di Home Assistant
         (sottoclassi che si scrivono come sono stati resi), così un modello successivo li
         indicizza, li scorre e li scrive allo stesso modo."""
@@ -502,7 +568,7 @@ class Contesto:
                 for k, v in valore.items()
             }
         if isinstance(valore, Modello):
-            return _parse_result(self.testo(valore.funzione, variabili))
+            return interpreta_resa(self.testo(valore.funzione, variabili))
         return valore
 
     def modello(self, funzione: Funzione, sorgente: str = "") -> ModelloHA:
@@ -540,12 +606,11 @@ class Contesto:
         self, funzione: Funzione, variabili: Mapping[str, Any], vero: Callable[[], None]
     ) -> CALLBACK_TYPE:
         """Attesa di un ``wait_template``: ``vero`` quando il modello passa a vero
-        (come ``async_track_template`` usato da ``_async_step_wait_template``)."""
+        (come ``async_track_template`` usato da ``_async_step_wait_template``: con
+        ``seguire.segui_modello``, che segue anche i valori interni)."""
 
         @callback
         def _cambiato(*_: Any) -> None:
             vero()
 
-        return async_track_template(
-            self.hass, self.modello(funzione), _cambiato, variabili
-        )
+        return segui_modello(self.hass, self.modello(funzione), _cambiato, variabili)

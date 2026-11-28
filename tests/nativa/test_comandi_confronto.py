@@ -1,7 +1,7 @@
 """Le impostazioni native (comandi.py) a confronto con gli aiutanti del package.
 
-Nello stesso Home Assistant ci sono i 173 aiutanti del package (come li installa la b42
-per la VMC master) che domani diventano entità native, e le 173 entità native di
+Nello stesso Home Assistant ci sono i 172 aiutanti del package (come li installa la b42
+per la VMC master) che domani diventano entità native, e le 172 entità native di
 ``crea_comandi``. Ogni entità riceve la stessa sequenza di scritture del suo aiutante,
 nello stesso istante: per i valori di confine, fuori dai limiti, opzioni che non ci
 sono, testi vuoti o troppo lunghi, «5» e «5.0», valori ripetuti. Si confrontano, per
@@ -59,10 +59,11 @@ from custom_components.vmc_master.nativa.comandi import (
 )
 from custom_components.vmc_master.nativa.entita import crea_entita
 from custom_components.vmc_master.nativa.stato import StatoVMC
-from custom_components.vmc_master.nativa.tabelle import DOMANI, IMPOSTAZIONI
+from custom_components.vmc_master.nativa.tabelle import DOMANI, IMPOSTAZIONI, TOLTE
 
 from . import confronto as c
 from .genera_tabelle import NOMI_NATIVI
+from .servizi_di_prova import registra_servizi
 
 T0 = datetime(2026, 11, 25, 9, 0, 0, tzinfo=UTC)
 NOME = c.NOME
@@ -100,12 +101,21 @@ def _domani(chiave: str) -> str:
 
 
 def _aiutanti() -> dict[str, dict[str, Any]]:
-    """La configurazione degli aiutanti del package che domani sono entità native."""
+    """La configurazione degli aiutanti del package che domani sono entità native; nelle
+    opzioni che elencano entity_id (le entità escluse dal Recorder) senza le voci tolte
+    (b46: ``TOLTE``), come nelle impostazioni native."""
     pacchetto = c.package()
     voluti = {_oggi(chiave) for chiave in chiavi_comandi()}
+    tolte = {_oggi(chiave) for chiave in TOLTE}
+
+    def senza_tolte(conf: dict[str, Any]) -> dict[str, Any]:
+        if isinstance(conf.get("options"), list):
+            return {**conf, "options": [o for o in conf["options"] if o not in tolte]}
+        return conf
+
     return {
         dominio: {
-            oggetto: conf
+            oggetto: senza_tolte(conf)
             for oggetto, conf in (pacchetto.get(dominio) or {}).items()
             if f"{dominio}.{oggetto}" in voluti
         }
@@ -117,7 +127,7 @@ def _aiutanti() -> dict[str, dict[str, Any]]:
 
 
 def test_le_entita_della_colonna_domani() -> None:
-    """173 entità: quelle della colonna «Domani» della fase 1, stesso oggetto, unique_id
+    """172 entità: quelle della colonna «Domani» della fase 1, stesso oggetto, unique_id
     come i sensori (vmc_<nome>_<oggetto>)."""
     entita = crea_comandi(StatoVMC(None, NOME))  # type: ignore[arg-type]
     conteggi = {dominio: len(gruppo) for dominio, gruppo in entita.items()}
@@ -127,11 +137,11 @@ def test_le_entita_della_colonna_domani() -> None:
         "select": 14,
         "sensor": 3,
         "switch": 37,
-        "text": 2,
+        "text": 1,
         "time": 30,
     }
     tutte = [voce for gruppo in entita.values() for voce in gruppo]
-    assert len(tutte) == 173
+    assert len(tutte) == 172
     assert {voce.entity_id for voce in tutte} == {_domani(k) for k in chiavi_comandi()}
     for voce in tutte:
         assert voce.unique_id == f"vmc_{NOME}_{voce.chiave.split('.', 1)[1]}"
@@ -148,7 +158,7 @@ def test_le_entita_della_colonna_domani() -> None:
         ("input_select", "select"): 14,
         ("input_select", "sensor"): 1,
         ("input_text", "sensor"): 1,
-        ("input_text", "text"): 2,
+        ("input_text", "text"): 1,
     }
     # l'altra VMC: stessi oggetti col suo nome
     altra = crea_comandi(StatoVMC(None, "sala"))  # type: ignore[arg-type]
@@ -157,12 +167,14 @@ def test_le_entita_della_colonna_domani() -> None:
 
 def test_servizi_del_motore_sono_quelli_del_package() -> None:
     """``SERVIZI_MOTORE`` sono esattamente i servizi degli aiutanti che il package chiama
-    sulle 173 voci (inventario della fase 4: nessun increment, decrement, select_next)."""
+    sulle 172 voci (inventario della fase 4: nessun increment, decrement, select_next)."""
     inventario = Path(__file__).parent / "motore" / "inventario_aiutanti.csv"
     chiamati: set[str] = set()
     with inventario.open(encoding="utf-8") as flusso:
         for riga in csv.DictReader(flusso, delimiter=";"):
-            if riga["tipo_oggi"] not in DOMINI_AIUTANTI or riga["domani"] == "interna":
+            if riga["tipo_oggi"] not in DOMINI_AIUTANTI:
+                continue
+            if riga["domani"] in ("interna", "tolta"):
                 continue
             for voce in filter(None, riga["servizi"].split("; ")):
                 servizio = voce.rsplit("=", 1)[0]
@@ -493,9 +505,9 @@ DIFFERENZE_UTENTE = {
 errore del servizio nativo. Gli eventi restano uguali (nessuno dei due scrive)."""
 
 
-VIA_MOTORE = (1575, 0, (842, 590))
+VIA_MOTORE = (1567, 0, (836, 589))
 """Via «motore»/«registrato»: scritture, differenze, (state_changed, state_reported)."""
-VIA_UTENTE = (914, 51, (500, 353))
+VIA_UTENTE = (906, 50, (494, 352))
 ERRORI_MOTORE = {
     # «Nothing to set» (solo la data), ora con le frazioni / ora e datetime insieme, nulla
     ("input_datetime.set_datetime", "Invalid", None, None): 30,
@@ -532,9 +544,9 @@ ERRORI_UTENTE = {
 }
 AVVISI_MOTORE = {
     ("input_select.set_options", "Current option"): 28,  # l'opzione scelta sparisce
-    ("input_text.set_value", "Invalid value"): 4,  # troppo lungo (3), fuori modello (1)
+    ("input_text.set_value", "Invalid value"): 3,  # troppo lungo (2), fuori modello (1)
 }
-AVVISI_UTENTE = {("input_text.set_value", "Invalid value"): 3}
+AVVISI_UTENTE = {("input_text.set_value", "Invalid value"): 2}
 
 
 async def _corsa(
@@ -545,7 +557,7 @@ async def _corsa(
     await banco.prepara(freezer)
     servizi = {}
     if via == "registrato":
-        servizi = banco.scrittura.registra(DOMINIO_PROVA)
+        servizi = registra_servizi(banco.scrittura, DOMINIO_PROVA)
     conteggi: dict[str, Any] = {
         "scritture": 0,
         "errori": Counter(),
@@ -644,7 +656,7 @@ def _per_entita(eventi: list[tuple[Any, ...]]) -> dict[str, list[tuple[Any, ...]
 async def test_ogni_comando_come_il_suo_aiutante(
     hass: HomeAssistant, freezer: FrozenDateTimeFactory, via: str
 ) -> None:
-    """Per ognuna delle 173 voci, stessa sequenza all'aiutante e all'entità nativa: stessi
+    """Per ognuna delle 172 voci, stessa sequenza all'aiutante e all'entità nativa: stessi
     eventi (istanti, stato, attributi, last_changed/last_reported, contesto), stessi
     errori e avvisi (via «utente»: solo le differenze di ``DIFFERENZE_UTENTE``)."""
     banco, conteggi = await _corsa(hass, freezer, via)
@@ -777,7 +789,7 @@ async def test_ripristino_dopo_il_riavvio(freezer: FrozenDateTimeFactory) -> Non
             banco.chiudi()
         await hass.async_stop(force=True)
 
-    assert len(conservati) == 2 * 173
+    assert len(conservati) == 2 * 172
     strani = _stati_strani(conservati)
     for variante, salvati in (("normali", conservati), ("strani", strani)):
         async with async_test_home_assistant() as hass:
@@ -851,7 +863,7 @@ def _controlla_riavvio(prima: dict[str, str], dopo: dict[str, str]) -> None:
     assert conteggi == {
         "conserva il valore": 150,
         "riparte da off": 19,
-        "riparte vuoto": 3,
+        "riparte vuoto": 2,
         "riparte da 0": 1,
     }
 

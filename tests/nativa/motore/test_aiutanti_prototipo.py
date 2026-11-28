@@ -28,7 +28,7 @@ from pytest_homeassistant_custom_component.common import (
 )
 
 from custom_components.vmc_master.nativa.motore import generato
-from custom_components.vmc_master.nativa.motore.ha import Motore
+from custom_components.vmc_master.nativa.motore.stati_logiche import stati_logiche
 
 from .aiutanti_nativi import (
     DOMINIO_SCRITTURA,
@@ -37,6 +37,7 @@ from .aiutanti_nativi import (
     SpiaNativa,
     aggiungi,
 )
+from .fase3 import MotoreFase3
 from .rinomina import NomeAmbiguo, Rinomina, da_fase_1
 from .test_semantica import (
     EVENTI,
@@ -495,10 +496,21 @@ async def _corsa(
             moduli.append(f"{generato.__name__}.{nome}_motore")
             _carica(f"{nome}_modelli", testo_modelli)
             codice = _carica(f"{nome}_motore", testo_motore)
-            await Motore(hass).avvia(crea=codice.crea)
+            m = MotoreFase3(hass)
+            await m.avvia(crea=codice.crea)
         await _gira(hass)
 
         togli = hass.bus.async_listen(MATCH_ALL, registro.annota)
+        if modo != "ha":
+            # gli stati delle logiche (le automazioni del motore) non sono nella macchina
+            # degli stati: entrano nel registro nel punto del bus di state_changed
+            smetti = stati_logiche(hass).osserva(
+                callback(
+                    lambda e: registro.annota(e)
+                    if e.event_type == EVENT_STATE_CHANGED
+                    else None
+                )
+            )
         for passo in PASSI:
             if passo[0] == "attendi":
                 await _avanza(hass, freezer, passo[1])
@@ -521,7 +533,13 @@ async def _corsa(
         togli()
         if scrittura is not None:
             assert scrittura.mancanti == []
-        for dominio in ("automation", "script"):
+        domini = ("automation", "script")
+        if modo != "ha":
+            smetti()
+            # le logiche si fermano (non hanno automation.turn_off)
+            await m.ferma()
+            domini = ("script",)
+        for dominio in domini:
             await hass.services.async_call(
                 dominio, "turn_off", {"entity_id": "all"}, blocking=True
             )
@@ -578,11 +596,22 @@ async def test_motore_con_le_entita_native_come_home_assistant(
     # la prova tocca davvero quello che deve: interruttori, spie, chiamate con più
     # entità, automazioni e script partiti, un utente, i contesti figli
     tipi = [voce[1] for voce in atteso]
-    assert len(atteso) == 87
+    assert len(atteso) == 79
     assert tipi.count(EVENT_STATE_CHANGED) == 46
     assert tipi.count(EVENT_CALL_SERVICE) == 31
-    assert tipi.count("automation_triggered") == 8
     assert tipi.count("script_started") == 2
+    # le automazioni partite: ogni avvio fa salire ``current`` (le logiche del motore
+    # non hanno l'evento automation_triggered)
+    correnti: dict[str, int] = {}
+    avvii = 0
+    for voce in atteso:
+        if voce[1] == EVENT_STATE_CHANGED and voce[2]["entity_id"].startswith(
+            "automation."
+        ):
+            corrente = voce[2]["new_state"][2]["current"]
+            avvii += corrente > correnti.get(voce[2]["entity_id"], 0)
+            correnti[voce[2]["entity_id"]] = corrente
+    assert avvii == 8
     cambi = [
         voce
         for voce in atteso

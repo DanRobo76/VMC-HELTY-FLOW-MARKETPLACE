@@ -82,7 +82,7 @@ def test_nota_grafici_black_out() -> None:
 
 def _file_di_testo() -> list[Path]:
     return [*sorted(PKG.iterdir()), INTEGRAZIONE / "strings.json", *sorted((INTEGRAZIONE / "translations").iterdir()),
-            INTEGRAZIONE / "services.yaml", INTEGRAZIONE / "frontend" / "vmc-master-card.js",
+            INTEGRAZIONE / "frontend" / "vmc-master-card.js",
             RADICE / "README.md", RADICE / ".github" / "README.md"]
 
 

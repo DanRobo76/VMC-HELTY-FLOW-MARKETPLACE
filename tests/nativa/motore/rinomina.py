@@ -106,7 +106,8 @@ def da_fase_1(
     """La mappa per i ``tipi`` di aiutante dalla colonna «Domani» della fase 1.
 
     Un aiutante «interno» (che domani non è un'entità mostrata) va nel dominio
-    ``interna`` con lo stesso oggetto; senza ``interna`` resta fuori dalla mappa.
+    ``interna`` con lo stesso oggetto; senza ``interna`` resta fuori dalla mappa. Un
+    aiutante «tolto» (b46: la versione nativa non l'ha più) resta sempre fuori.
     """
     voluti = set(tipi)
     entita: dict[str, str] = {}
@@ -115,6 +116,8 @@ def da_fase_1(
             if riga["Tipo oggi"] not in voluti:
                 continue
             oggi, domani = riga["Entità oggi"], riga["Domani"]
+            if domani == "tolta":
+                continue
             if domani.startswith("interna"):
                 if interna is None:
                     continue

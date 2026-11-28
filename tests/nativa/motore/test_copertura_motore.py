@@ -13,12 +13,13 @@ che il banco da solo non fa:
 - ``prova.salta``: l'orologio va avanti di colpo (un ciclo stretto è in corso quando
   scade il timer di Home Assistant dei 60 secondi dopo la chiusura);
 - ``prova.rimuovi``: un'entità esce dal registro delle entità (Home Assistant la toglie
-  mentre gira), dopo aver chiesto ``automation.trigger`` per le entità ``avvia``.
+  mentre gira).
 """
 
 from __future__ import annotations
 
 import difflib
+import re
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from datetime import timedelta
@@ -36,10 +37,11 @@ from homeassistant.setup import async_setup_component
 from pytest_homeassistant_custom_component.common import async_test_home_assistant
 
 from custom_components.vmc_master.nativa.motore import generato
-from custom_components.vmc_master.nativa.motore.ha import Motore
+from custom_components.vmc_master.nativa.motore.stati_logiche import stati_logiche
 from custom_components.vmc_master.trasforma import rinomina
 
 from . import test_semantica as semantica
+from .fase3 import MotoreFase3
 from .test_semantica import (
     AIUTANTI,
     T0,
@@ -419,37 +421,36 @@ automation:
 
 scenario(
     "cicli_fermati_da_uno_script_avviato",
+    # i cicli sono in due script (le automazioni del motore non hanno automation.turn_off):
+    # lo script avviato da un ciclo lo ferma con script.turn_off
     """
 script:
   prova_ferma_cicli:
     mode: parallel
     sequence:
-      - action: automation.turn_off
+      - action: script.turn_off
         target: {entity_id: "{{ quale }}"}
       - action: prova.registra
         data: {passo: "fermata {{ quale }}"}
-automation:
-  - alias: Prova Conta Fermata
-    triggers:
-      - {trigger: state, entity_id: input_boolean.a, to: "on"}
-    actions:
+  prova_conta_fermata:
+    alias: Prova Conta Fermata
+    sequence:
       - repeat:
           count: 3
           sequence:
             - action: prova.registra
               data: {passo: "conta {{ repeat.index }}"}
-            # lo script avviato ferma l'automazione e aspetta: chi l'ha avviato no
+            # lo script avviato ferma il ciclo e aspetta: chi l'ha avviato no
             - if: "{{ repeat.index == 2 }}"
               then:
                 - action: script.turn_on
                   target: {entity_id: script.prova_ferma_cicli}
-                  data: {variables: {quale: automation.prova_conta_fermata}}
+                  data: {variables: {quale: script.prova_conta_fermata}}
       - action: prova.registra
         data: {passo: conta-fine}
-  - alias: Prova Ogni Fermata
-    triggers:
-      - {trigger: state, entity_id: input_boolean.b, to: "on"}
-    actions:
+  prova_ogni_fermata:
+    alias: Prova Ogni Fermata
+    sequence:
       - repeat:
           for_each: [x, y, z]
           sequence:
@@ -459,9 +460,22 @@ automation:
               then:
                 - action: script.turn_on
                   target: {entity_id: script.prova_ferma_cicli}
-                  data: {variables: {quale: automation.prova_ogni_fermata}}
+                  data: {variables: {quale: script.prova_ogni_fermata}}
       - action: prova.registra
         data: {passo: ogni-fine}
+automation:
+  - alias: Prova Conta
+    triggers:
+      - {trigger: state, entity_id: input_boolean.a, to: "on"}
+    actions:
+      - action: script.turn_on
+        target: {entity_id: script.prova_conta_fermata}
+  - alias: Prova Ogni
+    triggers:
+      - {trigger: state, entity_id: input_boolean.b, to: "on"}
+    actions:
+      - action: script.turn_on
+        target: {entity_id: script.prova_ogni_fermata}
 """,
     acceso("input_boolean.a"),
     attendi(0.5),
@@ -570,16 +584,9 @@ automation:
     ("servizio", "script.turn_on", {"entity_id": "script.prova_rimossa"}),
     attendi(1),
     ("servizio", "prova.rimuovi", {"entity_id": "script.prova_rimossa"}),
-    attendi(1),
-    (
-        "servizio",
-        "prova.rimuovi",
-        {
-            "entity_id": "automation.prova_rimossa",
-            "avvia": ["automation.prova_rimossa", "automation.prova_restante"],
-        },
-    ),
-    attendi(1),
+    # (le automazioni del motore sono logiche: niente voce del registro da togliere,
+    # niente automation.trigger)
+    attendi(2),
     spento("input_boolean.a"),
     acceso("input_boolean.b"),
     attendi(6),
@@ -596,19 +603,7 @@ def _servizi_di_prova(hass: HomeAssistant, freezer: FrozenDateTimeFactory) -> No
         freezer.tick(timedelta(seconds=chiamata.data["secondi"]))
 
     async def rimuovi(chiamata: ServiceCall) -> None:
-        compito = None
-        if avvia := chiamata.data.get("avvia"):
-            # automation.trigger trova le entità, poi le chiama ognuna in un task: una
-            # esce dal registro prima che il suo task parta
-            compito = hass.async_create_task(
-                hass.services.async_call(
-                    "automation", "trigger", {"entity_id": avvia}, blocking=True
-                ),
-                eager_start=True,
-            )
         er.async_get(hass).async_remove(chiamata.data["entity_id"])
-        if compito is not None:
-            await compito
 
     hass.services.async_register("prova", "salta", salta)
     hass.services.async_register("prova", "rimuovi", rimuovi)
@@ -773,7 +768,8 @@ automation:
         data: {passo: "automazione master fine {{ trigger.to_state.state }}"}
 """
 
-EVENTI_DUE_VMC = {EVENT_STATE_CHANGED, EVENT_CALL_SERVICE, "automation_triggered"}
+# senza automation_triggered: le logiche del motore non hanno l'evento
+EVENTI_DUE_VMC = {EVENT_STATE_CHANGED, EVENT_CALL_SERVICE}
 
 
 async def _due_vmc(
@@ -821,7 +817,7 @@ async def _due_vmc(
             _carica("due_vmc_modelli", testo_modelli)
             codice = _carica("due_vmc_motore", testo_motore)
             for nome in ("master", "cucina"):
-                await Motore(hass, nome).avvia(
+                await MotoreFase3(hass, nome).avvia(
                     crea=codice.crea, configurazione={"automation": [], "script": {}}
                 )
         else:
@@ -845,6 +841,11 @@ async def _due_vmc(
             )
 
         togli = hass.bus.async_listen(MATCH_ALL, annota)
+        # gli stati delle logiche (le automazioni dei motori) entrano nel registro nel
+        # punto del bus di state_changed (con Home Assistant non ce ne sono)
+        smetti = stati_logiche(hass).osserva(
+            callback(lambda e: annota(e) if e.event_type == EVENT_STATE_CHANGED else None)
+        )
         for passo in (
             ("input_boolean", "turn_on", {"entity_id": "input_boolean.a"}),
             1,
@@ -860,11 +861,13 @@ async def _due_vmc(
             else:
                 await _avanza(hass, freezer, passo)
         togli()
+        smetti()
+        stati = [
+            *hass.states.async_all(("automation", "script")),
+            *stati_logiche(hass).stati.values(),
+        ]
         registro.append(
-            sorted(
-                (s.entity_id, s.state, _norma(dict(s.attributes)))
-                for s in hass.states.async_all(("automation", "script"))
-            )
+            sorted((s.entity_id, s.state, _norma(dict(s.attributes))) for s in stati)
         )
         await hass.async_stop(force=True)
     return registro
@@ -875,22 +878,19 @@ async def test_due_motori_e_ricarica_come_home_assistant(
     moduli: list[str],  # noqa: F811
     tmp_path: Path,
 ) -> None:
-    """Due VMC sullo stesso Home Assistant: le automazioni e gli script di entrambi i
-    motori restano (con le esecuzioni in corso) quando automation.reload e script.reload
-    rileggono la configurazione, come il YAML invariato."""
+    """Due VMC sullo stesso Home Assistant: le automazioni (logiche) e gli script di
+    entrambi i motori restano (con le esecuzioni in corso) quando automation.reload e
+    script.reload rileggono la configurazione, come il YAML invariato."""
     atteso = await _due_vmc(freezer, tmp_path / "ha", motore=False, moduli=moduli)
     ottenuto = await _due_vmc(freezer, tmp_path / "m", motore=True, moduli=moduli)
-    assert sum(1 for voce in atteso[:-1] if voce[1] == "automation_triggered") == 4
+    avvii = [
+        voce
+        for voce in atteso[:-1]
+        if voce[1] == EVENT_CALL_SERVICE
+        and re.fullmatch(
+            r"automazione \w+ (on|off)", str(voce[2]["service_data"].get("passo"))
+        )
+    ]
+    assert len(avvii) == 4
     assert len(atteso[-1]) == 4
     _confronta(atteso, ottenuto, "registri")
-
-
-async def test_configurazione_rifiutata_come_home_assistant(
-    hass: HomeAssistant,
-) -> None:
-    """Una configurazione che Home Assistant rifiuta per script non avvia il motore."""
-    configurazione = {"script": "non valida"}
-    assert not await async_setup_component(hass, "script", configurazione)
-    with pytest.raises(RuntimeError, match="script non si avvia"):
-        await Motore(hass).avvia(crea=lambda c: ([], []), configurazione=configurazione)
-    assert not hass.states.async_all(("automation", "script"))

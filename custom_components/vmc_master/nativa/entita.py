@@ -192,7 +192,7 @@ class SensoreBinarioVMC(EntitaVMC, BinarySensorEntity):
 def crea_entita(
     stato: StatoVMC, letture: Mapping[str, DataUpdateCoordinator[str]] | None = None
 ) -> tuple[list[SensoreVMC], list[SensoreBinarioVMC]]:
-    """Le 137 entità sensore della VMC: (sensori, sensori binari).
+    """Le 136 entità sensore della VMC: (sensori, sensori binari).
 
     ``letture`` (chiave -> coordinatore, ``VMCNativa.letture_dei_sensori``): i sensori
     delle letture; senza, anche loro sono viste su StatoVMC.

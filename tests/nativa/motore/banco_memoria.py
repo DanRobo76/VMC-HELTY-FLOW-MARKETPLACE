@@ -2,7 +2,7 @@
 con la memoria interna.
 
 Le due corse si confrontano evento per evento, tranne quelli che con la memoria non ci
-sono più perché i 68 valori non sono entità:
+sono più perché i 67 valori non sono entità:
 
 - ``state_changed`` di un valore interno: si confronta con il cambio della memoria
   (``MemoriaInterna.ascolta_cambi``: stesso istante, stessi stati, stesso contesto,
@@ -20,7 +20,8 @@ Qui ci sono anche le parti del banco che domani saranno dell'integrazione:
   come li registra Home Assistant (``entity_service_call`` su tutte, nell'ordine del
   package);
 - ``modelli_entita_con_memoria``: i sensori modello del package che leggono valori
-  interni (domani sensori nativi sullo ``StatoVMC``) li leggono dalla memoria.
+  interni (domani sensori nativi sullo ``StatoVMC``) li leggono dalla memoria e ne
+  seguono i cambi.
 """
 
 from __future__ import annotations
@@ -32,12 +33,23 @@ from typing import Any
 import jinja2
 from homeassistant.const import (
     EVENT_CALL_SERVICE,
+    EVENT_HOMEASSISTANT_STARTED,
     EVENT_STATE_CHANGED,
     EVENT_STATE_REPORTED,
 )
-from homeassistant.core import Event, HassJobType, HomeAssistant, callback
+from homeassistant.core import (
+    Event,
+    EventStateChangedData,
+    HassJobType,
+    HomeAssistant,
+    callback,
+)
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.entity_component import DATA_INSTANCES
+from homeassistant.helpers.event import (
+    _TRACK_STATE_CHANGE_DATA,
+    _async_dispatch_entity_id_event,
+)
 from homeassistant.helpers.service import entity_service_call
 from homeassistant.helpers.template import TemplateEnvironment
 from homeassistant.util import dt as dt_util
@@ -47,6 +59,7 @@ from custom_components.vmc_master.nativa.motore.memoria_interna import (
     MemoriaInterna,
     da_stato,
 )
+from custom_components.vmc_master.nativa.motore.seguire import cambi_interni
 
 ALTRI_BERSAGLI = ("device_id", "area_id", "floor_id", "label_id")
 AGGIORNA = ("homeassistant", "update_entity")
@@ -297,7 +310,16 @@ def modelli_entita_con_memoria(
     """I modelli dei sensori ``template`` che citano un valore interno si rendono con
     il motore dei modelli di Home Assistant su ``memoria.hass_modelli`` (da chiamare
     prima dell'avvio, quando i sensori modello non hanno ancora reso nulla).
-    Restituisce i sensori toccati."""
+    Restituisce i sensori toccati.
+
+    I sensori ``template`` seguono le entità con ``async_track_state_change_event`` di
+    Home Assistant; la memoria consegna i suoi cambi solo a ``seguire.CambiInterni``
+    (fino alla 9.0.0b45 li consegnava anche nel dizionario privato di Home Assistant). Qui
+    li riceve anche Home Assistant, da un seguace di ``CambiInterni`` iscritto quando i
+    sensori modello cominciano a seguire le entità (all'avvio completato, dopo di loro):
+    come con gli aiutanti, chi segue un valore interno nel motore (i trigger, agganciati
+    all'avvio) lo riceve prima dei sensori modello."""
+    _segui_anche_da_home_assistant(hass, memoria)
     ambiente = TemplateEnvironment(memoria.hass_modelli)
     oggetti = [e.split(".", 1)[1] for e in memoria.entity_ids]
     toccati = []
@@ -317,3 +339,19 @@ def modelli_entita_con_memoria(
                 if entita.entity_id not in toccati:
                     toccati.append(entita.entity_id)
     return toccati
+
+
+def _segui_anche_da_home_assistant(hass: HomeAssistant, memoria: MemoriaInterna) -> None:
+    """All'avvio completato i cambi dei valori interni anche a chi li segue con Home
+    Assistant (``_async_dispatch_entity_id_event``, come la memoria fino alla 9.0.0b45)."""
+
+    @callback
+    def a_home_assistant(cambio: Event[EventStateChangedData]) -> None:
+        if (seguiti := hass.data.get(_TRACK_STATE_CHANGE_DATA)) is not None:
+            _async_dispatch_entity_id_event(hass, seguiti.callbacks, cambio)
+
+    @callback
+    def avviato(_evento: Event[Any]) -> None:
+        cambi_interni(hass).segui(memoria.entity_ids, a_home_assistant)
+
+    hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STARTED, avviato)

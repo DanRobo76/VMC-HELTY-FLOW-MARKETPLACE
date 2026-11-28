@@ -8,7 +8,8 @@ Chiave = entity_id di oggi senza «vmc_<nome>_». Nei testi {nome} è il nome de
 loro configurazione (nome, icona, iniziale, min/max/step, opzioni, durata...).
 solo_master = la voce c'è solo nel master (sezioni Clona VMC e Installa VMC).
 DOMANI: per ogni voce del package (helper, script, shell_command) il dominio di domani
-(colonna «Domani» della fase 1), o «interna» se diventa stato interno del motore.
+(colonna «Domani» della fase 1), o «interna» se diventa stato interno del motore, o
+«tolta» se la versione nativa non l'ha più (TOLTE).
 """
 
 from __future__ import annotations
@@ -387,7 +388,6 @@ SENSORI: dict[str, dict[str, Any]] = {'binary_sensor.black_out_rilevato': {'icon
                                                           'nome': 'Livello di Umidità',
                                                           'tipo': 'modello'},
  'sensor.velocita_registrata': {'icona': 'mdi:restore', 'nome': 'Velocità Registrata', 'tipo': 'modello'},
- 'sensor.verifica_ip_inserito': {'icona': 'mdi:ip', 'nome': 'IP', 'tipo': 'modello'},
  'sensor.versione_corrente': {'icona': 'mdi:check-decagram-outline', 'nome': 'Versione', 'tipo': 'modello'},
  'sensor.versione_repository': {'nome': 'vmc_{nome}_versione_repository', 'tipo': 'versione'},
  'sensor.voc_status': {'icona': 'mdi:weather-dust', 'nome': 'VOC Int. [ppb]', 'tipo': 'modello'},
@@ -1059,7 +1059,6 @@ IMPOSTAZIONI: dict[str, dict[str, Any]] = {'input_boolean.attese_inizializzate':
                                                       'automation.vmc_{nome}_riepilogo_audio_avvio',
                                                       'automation.vmc_{nome}_audio_allerte_e_stato',
                                                       'automation.vmc_{nome}_riallineamento_allerte_al_riavvio',
-                                                      'automation.vmc_{nome}_cambio_ip_vmc_riavvio_di_h_a',
                                                       'automation.vmc_{nome}_countdown_attese_automazione',
                                                       'automation.vmc_{nome}_inizializza_tempi_di_attesa',
                                                       'automation.vmc_{nome}_countdown_letture_vmc',
@@ -1187,7 +1186,6 @@ IMPOSTAZIONI: dict[str, dict[str, Any]] = {'input_boolean.attese_inizializzate':
                                                       'sensor.vmc_{nome}_nome_memorizzata',
                                                       'sensor.vmc_{nome}_versione_repository',
                                                       'sensor.vmc_{nome}_versione_corrente',
-                                                      'sensor.vmc_{nome}_verifica_ip_inserito',
                                                       'sensor.vmc_{nome}_ip',
                                                       'sensor.vmc_{nome}_status_ip_interfaccia',
                                                       'sensor.vmc_{nome}_nome_status',
@@ -1244,8 +1242,6 @@ IMPOSTAZIONI: dict[str, dict[str, Any]] = {'input_boolean.attese_inizializzate':
                                                       'sensor.vmc_{nome}_stato_led_interfaccia',
                                                       'sensor.vmc_{nome}_alert_avvio_interfaccia',
                                                       'input_text.vmc_{nome}_nome_da_inserire',
-                                                      'input_text.vmc_{nome}_ip_insert',
-                                                      'input_text.vmc_{nome}_ip_insert_esito',
                                                       'input_text.vmc_{nome}_last_temp_external_entity',
                                                       'input_text.vmc_{nome}_last_temp_internal_entity',
                                                       'input_text.vmc_{nome}_last_humidity_external_entity',
@@ -1660,13 +1656,6 @@ IMPOSTAZIONI: dict[str, dict[str, Any]] = {'input_boolean.attese_inizializzate':
  'input_text.countdown_umidita_memoria': {'icon': 'mdi:timer-sand',
                                           'max': 255,
                                           'name': 'Memorizzazione Velocità (Umidità) - Trigger in Attesa'},
- 'input_text.ip_insert': {'icon': 'mdi:form-textbox',
-                          'initial': '',
-                          'max': 15,
-                          'name': 'Cambia IP VMC (Riavvio di H.A.)'},
- 'input_text.ip_insert_esito': {'icon': 'mdi:ip-network-outline',
-                                'initial': '',
-                                'name': 'Esito Verifica VMC al Nuovo IP'},
  'input_text.last_co2_internal_entity': {'icon': 'mdi:form-textbox',
                                          'name': 'Ultima Entità CO₂ interna Selezionata'},
  'input_text.last_humidity_external_entity': {'icon': 'mdi:form-textbox',
@@ -1981,8 +1970,8 @@ DOMANI: dict[str, str] = {'input_boolean.attese_inizializzate': 'binary_sensor',
  'input_text.countdown_umidita_avvio': 'interna',
  'input_text.countdown_umidita_fine': 'interna',
  'input_text.countdown_umidita_memoria': 'interna',
- 'input_text.ip_insert': 'text',
- 'input_text.ip_insert_esito': 'interna',
+ 'input_text.ip_insert': 'tolta',
+ 'input_text.ip_insert_esito': 'tolta',
  'input_text.last_co2_internal_entity': 'interna',
  'input_text.last_humidity_external_entity': 'interna',
  'input_text.last_humidity_internal_entity': 'interna',
@@ -2047,7 +2036,7 @@ DOMANI: dict[str, str] = {'input_boolean.attese_inizializzate': 'binary_sensor',
  'script.reset_filtro_vmc': 'button',
  'script.ripristina_tempi_attesa': 'interna',
  'script.upgrade_sensors': 'button',
- 'shell_command.aggiorna_indirizzo_ip': 'interna',
+ 'shell_command.aggiorna_indirizzo_ip': 'tolta',
  'shell_command.cambia_nome': 'interna',
  'shell_command.freecooling': 'button',
  'shell_command.iperventilazione': 'button',
@@ -2304,8 +2293,6 @@ ORDINE_AIUTANTI: dict[str, tuple[str, ...]] = {'input_boolean': ('input_boolean.
                   'input_select.selected_notification_device',
                   'input_select.selected_media_player_entity'),
  'input_text': ('input_text.nome_da_inserire',
-                'input_text.ip_insert',
-                'input_text.ip_insert_esito',
                 'input_text.last_temp_external_entity',
                 'input_text.last_temp_internal_entity',
                 'input_text.last_humidity_external_entity',
@@ -2403,3 +2390,12 @@ PULSANTI: dict[str, dict[str, Any]] = {'button.audio_profilo': {'icona': 'mdi:cu
  'button.velocita_2': {'icona': 'mdi:cursor-pointer', 'nome': 'VMC {Nome} - Velocità 2', 'tipo': 'comando'},
  'button.velocita_3': {'icona': 'mdi:cursor-pointer', 'nome': 'VMC {Nome} - Velocità 3', 'tipo': 'comando'},
  'button.velocita_4': {'icona': 'mdi:cursor-pointer', 'nome': 'VMC {Nome} - Velocità 4', 'tipo': 'comando'}}
+
+# b46: le voci del package che la versione nativa non ha più (il campo «Cambia IP VMC»
+# della scheda e ciò che serviva solo a lui: l'IP si cambia dall'ingranaggio della
+# VMC), con il nome che avevano nel package.
+TOLTE: dict[str, str] = {'automation.cambio_ip_vmc_riavvio_di_h_a': 'VMC {Nome} - Cambio IP VMC (Riavvio di H.A.)',
+ 'input_text.ip_insert': 'Cambia IP VMC (Riavvio di H.A.)',
+ 'input_text.ip_insert_esito': 'Esito Verifica VMC al Nuovo IP',
+ 'sensor.verifica_ip_inserito': 'IP',
+ 'shell_command.aggiorna_indirizzo_ip': ''}

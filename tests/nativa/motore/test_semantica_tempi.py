@@ -39,9 +39,10 @@ from homeassistant.util import dt as dt_util
 from pytest_homeassistant_custom_component.common import async_test_home_assistant
 
 from custom_components.vmc_master.nativa.motore import generato
-from custom_components.vmc_master.nativa.motore.ha import Motore
+from custom_components.vmc_master.nativa.motore.stati_logiche import stati_logiche
 
-from .test_semantica import _carica, _gira, moduli  # noqa: F401
+from .fase3 import MotoreFase3
+from .test_semantica import _carica, _gira, della_pulizia, moduli  # noqa: F401
 from .traduci import traduci_configurazione
 
 # 02:00:00 a US/Pacific, il fuso delle prove
@@ -54,10 +55,11 @@ AIUTANTI: dict[str, dict[str, Any]] = {
     "input_number": {"n": {"min": 0, "max": 100, "step": 1}},
     "timer": {"t1": {"duration": "00:00:05"}, "t2": {"duration": 3}},
 }
+# Senza ``automation_triggered``: le automazioni del motore sono logiche dell'integrazione,
+# senza l'evento (l'istante in cui partono è nel loro stato: ``last_triggered``, ``current``)
 EVENTI = {
     EVENT_STATE_CHANGED,
     EVENT_CALL_SERVICE,
-    "automation_triggered",
     "script_started",
     "timer.started",
     "timer.restarted",
@@ -479,10 +481,8 @@ automation:
     servizio("script.turn_off", {"entity_id": "script.prova_libero"}),
     attendi(3),
     acceso("input_boolean.a"),
-    attendi(1.5),
-    servizio("automation.turn_off", {"entity_id": "automation.prova_chiama_padre"}),
-    attendi(1),
-    servizio("automation.turn_on", {"entity_id": "automation.prova_chiama_padre"}),
+    # (le automazioni del motore non hanno automation.turn_off e turn_on)
+    attendi(2.5),
     spento("input_boolean.a"),
     acceso("input_boolean.a"),
     attendi(0.7),
@@ -897,8 +897,9 @@ automation:
     mode: parallel
     max: 100
     triggers:
-      - {trigger: numeric_state, entity_id: input_number.n, above: 9}
-      - {trigger: numeric_state, entity_id: input_number.n, above: 29}
+      # numeric_state come modello (le attivazioni del motore non lo hanno)
+      - {trigger: template, value_template: "{{ states('input_number.n') | float(0) > 9 }}"}
+      - {trigger: template, value_template: "{{ states('input_number.n') | float(0) > 29 }}"}
     actions:
       - action: script.turn_on
         target: {entity_id: script.prova_giri}
@@ -956,8 +957,9 @@ automation:
 
 scenario(
     "avvio_e_chiusura",
-    # trigger homeassistant start e shutdown; automazioni spente e riaccese (anche da
-    # un'altra automazione) mentre una loro pausa è in corso; chiusura con pause in corso
+    # trigger homeassistant start e shutdown; chiusura con pause in corso (le automazioni
+    # del motore non hanno initial_state, automation.turn_off e turn_on: niente
+    # automazioni spente e riaccese)
     """
 script:
   prova_lungo:
@@ -979,19 +981,8 @@ automation:
       - action: prova.registra
         data: {passo: "avvio {{ trigger.id }} {{ trigger.description | default('') }}"}
       - delay: 3
-      - action: automation.turn_on
-        target: {entity_id: automation.prova_spenta_all_avvio}
       - action: prova.registra
         data: {passo: "avvio fine {{ trigger.id }}"}
-  - alias: Prova Spenta All Avvio
-    id: prova_spenta_all_avvio
-    initial_state: false
-    triggers:
-      - {trigger: homeassistant, event: start}
-      - {trigger: time_pattern, seconds: "/2"}
-    actions:
-      - action: prova.registra
-        data: {passo: "spenta accesa {{ trigger.platform }}"}
   - alias: Prova Riaccesa
     id: prova_riaccesa
     triggers:
@@ -1015,16 +1006,7 @@ automation:
       - action: prova.registra
         data: {passo: "chiusura fine {{ trigger.platform }}"}
 """,
-    attendi(1),
-    servizio(
-        "automation.turn_off",
-        {"entity_id": "automation.prova_riaccesa", "stop_actions": False},
-    ),
-    attendi(0.5),
-    servizio("automation.turn_on", {"entity_id": "automation.prova_riaccesa"}),
-    attendi(1),
-    servizio("automation.turn_off", {"entity_id": "automation.prova_all_avvio"}),
-    servizio("automation.turn_on", {"entity_id": "automation.prova_all_avvio"}),
+    attendi(2.5),
     acceso("input_boolean.a"),
     attendi(4),
     acceso("input_boolean.b"),
@@ -1100,10 +1082,8 @@ automation:
     numero(0),
     acceso("input_boolean.b"),
     attendi(2.5),
-    servizio(
-        "automation.turn_off",
-        {"entity_id": "automation.prova_aria_scambiata", "stop_actions": False},
-    ),
+    # (le automazioni del motore non hanno automation.turn_off: Prova Aria Scambiata
+    # continua)
     spento("input_boolean.b"),
     numero(2),
     acceso("input_boolean.a"),
@@ -1239,8 +1219,12 @@ def _norma(valore: Any, inizio: datetime) -> Any:
     if isinstance(valore, State):
         return (valore.entity_id, valore.state, _norma(dict(valore.attributes), inizio))
     if isinstance(valore, dict):
+        # le chiavi come testo (gli attributi delle entità di Home Assistant sono StrEnum,
+        # uguali al loro testo ma con un'altra repr)
         return {
-            k: _norma(v, inizio) for k, v in sorted(valore.items()) if k != "run_id"
+            str(k) if isinstance(k, str) else k: _norma(v, inizio)
+            for k, v in sorted(valore.items())
+            if k != "run_id"
         }
     if isinstance(valore, (list, tuple)):
         return [_norma(v, inizio) for v in valore]
@@ -1338,9 +1322,13 @@ async def _corsa(
             def contesto(identificativo: str | None) -> int | None:
                 return contesti.setdefault(identificativo, len(contesti) - 1)
 
+            pulizia = False
+
             @callback
             def annota(evento: Event) -> None:
                 if evento.event_type not in EVENTI:
+                    return
+                if pulizia and della_pulizia(evento):
                     return
                 dati = evento.data
                 if evento.event_type == EVENT_STATE_CHANGED:
@@ -1377,7 +1365,8 @@ async def _corsa(
                 moduli.append(f"{generato.__name__}.tempi_{nome}_motore")
                 _carica(f"tempi_{nome}_modelli", testo_modelli)
                 codice = _carica(f"tempi_{nome}_motore", testo_motore)
-                await Motore(hass).avvia(crea=codice.crea)
+                m = MotoreFase3(hass)
+                await m.avvia(crea=codice.crea)
             else:
                 assert await async_setup_component(hass, "script", {"script": script})
                 assert await async_setup_component(
@@ -1388,6 +1377,15 @@ async def _corsa(
             await _gira(hass)
             _pulisci_timer(hass, chiave)
             hass.bus.async_listen(MATCH_ALL, annota)
+            if motore:
+                # gli stati delle logiche (le automazioni del motore) non sono nella
+                # macchina degli stati: entrano nel registro nel punto del bus di
+                # state_changed
+                stati_logiche(hass).osserva(
+                    callback(
+                        lambda e: annota(e) if e.event_type == EVENT_STATE_CHANGED else None
+                    )
+                )
             if prova["avvio"]:
                 avvio = asyncio.ensure_future(hass.async_start())
                 await _fino_alla_fine(hass, freezer, avvio)
@@ -1415,9 +1413,15 @@ async def _corsa(
                     await _fino_alla_fine(hass, freezer, fermata)
                     registro.append((istante(), "fermato"))
             if hass.state is CoreState.running:
-                await hass.services.async_call(
-                    "automation", "turn_off", {"entity_id": "all"}, blocking=True
-                )
+                # con Home Assistant spegne le automazioni (automation.turn_off), con il
+                # motore ferma le logiche: i loro stati non si confrontano
+                pulizia = True
+                if motore:
+                    await m.ferma()
+                else:
+                    await hass.services.async_call(
+                        "automation", "turn_off", {"entity_id": "all"}, blocking=True
+                    )
                 await hass.services.async_call(
                     "script", "turn_off", {"entity_id": "all"}, blocking=True
                 )

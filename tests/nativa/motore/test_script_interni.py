@@ -6,15 +6,16 @@ stessi passi:
 - con Home Assistant: le automazioni e gli script YAML, i 16 shell_command del package
   (le righe di comando vere) e un sottoprocesso finto che fa da VMC (come
   ``strumenti/simulatore/fakevmc.py``: il comando ``VMWH`` arriva alla VMC quando il
-  processo parte, ``nc`` dura 0,05 s, 3 s se la VMC non risponde). I due file .sh
-  (cambio del nome e dell'IP) girano davvero con bash, con un ``nc`` finto che annota
-  quello che riceve: sono loro a decidere se e cosa arriva alla VMC;
+  processo parte, ``nc`` dura 0,05 s, 3 s se la VMC non risponde). Il file .sh del
+  cambio del nome gira davvero con bash, con un ``nc`` finto che annota quello che
+  riceve: è lui a decidere se e cosa arriva alla VMC (dalla b46 il motore non ha il
+  cambio dell'IP);
 - con il motore: le stesse automazioni e gli stessi script tradotti con gli script e i
   comandi dentro il motore (``traduzione(..., comandi=...)``), i comandi che vanno a una
   VMC finta con gli stessi tempi (``invia``) e i pulsanti per le chiamate della scheda.
 
-Il registro (eventi del bus, comandi arrivati alla VMC, indirizzi cambiati, con
-l'istante e la forma del contesto) deve essere identico, tolti gli eventi che con gli
+Il registro (eventi del bus, comandi arrivati alla VMC, con l'istante e la forma del
+contesto) deve essere identico, tolti gli eventi che con gli
 script e i comandi dentro il motore non ci sono più (lo stato degli script,
 ``script_started``, le chiamate ``script.*`` e ``shell_command.*``) e quelli nuovi dei
 pulsanti (lo stato dei pulsanti, ``button.press``): li conta ``CONTEGGI``.
@@ -36,7 +37,6 @@ import probatio
 import pytest
 import yaml
 from freezegun.api import FrozenDateTimeFactory
-from homeassistant.components.automation import AutomationEntity
 from homeassistant.const import EVENT_CALL_SERVICE, EVENT_STATE_CHANGED, MATCH_ALL
 from homeassistant.core import (
     Context,
@@ -56,6 +56,7 @@ from pytest_homeassistant_custom_component.common import (
 from custom_components.vmc_master.nativa.client import ErroreVMC
 from custom_components.vmc_master.nativa.motore import generato
 from custom_components.vmc_master.nativa.motore.ha import Motore
+from custom_components.vmc_master.nativa.motore.stati_logiche import stati_logiche
 from custom_components.vmc_master.nativa.pulsanti import PulsanteVMC
 from custom_components.vmc_master.nativa.tabelle import PULSANTI
 
@@ -543,48 +544,11 @@ automation:
     attendi(4.5),
 )
 
-scenario(
-    "cambio_dell_indirizzo",
-    """
-automation:
-  - alias: Cambio IP
-    id: cambio_ip
-    mode: queued
-    max: 30
-    triggers:
-      - {trigger: state, entity_id: input_number.n}
-    actions:
-      - variables:
-          ip: >-
-            {{ ['192.168.1.50', '10.0.0.300', '127.0.0.1', '', '169.254.1.1', '0.1.2.3',
-                '224.0.0.1', '192.168.01.5', '172.16.0.1 9', '8.8.8.8', '169.253.0.1',
-                '223.255.255.255', ' 10.1.1.1 '][trigger.to_state.state | int] }}
-      - action: shell_command.vmc_master_rimuovi_caratteri_di_ritorno
-      - action: shell_command.vmc_master_aggiorna_indirizzo_ip
-        data: {ip: "{{ ip }}"}
-      - action: prova.registra
-        data: {passo: "ip {{ ip }}"}
-  - alias: Senza IP
-    id: senza_ip
-    triggers:
-      - {trigger: state, entity_id: input_boolean.a, to: "on"}
-    actions:
-      - action: shell_command.vmc_master_aggiorna_indirizzo_ip
-      - action: prova.registra
-        data: {passo: senza ip}
-""",
-    *(passo for n in range(1, 13) for passo in (numero(n), attendi(0.5))),
-    numero(0),
-    acceso("input_boolean.a"),
-    attendi(1),
-)
-
-
 # --- la VMC finta e i file .sh veri ------------------------------------------------------
 
 
 class VmcFinta:
-    """La VMC dei due lati: annota i comandi ricevuti e gli indirizzi cambiati."""
+    """La VMC dei due lati: annota i comandi ricevuti."""
 
     def __init__(self, registro: list[Any]) -> None:
         self.registro = registro
@@ -594,13 +558,10 @@ class VmcFinta:
         self.registro.append((_norma(dt_util.utcnow()), "vmc", testo))
         return self.risponde
 
-    def indirizzo(self, ip: str) -> None:
-        self.registro.append((_norma(dt_util.utcnow()), "ip", ip))
-
 
 class FileSh:
-    """I due file .sh del package, veri, in una cartella di prova: ``nc`` finto (annota
-    ciò che riceve) e, per il cambio dell'IP, i file da cambiare nella cartella."""
+    """Il file .sh del nome, vero, in una cartella di prova, con un ``nc`` finto (annota
+    ciò che riceve)."""
 
     def __init__(self, cartella: Path) -> None:
         self.cartella = cartella
@@ -610,18 +571,6 @@ class FileSh:
         self.uscita = cartella / "uscita_nc"
         self.nome = cartella / "cambio_nome.sh"
         shutil.copy(PACKAGE / "vmc_master_script_cambio_nome.sh", self.nome)
-        self.yaml = cartella / "vmc_master.yaml"
-        self.nome_ip = cartella / "nome_per_ip.sh"
-        testo_ip = (PACKAGE / "vmc_master_script_cambio_ip.sh").read_text("utf-8")
-        cartella_package = "/config/packages/vmc_helty_flow/master/"
-        assert testo_ip.count(cartella_package) == 2
-        testo_ip = testo_ip.replace(
-            cartella_package + "vmc_master.yaml", str(self.yaml)
-        ).replace(
-            cartella_package + "vmc_master_script_cambio_nome.sh", str(self.nome_ip)
-        )
-        self.ip = cartella / "cambio_ip.sh"
-        self.ip.write_text(testo_ip, encoding="utf-8")
 
     def _esegui(self, file: Path, argomenti: list[str]) -> int:
         ambiente = {
@@ -642,18 +591,6 @@ class FileSh:
         codice = self._esegui(self.nome, argomenti)
         ricevuto = self.uscita.read_bytes().decode()
         return codice, ricevuto.splitlines()
-
-    def cambia_ip(self, argomenti: list[str]) -> tuple[int, str | None]:
-        """Il file .sh dell'IP: codice d'uscita e l'indirizzo scritto nei file (None se
-        non li ha cambiati)."""
-        vecchio = "host: 10.9.8.7\n"
-        self.yaml.write_text(vecchio, encoding="utf-8")
-        self.nome_ip.write_text("nc -w 3 10.9.8.7 5001\n", encoding="utf-8")
-        codice = self._esegui(self.ip, argomenti)
-        nuovo = self.yaml.read_text("utf-8")
-        if nuovo == vecchio:
-            return codice, None
-        return codice, nuovo.removeprefix("host: ").strip()
 
 
 class ProcessoFinto:
@@ -706,14 +643,6 @@ def sottoprocessi(
             return ProcessoFinto(
                 0 if ok else 1, DURATA_COMANDO if ok else DURATA_SENZA_VMC
             )
-        if argomenti[:2] == [
-            "bash",
-            CARTELLA_PACKAGE + "vmc_master_script_cambio_ip.sh",
-        ]:
-            codice, ip = file_sh.cambia_ip(argomenti[2:])
-            if ip is not None:
-                vmc_finta.indirizzo(ip)
-            return ProcessoFinto(codice, 0)
         if riga.startswith("find "):
             return ProcessoFinto(0, 0)
         raise AssertionError(f"comando inatteso: {riga}")
@@ -730,7 +659,7 @@ def sottoprocessi(
 
 
 def collegamenti(vmc_finta: VmcFinta) -> dict[str, Any]:
-    """``invia`` e ``cambia_ip`` del motore verso la VMC finta, con i tempi di nc."""
+    """``invia`` del motore verso la VMC finta, con i tempi di nc."""
 
     async def invia(testo: str) -> str:
         if vmc_finta.comando(testo):
@@ -739,10 +668,7 @@ def collegamenti(vmc_finta: VmcFinta) -> dict[str, Any]:
         await asyncio.sleep(DURATA_SENZA_VMC)
         raise ErroreVMC("la VMC non risponde")
 
-    async def cambia_ip(ip: str) -> None:
-        vmc_finta.indirizzo(ip)
-
-    return {"invia": invia, "cambia_ip": cambia_ip}
+    return {"invia": invia}
 
 
 # --- la corsa ----------------------------------------------------------------------------
@@ -900,6 +826,12 @@ async def _corsa(
             fine.append((_norma(dt_util.utcnow()), indice))
 
         togli = hass.bus.async_listen(MATCH_ALL, annota)
+        if motore:
+            # gli stati delle logiche (le automazioni del motore) non sono nella macchina
+            # degli stati: entrano nel registro nel punto del bus di state_changed
+            smetti = stati_logiche(hass).osserva(
+                callback(lambda e: annota(e) if e.event_type == EVENT_STATE_CHANGED else None)
+            )
         for indice, passo in enumerate(passi):
             if passo[0] in ("servizio", "scheda"):
                 dominio, nome_servizio = passo[1].split(".")
@@ -928,14 +860,14 @@ async def _corsa(
                 await _avanza(hass, freezer, passo[1])
         togli()
         assert all(compito.done() for compito in compiti)
-        await hass.services.async_call(
-            "automation", "turn_off", {"entity_id": "all"}, blocking=True
-        )
         if m is not None:
-            assert m.c.interni is not None
-            for interno in m.c.interni.script.values():
-                await interno.ferma()
+            smetti()
+            # le logiche si staccano, poi gli script del motore si fermano
+            await m.ferma()
         else:
+            await hass.services.async_call(
+                "automation", "turn_off", {"entity_id": "all"}, blocking=True
+            )
             await hass.services.async_call(
                 "script", "turn_off", {"entity_id": "all"}, blocking=True
             )
@@ -1024,7 +956,7 @@ async def test_casi_limite(
 ) -> None:
     """Gli script e i comandi del motore nei casi che il package non usa (il traduttore
     li ferma prima): chiamate per altri script, risposte, toggle, ascoltatori che
-    sbagliano, aggancio impossibile, nessun modo di cambiare l'indirizzo, scaricamento."""
+    sbagliano, aggancio impossibile, scaricamento."""
     configurazione = yaml.safe_load(CASI_LIMITE)
     testo_modelli, testo_motore = await traduci_configurazione(
         hass,
@@ -1127,20 +1059,16 @@ async def test_casi_limite(
 
     # se gli altri trigger dell'automazione non si agganciano, si stacca anche il suo
     # aggancio dei comandi
-    async def guasto(self: Any) -> None:
+    async def guasto(*argomenti: Any, **chiavi: Any) -> None:
         raise RuntimeError("trigger guasto")
 
-    monkeypatch.setattr(AutomationEntity, "_async_attach_triggers", guasto)
+    monkeypatch.setattr(
+        "custom_components.vmc_master.nativa.motore.logiche.inizializza_attivazioni",
+        guasto,
+    )
     with pytest.raises(RuntimeError, match="trigger guasto"):
-        await m.automazioni[0]._async_attach_triggers()
+        await m.automazioni[0]._aggancia()
     assert len(comandi._ascoltatori) == ascoltatori
-
-    # un indirizzo valido senza modo di cambiarlo è un errore (nessun cambio perso in
-    # silenzio), come un comando senza collegamento con la VMC
-    with pytest.raises(HomeAssistantError, match="nessun modo di cambiare"):
-        await comandi.esegui(
-            "vmc_master_aggiorna_indirizzo_ip", {"ip": "192.168.1.9"}, {}, contesto
-        )
 
     # scaricati, gli script si fermano e non ripartono
     await interni.chiama("turn_on", {}, bersaglio, contesto)

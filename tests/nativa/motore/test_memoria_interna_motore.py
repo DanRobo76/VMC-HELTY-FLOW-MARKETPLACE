@@ -2,7 +2,7 @@
 
 Prove mirate (fase 4): automazioni e script in YAML che leggono e scrivono valori
 interni (con il nome scritto e con nomi composti dai modelli) girano con Home Assistant e
-con i 68 aiutanti del package, poi, tradotti con i valori interni
+con i 67 aiutanti del package, poi, tradotti con i valori interni
 (``traduci_configurazione(..., interni=INTERNI)``), con il motore e la memoria interna.
 Si confronta tutto il registro degli eventi (con istanti e contesti) come spiega
 ``banco_memoria``: gli eventi degli aiutanti interni con gli annunci della memoria.
@@ -27,7 +27,7 @@ import pytest
 import yaml
 from freezegun.api import FrozenDateTimeFactory
 from homeassistant.components.homeassistant import services as servizi_ha
-from homeassistant.const import MATCH_ALL
+from homeassistant.const import EVENT_STATE_CHANGED, MATCH_ALL
 from homeassistant.core import (
     Context,
     HomeAssistant,
@@ -39,14 +39,15 @@ from homeassistant.setup import async_setup_component
 from pytest_homeassistant_custom_component.common import async_test_home_assistant
 
 from custom_components.vmc_master.nativa.motore import generato
-from custom_components.vmc_master.nativa.motore.ha import Motore
 from custom_components.vmc_master.nativa.motore.memoria_interna import (
     INTERNI,
     MemoriaInterna,
     da_stato,
 )
+from custom_components.vmc_master.nativa.motore.stati_logiche import stati_logiche
 
 from .banco_memoria import Smistatore, servizi_misti
+from .fase3 import MotoreFase3
 from .test_avvio_motore import _ripristina
 from .test_memoria_interna import IDS, _configurazione, _entity_id
 from .test_pacchetto_casuale import Normalizzatore
@@ -59,10 +60,11 @@ ALTRI = {
     "input_boolean": {"a": {}, "b": {}},
     "input_select": {"s": {"options": ["x", "y"]}},
 }
+# Senza ``automation_triggered``: le automazioni del motore sono logiche dell'integrazione,
+# senza l'evento (l'istante in cui partono è nel loro stato: ``last_triggered``, ``current``)
 EVENTI = {
     "state_changed",
     "call_service",
-    "automation_triggered",
     "script_started",
 }
 RIPRISTINO = [
@@ -559,7 +561,8 @@ async def _corsa(
             caricati.append(f"{generato.__name__}.memoria_{nome}_motore")
             _carica(f"memoria_{nome}_modelli", testo_modelli)
             codice = _carica(f"memoria_{nome}_motore", testo_motore)
-            await Motore(hass, memoria=memoria).avvia(crea=codice.crea)
+            m = MotoreFase3(hass, memoria=memoria)
+            await m.avvia(crea=codice.crea)
             memoria.ascolta_cambi(smistatore.cambio)
             memoria.ascolta_chiamate(smistatore.chiamata)
         else:
@@ -575,6 +578,12 @@ async def _corsa(
                 smistatore.evento(evento)
 
         togli = hass.bus.async_listen(MATCH_ALL, annota)
+        if memoria is not None:
+            # gli stati delle logiche (le automazioni del motore) non sono nella macchina
+            # degli stati: entrano nel registro nel punto del bus di state_changed
+            smetti = stati_logiche(hass).osserva(
+                callback(lambda e: annota(e) if e.event_type == EVENT_STATE_CHANGED else None)
+            )
         togli_rapporti = smistatore.ascolta_rapporti(hass)
         segnato = smistatore.segna_aggiornamenti(servizi_ha.async_update_entity)
         segna = patch.object(servizi_ha, "async_update_entity", segnato)
@@ -612,9 +621,14 @@ async def _corsa(
             "riportati": {s.entity_id: norma(s.last_reported) for s in finali},
             "da_aggiornamento": smistatore.rapporti_da_aggiornamento,
         }
-        await hass.services.async_call(
-            "automation", "turn_off", {"entity_id": "all"}, blocking=True
-        )
+        if memoria is not None:
+            smetti()
+            # le logiche si fermano (non hanno automation.turn_off)
+            await m.ferma()
+        else:
+            await hass.services.async_call(
+                "automation", "turn_off", {"entity_id": "all"}, blocking=True
+            )
         await hass.services.async_call(
             "script", "turn_off", {"entity_id": "all"}, blocking=True
         )

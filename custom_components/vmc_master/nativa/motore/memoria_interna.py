@@ -1,4 +1,4 @@
-"""La memoria interna del motore (fase 4): i 68 valori con stato che non sono entità.
+"""La memoria interna del motore (fase 4): i 67 valori con stato che non sono entità.
 
 Oggi 68 aiutanti del package (32 ``input_number``, 35 ``input_text``, 1
 ``input_boolean``) servono solo alle automazioni: contatori dell'aria scambiata, tempi
@@ -7,6 +7,8 @@ escludere le proprie entità dal registro di Home Assistant (e un contatore dell
 cambia ogni secondo mentre la VMC gira): domani questi valori non sono entità e stanno
 qui, una memoria per VMC, salvata con ``Store``. Le chiavi sono quelle di ``StatoVMC``
 (l'entity_id di oggi senza «vmc_<nome>_», per esempio ``input_number.attesa_avvisi``).
+Dalla b46 i valori sono 67: l'esito della verifica del campo «Cambia IP VMC» della scheda
+non c'è più, con il campo (``tabelle.TOLTE``).
 
 Le regole sono quelle degli aiutanti di oggi (Home Assistant 2026.11):
 
@@ -30,8 +32,8 @@ Le regole sono quelle degli aiutanti di oggi (Home Assistant 2026.11):
   evento ``state_reported`` con un marchio, che non arriva agli ascoltatori di tutti
   gli eventi (registro compreso) e che nessun trigger ``event`` può ascoltare. Chi lo
   riceve consegna il cambio a chi segue l'entità come un'entità vera (trigger ``state``
-  e ``template``, attese, modelli: le iscrizioni di ``async_track_state_change_event``),
-  poi allo ``StatoVMC`` e a chi ascolta la memoria. Così istanti e ordine restano quelli
+  e ``template``, attese, modelli: le iscrizioni di ``seguire.CambiInterni``, di cui la
+  memoria è una sorgente), poi allo ``StatoVMC`` e a chi ascolta la memoria. Così istanti e ordine restano quelli
   degli aiutanti, anche quando la scrittura avviene mentre il bus consegna un altro
   evento (la consegna si accoda come quella di ``state_changed``).
 
@@ -45,6 +47,7 @@ from __future__ import annotations
 import logging
 import re
 import time
+from collections import ChainMap
 from collections.abc import Callable, Iterable, Iterator, Mapping
 from itertools import chain
 from typing import TYPE_CHECKING, Any
@@ -75,10 +78,6 @@ from homeassistant.core import (
 )
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.entity import CONTEXT_RECENT_TIME_SECONDS, FLOAT_PRECISION
-from homeassistant.helpers.event import (
-    _TRACK_STATE_CHANGE_DATA,
-    _async_dispatch_entity_id_event,
-)
 from homeassistant.helpers.service import entity_service_call
 from homeassistant.helpers.storage import Store
 from homeassistant.util import dt as dt_util
@@ -86,13 +85,15 @@ from homeassistant.util.ulid import ulid_at_time
 
 from ...trasforma import rinomina
 from ..tabelle import IMPOSTAZIONI
+from .seguire import cambi_interni
+from .stati_logiche import stati_logiche
 
 if TYPE_CHECKING:
     from ..stato import StatoVMC
 
 _LOGGER = logging.getLogger(__name__)
 
-# I 68 valori interni (colonna «Domani» della fase 1: «interna (stato del motore)»),
+# I 67 valori interni (colonna «Domani» della fase 1: «interna (stato del motore)»),
 # per dominio e nell'ordine del package: l'ordine conta per le scritture a più
 # bersagli, che Home Assistant esegue nell'ordine dell'insieme dei bersagli costruito
 # dall'elenco delle entità del dominio.
@@ -130,7 +131,6 @@ INTERNI: tuple[str, ...] = (
     "input_number.attesa_delta_avvio",
     "input_number.attesa_delta_fine",
     "input_number.attesa_delta_memoria",
-    "input_text.ip_insert_esito",
     "input_text.last_temp_external_entity",
     "input_text.last_temp_internal_entity",
     "input_text.last_humidity_external_entity",
@@ -499,25 +499,33 @@ SERVIZI: dict[tuple[str, str], tuple[Any, str | HassJob[..., Any]]] = {
 
 
 class _Unione(Mapping[str, State]):
-    """Gli stati di Home Assistant seguiti dai valori interni (``_state_generator``
-    scorre ``states._states.values()``)."""
+    """Gli stati di Home Assistant seguiti dai valori interni: quello che il motore dei
+    modelli scorre per ``states`` di un dominio o di tutti (``_state_generator`` scorre
+    ``states._states.values()`` della macchina degli stati che gli si dà). Gli stati di
+    Home Assistant con le funzioni pubbliche della macchina degli stati, nello stesso
+    ordine."""
 
     __slots__ = ("_interni", "_veri")
 
-    def __init__(self, veri: Mapping[str, State], interni: Mapping[str, State]) -> None:
+    def __init__(self, veri: Any, interni: Mapping[str, State]) -> None:
         self._veri = veri
         self._interni = interni
 
     def __getitem__(self, chiave: str) -> State:
         if (stato := self._interni.get(chiave)) is not None:
             return stato
-        return self._veri[chiave]
+        if (stato := self._veri.get(chiave)) is not None and stato.entity_id == chiave:
+            return stato  # type: ignore[no-any-return]
+        raise KeyError(chiave)
 
     def __iter__(self) -> Iterator[str]:
-        return chain(self._veri, self._interni)
+        return chain(self._veri.async_entity_ids(), self._interni)
 
     def __len__(self) -> int:
-        return len(self._veri) + len(self._interni)
+        return self._veri.async_entity_ids_count() + len(self._interni)  # type: ignore[no-any-return]
+
+    def values(self) -> Any:
+        return [*self._veri.async_all(), *self._interni.values()]
 
 
 class StatiConMemoria:
@@ -532,7 +540,7 @@ class StatiConMemoria:
 
     __slots__ = ("_interni", "_veri")
 
-    def __init__(self, veri: Any, interni: dict[str, State]) -> None:
+    def __init__(self, veri: Any, interni: Mapping[str, State]) -> None:
         self._veri = veri
         self._interni = interni
 
@@ -577,7 +585,8 @@ class StatiConMemoria:
 
     @property
     def _states(self) -> Mapping[str, State]:
-        return _Unione(self._veri._states, self._interni)
+        # il nome che il motore dei modelli di Home Assistant legge (``_state_generator``)
+        return _Unione(self._veri, self._interni)
 
     def __getattr__(self, nome: str) -> Any:
         return getattr(self._veri, nome)
@@ -654,8 +663,14 @@ class MemoriaInterna:
             self._valori[valore.entity_id] = valore
             self._per_dominio.setdefault(dominio, {})[valore.entity_id] = valore
         self._stati: dict[str, State] = {}
-        self.stati_modelli = StatiConMemoria(hass.states, self._stati)
+        # i modelli del motore vedono anche gli stati delle logiche (le automazioni del
+        # package, che non sono entità)
+        self.stati_modelli = StatiConMemoria(
+            hass.states, ChainMap(self._stati, stati_logiche(hass).stati)
+        )
         self.hass_modelli = HassConMemoria(hass, self.stati_modelli)
+        # chi segue un valore interno lo segue da qui (prima di ogni iscrizione)
+        self._togli_sorgente: CALLBACK_TYPE | None = cambi_interni(hass).aggiungi(self)
         self._cambi: list[Cambio] = []
         self._chiamate: list[Chiamata] = []
         self._annulla: list[CALLBACK_TYPE] = []
@@ -671,6 +686,10 @@ class MemoriaInterna:
         return f"{dominio}.vmc_{self.nome}_{oggetto}"
 
     def __contains__(self, entity_id: object) -> bool:
+        return entity_id in self._valori
+
+    def contiene(self, entity_id: str) -> bool:
+        """Se ``entity_id`` è un valore interno (per ``seguire.CambiInterni``)."""
         return entity_id in self._valori
 
     @property
@@ -788,11 +807,14 @@ class MemoriaInterna:
 
     @callback
     def ferma(self) -> None:
-        """Smette di ascoltare gli annunci e di salvare."""
+        """Smette di ascoltare gli annunci e di salvare; nessuno segue più i valori."""
         self._salva_da_solo = False
         for annulla in self._annulla:
             annulla()
         self._annulla.clear()
+        if self._togli_sorgente is not None:
+            self._togli_sorgente()
+            self._togli_sorgente = None
 
     # --- ascolto -------------------------------------------------------------------------
 
@@ -878,16 +900,28 @@ class MemoriaInterna:
         if contesto is None:
             contesto = Context(id=ulid_at_time(timestamp))
         if stesso_stato and stessi_attributi:
-            precedente = vecchio.last_reported
-            vecchio.last_reported = adesso
-            vecchio._cache["last_reported_timestamp"] = timestamp
+            # come Home Assistant cambia solo ``last_reported`` (con uno State nuovo:
+            # gli altri campi, contesto compreso, restano quelli del cambio)
+            riportato = State(
+                entity_id,
+                vecchio.state,
+                vecchio.attributes,
+                vecchio.last_changed,
+                adesso,
+                vecchio.last_updated,
+                vecchio.context,
+                False,
+                None,
+                vecchio.last_updated_timestamp,
+            )
+            self._stati[entity_id] = riportato
             self.hass.bus.async_fire(
                 EVENT_STATE_REPORTED,
                 {
                     "entity_id": entity_id,
                     "last_reported": adesso,
-                    "old_last_reported": precedente,
-                    "new_state": vecchio,
+                    "old_last_reported": vecchio.last_reported,
+                    "new_state": riportato,
                     _MARCHIO: _Annuncio(self, "riportato", valore),
                 },
                 context=contesto,
@@ -972,9 +1006,8 @@ class MemoriaInterna:
             evento.time_fired_timestamp,
             evento.context,
         )
-        # chi segue l'entità come un'entità vera (async_track_state_change_event)
-        if (seguiti := self.hass.data.get(_TRACK_STATE_CHANGE_DATA)) is not None:
-            _async_dispatch_entity_id_event(self.hass, seguiti.callbacks, cambio)
+        # chi segue l'entità come un'entità vera (seguire.CambiInterni)
+        cambi_interni(self.hass).consegna(cambio)
         if self.stato_vmc is not None:
             # con il contesto della scrittura, come il template di oggi che rilegge
             # l'aiutante e prende il contesto del suo cambio

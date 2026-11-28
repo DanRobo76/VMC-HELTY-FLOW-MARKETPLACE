@@ -18,15 +18,24 @@ Conto delle 342 voci del package (``DOMANI``), esatto:
 - 213 portate: 150 impostazioni visibili e 63 valori interni (stato di B = stato di C);
   206 sono diverse da D; le altre 7 sono gli elenchi di scelta delle entità, che dopo
   ogni riavvio tornano alla loro unica opzione configurata;
-- 28 ripartono dal loro ``initial`` (23 visibili, 5 interne), in B come in C;
+- 26 ripartono dal loro ``initial`` (22 visibili, 4 interne), in B come in C;
 - 34 timer: fermi dopo il riavvio, in C come dopo ogni riavvio della beta (nessuno ha
   ``restore``), anche quelli attivi in B;
-- 67 senza stato: 51 script (13 pulsanti, 38 interni al motore) e 16 comandi di shell
-  (12 pulsanti, 4 interni).
+- 66 senza stato: 51 script (13 pulsanti, 38 interni al motore) e 15 comandi di shell
+  (12 pulsanti, 3 interni);
+- 3 tolte dalla b46 (``TOLTE``): il campo «Cambia IP VMC», il suo esito e il comando che
+  scriveva l'IP. Nella VMC nativa non ci sono.
 
-Più i 10 sensori con memoria (stato e lettura di prima dell'interruzione portati), le 14
-automazioni (stessa voce del registro e stesso stato) e i 137 sensori con lo stesso
-entity_id.
+Più i 10 sensori con memoria (stato e lettura di prima dell'interruzione portati), 13
+delle 14 automazioni (logiche del motore con gli entity_id della beta e lo stesso stato,
+senza voce del registro) e 136 dei 137 sensori con lo stesso entity_id: l'automazione
+«Cambio IP VMC (Riavvio di H.A.)» e il sensore che verificava l'IP inserito sono tolti
+anche loro.
+
+Le automazioni del package della beta della prova sono spente (``initial_state: false``,
+``banco.configurazione_package``) e fino alla 9.0.0b45 il motore le riprendeva spente;
+dalla 9.0.0b46 le logiche girano sempre: nella VMC nativa dopo il passaggio la prova le
+avvia senza trigger (``banco.logiche_spente``), così i valori portati restano come sono.
 """
 
 from __future__ import annotations
@@ -60,7 +69,8 @@ from custom_components.vmc_master.nativa.motore.memoria_interna import (
     CHIAVE_ARCHIVIO as CHIAVE_MEMORIA_INTERNA,
 )
 from custom_components.vmc_master.nativa.motore.memoria_interna import INTERNI
-from custom_components.vmc_master.nativa.tabelle import DOMANI
+from custom_components.vmc_master.nativa.motore.stati_logiche import stati_logiche
+from custom_components.vmc_master.nativa.tabelle import DOMANI, TOLTE
 
 from .banco import (
     aggiungi_e_avvia,
@@ -74,6 +84,7 @@ from .banco import (
     file_scritti,
     imposta_valori_diversi,
     istanza_nuova,
+    logiche_spente,
     riavvio,
     scrivi_package_beta,
     senza_rete,
@@ -84,6 +95,18 @@ from .banco import (
 
 DOMINI_SENSORI = ("sensor", "binary_sensor")
 SENZA_STATO = ("script", "shell_command")
+# gli aiutanti della beta con stato che la VMC nativa porta (non i 2 tolti dalla b46)
+AIUTANTI = [
+    k
+    for k in DOMANI
+    if k.split(".", 1)[0] not in (*SENZA_STATO, "timer") and DOMANI[k] != "tolta"
+]
+
+
+def _tolte(nome: str) -> set[str]:
+    """Gli entity_id della beta tolti dalla b46: il campo dell'IP, il suo esito, il
+    comando, il sensore che lo verificava e l'automazione «Cambio IP VMC»."""
+    return {passaggio.entity_id_di_oggi(k, nome) for k in TOLTE}
 
 
 @pytest.fixture(autouse=True)
@@ -141,12 +164,15 @@ async def test_passaggio_di_una_vmc(
     config_dir = str(tmp_path)
     master = voce("master")
     cartella = scrivi_package_beta(config_dir, "master", master.data["host"])
-    aiutanti = [k for k in DOMANI if k.split(".", 1)[0] not in (*SENZA_STATO, "timer")]
+    aiutanti = AIUTANTI
     timer = [k for k in DOMANI if k.startswith("timer.")]
-    senza_stato = [k for k in DOMANI if k.split(".", 1)[0] in SENZA_STATO]
-    assert (len(aiutanti), len(timer), len(senza_stato)) == (241, 34, 67)
+    tolte = [k for k in DOMANI if DOMANI[k] == "tolta"]
+    senza_stato = [
+        k for k in DOMANI if k.split(".", 1)[0] in SENZA_STATO and k not in tolte
+    ]
+    assert (len(aiutanti), len(timer), len(senza_stato), len(tolte)) == (239, 34, 66, 3)
 
-    # A: la beta
+    # A: la beta (anche i 2 aiutanti tolti dalla b46 prendono un valore)
     config = await carica_package(hass, [cartella])
     scritti = await imposta_valori_diversi(hass, "master")
     assert len(scritti) == 241
@@ -220,14 +246,15 @@ async def test_passaggio_di_una_vmc(
         assert confermato["stato"] == passaggio.CONFERMATO
         assert sorted(confermato["timer_attivi"]) == sorted(timer_attivi)
         assert (len(confermato["impostazioni"]), len(confermato["interni"])) == (
-            173,
-            68,
+            172,
+            67,
         )
         assert (len(confermato["memorie"]), confermato["non_letti"]) == (10, [])
 
-        # C: dopo il riavvio
+        # C: dopo il riavvio (le logiche senza trigger, come le automazioni della beta)
         async with riavvio(beta, [master], config_dir) as nativa:
-            await aggiungi_e_avvia(nativa, [])
+            with logiche_spente():
+                await aggiungi_e_avvia(nativa, [])
             voce_c = nativa.config_entries.async_get_entry(master.entry_id)
             assert voce_c.state is ConfigEntryState.LOADED
             assert voce_c.runtime_data.situazione == passaggio.NATIVA
@@ -243,16 +270,18 @@ async def test_passaggio_di_una_vmc(
                 {
                     passaggio.entity_id_di_domani(k, "master")
                     for k in DOMANI
-                    if DOMANI[k] != "interna"
+                    if DOMANI[k] not in ("interna", "tolta")
                 }
-                | set(sensori_b)
-                | automazioni_attese("master")
+                | (set(sensori_b) - _tolte("master"))
             )
             assert native == attese
-            assert len(native) == 369 + 14
-            assert {e for e in sensori_b if e in native} == set(sensori_b)
+            assert len(native) == 367
+            assert not native & _tolte("master")
+            assert {e for e in sensori_b if e in native} == set(sensori_b) - _tolte(
+                "master"
+            )
 
-            # i 241 aiutanti: stesso valore di B
+            # i 239 aiutanti: stesso valore di B
             valori_c = _valori_nativi(nativa, vmc, "master", aiutanti)
             assert valori_c == oracolo
 
@@ -274,21 +303,26 @@ async def test_passaggio_di_una_vmc(
                 == 10
             )
 
-            # le 14 automazioni: stessa voce del registro (ripresa da HA) e stesso stato
+            # le 13 automazioni: logiche con gli entity_id della beta e lo stesso stato,
+            # senza voce del registro (quelle della beta tolte con la conferma) e senza
+            # entità; quella del cambio dell'IP non c'è più
             automazioni_c = {
-                e.entity_id: (e.id, nativa.states.get(e.entity_id).state)
-                for e in registro_c.entities.values()
-                if e.domain == "automation"
+                e: s.state for e, s in stati_logiche(nativa).stati.items()
             }
-            assert automazioni_c == automazioni_b
-            assert len(automazioni_c) == 14
+            assert automazioni_c == {
+                e: s for e, (_, s) in automazioni_b.items() if e not in _tolte("master")
+            }
+            assert len(automazioni_c) == 13
+            assert set(automazioni_c) == automazioni_attese("master")
+            assert [e for e in automazioni_b if registro_c.async_get(e)] == []
+            assert nativa.states.async_entity_ids("automation") == []
 
             # i 34 timer: tutti fermi, anche i 4 attivi in B
             assert {
                 k: vmc.c.timer.timer[vmc.stato.entity_id(k)].state for k in timer
             } == dict.fromkeys(timer, "idle")
 
-            # i 67 senza stato: 25 pulsanti, 42 interni al motore
+            # i 66 senza stato: 25 pulsanti, 41 interni al motore
             pulsanti = [k for k in senza_stato if DOMANI[k] == "button"]
             assert len(pulsanti) == 25
             assert all(
@@ -306,8 +340,8 @@ async def test_passaggio_di_una_vmc(
             applicato = hass_storage[chiave_archivio]["data"]
             assert applicato["stato"] == passaggio.APPLICATO
             assert applicato["conteggi"] == {
-                "impostazioni": 173,
-                "interni": 68,
+                "impostazioni": 172,
+                "interni": 67,
                 "memorie": 10,
                 "non_letti": 0,
             }
@@ -335,8 +369,8 @@ async def test_passaggio_di_una_vmc(
     assert conto == {
         ("visibile", "portata"): 150,
         ("interna", "portata"): 63,
-        ("visibile", "initial"): 23,
-        ("interna", "initial"): 5,
+        ("visibile", "initial"): 22,
+        ("interna", "initial"): 4,
     }
     # ogni valore portato è quello scritto in A ed è diverso da quello di una VMC nuova
     assert {k: oracolo[k] for k in portate} == {k: scritti[k] for k in portate}
@@ -355,7 +389,7 @@ async def test_passaggio_di_una_vmc(
     }
     assert [k for k in con_initial if scritti[k] == oracolo[k]] == []
     assert (
-        len(portate) + len(con_initial) + len(timer) + len(senza_stato)
+        len(portate) + len(con_initial) + len(timer) + len(senza_stato) + len(tolte)
         == len(DOMANI)
         == 342
     )
@@ -403,7 +437,7 @@ async def test_passaggio_di_tre_vmc(
     cartelle = [
         scrivi_package_beta(config_dir, v.data["nome"], v.data["host"]) for v in voci
     ]
-    aiutanti = [k for k in DOMANI if k.split(".", 1)[0] not in (*SENZA_STATO, "timer")]
+    aiutanti = AIUTANTI
 
     await carica_package(hass, cartelle)
     for nome in nomi:
@@ -476,7 +510,9 @@ async def test_passaggio_di_tre_vmc(
                 assert await async_setup_component(
                     nativa, "automation", {"automation": [AUTOMAZIONE_PERSONALE]}
                 )
-                await aggiungi_e_avvia(nativa, [])
+                # le logiche senza trigger, come le automazioni della beta
+                with logiche_spente():
+                    await aggiungi_e_avvia(nativa, [])
                 registro = er.async_get(nativa)
                 for una, nome in zip(voci, nomi, strict=True):
                     voce_c = nativa.config_entries.async_get_entry(una.entry_id)
@@ -488,7 +524,7 @@ async def test_passaggio_di_tre_vmc(
                         )
                     }
                     assert native == voci_attese(nome)  # niente «_2»
-                    assert set(sensori[nome]) <= native
+                    assert set(sensori[nome]) - _tolte(nome) <= native
                     valori = _valori_nativi(
                         nativa, voce_c.runtime_data.vmc, nome, aiutanti
                     )
@@ -505,7 +541,7 @@ async def test_passaggio_di_tre_vmc(
                 assert nuova.runtime_data.situazione == passaggio.NATIVA
                 assert (
                     len(er.async_entries_for_config_entry(registro, nuova.entry_id))
-                    == 369 + 14
+                    == 367
                 )
                 assert (
                     ir.async_get(nativa).async_get_issue(DOMAIN, ISSUE_PASSAGGIO)
@@ -552,12 +588,16 @@ async def test_cartella_gia_tolta_con_voci_rimaste(
             len(letto["interni"]),
             len(letto["memorie"]),
         ) == (
-            173,
-            68,
+            172,
+            67,
             10,
         )
 
-        passo = await conferma_dalla_riparazione(beta)
+        # la VMC nativa parte con la conferma: le logiche senza trigger, come le
+        # automazioni della beta
+        with logiche_spente():
+            passo = await conferma_dalla_riparazione(beta)
+            await beta.async_block_till_done()
 
         assert passo["type"] == "create_entry"  # niente riavvio
         assert ir.async_get(beta).async_get_issue(DOMAIN, ISSUE_RIAVVIO) is None
@@ -629,7 +669,7 @@ async def test_valori_sconosciuti_come_dopo_un_riavvio_della_beta(
             for k in DOMANI
             if k.startswith(f"{dominio}.")
             and k not in INTERNI
-            and DOMANI[k] != "sensor"
+            and DOMANI[k] not in ("sensor", "tolta")
             and not _con_initial(config, k, "master")
         ][:2]
     scelte += [
@@ -647,7 +687,7 @@ async def test_valori_sconosciuti_come_dopo_un_riavvio_della_beta(
     )
     letti = passaggio.leggi_valori(hass, "master")
     assert {**letti.impostazioni, **{k: grezzi[k] for k in letti.interni}} == grezzi
-    assert len(letti.non_letti) == 241 - len(scelte) + 10
+    assert len(letti.non_letti) == len(AIUTANTI) - len(scelte) + 10 == 239 - len(scelte) + 10
     await passaggio.async_salva_letti(hass, "master", letti, passaggio.CONFERMATO)
 
     master = voce("master")

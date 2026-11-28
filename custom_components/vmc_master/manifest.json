@@ -3,8 +3,7 @@
   "name": "VMC Master",
   "after_dependencies": [
     "logger",
-    "template",
-    "trace"
+    "template"
   ],
   "categories": [
     "climate.fans_ventilation"
@@ -14,7 +13,6 @@
   ],
   "config_flow": true,
   "dependencies": [
-    "automation",
     "frontend",
     "http",
     "lovelace",
@@ -24,6 +22,8 @@
   "integration_type": "device",
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER/issues",
-  "requirements": [],
-  "version": "9.0.0b45"
+  "requirements": [
+    "icmplib>=3.0.4"
+  ],
+  "version": "9.0.0b46"
 }

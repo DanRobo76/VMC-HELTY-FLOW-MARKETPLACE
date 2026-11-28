@@ -4,18 +4,19 @@ Qui si mettono insieme le parti delle fasi 2, 3 e 4 per una VMC, al posto di tut
 package di oggi (aiutanti, timer, script, comandi di shell, automazioni, sensori
 template, tcp, ping e rest):
 
-- ``VMCNativa`` (vmc.py): coordinatori delle letture e ``StatoVMC``, con i 121 modelli;
-- le 137 entità dei sensori: 121 sensori template di Home Assistant con i modelli
-  tradotti (sensori_template.py: stessi istanti e stesso ordine dei sensori template di
-  oggi; i cambi dei timer del motore arrivano a chi li legge con ``AnnunciDeiTimer``),
+- ``VMCNativa`` (vmc.py): coordinatori delle letture e ``StatoVMC``, con i 120 modelli;
+- le 136 entità dei sensori: 120 sensori calcolati con i modelli tradotti, entità
+  dell'integrazione che si comportano come i sensori template (sensori_template.py,
+  sensori_modello.py: stessi istanti e stesso ordine dei sensori template di oggi; i
+  cambi dei timer del motore arrivano a chi li legge con ``AnnunciDeiTimer``),
   gli altri 16 (letture, sensori con memoria) viste su ``StatoVMC`` (entita.py);
-- le 173 impostazioni native (comandi.py), viste su ``StatoVMC``;
-- la memoria interna (motore/memoria_interna.py): i 68 valori interni, con il loro
+- le 172 impostazioni native (comandi.py), viste su ``StatoVMC``;
+- la memoria interna (motore/memoria_interna.py): i 67 valori interni, con il loro
   archivio (``Store``) e i loro cambi anche in ``StatoVMC`` (i sensori che li leggono);
 - il motore (motore/ha.py) con il codice tradotto con tutte le opzioni della fase 4
   (``motore/generato_fase4/``: mappa dei nomi, script e comandi di shell dentro il
-  motore, timer del motore, valori interni nella memoria): le automazioni restano
-  entità ``automation``; il motore legge le entità visibili dalla macchina degli stati
+  motore, timer del motore, valori interni nella memoria): le automazioni sono logiche
+  dell'integrazione, senza entità (motore/logiche.py); il motore legge le entità visibili dalla macchina degli stati
   con i nomi di domani; scrive le impostazioni (e i valori interni insieme a loro) con
   ``ScritturaComandi`` (i servizi degli aiutanti di oggi); manda i comandi alla VMC con
   ``ClientVMC``;
@@ -32,7 +33,7 @@ from __future__ import annotations
 
 import importlib
 import logging
-from collections.abc import Awaitable, Callable, Mapping
+from collections.abc import Awaitable, Callable
 from datetime import timedelta
 from types import ModuleType
 from typing import Any
@@ -46,7 +47,6 @@ from .client import ClientVMC
 from .comandi import ComandoVMC, ScritturaComandi, crea_comandi
 from .entita import crea_entita, nome_visibile
 from .motore.ha import Motore
-from .motore.interni import CambiaIp
 from .motore.memoria_interna import MemoriaInterna
 from .pulsanti import PulsanteVMC, crea_pulsanti
 from .sensori_template import (
@@ -97,7 +97,6 @@ class VMCAssemblata:
         *,
         client: ClientVMC | None = None,
         prova_ping: Callable[[str], Any] | None = None,
-        cambia_ip: CambiaIp | None = None,
         codice: ModuleType | None = None,
         codice_sensori: ModuleType | None = None,
         versione: bool = True,
@@ -105,12 +104,11 @@ class VMCAssemblata:
         """Le parti della VMC ``nome`` all'indirizzo ``host``.
 
         ``client`` e ``prova_ping`` (facoltativi) sostituiscono il collegamento TCP e il
-        ping veri (prove, simulatore); ``cambia_ip`` è come l'integrazione cambia
-        l'indirizzo della VMC (comando «cambio IP» della scheda); ``codice`` è il codice
-        tradotto (di norma ``generato_fase4``) e ``codice_sensori`` quello dei sensori
-        template (di norma ``generato_fase4.sensori``); con ``versione`` False la lettura della
-        versione su GitHub non c'è (nessun sensore e nessuna lettura: come nel
-        simulatore, che non va in rete).
+        ping veri (prove, simulatore); ``codice`` è il codice tradotto (di norma
+        ``generato_fase4``) e ``codice_sensori`` quello dei sensori template (di norma
+        ``generato_fase4.sensori``); con ``versione`` False la lettura della versione su
+        GitHub non c'è (nessun sensore e nessuna lettura: come nel simulatore, che non va
+        in rete).
         """
         self.hass = hass
         self.nome = nome
@@ -129,7 +127,6 @@ class VMCAssemblata:
         self.motore = Motore(hass, nome, memoria=self.memoria)
         self.c = self.motore.c
         self._codice = codice
-        self._cambia_ip = cambia_ip
         self._versione = versione
         if codice_sensori is None:
             codice_sensori = importlib.import_module(CODICE_SENSORI)
@@ -179,16 +176,10 @@ class VMCAssemblata:
         uscita.setdefault("button", []).extend(self.pulsanti)
         return uscita
 
-    async def avvia(
-        self,
-        aggiungi: Aggiungi,
-        configurazione: Mapping[str, Any] | None = None,
-    ) -> None:
+    async def avvia(self, aggiungi: Aggiungi) -> None:
         """Avvia la VMC: impostazioni, letture e sensori, motore, timer e pulsanti.
 
-        ``aggiungi(dominio, entità)`` aggiunge le entità a Home Assistant;
-        ``configurazione`` è quella di Home Assistant (per avviare l'integrazione
-        ``automation`` se non c'è già).
+        ``aggiungi(dominio, entità)`` aggiunge le entità a Home Assistant.
         """
         # i valori interni e le impostazioni prima di tutto: i loro valori (iniziali o
         # ripristinati, come gli aiutanti all'avvio) sono gli ingressi dei modelli
@@ -198,16 +189,14 @@ class VMCAssemblata:
         await self.vmc.avvia()
         await aggiungi("sensor", list(self.sensori))
         await aggiungi("binary_sensor", list(self.binari))
-        # il motore: le impostazioni native per le scritture, poi automazioni, script,
+        # il motore: le impostazioni native per le scritture, poi logiche, script,
         # comandi e timer
         self.c.scrittura = self.scrittura
         codice = self.codice
         await self.motore.avvia(
             codice.crea,
-            configurazione,
             comandi=codice.comandi,
             invia=self.client.comanda,
-            cambia_ip=self._cambia_ip,
             timer=configurazione_timer(self.nome),
         )
         # i sensori template dopo il motore: i loro modelli leggono anche dai timer del
@@ -228,11 +217,11 @@ class VMCAssemblata:
         await aggiungi("button", list(self.pulsanti))
 
     async def ferma(self) -> None:
-        """Ferma letture, motore (script e timer) e collegamenti."""
+        """Ferma letture, motore (logiche, script e timer) e collegamenti."""
         for annulla in self._annulla:
             annulla()
         self._annulla.clear()
-        await self.motore.scarica_interni()
+        await self.motore.ferma()
         if self.c.timer is not None:
             self.c.timer.ferma()
         self.vmc.ferma()

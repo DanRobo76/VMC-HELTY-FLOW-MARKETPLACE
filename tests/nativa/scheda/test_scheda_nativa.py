@@ -2,8 +2,9 @@
 
 - la scheda tradotta, l'elenco delle modifiche e i totali sono quelli che scrive oggi il
   traduttore (con ``VMC_RIGENERA=1`` il test li riscrive);
-- ogni entità della scheda tradotta esiste domani, nessuna voce interna resta, ogni entità
-  di oggi che la scheda usava ha il suo nome di domani;
+- ogni entità della scheda tradotta esiste domani, nessuna voce interna o tolta resta, ogni
+  entità di oggi che la scheda usava ha il suo nome di domani; le righe delle voci tolte
+  (b46: il campo «Cambia IP VMC») escono intere;
 - ogni azione chiama un servizio che Home Assistant ha per il dominio delle sue entità, con
   dati che lo schema del servizio accetta;
 - oltre a nomi, servizi, righe dei timer (con il loro colore), condizioni dei timer, voci
@@ -60,6 +61,7 @@ from .traduci_scheda import (
     mappa_fase_1,
     modello_testo,
     scheda_master,
+    tolte_fase_1,
     traduci,
 )
 
@@ -188,20 +190,21 @@ def test_conteggi_delle_modifiche(traduzione) -> None:
     """Numero esatto di modifiche per tipo (vedi modifiche_scheda_totali.txt)."""
     per_tipo = Counter(m.tipo for m in traduzione.modifiche)
     assert per_tipo == {
-        "nome": 1929,
-        "elenco": 120,
+        "nome": 1922,
+        "elenco": 122,
         "servizio": 66,
         "condizione timer": 62,
         "riga conto alla rovescia": 39,
         "colore riga conto alla rovescia": 39,
         "comando": 23,
-        "testo": 57,
+        "testo": 55,
+        "riga tolta": 27,
         "esclusioni": 20,
         "frammento": 12,
         "chiave tipi": 5,
-        "intestazione": 1,
+        "intestazione": 2,
     }
-    assert sum(per_tipo.values()) == 2373
+    assert sum(per_tipo.values()) == 2394
 
 
 # ------------------------------------------------------------------------ i testi
@@ -288,7 +291,7 @@ def test_link_al_repository_nuovo(traduzione) -> None:
     VMC-HELTY-FLOW-MARKETPLACE): copyright dell'intestazione, pagina del Marketplace e
     GitHub in Informazioni. I 75 indirizzi delle immagini restano quelli (mai spostare
     file: le schede installate puntano a percorsi fissi). L'intestazione resta una cornice di «#» larga
-    uguale."""
+    uguale; dalla 9.0.0b46 cambia anche la versione della scheda nativa (riga 3)."""
     oggi, domani = scheda_master(), traduzione.testo
     assert len(_REPOSITORY_DI_PRIMA.findall(oggi)) == 3
     assert _REPOSITORY_DI_PRIMA.findall(domani) == []
@@ -298,8 +301,10 @@ def test_link_al_repository_nuovo(traduzione) -> None:
     assert len(righe_oggi) == len(righe_domani) == 39
     assert [len(r) for r in righe_domani] == [len(r) for r in righe_oggi]
     assert [i for i, (a, b) in enumerate(zip(righe_oggi, righe_domani)) if a != b] == [
-        10
+        2,
+        10,
     ]
+    assert "RELEASE [VER. 9.0.0b46]" in righe_domani[2]
     assert righe_domani[10].startswith(
         f"# Copyright © 2023-2026 Ing. Danilo Robotti {COMMENTI[0].dopo} "
     )
@@ -307,15 +312,20 @@ def test_link_al_repository_nuovo(traduzione) -> None:
 
 # --------------------------------------------------------------------- le tabelle
 def test_tabelle_della_fase_1() -> None:
-    """Le due tabelle della fase 1 coincidono; 220 voci su 326 (aiutanti e script) restano
-    entità, 106 diventano interne; i 16 comandi di shell: 12 pulsanti e 4 interni; le 14
-    automazioni diventano il motore."""
-    mappa = mappa_fase_1()
+    """Le due tabelle della fase 1 coincidono; 219 voci su 326 (aiutanti e script) restano
+    entità, 105 diventano interne e 2 sono tolte; i 16 comandi di shell: 12 pulsanti, 3
+    interni e 1 tolto; 13 delle 14 automazioni diventano il motore, 1 è tolta; 1 sensore è
+    tolto (b46: il campo «Cambia IP VMC» e chi lo serve)."""
+    mappa, tolte = mappa_fase_1(), tolte_fase_1()
     tipi = Counter()
     for oggi, domani in mappa.items():
         dominio = oggi.split(".", 1)[0]
+        stato = "tolta" if oggi in tolte else "entità" if domani else "interna"
+        if domani is None:
+            assert stato != "entità"
         if dominio in ("sensor", "binary_sensor"):
-            assert domani == oggi
+            assert domani == oggi or stato == "tolta"
+            tipi[("sensore", stato)] += stato == "tolta"
             continue
         gruppo = (
             "comando"
@@ -324,15 +334,26 @@ def test_tabelle_della_fase_1() -> None:
             if dominio == "automation"
             else "voce"
         )
-        tipi[(gruppo, domani is not None)] += 1
+        tipi[(gruppo, stato)] += 1
         if domani is not None:
             assert domani.split(".", 1)[1] == oggi.split(".", 1)[1], oggi
-    assert tipi == {
-        ("voce", True): 220,
-        ("voce", False): 106,
-        ("comando", True): 12,
-        ("comando", False): 4,
-        ("automazione", False): 14,
+    assert +tipi == {
+        ("voce", "entità"): 219,
+        ("voce", "interna"): 105,
+        ("voce", "tolta"): 2,
+        ("comando", "entità"): 12,
+        ("comando", "interna"): 3,
+        ("comando", "tolta"): 1,
+        ("automazione", "interna"): 13,
+        ("automazione", "tolta"): 1,
+        ("sensore", "tolta"): 1,
+    }
+    assert tolte == {
+        "automation.vmc_master_cambio_ip_vmc_riavvio_di_h_a",
+        "input_text.vmc_master_ip_insert",
+        "input_text.vmc_master_ip_insert_esito",
+        "sensor.vmc_master_verifica_ip_inserito",
+        "shell_command.vmc_master_aggiorna_indirizzo_ip",
     }
 
 
@@ -356,19 +377,19 @@ def test_entita_della_scheda_tradotta_esistono(schede) -> None:
         "sensor.vmc_",
         "sensor.vmc_master_",
     }
-    # 368 entità native diverse: 137 sensori della fase 2 e 231 di aiutanti, script e comandi
+    # 366 entità native diverse: 136 sensori della fase 2 e 230 di aiutanti, script e comandi
     # (non il sensore delle entità escluse dal Recorder, che la scheda non legge più)
-    assert len(interi) == 368
+    assert len(interi) == 366
     assert SENSORE_ESCLUSE in nativo and SENSORE_ESCLUSE not in interi
     assert Counter(e.split(".", 1)[0] for e in interi) == {
-        "sensor": 158,
+        "sensor": 157,
         "binary_sensor": 92,
         "switch": 37,
         "time": 30,
         "button": 25,
         "select": 14,
         "number": 10,
-        "text": 2,
+        "text": 1,
     }
 
 
@@ -477,6 +498,18 @@ def test_tocco_predefinito_uguale(schede) -> None:
 
 
 # ---------------------------------------------- nient'altro cambia (seconda traduzione)
+def _riga_tolta(config: Any, tolte: frozenset[str]) -> bool:
+    """La riga di una voce tolta o una riga ``conditional`` con una condizione su una voce
+    tolta (escono intere dalla scheda tradotta)."""
+    if not isinstance(config, Mapping):
+        return False
+    if config.get("entity") in tolte:
+        return True
+    return config.get("type") == "conditional" and any(
+        _riga_tolta(c, tolte) for c in config.get("conditions") or []
+    )
+
+
 def _traduci_struttura(config: Any, mappa: Mappa) -> Any:
     """La stessa traduzione fatta sulla configurazione (non sul testo)."""
     removibili = {n for n, d in mappa.entita.items() if d is None}
@@ -522,7 +555,7 @@ def _traduci_struttura(config: Any, mappa: Mappa) -> Any:
 
     def visita(nodo: Any, colore: str | None = None) -> Any:
         if isinstance(nodo, list):
-            return [visita(x, colore) for x in nodo]
+            return [visita(x, colore) for x in nodo if not _riga_tolta(x, mappa.tolte)]
         if isinstance(nodo, str):
             return nome(nodo)
         if not isinstance(nodo, Mapping):
@@ -581,7 +614,8 @@ def _righe_dei_timer(oggi: Any, domani: Any, colore: str | None = None):
             ):  # le condizioni dei timer cambiano «state» in «state_not»
                 yield from _righe_dei_timer(valore, domani[chiave], colore)
     elif isinstance(oggi, list):
-        for a, b in zip(oggi, domani, strict=True):
+        tenute = [a for a in oggi if not _riga_tolta(a, tolte_fase_1())]
+        for a, b in zip(tenute, domani, strict=True):
             yield from _righe_dei_timer(a, b, colore)
 
 
@@ -602,7 +636,7 @@ def test_solo_nomi_e_servizi_cambiati(schede) -> None:
     """La traduzione del testo è uguale alla traduzione fatta sulla struttura: testi,
     disposizione e stili restano identici."""
     oggi, domani = schede
-    assert _traduci_struttura(oggi, Mappa(mappa_fase_1())) == domani
+    assert _traduci_struttura(oggi, Mappa(mappa_fase_1(), tolte_fase_1())) == domani
 
 
 def test_righe_cambiate_solo_dalle_modifiche() -> None:
@@ -617,19 +651,24 @@ def test_righe_cambiate_solo_dalle_modifiche() -> None:
             tolte[riga[2:]] += 1
         elif riga.startswith("+ "):
             aggiunte[riga[2:]] += 1
-    tolte_intere = ("elenco", "esclusioni")
+    tolte_intere = ("elenco", "esclusioni", "riga tolta")
     righe_toccate = {m.riga for m in traduzione.modifiche if m.tipo not in tolte_intere}
     elenco = [m for m in traduzione.modifiche if m.tipo == "elenco"]
     esclusioni = [m for m in traduzione.modifiche if m.tipo == "esclusioni"]
+    righe_tolte = [m for m in traduzione.modifiche if m.tipo == "riga tolta"]
     # ogni riga toccata da una modifica è tolta e rimessa cambiata; tolte anche le voci
-    # dell'elenco, le 20 righe del ramo delle entità escluse dal Recorder e i 17
-    # «target: {}» dei comandi; aggiunte le 39 righe «type:» e le 39 righe «color:» delle
-    # righe dei timer e, per i 23 comandi, 23 «target:» e 23 «entity_id:»
-    assert len(elenco) == 120 and len(esclusioni) == 20
+    # dell'elenco, le 20 righe del ramo delle entità escluse dal Recorder, i 17
+    # «target: {}» dei comandi e le 237 righe del campo «Cambia IP VMC» (3 volte 79: la riga
+    # del campo e le 8 righe condizionali dei suoi esiti); aggiunte le 39 righe «type:» e le
+    # 39 righe «color:» delle righe dei timer e, per i 23 comandi, 23 «target:» e 23
+    # «entity_id:»
+    assert len(elenco) == 122 and len(esclusioni) == 20 and len(righe_tolte) == 27
+    assert Counter(m.posto for m in righe_tolte) == {"riga": 3, "riga condizionale": 24}
+    assert not righe_toccate & set(range(556, 635))
     assert [m.prima for m in esclusioni][:3] == list(RAMO_ESCLUSE)
     assert [m.prima for m in esclusioni][-2:] == ["{%- else -%}", "{%- endif -%}"]
     assert not righe_toccate & {m.riga for m in esclusioni}
-    assert sum(tolte.values()) == len(righe_toccate) + 120 + 20 + 17
+    assert sum(tolte.values()) == len(righe_toccate) + 122 + 20 + 17 + 237
     assert Counter(m.prima for m in esclusioni) <= Counter(
         r.strip() for r in tolte.elements()
     )
@@ -638,7 +677,7 @@ def test_righe_cambiate_solo_dalle_modifiche() -> None:
     nuove = Counter(r.strip() for r in aggiunte.elements())
     assert nuove[f"type: {RIGA_CONTO}"] == 39 and nuove["target:"] >= 23
     assert nuove["color: state"] == 30 and nuove["color: none"] == 9
-    assert len(dopo) == len(prima) - 120 - 20 + 39 + 39 + 6 + 23
+    assert len(dopo) == len(prima) - 122 - 20 - 237 + 39 + 39 + 6 + 23
 
 
 def test_righe_cambiate_dai_testi(traduzione) -> None:
@@ -680,10 +719,10 @@ def test_righe_cambiate_dai_testi(traduzione) -> None:
         assert " ".join(_testi_nuovi(vecchio).split()) == " ".join(
             " ".join(righe_con[j1:j2]).split()
         )
-    # 94 righe con testi di oggi (57 testi, alcuni su più righe, su più capoversi o sulla
-    # stessa riga), in 46 gruppi di righe consecutive
-    assert (len(coperte), len(gruppi)) == (94, 46)
-    assert len(righe_con) == len(righe_senza) - 20
+    # 104 righe con testi di oggi (55 testi, alcuni su più righe, su più capoversi o sulla
+    # stessa riga), in 44 gruppi di righe consecutive
+    assert (len(coperte), len(gruppi)) == (104, 44)
+    assert len(righe_con) == len(righe_senza) - 35
 
 
 # ------------------------------------------ stessi risultati con gli stati di domani
@@ -722,13 +761,15 @@ def _varianti(stati: nativi.Stati):
 
 def test_condizioni_uguali(schede) -> None:
     """Ogni condizione della scheda (schede e righe conditional, visibility) dà lo stesso
-    risultato con gli stati di oggi e con quelli delle entità native, in 155 situazioni."""
+    risultato con gli stati di oggi e con quelli delle entità native, in 155 situazioni
+    (tranne le 24 righe condizionali del campo «Cambia IP VMC», che escono)."""
     oggi, domani = schede
-    elenchi_oggi, elenchi_domani = (
-        list(nativi.condizioni(oggi)),
-        list(nativi.condizioni(domani)),
-    )
-    assert len(elenchi_oggi) == len(elenchi_domani) == 162
+    tolte = tolte_fase_1()
+    tutte_oggi = list(nativi.condizioni(oggi))
+    elenchi_oggi = [e for e in tutte_oggi if not any(_riga_tolta(c, tolte) for c in e)]
+    elenchi_domani = list(nativi.condizioni(domani))
+    assert len(tutte_oggi) == 162
+    assert len(elenchi_oggi) == len(elenchi_domani) == 138
     stati = nativi.leggi_stati()
     situazioni = 0
     for nome, variante in _varianti(stati):
@@ -816,18 +857,18 @@ async def test_modelli_uguali(hass: HomeAssistant, schede, freezer) -> None:
 
 
 async def test_elenco_pulisci_cronologia(hass: HomeAssistant, schede) -> None:
-    """L'elenco di «Pulisci cronologia» tradotto: 355 voci (475 di oggi meno le 120 interne o
-    del motore). Il riquadro mostra sempre il ramo senza esclusioni (domani tutte le entità
+    """L'elenco di «Pulisci cronologia» tradotto: 353 voci (475 di oggi meno le 122 interne,
+    del motore o tolte). Il riquadro mostra sempre il ramo senza esclusioni (domani tutte le entità
     sono registrate: un'integrazione del catalogo non può escluderne dal Recorder), anche se
     il sensore delle entità escluse ha l'attributo «options» con l'elenco del package, come
-    lo scrive oggi ``comandi.SensoreSceltaVMC`` (con quel ramo il riquadro direbbe 268
-    entità registrate e 87 escluse)."""
+    lo scrive oggi ``comandi.SensoreSceltaVMC`` (con quel ramo il riquadro direbbe 267
+    entità registrate e 86 escluse)."""
     oggi, domani = schede
     elenco = next(m for m in nativi.modelli(domani) if "{%- set elenco = [" in m)
     elenco_oggi = next(m for m in nativi.modelli(oggi) if "{%- set elenco = [" in m)
     voci = re.findall(r"^\s*'([a-z_]+\.[a-z0-9_]+)',?$", elenco, re.MULTILINE)
     voci_oggi = re.findall(r"^\s*'([a-z_]+\.[a-z0-9_]+)',?$", elenco_oggi, re.MULTILINE)
-    assert (len(voci_oggi), len(voci)) == (475, 355)
+    assert (len(voci_oggi), len(voci)) == (475, 353)
     mappa = mappa_fase_1()
     assert voci == [mappa[v] for v in voci_oggi if mappa[v] is not None]
     stati = nativi.leggi_stati()
@@ -843,16 +884,16 @@ async def test_elenco_pulisci_cronologia(hass: HomeAssistant, schede) -> None:
         },
     )
     testo = Template(elenco, hass).async_render(parse_result=False)
-    assert "Vuoi cancellare la cronologia di 355 entità della VMC «Master»?" in testo
+    assert "Vuoi cancellare la cronologia di 353 entità della VMC «Master»?" in testo
     assert "escluse" not in testo and "registrate" not in testo
-    assert "Elenco completo delle 355 entità" in testo
+    assert "Elenco completo delle 353 entità" in testo
     assert SENSORE_ESCLUSE not in elenco
     # il sensore nativo con l'attributo «options» (l'elenco del package, coi nomi di oggi)
     opzioni = [
         nome_visibile(o, "master")
         for o in IMPOSTAZIONI["input_select.entita_escluse_recorder"]["options"]
     ]
-    assert len(opzioni) == 427
+    assert len(opzioni) == 423
     stato = hass.states.get(SENSORE_ESCLUSE)
     hass.states.async_set(
         SENSORE_ESCLUSE, stato.state, {**stato.attributes, "options": opzioni}
@@ -861,7 +902,7 @@ async def test_elenco_pulisci_cronologia(hass: HomeAssistant, schede) -> None:
     assert Template(elenco, hass).async_render(parse_result=False) == testo
     # le voci dell'elenco che il ramo tolto avrebbe chiamato escluse
     assert Counter(v.split(".", 1)[0] for v in voci if v in opzioni) == {
-        "sensor": 72,
+        "sensor": 71,
         "binary_sensor": 15,
     }
     righe = dict(
@@ -874,8 +915,8 @@ async def test_elenco_pulisci_cronologia(hass: HomeAssistant, schede) -> None:
         "Orari": "30",
         "Valori numerici": "10",
         "Selettori": "14",
-        "Testi": "2",
-        "Sensori": "158",
+        "Testi": "1",
+        "Sensori": "157",
     }
 
 

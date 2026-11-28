@@ -25,7 +25,6 @@ import logging
 import re
 from collections import Counter
 from collections.abc import Callable, Iterable, Mapping
-from functools import partial
 from typing import TYPE_CHECKING, Any
 
 import probatio
@@ -549,7 +548,7 @@ _CLASSI: dict[tuple[str, str], type[ComandoVMC]] = {
 
 
 def crea_comandi(stato: StatoVMC) -> dict[str, list[ComandoVMC]]:
-    """Le 173 entità delle impostazioni visibili della VMC, per dominio di domani."""
+    """Le 172 entità delle impostazioni visibili della VMC, per dominio di domani."""
     entita: dict[str, list[ComandoVMC]] = {}
     for chiave in chiavi_comandi():
         dominio = DOMANI[chiave]
@@ -659,13 +658,14 @@ class ScritturaComandi:
     su ogni entità; un'entità sola scritta dentro la chiamata, più entità ognuna in un
     suo compito, nell'ordine di un insieme come in Home Assistant.
 
-    Due vie, con gli stessi tempi: ``chiama`` (diretta, senza evento ``call_service``) e
-    ``registra`` (servizi veri in un dominio scelto da chi la usa, con il loro evento).
-    ``chiama`` risolve i bersagli con gli entity_id di oggi (``_ComeAiutante``): più
-    bersagli si scrivono nello stesso ordine degli aiutanti (Home Assistant scrive
-    l'intersezione fra l'insieme dei bersagli e le entità del dominio, che percorre
-    nell'ordine in cui si sono aggiunte: qui le entità di ogni tipo di aiutante, valori
-    interni compresi, sono nell'ordine del package, ``ORDINE_AIUTANTI``).
+    ``chiama`` scrive in modo diretto, senza evento ``call_service``: l'integrazione non
+    registra servizi (le prove di confronto registrano gli stessi servizi in un loro
+    dominio di prova). ``chiama`` risolve i bersagli con gli entity_id di oggi
+    (``_ComeAiutante``): più bersagli si scrivono nello stesso ordine degli aiutanti
+    (Home Assistant scrive l'intersezione fra l'insieme dei bersagli e le entità del
+    dominio, che percorre nell'ordine in cui si sono aggiunte: qui le entità di ogni
+    tipo di aiutante, valori interni compresi, sono nell'ordine del package,
+    ``ORDINE_AIUTANTI``).
 
     Con ``memoria`` (fase 4, la memoria interna del motore) ogni servizio vede anche i
     valori interni del suo tipo di aiutante, con il loro entity_id di oggi: una chiamata
@@ -775,26 +775,3 @@ class ScritturaComandi:
             self._funzioni[servizio],
             chiamata,
         )
-
-    @callback
-    def registra(self, dominio: str) -> dict[str, str]:
-        """Registra i servizi in ``dominio`` («<dominio>.input_boolean_turn_on»...).
-
-        Restituisce servizio di oggi -> servizio registrato (per la mappa dei nomi).
-        """
-        nomi: dict[str, str] = {}
-        for servizio, (schema, _) in SERVIZI_MOTORE.items():
-            nome = servizio.replace(".", "_")
-            self.hass.services.async_register(
-                dominio,
-                nome,
-                partial(
-                    entity_service_call,
-                    self.hass,
-                    self._entita(servizio.split(".", 1)[0]),
-                    self._funzioni[servizio],
-                ),
-                schema,
-            )
-            nomi[servizio] = f"{dominio}.{nome}"
-        return nomi
