@@ -57,10 +57,10 @@ from homeassistant.util import dt as dt_util
 from custom_components.vmc_master.nativa.motore import jinja as J
 from custom_components.vmc_master.nativa.motore.contesto import Contesto, ModelloHA
 from custom_components.vmc_master.nativa.motore.esecuzione import Modello
-from custom_components.vmc_master.nativa.motore.generato import modelli as M
 from custom_components.vmc_master.trasforma import rinomina
 
 from . import valori_package as P
+from .generato import modelli as M
 from .traduci import traduzione
 from .traduci_jinja import Traduttore
 

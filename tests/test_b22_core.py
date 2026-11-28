@@ -1,12 +1,12 @@
-"""Prove della 9.0.0b22 (audit tecnico del 18-11-2026): M-1, B-1..B-6, B-9 e il messaggio
-finale dopo l'aggiunta di una VMC."""
+"""Prove della 9.0.0b22 (audit tecnico del 18-11-2026): M-1, B-1..B-6 e il messaggio finale
+dopo l'aggiunta di una VMC. B-9 (il filtro degli errori dei sensori TCP del package nel log)
+non c'è più dalla b48: la VMC nativa non usa i sensori TCP."""
 
 from __future__ import annotations
 
 import errno
 import hashlib
 import json
-import logging
 import time
 from pathlib import Path
 from unittest.mock import patch
@@ -33,21 +33,6 @@ CONTROLLO_CONFIG = "homeassistant.config.async_check_ha_config_file"
 def _nessuna_vmc_in_rete():
     with patch(NOME_VMC, return_value=None):
         yield
-
-
-def _togli_filtri_tcp() -> None:
-    logger = logging.getLogger("homeassistant.components.tcp.entity")
-    for filtro in [f for f in logger.filters if type(f).__name__ == "_FiltroTcpVmc"]:
-        logger.removeFilter(filtro)
-
-
-@pytest.fixture(autouse=True)
-def _senza_filtri_tcp_rimasti():
-    """Il logger e' globale: un filtro di un altro test (hass chiuso senza scaricare le
-    voci) non deve contare qui."""
-    _togli_filtri_tcp()
-    yield
-    _togli_filtri_tcp()
 
 
 def _impronte(cartella: Path) -> dict[str, str]:
@@ -269,82 +254,6 @@ async def test_senza_riavvio_messaggio_normale(hass: HomeAssistant) -> None:
     risultato = await _aggiungi_in_rete(hass, "192.168.1.160", "VMC Giorno")
     assert risultato["type"] is FlowResultType.CREATE_ENTRY
     assert risultato.get("description") is None
-
-
-# ---- B-9: errori dei sensori TCP con la VMC spenta ----------------------------------
-
-
-def _record(ip: str, porta: int = 5001) -> logging.LogRecord:
-    return logging.LogRecord(
-        "homeassistant.components.tcp.entity", logging.ERROR, __file__, 1,
-        "Unable to connect to %s on port %s: %s", (ip, porta, "[Errno 113] No route to host"), None,
-    )
-
-
-def test_filtro_tcp_un_messaggio_ogni_30_minuti() -> None:
-    from custom_components.vmc_master import _FiltroTcpVmc
-
-    filtro = _FiltroTcpVmc()
-    filtro.ips = frozenset({"192.168.1.160", "192.168.1.161"})
-    ora = [1000.0]
-    filtro._ora = lambda: ora[0]
-    assert filtro.filter(_record("192.168.1.160"))
-    assert not filtro.filter(_record("192.168.1.160"))
-    assert filtro.filter(_record("192.168.1.161"))  # un'altra VMC: conto suo
-    # altri dispositivi (anche con un IP che contiene quello della VMC): passano sempre
-    for _volta in range(3):
-        assert filtro.filter(_record("192.168.1.16"))
-        assert filtro.filter(_record("192.168.1.1600"))
-        assert filtro.filter(_record("10.0.0.5"))
-    ora[0] += 30 * 60 - 1
-    assert not filtro.filter(_record("192.168.1.160"))
-    ora[0] += 1
-    assert filtro.filter(_record("192.168.1.160"))
-    assert not filtro.filter(_record("192.168.1.160"))
-
-
-async def test_filtro_tcp_installato_e_tolto(hass: HomeAssistant, caplog) -> None:
-    """Installato con la prima VMC, IP aggiornati quando cambiano, tolto con l'ultima."""
-    logger = logging.getLogger("homeassistant.components.tcp.entity")
-    voce = MockConfigEntry(
-        domain=DOMAIN, unique_id="master", data={"nome": "master", "host": "192.168.1.160"}
-    )
-    voce.add_to_hass(hass)
-    assert await hass.config_entries.async_setup(voce.entry_id)
-    await hass.async_block_till_done()
-    filtri = [f for f in logger.filters if type(f).__name__ == "_FiltroTcpVmc"]
-    assert filtri == [hass.data["vmc_master_filtro_tcp"]]
-    assert len(filtri) == 1 and filtri[0].ips == {"192.168.1.160"}
-    with caplog.at_level(logging.ERROR, logger="homeassistant.components.tcp.entity"):
-        for _volta in range(5):
-            logger.error("Unable to connect to %s on port %s: %s", "192.168.1.160", 5001, "timeout")
-            logger.error("Unable to connect to %s on port %s: %s", "192.168.1.50", 8080, "timeout")
-    messaggi = [r.getMessage() for r in caplog.records if r.name == logger.name]
-    assert sum("192.168.1.160" in m for m in messaggi) == 1
-    assert sum("192.168.1.50" in m for m in messaggi) == 5
-    # IP cambiato (la voce si ricarica): il filtro conosce il nuovo
-    hass.config_entries.async_update_entry(voce, data={**voce.data, "host": "192.168.1.170"})
-    await hass.async_block_till_done()
-
-    def _filtri() -> list:
-        return [f for f in logger.filters if type(f).__name__ == "_FiltroTcpVmc"]
-
-    assert _filtri() == [hass.data["vmc_master_filtro_tcp"]]
-    assert _filtri()[0].ips == {"192.168.1.170"}
-    # una seconda voce non installa un secondo filtro
-    sala = MockConfigEntry(
-        domain=DOMAIN, unique_id="sala", data={"nome": "sala", "host": "192.168.1.161"}
-    )
-    sala.add_to_hass(hass)
-    assert await hass.config_entries.async_setup(sala.entry_id)
-    await hass.async_block_till_done()
-    assert len(_filtri()) == 1
-    assert _filtri()[0].ips == {"192.168.1.170", "192.168.1.161"}
-    assert await hass.config_entries.async_unload(sala.entry_id)
-    assert len(_filtri()) == 1
-    assert await hass.config_entries.async_unload(voce.entry_id)
-    assert _filtri() == []
-    assert "vmc_master_filtro_tcp" not in hass.data
 
 
 # ---- B-6: risposta della VMC a VMNM? in piu' pezzi ----------------------------------

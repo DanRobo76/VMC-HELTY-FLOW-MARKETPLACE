@@ -6,7 +6,7 @@ Generato da tests/nativa/motore/traduci.py dal package della b42: non modificare
 # ruff: noqa
 # fmt: off
 
-from .. import jinja as J
+from custom_components.vmc_master.nativa.motore import jinja as J
 
 
 def m0001(c, V):

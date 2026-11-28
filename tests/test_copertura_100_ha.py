@@ -10,7 +10,6 @@ from __future__ import annotations
 import asyncio
 import ipaddress
 import itertools
-import logging
 import threading
 from pathlib import Path
 from types import SimpleNamespace
@@ -25,7 +24,6 @@ from homeassistant.data_entry_flow import (
     EVENT_DATA_ENTRY_FLOW_PROGRESS_UPDATE,
     FlowResultType,
 )
-from homeassistant.setup import async_setup_component
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 import custom_components.vmc_master as integrazione
@@ -62,20 +60,7 @@ def _notifiche(hass: HomeAssistant) -> dict:
     return persistent_notification._async_get_or_create_notifications(hass)
 
 
-def _record(messaggio: str, argomenti: tuple = ()) -> logging.LogRecord:
-    return logging.LogRecord("prova", logging.ERROR, __file__, 1, messaggio, argomenti, None)
-
-
 # ---------------------------------------------------------------- avvio dell'integrazione
-async def test_filtro_ping_gia_presente(hass: HomeAssistant) -> None:
-    """Integrazione avviata di nuovo nello stesso Home Assistant: un solo filtro del ping."""
-    gia = logging.Filter("gia presente")
-    hass.data[integrazione.DATI_FILTRO_PING] = gia
-    assert await async_setup_component(hass, DOMAIN, {})
-    assert hass.data[integrazione.DATI_FILTRO_PING] is gia
-    assert gia not in logging.getLogger(integrazione.LOGGER_COMMAND_LINE).filters
-
-
 def _voce_caricata(hass: HomeAssistant, stato=ConfigEntryState.LOADED) -> MockConfigEntry:
     voce = MockConfigEntry(
         domain=DOMAIN, unique_id="master", data={"nome": "master", "host": IP}, state=stato
@@ -126,27 +111,6 @@ def test_cartella_del_package_illeggibile(tmp_path: Path, caplog) -> None:
         passaggio._id_del_package_della_beta("sala")
     )
     assert "File del package in" in caplog.text and "non leggibili" in caplog.text
-
-
-# ---------------------------------------------------------------- filtri dei log
-def test_filtro_tcp_casi_limite() -> None:
-    filtro = integrazione._FiltroTcpVmc()
-    # nessuna VMC configurata: passa tutto
-    assert filtro.filter(_record("Unable to connect to 192.168.1.160 on port 5001"))
-    filtro.ips = frozenset({IP})
-    # messaggio che non si può formattare: passa com'è
-    assert filtro.filter(_record("Valore %d", ("non un numero",)))
-
-
-async def test_filtro_ping_messaggio_non_formattabile(hass: HomeAssistant) -> None:
-    filtro = integrazione._FiltroPingAvvio(hass)
-    assert filtro.filter(_record("Timeout for command: %d", ("ping",)))
-
-
-async def test_filtro_tcp_assente(hass: HomeAssistant) -> None:
-    integrazione._aggiorna_ip_filtro_tcp(hass)
-    integrazione._togli_filtro_tcp(hass)
-    assert integrazione.DATI_FILTRO_TCP not in hass.data
 
 
 # ---------------------------------------------------------------- voce della VMC

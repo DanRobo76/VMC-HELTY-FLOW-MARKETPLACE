@@ -30,9 +30,9 @@ from .timer import TimerDelMotore, attacca_trigger_timer
 DOMINIO_SCRIPT = "script"
 
 ScriptComeEntita = Callable[["Motore", list[tuple[Script, Sequenza]]], Awaitable[None]]
-"""Per le prove della fase 3 (il codice di ``generato/``, che chiama gli script come
-servizi di Home Assistant): crea le entità degli script del package sopra le loro
-sequenze. Non serve all'integrazione."""
+"""Per le prove della fase 3 (il codice di ``tests/nativa/motore/generato/``, che chiama
+gli script come servizi di Home Assistant): crea le entità degli script del package sopra
+le loro sequenze. Non serve all'integrazione."""
 
 
 class Motore:
@@ -111,8 +111,7 @@ class Motore:
 
     async def avvia(
         self,
-        crea: Callable[[Contesto], tuple[list[Automazione], list[Script]]]
-        | None = None,
+        crea: Callable[[Contesto], tuple[list[Automazione], list[Script]]],
         *,
         comandi: Callable[[Contesto], list[Comando]] | None = None,
         invia: Invia | None = None,
@@ -129,14 +128,12 @@ class Motore:
 
         ``timer`` (fase 4): la configurazione dei timer del motore (come la chiave
         ``timer:`` del package), per il codice tradotto con ``timer_motore``; senza, il
-        motore non ha timer (il codice di ``generato/`` usa i timer di Home Assistant).
+        motore non ha timer (il codice della fase 3, nelle prove, usa i timer di Home
+        Assistant).
 
         ``script_come_entita`` (solo prove della fase 3): crea le entità degli script al
         posto degli script interni.
         """
-        if crea is None:
-            from .generato.motore import crea
-
         if timer is not None:
             self.c.timer = TimerDelMotore(self.c, timer)
             await self.c.timer.prepara()

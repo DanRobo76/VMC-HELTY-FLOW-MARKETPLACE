@@ -50,11 +50,11 @@ from homeassistant.setup import async_setup_component
 from homeassistant.util import dt as dt_util
 from pytest_homeassistant_custom_component.common import async_test_home_assistant
 
-from custom_components.vmc_master.nativa.motore import generato
 from custom_components.vmc_master.nativa.motore.chiusura import registro_sequenze
 from custom_components.vmc_master.nativa.motore.ha import Motore
 from custom_components.vmc_master.nativa.motore.stati_logiche import stati_logiche
 
+from . import generato
 from .fase3 import MotoreFase3
 from .test_semantica import (
     AIUTANTI,

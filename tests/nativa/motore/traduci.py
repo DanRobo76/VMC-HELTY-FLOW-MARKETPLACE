@@ -12,6 +12,9 @@ liste di entity_id, durate, Template al posto dei testi con Jinja...) e scrive d
 Nel package i due moduli sono divisi in moduli più piccoli (``traduci``): ``modelli.py`` e
 ``motore.py`` importano le loro parti.
 
+``generato/`` è in ``tests/nativa/motore/``, fuori dall'integrazione: lo usano solo le prove
+e gli strumenti, e importa i moduli del motore con il loro nome intero (``MOTORE``).
+
 Il codice generato non si modifica a mano: si rigenera con
 ``VMC_RIGENERA=1 pytest tests/nativa/motore/test_traduzione.py``.
 """
@@ -69,7 +72,12 @@ from .traduci_jinja import (
 
 RADICE = Path(__file__).resolve().parents[3]
 PACKAGE = RADICE / "custom_components/vmc_master/package"
-GENERATO = RADICE / "custom_components/vmc_master/nativa/motore/generato"
+GENERATO = RADICE / "tests/nativa/motore/generato"
+MOTORE = "custom_components.vmc_master.nativa.motore"
+"""Da dove il codice generato importa i moduli del motore (``jinja``, ``condizioni``,
+``definizioni``, ``esecuzione``): con il nome intero, perché ``GENERATO`` e i moduli delle
+prove sono fuori dal motore. Solo il codice della fase 4, che è dentro il motore
+(``generato_fase4/``), li importa con ``..`` (``traduci_fase4``)."""
 
 INTESTAZIONE = '''"""{titolo}
 
@@ -675,25 +683,30 @@ async def traduci(
 # al riavvio. Con moduli piccoli il picco è quello del modulo più grande.
 LIMITE_MODULO = 200_000
 
-_IMPORTA_MOTORE = (
-    "\nfrom datetime import time, timedelta\n\n"
-    "from .. import condizioni as C\n"
-    "from ..definizioni import Automazione, Script\n"
-    "from ..esecuzione import Annulla, Ferma, Modello\n"
-    "from . import modelli as M\n"
-)
 _INIZIO_SORGENTI = "_SORGENTI = (\n"
 _INIZIO_INTERNI = (
     "# i valori interni (fase 4): nella memoria interna del motore\nINTERNI = (\n"
 )
 
 
-def _importa_motore(g: Generatore) -> str:
-    """Gli import dei moduli del motore (con ``Comando`` se ci sono i comandi)."""
-    if g.comandi is None:
-        return _IMPORTA_MOTORE
-    return _IMPORTA_MOTORE.replace(
-        "Automazione, Script", "Automazione, Comando, Script"
+def _da(importa_da: str, modulo: str) -> str:
+    """Il modulo ``modulo`` del motore come si scrive dopo «from» (``importa_da``: il nome
+    intero del motore, ``MOTORE``, o ``..``)."""
+    return importa_da + modulo if importa_da.endswith(".") else f"{importa_da}.{modulo}"
+
+
+def _importa_motore(
+    comandi: bool, nome_modelli: str = "modelli", importa_da: str = MOTORE
+) -> str:
+    """Gli import di un modulo del motore generato (con ``Comando`` se ci sono i
+    comandi): i moduli del motore da ``importa_da``, i modelli da ``nome_modelli``."""
+    definizioni = "Automazione, Comando, Script" if comandi else "Automazione, Script"
+    return (
+        "\nfrom datetime import time, timedelta\n\n"
+        f"from {importa_da} import condizioni as C\n"
+        f"from {_da(importa_da, 'definizioni')} import {definizioni}\n"
+        f"from {_da(importa_da, 'esecuzione')} import Annulla, Ferma, Modello\n"
+        f"from . import {nome_modelli} as M\n"
     )
 
 
@@ -712,7 +725,10 @@ def _in_parti(blocchi: list[str]) -> list[list[str]]:
 
 
 def _moduli_modelli(
-    jinja: Traduttore, tolti: frozenset[str] = frozenset()
+    jinja: Traduttore,
+    tolti: frozenset[str] = frozenset(),
+    *,
+    importa_da: str = MOTORE,
 ) -> dict[str, str]:
     """``modelli_NN.py`` con le funzioni dei modelli e ``modelli.py``, che le importa tutte
     e dà a ognuna il suo ``sorgente``.
@@ -724,6 +740,8 @@ def _moduli_modelli(
     ``tolti`` (fase 4): i modelli che escono dal codice (``traduci_fase4.escluse``). Le
     parti si dividono come se ci fossero e gli altri modelli tengono il loro numero: il
     codice cambia solo dove si toglie. Il testo di un modello tolto è vuoto.
+
+    ``importa_da``: da dove i moduli importano ``jinja`` (vedi ``MOTORE``).
     """
     testi = {nome: testo for testo, nome in jinja.funzioni.items()}
     testi.update(dict.fromkeys(tolti & testi.keys(), ""))
@@ -745,7 +763,7 @@ def _moduli_modelli(
         titolo = f"Modelli Jinja del package, tradotti in Python (parte {numero} di {len(parti)})."
         moduli[f"modelli_{numero:02d}.py"] = (
             INTESTAZIONE.format(titolo=titolo)
-            + "\nfrom .. import jinja as J\n\n\n"
+            + f"\nfrom {importa_da} import jinja as J\n\n\n"
             + "\n\n\n".join(parte)
             + "\n"
         )
@@ -789,7 +807,11 @@ def _moduli_modelli(
 
 
 def _moduli_motore(
-    g: Generatore, motore: str, tolti: frozenset[str] = frozenset()
+    g: Generatore,
+    motore: str,
+    tolti: frozenset[str] = frozenset(),
+    *,
+    importa_da: str = MOTORE,
 ) -> dict[str, str]:
     """``motore_NN.py`` con le condizioni e le sequenze e ``motore.py`` con ``crea``.
 
@@ -800,13 +822,15 @@ def _moduli_motore(
     ``tolti`` (fase 4): le condizioni e le sequenze che escono dal codice
     (``traduci_fase4.escluse``; ``motore`` è già senza le loro automazioni e i loro
     comandi). Le parti si dividono come se ci fossero e le altre tengono il loro numero.
+
+    ``importa_da``: da dove i moduli importano i moduli del motore (vedi ``MOTORE``).
     """
     prima, separatore, crea = motore.partition("\n\n\ndef crea(c):\n")
     if not separatore:
         raise NonTraducibile("crea non trovata")
     # i valori interni (fase 4), se ci sono, restano in motore.py prima di crea
     _, con_interni, interni = prima.partition(_INIZIO_INTERNI)
-    importa_motore = _importa_motore(g)
+    importa_motore = _importa_motore(g.comandi is not None, importa_da=importa_da)
     parti = [
         [b for b in parte if _nome_blocco(b) not in tolti]
         for parte in _in_parti(g.condizioni) + _in_parti(g.sequenze)
@@ -1031,21 +1055,15 @@ async def _traduzione(
     modelli = INTESTAZIONE.format(
         titolo="Modelli Jinja del package, tradotti in Python."
     )
-    modelli += "\nfrom .. import jinja as J\n\n\n" + "\n\n\n".join(jinja.codice) + "\n"
+    modelli += (
+        f"\nfrom {MOTORE} import jinja as J\n\n\n" + "\n\n\n".join(jinja.codice) + "\n"
+    )
     motore = INTESTAZIONE.format(
         titolo="Automazioni e script del package, tradotti in Python."
     )
-    definizioni = (
-        "Automazione, Comando, Script"
-        if comandi is not None
-        else ("Automazione, Script")
-    )
     motore += (
-        "\nfrom datetime import time, timedelta\n\n"
-        "from .. import condizioni as C\n"
-        f"from ..definizioni import {definizioni}\n"
-        "from ..esecuzione import Annulla, Ferma, Modello\n"
-        f"from . import {nome_modelli} as M\n\n\n"
+        _importa_motore(comandi is not None, nome_modelli)
+        + "\n\n"
         + "\n\n\n".join(g.condizioni)
         + "\n\n\n"
         + "\n\n\n".join(g.sequenze)

@@ -106,7 +106,6 @@ from pytest_homeassistant_custom_component.common import async_test_home_assista
 from custom_components.vmc_master.const import NOME_MASTER
 from custom_components.vmc_master.installatore import genera_file
 from custom_components.vmc_master.nativa.client import ErroreVMC
-from custom_components.vmc_master.nativa.motore import generato
 from custom_components.vmc_master.nativa.motore.definizioni import (
     COMANDO_NOME,
     COMANDO_VMC,
@@ -120,6 +119,7 @@ from custom_components.vmc_master.nativa.motore.timer import (
     bus_del_motore,
 )
 
+from . import generato
 from .banco_memoria import (
     AGGIORNA,
     DOMINI_INTERNI,
