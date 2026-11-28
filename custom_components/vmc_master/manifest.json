@@ -25,5 +25,5 @@
   "requirements": [
     "icmplib>=3.0.4"
   ],
-  "version": "9.0.0b46"
+  "version": "9.0.0b47"
 }

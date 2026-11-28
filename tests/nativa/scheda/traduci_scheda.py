@@ -337,6 +337,72 @@ TESTI = (
         "che leggono le spie e le allerte dell'integrazione. Servono solo"
         " all'interfaccia: non comandano la VMC.",
     ),
+    # 9.0.0b47 (testi più chiari, il comportamento non cambia): la durata del Ping ...
+    Testo(
+        "Home Assistant la controlla ogni 10 secondi.",
+        "Home Assistant la controlla ogni 10 secondi: ogni controllo invia 3 ping, uno al"
+        " secondo, e dura al massimo 4 secondi; basta una risposta perché la VMC risulti"
+        " ON-Line.",
+    ),
+    # ... e la [Nota 3] (Nota 3 dello schema «Logiche di Funzionamento»), spiegata nelle
+    # Note della voce 7; la voce 17 e le scritte delle allerte dicono dove leggerla
+    Testo(
+        "• L'avvio e l'arresto non hanno effetto durante le Fasce del Calendario.",
+        "• <b>[Nota 3] Velocità 1 dell'Umidità con la Free Cool./Heat. sospesa</b> (è la"
+        " Nota 3 dello schema «Logiche di Funzionamento» in fondo alla voce 17). Con"
+        " l'interruttore della Free Cooling o della Free Heating su ON, nel mese"
+        " programmato, se la temperatura esterna non è favorevole la Free è sospesa e la"
+        " VMC resta ferma in attesa. Se in questa attesa è in corso un'allerta Umidità, la"
+        " VMC va a Velocità 1, qualunque sia la [Set Velocità Umidità di Avvio] (con"
+        " Velocità 0 resta ferma), e a fine Umidità torna a Velocità 0; con gli Inquinanti"
+        " va a Velocità 1 fino al loro rientro. Quando la temperatura esterna torna"
+        " favorevole la VMC riprende da sola la Free Cooling o la Free Heating, dopo 24"
+        " secondi (20 secondi con gli Inquinanti). <br><br> • L'avvio e l'arresto non"
+        " hanno effetto durante le Fasce del Calendario.",
+    ),
+    Testo(
+        "un'altra Velocità di avvio la VMC va a Velocità 1 [Nota 3]",
+        "un'altra Velocità di avvio la VMC va a Velocità 1 [Nota 3, voce 7]",
+    ),
+    Testo(
+        "(con un'allerta Umidità in corso la VMC, a Velocità 1 [Nota 3], si ferma",
+        "(con un'allerta Umidità in corso la VMC, a Velocità 1 [Nota 3, voce 7], si ferma",
+    ),
+    Testo(
+        "finché quell'allerta non è finita (salvo la sospensione Free Cool./Heat.:"
+        " l'Umidità parte comunque a Velocità 1 [Nota 3]",
+        "finché quell'allerta non è finita (salvo la sospensione Free Cool./Heat.:"
+        " l'Umidità parte comunque a Velocità 1 [Nota 3, voce 7]",
+    ),
+    Testo(
+        "Se invece si entra prima nel Calendario, oppure è già in corso un'altra allerta, e"
+        " poi sale l'umidità, l'allerta Umidità non scatta e l'interruttore si spegne"
+        " normalmente (salvo la sospensione Free Cool./Heat.: l'Umidità parte comunque a"
+        " Velocità 1 [Nota 3]",
+        "Se invece si entra prima nel Calendario, oppure è già in corso un'altra allerta, e"
+        " poi sale l'umidità, l'allerta Umidità non scatta e l'interruttore si spegne"
+        " normalmente (salvo la sospensione Free Cool./Heat.: l'Umidità parte comunque a"
+        " Velocità 1 [Nota 3, voce 7]",
+    ),
+    Testo(
+        "VELOCITÀ 1 PER L'ALLERTA UMIDITÀ [NOTA 3]:",
+        "VELOCITÀ 1 PER L'ALLERTA UMIDITÀ [NOTA 3, PANNELLO INFORMAZIONI, VOCE 7]:",
+        2,
+    ),
+    # i richiami alle Note della voce 15 dicono dove sono
+    Testo(
+        "Vedere Pannello Informazioni, Nota Entità Scelte non Disponibili.",
+        "Vedere Pannello Informazioni, voce 15, Nota Entità Scelte non Disponibili.",
+    ),
+    Testo(
+        "sono spiegati nella Nota Entità Scelte non Disponibili.",
+        "sono spiegati nella Nota Entità Scelte non Disponibili, qui sopra.",
+    ),
+    Testo(
+        "(vedere la Nota Avvio di Home Assistant).",
+        "(vedere la Nota Avvio di Home Assistant, qui sotto).",
+        2,
+    ),
 )
 # Fra due parole del testo: uno spazio, oppure un a capo con il rientro (mai una riga vuota)
 _SPAZIO = r"(?:[ \t]+|[ \t]*\r?\n[ \t]*)"
@@ -373,9 +439,10 @@ COMMENTI = (
         "(https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE)",
         "(https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER)",
     ),
-    # la scheda nativa è cambiata con la 9.0.0b46 (campo «Cambia IP VMC» tolto): la sua
+    # la scheda nativa è cambiata con la 9.0.0b46 (campo «Cambia IP VMC» tolto) e con la
+    # 9.0.0b47 (testi più chiari: Ping e Note): la sua
     # versione (la scheda del package resta quella della 9.0.0b44)
-    Commento("RELEASE [VER. 9.0.0b44]", "RELEASE [VER. 9.0.0b46]"),
+    Commento("RELEASE [VER. 9.0.0b44]", "RELEASE [VER. 9.0.0b47]"),
 )
 _CORNICE = re.compile(r"( +)#")
 
