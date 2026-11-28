@@ -25,7 +25,8 @@ con altre chiavi non si accetta (``ValueError``): andrebbe portata prima.
 
 Logica portata da Home Assistant 2026.11.2 (Apache-2.0), file
 ``homeassistant/components/template/entity.py``, ``template_entity.py``, ``sensor.py``,
-``binary_sensor.py`` e ``validators.py``, ridotta alle chiavi qui sopra.
+``binary_sensor.py`` e ``validators.py``, ridotta alle chiavi qui sopra. La licenza
+Apache-2.0 è nel file ``LICENSE-Apache-2.0.txt`` dell'integrazione.
 """
 
 from __future__ import annotations

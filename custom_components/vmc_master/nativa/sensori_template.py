@@ -173,7 +173,7 @@ class AnnunciDeiTimer:
         assert nuovo is not None
         vecchio = self._vecchi.get(timer.entity_id)
         self._vecchi[timer.entity_id] = nuovo
-        self.hass.bus.async_fire_internal(
+        self.hass.bus.async_fire(
             EVENT_STATE_REPORTED,
             {"entity_id": "", _MARCHIO: (timer.entity_id, vecchio, nuovo)},
             context=nuovo.context,

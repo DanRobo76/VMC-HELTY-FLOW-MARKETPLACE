@@ -166,7 +166,8 @@ _MASSIMO_IN_CODA = 1000
 class TimerMotore:
     """Un timer del motore: ``homeassistant.components.timer.entity.Timer`` senza entità.
 
-    I metodi ``async_*`` sono quelli del timer di Home Assistant, riga per riga; al posto
+    I metodi ``async_*`` sono quelli del timer di Home Assistant 2026.11.2, riga per riga
+    (Apache-2.0, licenza nel file ``LICENSE-Apache-2.0.txt`` dell'integrazione); al posto
     di ``async_write_ha_state`` e di ``hass.bus.async_fire`` c'è ``_scrivi`` (lo stato
     come lo calcolerebbe Home Assistant, agli ascoltatori) e ``BusDelMotore.lancia``.
     Gli attributi di classe e ``async_set_context``, ``async_request_call``,

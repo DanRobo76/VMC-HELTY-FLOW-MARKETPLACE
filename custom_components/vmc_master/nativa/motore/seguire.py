@@ -22,7 +22,8 @@ Qui ci sono:
   di Home Assistant, riga per riga, con ``segui_cambi`` per le entità lette.
 
 Le parti riportate vengono da ``homeassistant/helpers/event.py`` di Home Assistant
-2026.11.2 (Apache-2.0): stesse regole, stesso ordine, stessi messaggi nel registro (con il
+2026.11.2 (Apache-2.0, licenza nel file ``LICENSE-Apache-2.0.txt`` dell'integrazione):
+stesse regole, stesso ordine, stessi messaggi nel registro (con il
 registro di questo modulo). Cambia solo da dove arrivano i cambi dei valori interni. I
 domini e «tutti gli stati» letti da un modello restano quelli delle entità vere (come oggi:
 i valori interni arrivano solo a chi segue il loro entity_id).

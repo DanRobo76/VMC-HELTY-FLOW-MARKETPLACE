@@ -48,8 +48,7 @@ import logging
 import re
 import time
 from collections import ChainMap
-from collections.abc import Callable, Iterable, Iterator, Mapping
-from itertools import chain
+from collections.abc import Callable, Iterable, Mapping
 from typing import TYPE_CHECKING, Any
 
 import probatio
@@ -498,43 +497,14 @@ SERVIZI: dict[tuple[str, str], tuple[Any, str | HassJob[..., Any]]] = {
 # --- le letture dei modelli ------------------------------------------------------------------
 
 
-class _Unione(Mapping[str, State]):
-    """Gli stati di Home Assistant seguiti dai valori interni: quello che il motore dei
-    modelli scorre per ``states`` di un dominio o di tutti (``_state_generator`` scorre
-    ``states._states.values()`` della macchina degli stati che gli si dà). Gli stati di
-    Home Assistant con le funzioni pubbliche della macchina degli stati, nello stesso
-    ordine."""
-
-    __slots__ = ("_interni", "_veri")
-
-    def __init__(self, veri: Any, interni: Mapping[str, State]) -> None:
-        self._veri = veri
-        self._interni = interni
-
-    def __getitem__(self, chiave: str) -> State:
-        if (stato := self._interni.get(chiave)) is not None:
-            return stato
-        if (stato := self._veri.get(chiave)) is not None and stato.entity_id == chiave:
-            return stato  # type: ignore[no-any-return]
-        raise KeyError(chiave)
-
-    def __iter__(self) -> Iterator[str]:
-        return chain(self._veri.async_entity_ids(), self._interni)
-
-    def __len__(self) -> int:
-        return self._veri.async_entity_ids_count() + len(self._interni)  # type: ignore[no-any-return]
-
-    def values(self) -> Any:
-        return [*self._veri.async_all(), *self._interni.values()]
-
-
 class StatiConMemoria:
     """La macchina degli stati come la vedono i modelli del motore: gli stati di Home
     Assistant più i valori interni, che nella macchina degli stati non ci sono.
 
-    Ha le parti che usa il motore dei modelli (``get``, ``async_all``,
-    ``async_entity_ids_count``, ``_states``); il resto è quello della macchina degli
-    stati. Scorrendo un dominio o tutti gli stati i valori interni vengono dopo gli
+    Ha le parti pubbliche che usa il motore dei modelli (``get``, ``async_all``,
+    ``async_entity_ids_count``...); il resto è quello pubblico della macchina degli
+    stati, mai le sue parti private (nessun modello del motore scorre tutti gli stati,
+    l'unico punto in cui il motore dei modelli di Home Assistant ne legge una). Scorrendo un dominio o tutti gli stati i valori interni vengono dopo gli
     altri (oggi sono mescolati nell'ordine di creazione): nessun modello del package
     scorre i domini degli aiutanti o tutti gli stati."""
 
@@ -583,12 +553,10 @@ class StatiConMemoria:
             self._interni_di(domain_filter)
         )
 
-    @property
-    def _states(self) -> Mapping[str, State]:
-        # il nome che il motore dei modelli di Home Assistant legge (``_state_generator``)
-        return _Unione(self._veri, self._interni)
-
     def __getattr__(self, nome: str) -> Any:
+        if nome.startswith("_"):
+            # solo le parti pubbliche della macchina degli stati
+            raise AttributeError(nome)
         return getattr(self._veri, nome)
 
 

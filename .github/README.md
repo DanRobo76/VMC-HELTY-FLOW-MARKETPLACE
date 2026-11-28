@@ -212,6 +212,9 @@ actions:
 **Altre VMC**: ripetere il punto 4.
 
 **VMC nuova** (senza l'App Air Guard, vedere *Requisiti*):
+
+> ⚠️ Durante il collegamento il Wi-Fi del server passa per circa un minuto alla rete della VMC: se Home Assistant raggiunge la rete di casa solo via Wi-Fi, in quel minuto non è raggiungibile. Da fuori casa si perde il collegamento finché il server non torna sulla rete di casa.
+
 1. accendere la VMC: crea la rete `VMC_xxxxxxxx`;
 2. al punto 4 dell'Installazione scegliere **«No, va installata da zero (senza l'App Air Guard)»**;
 3. scegliere la rete `VMC_xxxxxxxx` (password `12345678`);
@@ -311,7 +314,7 @@ Ogni pulsante chiede conferma con il popup «Vuoi Procedere?». Per i dettagli a
 <details>
 <summary><strong>Licenza</strong></summary>
 
-<sub>**[GNU General Public License v3.0](https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER/blob/main/LICENSE)**. Copyright © 2023-2026 Ing. Danilo Robotti. È consentito usare, copiare, modificare e distribuire il software, anche per scopi commerciali; chi lo distribuisce, anche modificato, deve renderne disponibile il codice sorgente con la stessa licenza e mantenere la nota di copyright. Il software è fornito senza alcuna garanzia.</sub>
+<sub>**[GNU General Public License v3.0](https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER/blob/main/LICENSE)**. Copyright © 2023-2026 Ing. Danilo Robotti. È consentito usare, copiare, modificare e distribuire il software, anche per scopi commerciali; chi lo distribuisce, anche modificato, deve renderne disponibile il codice sorgente con la stessa licenza e mantenere la nota di copyright. Il software è fornito senza alcuna garanzia. Alcune parti del motore sono riprese da Home Assistant e restano sotto licenza [Apache-2.0](https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER/blob/main/custom_components/vmc_master/LICENSE-Apache-2.0.txt).</sub>
 
 <sub>**Impiego dell'Intelligenza Artificiale:** nello sviluppo del software l'autore si è avvalso anche di strumenti di intelligenza artificiale.</sub>
 </details>
@@ -549,6 +552,9 @@ actions:
 **More units**: repeat step 4.
 
 **New unit** (without the Air Guard app, see *Requirements*):
+
+> ⚠️ During the connection the server's Wi-Fi switches to the unit network for about a minute: if Home Assistant reaches the home network only through Wi-Fi, it cannot be reached during that minute. If you are away from home, you lose the connection until the server is back on the home network.
+
 1. power on the unit: it creates the `VMC_xxxxxxxx` network;
 2. at step 4 of the Installation choose **«No, it must be set up from scratch (without the Air Guard app)»**;
 3. pick the `VMC_xxxxxxxx` network (password `12345678`);
@@ -648,7 +654,7 @@ Every button asks for confirmation with the «Vuoi Procedere?» popup. For detai
 <details>
 <summary><strong>License</strong></summary>
 
-<sub>**[GNU General Public License v3.0](https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER/blob/main/LICENSE)**. Copyright © 2023-2026 Ing. Danilo Robotti. You may use, copy, modify and distribute the software, also for commercial purposes; whoever distributes it, even modified, must make the source code available under the same licence and keep the copyright notice. The software comes with no warranty.</sub>
+<sub>**[GNU General Public License v3.0](https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER/blob/main/LICENSE)**. Copyright © 2023-2026 Ing. Danilo Robotti. You may use, copy, modify and distribute the software, also for commercial purposes; whoever distributes it, even modified, must make the source code available under the same licence and keep the copyright notice. The software comes with no warranty. Some parts of the engine come from Home Assistant and stay under the [Apache-2.0](https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER/blob/main/custom_components/vmc_master/LICENSE-Apache-2.0.txt) licence.</sub>
 
 <sub>**Use of Artificial Intelligence:** in developing the software the author also used artificial intelligence tools.</sub>
 </details>

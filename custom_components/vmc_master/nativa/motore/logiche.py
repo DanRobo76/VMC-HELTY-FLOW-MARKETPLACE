@@ -4,7 +4,8 @@ Fino alla 9.0.0b45 ogni automazione del package era un'entità del componente
 ``automation`` di Home Assistant (``AutomationEntity`` con il motore tradotto al posto di
 ``Script``). Ora è una ``Logica``: codice dell'integrazione, senza entità, con le stesse
 regole di ``AutomationEntity`` di Home Assistant 2026.11.2
-(``components/automation/entity.py``) per tutto ciò che il package usa:
+(``components/automation/entity.py``; Apache-2.0, licenza nel file
+``LICENSE-Apache-2.0.txt`` dell'integrazione) per tutto ciò che il package usa:
 
 - sempre attiva (nessuna automazione del package ha ``initial_state`` e nessuno la spegne):
   i trigger si agganciano subito se Home Assistant è avviato, altrimenti in un lavoro di

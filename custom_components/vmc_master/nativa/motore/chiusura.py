@@ -4,7 +4,8 @@ Ogni sequenza di primo livello del motore (le automazioni e gli script del packa
 iscrive qui, nel registro dell'integrazione (uno per ``hass``, per le sequenze di tutte le
 VMC), con le regole che Home Assistant 2026.11.2 usa per i propri script
 (``helpers/script.py``: ``_async_stop_scripts_at_shutdown``,
-``_async_stop_scripts_after_shutdown``, ``_SHUTDOWN_MAX_WAIT``):
+``_async_stop_scripts_after_shutdown``, ``_SHUTDOWN_MAX_WAIT``; Apache-2.0, licenza nel
+file ``LICENSE-Apache-2.0.txt`` dell'integrazione):
 
 - alla chiusura (``homeassistant_stop``) si fermano le sequenze in corso partite prima della
   chiusura;

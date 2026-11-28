@@ -10,8 +10,9 @@ aggiunge le ``variables`` del trigger, aggancia ogni trigger in un compito che p
 e restituisce come staccarli tutti; gli errori vanno a ``log_cb`` come in Home Assistant.
 
 Le piattaforme sono quelle che usa il motore, riportate qui riga per riga da Home
-Assistant 2026.11.2 (Apache-2.0), con ``seguire.py`` al posto del tracciamento di Home
-Assistant, così i trigger seguono anche i valori interni del motore:
+Assistant 2026.11.2 (Apache-2.0, licenza nel file ``LICENSE-Apache-2.0.txt``
+dell'integrazione), con ``seguire.py`` al posto del tracciamento di Home Assistant, così i
+trigger seguono anche i valori interni del motore:
 
 - ``state``: ``homeassistant/components/homeassistant/triggers/state.py``;
 - ``template``: ``homeassistant/components/template/trigger.py``;
