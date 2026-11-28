@@ -27,9 +27,9 @@ from pytest_homeassistant_custom_component.common import (
     async_test_home_assistant,
 )
 
-from custom_components.vmc_master.nativa.motore import generato
 from custom_components.vmc_master.nativa.motore.stati_logiche import stati_logiche
 
+from . import generato
 from .aiutanti_nativi import (
     DOMINIO_SCRITTURA,
     InterruttoreNativo,

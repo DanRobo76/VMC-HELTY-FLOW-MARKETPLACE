@@ -250,9 +250,6 @@
     "in_corso": {
       "message": "Una procedura è già in corso. Attendere il risultato."
     },
-    "interrupted": {
-      "message": "Procedura interrotta. Controllare lo stato del ripristino prima di riprovare."
-    },
     "invalid_action": {
       "message": "Operazione non valida."
     },
@@ -351,9 +348,6 @@
     },
     "wifi_socket": {
       "message": "Non è possibile usare la scheda Wi-Fi scelta per raggiungere la VMC."
-    },
-    "worker_start": {
-      "message": "Non è stato possibile avviare la procedura."
     }
   }
 }

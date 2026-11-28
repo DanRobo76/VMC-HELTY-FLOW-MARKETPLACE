@@ -22,8 +22,6 @@ def test_nessun_codice_che_scrive_il_package() -> None:
     solo la lettura (passaggio.py) e la rimozione confermata dall'utente."""
     sospetti = []
     for modulo in CARTELLA.rglob("*.py"):
-        if "generato" in modulo.parts:
-            continue
         testo = modulo.read_text(encoding="utf-8")
         for parola in (
             "vmc_master_backup",

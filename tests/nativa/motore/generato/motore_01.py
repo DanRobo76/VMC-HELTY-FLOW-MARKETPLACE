@@ -8,9 +8,9 @@ Generato da tests/nativa/motore/traduci.py dal package della b42: non modificare
 
 from datetime import time, timedelta
 
-from .. import condizioni as C
-from ..definizioni import Automazione, Script
-from ..esecuzione import Annulla, Ferma, Modello
+from custom_components.vmc_master.nativa.motore import condizioni as C
+from custom_components.vmc_master.nativa.motore.definizioni import Automazione, Script
+from custom_components.vmc_master.nativa.motore.esecuzione import Annulla, Ferma, Modello
 from . import modelli as M
 
 

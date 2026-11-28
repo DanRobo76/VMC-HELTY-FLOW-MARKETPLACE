@@ -8,6 +8,8 @@ from homeassistant.setup import async_setup_component
 from custom_components.vmc_master.nativa.motore.ha import Motore
 from custom_components.vmc_master.nativa.motore.stati_logiche import stati_logiche
 
+from .generato.motore import crea
+
 
 async def test_avvio_logiche_e_script(hass: HomeAssistant) -> None:
     """14 automazioni come logiche (stati interni con gli entity_id e gli attributi che
@@ -16,7 +18,7 @@ async def test_avvio_logiche_e_script(hass: HomeAssistant) -> None:
     gli stati delle logiche."""
     assert await async_setup_component(hass, "homeassistant", {})
     motore = Motore(hass)
-    await motore.avvia()
+    await motore.avvia(crea)
     await hass.async_block_till_done()
     assert hass.states.async_entity_ids(("automation", "script")) == []
     assert len(motore.automazioni) == 14

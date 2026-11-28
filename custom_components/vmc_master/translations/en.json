@@ -250,9 +250,6 @@
     "in_corso": {
       "message": "A procedure is already running. Wait for the result."
     },
-    "interrupted": {
-      "message": "Procedure interrupted. Check the restore status before trying again."
-    },
     "invalid_action": {
       "message": "Invalid operation."
     },
@@ -351,9 +348,6 @@
     },
     "wifi_socket": {
       "message": "The chosen Wi-Fi adapter cannot be used to reach the unit."
-    },
-    "worker_start": {
-      "message": "The procedure could not be started."
     }
   }
 }

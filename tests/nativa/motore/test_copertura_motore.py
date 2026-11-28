@@ -36,10 +36,10 @@ from homeassistant.helpers.template import Template
 from homeassistant.setup import async_setup_component
 from pytest_homeassistant_custom_component.common import async_test_home_assistant
 
-from custom_components.vmc_master.nativa.motore import generato
 from custom_components.vmc_master.nativa.motore.stati_logiche import stati_logiche
 from custom_components.vmc_master.trasforma import rinomina
 
+from . import generato
 from . import test_semantica as semantica
 from .fase3 import MotoreFase3
 from .test_semantica import (

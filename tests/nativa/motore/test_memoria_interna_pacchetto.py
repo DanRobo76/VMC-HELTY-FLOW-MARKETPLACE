@@ -86,7 +86,6 @@ from homeassistant.util import dt as dt_util
 from pytest_homeassistant_custom_component.common import async_test_home_assistant
 
 from custom_components.vmc_master.const import NOME_MASTER
-from custom_components.vmc_master.nativa.motore import generato
 from custom_components.vmc_master.nativa.motore.memoria_interna import (
     CHIAVE_ARCHIVIO,
     INTERNI,
@@ -96,6 +95,7 @@ from custom_components.vmc_master.nativa.motore.memoria_interna import (
 )
 from custom_components.vmc_master.nativa.motore.stati_logiche import stati_logiche
 
+from . import generato
 from . import test_pacchetto_casuale as casuale
 from .banco_memoria import (
     AGGIORNA,

@@ -22,13 +22,13 @@ from freezegun.api import FrozenDateTimeFactory
 from homeassistant.core import HomeAssistant, State
 
 from custom_components.vmc_master.nativa.motore.contesto import Contesto
-from custom_components.vmc_master.nativa.motore.generato import modelli as M
 from custom_components.vmc_master.nativa.motore.memoria_interna import (
     HassConMemoria,
     StatiConMemoria,
 )
 
 from . import valori_package as P
+from .generato import modelli as M
 from .test_memoria_interna import IDS
 from .test_modelli_motore import (
     SCENARI,

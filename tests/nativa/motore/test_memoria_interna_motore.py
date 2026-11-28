@@ -38,7 +38,6 @@ from homeassistant.core import (
 from homeassistant.setup import async_setup_component
 from pytest_homeassistant_custom_component.common import async_test_home_assistant
 
-from custom_components.vmc_master.nativa.motore import generato
 from custom_components.vmc_master.nativa.motore.memoria_interna import (
     INTERNI,
     MemoriaInterna,
@@ -46,6 +45,7 @@ from custom_components.vmc_master.nativa.motore.memoria_interna import (
 )
 from custom_components.vmc_master.nativa.motore.stati_logiche import stati_logiche
 
+from . import generato
 from .banco_memoria import Smistatore, servizi_misti
 from .fase3 import MotoreFase3
 from .test_avvio_motore import _ripristina

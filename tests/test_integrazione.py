@@ -834,7 +834,10 @@ def test_motore_identico_alla_copia_del_package() -> None:
     carattere per carattere (comando vmc_master_installa_vmc_esegui del package), tranne
     la cartella interna predefinita (ROOT): nell'area dei dati di Home Assistant
     (/config/.storage/vmc_master_installa_vmc) invece di /config/.vmc_master_installa_vmc,
-    che la versione nativa non scrive piu'."""
+    che la versione nativa non scrive piu'. Senza la riga di comando e il worker separato
+    (da NORMALIZE alla fine, con i loro import, ACTIONS e la prima riga «#!»), che la
+    versione nativa non usa: la frase della descrizione che li presentava dice che non
+    ci sono."""
     import yaml
 
     class Caricatore(yaml.SafeLoader):
@@ -852,10 +855,39 @@ def test_motore_identico_alla_copia_del_package() -> None:
         'ROOT = Path(__file__).resolve().parents[2] / ".storage" / "vmc_master_installa_vmc"\n'
     )
     copia = comando[inizio:fine].lstrip("\n")
-    assert copia.count(root_della_beta) == 1
-    assert copia.replace(root_della_beta, root_nativa) == (
-        cartella / "motore_installa_vmc.py"
-    ).read_text(encoding="utf-8")
+    # la riga di comando e il worker: tutto da NORMALIZE (usato solo da launch) alla fine
+    riga_di_comando = copia.index("\n\n\nNORMALIZE = {\n")
+    assert copia.rstrip().endswith('if __name__ == "__main__":\n    raise SystemExit(main())')
+    copia = copia[: riga_di_comando + 1]
+    cambi = [
+        (root_della_beta, root_nativa),
+        ("#!/usr/bin/env python3\n", ""),
+        (
+            (
+                "La CLI avvia un worker separato, così il limite di 60 s di shell_command non\n"
+                "interrompe collegamento, ripristino e verifica.\n"
+            ),
+            (
+                "Nell'integrazione nativa il motore si usa da prima_installazione.py: la riga "
+                "di comando e\nil worker separato del package (8.6.0) non ci sono.\n"
+            ),
+        ),
+        ("import argparse\n", ""),
+        ("import signal\n", ""),
+        ("import subprocess\n", ""),
+        ("import sys\n", ""),
+        (
+            (
+                'ACTIONS = ("diagnose", "configure", "verify", "recover", "rename", '
+                '"ap_password", "ap_mode", "scan")\n'
+            ),
+            "",
+        ),
+    ]
+    for vecchio, nuovo in cambi:
+        assert copia.count(vecchio) == 1, vecchio
+        copia = copia.replace(vecchio, nuovo)
+    assert copia == (cartella / "motore_installa_vmc.py").read_text(encoding="utf-8")
 
 
 def test_master_senza_prima_installazione() -> None:

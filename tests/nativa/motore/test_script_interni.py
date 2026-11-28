@@ -54,12 +54,12 @@ from pytest_homeassistant_custom_component.common import (
 )
 
 from custom_components.vmc_master.nativa.client import ErroreVMC
-from custom_components.vmc_master.nativa.motore import generato
 from custom_components.vmc_master.nativa.motore.ha import Motore
 from custom_components.vmc_master.nativa.motore.stati_logiche import stati_logiche
 from custom_components.vmc_master.nativa.pulsanti import PulsanteVMC
 from custom_components.vmc_master.nativa.tabelle import PULSANTI
 
+from . import generato
 from .test_semantica import EVENTI, T0, _avanza, _carica, _gira, _norma
 from .test_semantica_tempi import ordine_dei_timer  # noqa: F401 (fixture)
 from .traduci import PACKAGE, leggi_comandi, traduci_configurazione

@@ -14,17 +14,11 @@ from __future__ import annotations
 import contextlib
 import importlib
 import logging
-import re
-import threading
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from functools import lru_cache
 from http import HTTPStatus
 from pathlib import Path
-
-# non «import time»: la piattaforma time.py, importata, diventa l'attributo «time» del
-# pacchetto, cioè di questo modulo, e prenderebbe il posto del modulo time
-from time import monotonic
 from typing import Any, Final
 
 import yaml
@@ -33,7 +27,7 @@ from homeassistant.components import persistent_notification
 from homeassistant.components.frontend import add_extra_js_url
 from homeassistant.components.http import HomeAssistantView, StaticPathConfig
 from homeassistant.components.lovelace import LOVELACE_DATA
-from homeassistant.config_entries import ConfigEntry, ConfigEntryState
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import CALLBACK_TYPE, Event, HomeAssistant, callback
 from homeassistant.helpers import (
@@ -104,17 +98,6 @@ ISSUE_MANUALE: Final = "installazione_manuale"
 # VMC eliminata con il package della beta ancora in /config/packages
 ISSUE_RIMASTO: Final = "package_della_beta_rimasto"
 DATI_IN_ATTESA: Final = f"{DOMAIN}_in_attesa"
-# Errori dei sensori TCP con la VMC spenta: al massimo uno ogni 30 minuti per ogni VMC
-LOGGER_TCP = "homeassistant.components.tcp.entity"
-INTERVALLO_LOG_TCP = 30 * 60
-DATI_FILTRO_TCP = f"{DOMAIN}_filtro_tcp"
-# «Timeout for command» del ping delle VMC: nascosto solo nei primi 2 minuti dopo l'avvio
-LOGGER_COMMAND_LINE = "homeassistant.components.command_line"
-DURATA_FILTRO_PING = 120
-DATI_FILTRO_PING = f"{DOMAIN}_filtro_ping"
-_RE_IP_NEL_LOG = re.compile(
-    r"(?<![0-9.])([0-9]{1,3}(?:\.[0-9]{1,3}){3})(?![0-9]|\.[0-9])"
-)
 
 
 @dataclass
@@ -142,9 +125,6 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     hass.http.register_view(VmcSchedaView())
     async_at_started(hass, _ripristina_wifi_server)
     await _async_togli_resti_della_beta(hass)
-    if DATI_FILTRO_PING not in hass.data:
-        filtro_ping = hass.data[DATI_FILTRO_PING] = _FiltroPingAvvio(hass)
-        logging.getLogger(LOGGER_COMMAND_LINE).addFilter(filtro_ping)
 
     @callback
     def _riparazione_cambiata(evento: Event) -> None:
@@ -328,7 +308,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     del passaggio (la VMC continua con il package)."""
     nome: str = entry.data[CONF_NOME]
     dati = entry.runtime_data = DatiVoce(passaggio.NATIVA, entry.data[CONF_HOST])
-    _installa_filtro_tcp(hass)
     _aggiorna_titolo_dopo_avvio(hass, entry)
     entry.async_on_unload(entry.add_update_listener(_async_aggiornata))
     ir.async_delete_issue(hass, DOMAIN, f"{ISSUE_RIMASTO}_{nome}")
@@ -639,14 +618,6 @@ async def _async_ferma_nativa(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Ferma la VMC nativa (niente da fermare se aspetta il passaggio: il package della
     beta resta caricato fino al riavvio)."""
-    if not any(
-        voce.state is ConfigEntryState.LOADED
-        for voce in hass.config_entries.async_entries(DOMAIN)
-        if voce.entry_id != entry.entry_id
-    ):
-        _togli_filtro_tcp(hass)  # ultima VMC scaricata
-    else:
-        _aggiorna_ip_filtro_tcp(hass)
     return await _async_ferma_nativa(hass, entry)
 
 
@@ -683,100 +654,10 @@ async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
 async def _async_aggiornata(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """IP cambiato dall'ingranaggio: la VMC riparte con il nuovo IP. Il solo titolo non
     serve."""
-    _aggiorna_ip_filtro_tcp(hass)
     dati: DatiVoce = entry.runtime_data
     if entry.data[CONF_HOST] == dati.ip:
         return
     await hass.config_entries.async_reload(entry.entry_id)
-
-
-class _FiltroTcpVmc(logging.Filter):
-    """Con una VMC spenta i suoi sensori TCP scrivono un errore «Unable to connect to ‹IP›
-    on port 5001» a ogni lettura (migliaia al giorno). Per gli IP delle VMC passa al massimo
-    un messaggio ogni 30 minuti per IP; i messaggi degli altri dispositivi passano tutti.
-    Gli intervalli di lettura dei sensori non cambiano."""
-
-    def __init__(self) -> None:
-        super().__init__()
-        self.ips: frozenset[str] = frozenset()
-        self._ultimo: dict[str, float] = {}
-        self._blocco = threading.Lock()
-        self._ora = monotonic
-
-    def filter(self, record: logging.LogRecord) -> bool:
-        ips = self.ips
-        if not ips:
-            return True
-        try:
-            messaggio = record.getMessage()
-        except Exception:  # noqa: BLE001 - messaggio non formattabile: passa com'e'
-            return True
-        ip = next((t for t in _RE_IP_NEL_LOG.findall(messaggio) if t in ips), None)
-        if ip is None:
-            return True
-        ora = self._ora()
-        with self._blocco:
-            ultimo = self._ultimo.get(ip)
-            if ultimo is not None and ora - ultimo < INTERVALLO_LOG_TCP:
-                return False
-            self._ultimo[ip] = ora
-        return True
-
-
-class _FiltroPingAvvio(logging.Filter):
-    """All'avvio Home Assistant e' carico e il ping delle VMC puo' superare il suo tempo
-    massimo: «Timeout for command: ping … ‹IP›» compare una volta per VMC. Per gli IP delle
-    VMC il messaggio si nasconde solo nei primi 2 minuti dall'avvio; dopo, e per tutti gli
-    altri comandi, passa sempre. Ping, tempi e intervalli dei sensori non cambiano."""
-
-    def __init__(self, hass: HomeAssistant) -> None:
-        super().__init__()
-        self._hass = hass
-        self._ora = monotonic
-        self._fine = self._ora() + DURATA_FILTRO_PING
-
-    def filter(self, record: logging.LogRecord) -> bool:
-        if self._ora() >= self._fine:
-            return True
-        try:
-            messaggio = record.getMessage()
-        except Exception:  # noqa: BLE001 - messaggio non formattabile: passa com'e'
-            return True
-        if not messaggio.startswith("Timeout for command: ping "):
-            return True
-        ips = {
-            voce.data.get(CONF_HOST)
-            for voce in self._hass.config_entries.async_entries(DOMAIN)
-        }
-        return not any(t in ips for t in _RE_IP_NEL_LOG.findall(messaggio))
-
-
-@callback
-def _installa_filtro_tcp(hass: HomeAssistant) -> None:
-    filtro = hass.data.get(DATI_FILTRO_TCP)
-    if filtro is None:
-        filtro = hass.data[DATI_FILTRO_TCP] = _FiltroTcpVmc()
-        logging.getLogger(LOGGER_TCP).addFilter(filtro)
-    _aggiorna_ip_filtro_tcp(hass)
-
-
-@callback
-def _aggiorna_ip_filtro_tcp(hass: HomeAssistant) -> None:
-    """IP di tutte le VMC configurate (anche disabilitate: il loro package resta attivo)."""
-    filtro: _FiltroTcpVmc | None = hass.data.get(DATI_FILTRO_TCP)
-    if filtro is not None:
-        filtro.ips = frozenset(
-            voce.data[CONF_HOST]
-            for voce in hass.config_entries.async_entries(DOMAIN)
-            if voce.data.get(CONF_HOST)
-        )
-
-
-@callback
-def _togli_filtro_tcp(hass: HomeAssistant) -> None:
-    filtro = hass.data.pop(DATI_FILTRO_TCP, None)
-    if filtro is not None:
-        logging.getLogger(LOGGER_TCP).removeFilter(filtro)
 
 
 @callback
