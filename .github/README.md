@@ -1,9 +1,9 @@
 <p align="center">
   <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER/raw/main/Video/VMC_MASTER_promo_IT.mp4">
-    <img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MASTER/main/Video/anteprima_scene_IT.webp?v=20261128" alt="Video di presentazione di VMC MASTER (6 minuti e 10 secondi)" width="100%">
+    <img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MASTER/main/Video/anteprima_scene_IT.webp?v=20261128-2" alt="Video di presentazione di VMC MASTER (12 minuti e 20 secondi)" width="100%">
   </a>
   <br>
-  <sub>Video di presentazione · 6 minuti e 10 secondi · clicca per scaricarlo</sub>
+  <sub>Video di presentazione · 12 minuti e 20 secondi · clicca per scaricarlo</sub>
 </p>
 
 ---
@@ -362,10 +362,10 @@ Ogni pulsante chiede conferma con il popup «Vuoi Procedere?». Per i dettagli a
 
 <p align="center">
   <a href="https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER/raw/main/Video/VMC_MASTER_promo_EN.mp4">
-    <img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MASTER/main/Video/anteprima_scene_EN.webp?v=20261128" alt="VMC MASTER presentation video (6 minutes 10 seconds)" width="720">
+    <img src="https://raw.githubusercontent.com/DanRobo76/VMC-HELTY-FLOW-MASTER/main/Video/anteprima_scene_EN.webp?v=20261128-2" alt="VMC MASTER presentation video (12 minutes 20 seconds)" width="720">
   </a>
   <br>
-  <sub>Presentation video · 6 minutes 10 seconds · click to download</sub>
+  <sub>Presentation video · 12 minutes 20 seconds · click to download</sub>
 </p>
 
 <p align="center">
