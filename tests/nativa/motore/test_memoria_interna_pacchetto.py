@@ -363,6 +363,9 @@ async def _corsa_ciclo(
             memoria.ascolta_chiamate(
                 lambda *voce: smistatore.chiamata(*voce) if annota_attivo else None
             )
+            # i state_reported dei valori interni non passano dal bus: la memoria li
+            # annuncia nel canale del motore
+            memoria.ascolta_rapporti(rapporto)
             servizi_misti(
                 hass, memoria, [f"input_boolean.{o}" for o in pkg["input_boolean"]]
             )

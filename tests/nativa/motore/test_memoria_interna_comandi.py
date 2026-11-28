@@ -132,7 +132,10 @@ async def _corsa(
             stato = StatoVMC(hass, "master")
             memoria = MemoriaInterna(hass, "master", (INTERNO,), stato=stato)
             memoria.ripristina()
+            # i cambi e i rapporti del valore interno non passano dal bus: li annuncia
+            # la memoria nel canale del motore
             memoria.ascolta_cambi(annota)
+            memoria.ascolta_rapporti(annota)
             gruppi: dict[str, list[Any]] = {}
             for dominio, voci in crea_comandi(stato).items():
                 for voce in voci:

@@ -132,8 +132,8 @@ class Smistatore:
     Con Home Assistant ``evento`` divide gli eventi degli aiutanti interni, con la
     memoria ``cambio`` e ``chiamata`` annotano gli annunci della memoria nello stesso
     formato; ``rapporto`` riceve i ``state_reported`` dei valori interni (degli
-    aiutanti o della memoria, che li manda come Home Assistant); ``nota`` annota una
-    voce del banco."""
+    aiutanti dal bus, o della memoria con ``MemoriaInterna.ascolta_rapporti``, uguali a
+    quelli di Home Assistant); ``nota`` annota una voce del banco."""
 
     def __init__(
         self,

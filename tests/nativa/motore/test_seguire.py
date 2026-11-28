@@ -9,9 +9,9 @@ registro (chi è stato chiamato, in che ordine, a che istante, con quali argomen
 messaggi nel registro di Home Assistant) deve essere identico.
 
 Per i valori interni la seconda corsa ha gli stessi entity_id come valori di una sorgente
-finta (``SorgenteFinta``: come ``MemoriaInterna``, ogni cambio si annuncia sul bus con un
-``state_reported`` marchiato e alla consegna va a ``CambiInterni.consegna``), mentre la
-prima corsa li ha come entità vere seguite da Home Assistant: i valori interni devono
+finta (``SorgenteFinta``: come ``MemoriaInterna``, ogni cambio si annuncia nel canale del
+motore con ``CambiInterni.manda`` e alla consegna va a ``CambiInterni.consegna``), mentre
+la prima corsa li ha come entità vere seguite da Home Assistant: i valori interni devono
 arrivare come le entità vere.
 """
 
@@ -32,7 +32,7 @@ from typing import Any
 
 import pytest
 from freezegun.api import FrozenDateTimeFactory
-from homeassistant.const import EVENT_STATE_CHANGED, EVENT_STATE_REPORTED
+from homeassistant.const import EVENT_STATE_CHANGED
 from homeassistant.core import (
     Context,
     CoreState,
@@ -43,6 +43,7 @@ from homeassistant.core import (
     callback,
 )
 from homeassistant.exceptions import TemplateError
+from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.event import (
     TrackTemplate,
     TrackTemplateResult,
@@ -61,6 +62,7 @@ from custom_components.vmc_master.nativa.motore import seguire
 from custom_components.vmc_master.nativa.motore.seguire import (
     CambiInterni,
     cambi_interni,
+    scrivi_stato,
     segui_cambi,
     segui_modello,
     segui_stesso_stato,
@@ -114,21 +116,15 @@ MARCHIO = "prova_valore_interno"
 
 class SorgenteFinta:
     """Dei valori interni come quelli di ``MemoriaInterna``: lo ``State`` calcolato come
-    ``StateMachine.async_set_internal``, il cambio annunciato sul bus nel punto in cui
-    Home Assistant manderebbe ``state_changed`` e consegnato a ``CambiInterni``."""
+    ``StateMachine.async_set_internal``, il cambio annunciato nel canale del motore nel
+    punto in cui Home Assistant manderebbe ``state_changed`` e consegnato a
+    ``CambiInterni``."""
 
     def __init__(self, hass: HomeAssistant, entity_ids: Iterable[str]) -> None:
         self.hass = hass
         self._entity_ids = set(entity_ids)
         self._stati: dict[str, State] = {}
-        self.annulla = [
-            cambi_interni(hass).aggiungi(self),
-            hass.bus.async_listen(
-                EVENT_STATE_REPORTED,
-                self._consegna,
-                event_filter=callback(lambda dati: dati.get(MARCHIO, (None,))[0] is self),
-            ),
-        ]
+        self.annulla = [cambi_interni(hass).aggiungi(self)]
 
     def contiene(self, entity_id: str) -> bool:
         return entity_id in self._entity_ids
@@ -170,11 +166,11 @@ class SorgenteFinta:
             timestamp,
         )
         self._stati[entity_id] = stato
-        self.hass.bus.async_fire_internal(
-            EVENT_STATE_REPORTED,
-            {"entity_id": "", MARCHIO: (self, entity_id, vecchio, stato)},
-            context=contesto,
-            time_fired=timestamp,
+        cambi_interni(self.hass).manda(
+            self._consegna,
+            {MARCHIO: (self, entity_id, vecchio, stato)},
+            contesto,
+            timestamp,
         )
 
     @callback
@@ -584,6 +580,110 @@ async def test_cambi_interni_regole(hass: HomeAssistant) -> None:
     for annulla in fonte.annulla:
         annulla()
     assert not interni.contiene("input_number.x")
+
+
+# --- il canale del motore insieme a chi segue in Home Assistant ------------------------------
+
+
+async def _prepara_misto(b: Banco) -> None:
+    """Chi segue nel canale (``F.segui``) e chi segue con Home Assistant, iscritti
+    alternati sugli stessi entity_id; un seguace che, durante la consegna di Home
+    Assistant, cambia un valore interno, scrive due entità vere dell'integrazione (una
+    seguita nel canale, una no) e cambia di nuovo il valore interno."""
+    hass, F = b.hass, b.F
+
+    def seguace(nome: str) -> Callable[[Event[Any]], None]:
+        @callback
+        def segui(evento: Event[Any]) -> None:
+            dati = evento.data
+            b.annota(
+                nome,
+                dati["entity_id"],
+                dati["old_state"],
+                dati["new_state"],
+                evento.context,
+                evento.time_fired,
+            )
+
+        return segui
+
+    entita: dict[str, Entity] = {}
+    for entity_id in ("sensor.scritto", "sensor.solo"):
+        entita[entity_id] = scritta = Entity()
+        scritta.hass = hass
+        scritta.entity_id = entity_id
+        scritta._no_platform_reported = True  # nessuna piattaforma
+
+    @callback
+    def primo(evento: Event[Any]) -> None:
+        nuovo = evento.data["new_state"]
+        b.annota("primo", nuovo.state if nuovo is not None else None)
+        if nuovo is None or nuovo.state != "1":
+            return
+        b.scrivi("input_number.m", f"{b.istante()}-a")
+        for scritta in entita.values():
+            scritta._attr_state = f"{b.istante()}"
+            scrivi_stato(scritta)
+        b.scrivi("input_number.m", f"{b.istante()}-b")
+
+    F.segui(hass, "sensor.x", primo)
+    async_track_state_change_event(hass, "sensor.x", seguace("ha_x"))
+    F.segui(hass, "sensor.x", seguace("secondo_x"))
+    async_track_state_change_event(hass, "sensor.scritto", seguace("ha_scritto_prima"))
+    F.segui(hass, ["input_number.m", "sensor.scritto"], seguace("m_o_scritto"))
+    async_track_state_change_event(hass, "sensor.scritto", seguace("ha_scritto"))
+    F.segui(hass, "input_number.m", seguace("m_dopo"))
+
+    @callback
+    def da_solo(evento: Event[Any]) -> None:
+        # Home Assistant mette questo cambio in coda dopo quelli già lanciati
+        b.annota("ha_solo", evento.data["entity_id"])
+        b.scrivi("sensor.dopo_solo", f"{b.istante()}")
+
+    async_track_state_change_event(hass, "sensor.solo", da_solo)
+    F.segui(hass, "sensor.dopo_solo", seguace("dopo_solo"))
+
+
+PASSI_MISTI: list[tuple[Any, ...]] = [
+    ("stato", "sensor.x", "1"),
+    ("stato", "sensor.x", "0"),
+    ("attendi", 1.0),
+    ("stato", "sensor.x", "1"),
+    ("stato", "sensor.solo", "da_fuori"),
+    ("stato", "sensor.x", "0"),
+]
+
+
+async def test_canale_misto_entita_vere(freezer: FrozenDateTimeFactory) -> None:
+    """Chi segue nel canale riceve l'evento nel suo posto tra chi lo segue in Home
+    Assistant (l'ordine delle iscrizioni); le scritture delle entità dell'integrazione
+    fatte durante la consegna arrivano dopo, come nel bus."""
+    registro = await come_home_assistant(freezer, _prepara_misto, PASSI_MISTI)
+    assert [riga[1] for riga in registro[:3]] == ["primo", "ha_x", "secondo_x"]
+
+
+async def test_canale_misto_valori_interni(freezer: FrozenDateTimeFactory) -> None:
+    """Lo stesso con ``input_number.m`` valore interno: i suoi annunci, fatti durante la
+    consegna di Home Assistant, aspettano che l'evento sia arrivato a tutti quelli che lo
+    seguono, e quelli fatti dopo la scrittura di un'entità dell'integrazione aspettano il
+    suo cambio (seguito nel canale o no): lo stesso ordine di un solo bus."""
+    registro = await come_home_assistant(
+        freezer, _prepara_misto, PASSI_MISTI, interni=("input_number.m",)
+    )
+    assert [riga[1] for riga in registro[:12]] == [
+        "primo",
+        "ha_x",
+        "secondo_x",
+        "m_o_scritto",
+        "m_dopo",
+        "ha_scritto_prima",
+        "m_o_scritto",
+        "ha_scritto",
+        "ha_solo",
+        "m_o_scritto",
+        "m_dopo",
+        "dopo_solo",
+    ]
 
 
 # --- traccia_modelli ------------------------------------------------------------------------

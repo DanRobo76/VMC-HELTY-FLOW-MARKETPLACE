@@ -1,7 +1,8 @@
 """Le prove che confrontano il motore con Home Assistant, con il canale del motore (b48).
 
-Il motore vede gli eventi di Home Assistant nel suo canale (``seguire.CambiInterni``): un
-ascoltatore del bus per tipo di evento li mette nel canale, nell'ordine del bus. Il registro
+Il motore vede gli eventi di Home Assistant nel suo canale (``seguire.CambiInterni``): chi
+segue un'entità o un evento si iscrive con le funzioni pubbliche di Home Assistant e riceve
+l'evento, attraverso il canale, nel suo posto tra chi lo segue in Home Assistant. Il registro
 del motore li annota lì (``osserva_nel_canale``), cioè nell'ordine in cui li vede il motore,
 come il registro di Home Assistant (un ascoltatore di tutti gli eventi) li annota nell'ordine in
 cui li vedono le automazioni.

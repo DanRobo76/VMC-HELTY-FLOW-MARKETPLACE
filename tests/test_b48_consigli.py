@@ -3,6 +3,9 @@
 - Nessuna funzione riservata al nucleo di Home Assistant (``async_fire_internal``) e
   nessuna parte privata della macchina degli stati: la macchina degli stati dei modelli
   del motore dà solo le parti pubbliche.
+- Un canale tutto del motore (``seguire.CambiInterni``): i cambi dei valori interni, gli
+  stati delle logiche e i timer del motore non passano dal bus di Home Assistant (nessun
+  ``state_reported`` usato come trasporto, nessun evento lanciato dall'integrazione).
 - La licenza Apache-2.0 accanto al codice ripreso da Home Assistant, e ogni file che ne
   riprende una parte dice dove si trova.
 - La configurazione di una VMC nuova avvisa che il Wi-Fi del server passa per circa un
@@ -52,6 +55,16 @@ def test_nessuna_funzione_riservata_al_nucleo() -> None:
         for file, albero in _alberi()
         for nodo in ast.walk(albero)
         if isinstance(nodo, ast.Attribute) and nodo.attr == "async_fire_internal"
+    ]
+    assert trovati == []
+
+
+def test_nessun_evento_lanciato_sul_bus() -> None:
+    trovati = [
+        f"{file.relative_to(CC)}:{nodo.lineno}"
+        for file, albero in _alberi()
+        for nodo in ast.walk(albero)
+        if isinstance(nodo, ast.Attribute) and nodo.attr == "async_fire"
     ]
     assert trovati == []
 
