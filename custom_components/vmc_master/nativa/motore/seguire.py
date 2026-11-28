@@ -55,6 +55,7 @@ from homeassistant.core import (
     split_entity_id,
 )
 from homeassistant.exceptions import TemplateError
+from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.event import (
     TrackStates,
     TrackTemplate,
@@ -134,9 +135,17 @@ class CambiInterni:
         )
         # l'ascoltatore del bus di ogni tipo di evento che passa dal canale
         self._dal_bus: dict[str, CALLBACK_TYPE] = {}
-        # chi aspetta il suo turno e se il canale sta già consegnando
-        self._coda: deque[tuple[Callable[[Event[Any]], None], Event[Any]]] = deque()
+        # chi aspetta il suo turno (e i segnaposto degli eventi che Home Assistant ha in
+        # coda) e se il canale sta già consegnando
+        self._coda: deque[tuple[Callable[[Event[Any]], None], Event[Any]] | _Segnaposto] = (
+            deque()
+        )
         self._consegnando = False
+        # quanti eventi del bus il canale sta consegnando (Home Assistant li sta consegnando:
+        # gli eventi lanciati adesso aspettano in coda nel bus) e i segnaposto in attesa
+        self._dal_bus_in_corso = 0
+        self._attese: dict[tuple[Any, ...], _Segnaposto] = {}
+        self._rete_programmata = False
 
     # --- sorgenti ---------------------------------------------------------------------------
 
@@ -323,12 +332,14 @@ class CambiInterni:
 
     @callback
     def _cambio_voluto(self, dati: Mapping[str, Any]) -> bool:
-        """Se qualcuno vuole questo ``state_changed`` (come i filtri dei tracker)."""
+        """Se qualcuno vuole questo ``state_changed`` (come i filtri dei tracker), o se ha
+        un segnaposto nel canale."""
         if (
             self._tutti
             or self._osservatori.get(EVENT_STATE_CHANGED)
             or self._ascolti.get(EVENT_STATE_CHANGED)
             or dati["entity_id"] in self._seguaci_veri
+            or (self._attese and _chiave_attesa(EVENT_STATE_CHANGED, dati) in self._attese)
         ):
             return True
         return bool(
@@ -339,7 +350,89 @@ class CambiInterni:
 
     @callback
     def _dal_bus_al_canale(self, evento: Event[Any]) -> None:
-        self._nel_canale(self._smista, evento)
+        """Un evento del bus nel canale. Se ha un segnaposto (una scrittura fatta mentre Home
+        Assistant consegnava un altro evento) prende il suo posto; se no è stato lanciato
+        prima di tutti i segnaposto in attesa e passa prima di loro."""
+        self._dal_bus_in_corso += 1
+        try:
+            if self._attese and (
+                segnaposto := self._attese.pop(
+                    _chiave_attesa(evento.event_type, evento.data), None
+                )
+            ):
+                self._coda[self._coda.index(segnaposto)] = (self._smista, evento)
+            elif posto := self._primo_segnaposto():
+                self._coda.insert(posto - 1, (self._smista, evento))
+            else:
+                self._nel_canale(self._smista, evento)
+                return
+            if not self._consegnando:
+                self._consegnando = True
+                try:
+                    self._scorri()
+                finally:
+                    self._consegnando = False
+        finally:
+            self._dal_bus_in_corso -= 1
+
+    def _primo_segnaposto(self) -> int:
+        """La posizione (da 1) del primo segnaposto nella coda, 0 se non ce ne sono."""
+        if not self._attese:
+            return 0
+        for posto, voce in enumerate(self._coda, 1):
+            if isinstance(voce, _Segnaposto):
+                return posto
+        return 0
+
+    # --- le scritture delle entità vere mentre Home Assistant consegna -------------------------
+
+    @callback
+    def scrivi(self, entita: Entity) -> None:
+        """``entita.async_write_ha_state()``. Se Home Assistant sta consegnando un evento del
+        canale, il cambio (o il rapporto) dell'entità aspetta nella coda del bus: un
+        segnaposto nel canale tiene il suo posto, e gli annunci che seguono aspettano che
+        il bus lo consegni (come nel bus, dove sarebbero in coda dopo di lui)."""
+        if not self._dal_bus_in_corso:
+            entita.async_write_ha_state()
+            return
+        prima = self.hass.states.get(entita.entity_id)
+        riportato = prima.last_reported_timestamp if prima is not None else None
+        entita.async_write_ha_state()
+        if (dopo := self.hass.states.get(entita.entity_id)) is None:
+            return
+        if dopo is not prima:
+            tipo = EVENT_STATE_CHANGED
+            dati: Mapping[str, Any] = {"new_state": dopo}
+        elif dopo.last_reported_timestamp != riportato:
+            tipo = EVENT_STATE_REPORTED
+            dati = {"entity_id": dopo.entity_id, "last_reported": dopo.last_reported}
+        else:
+            return
+        if tipo not in self._dal_bus:
+            return
+        segnaposto = _Segnaposto(dopo)
+        self._attese[_chiave_attesa(tipo, dati)] = segnaposto
+        self._coda.append(segnaposto)
+        if not self._rete_programmata:
+            self._rete_programmata = True
+            self.hass.loop.call_soon(self._libera)
+
+    @callback
+    def _libera(self) -> None:
+        """Dopo la consegna di Home Assistant nessun segnaposto resta in attesa (i loro
+        eventi sono passati); se uno restasse, il canale non si ferma: si toglie."""
+        self._rete_programmata = False
+        if not self._attese:
+            return
+        _LOGGER.debug("Segnaposto senza evento: %s", list(self._attese.values()))
+        self._attese.clear()
+        self._coda = deque(v for v in self._coda if not isinstance(v, _Segnaposto))
+        if not self._consegnando:
+            self._consegnando = True
+            try:
+                self._scorri()
+            finally:
+                self._consegnando = False
 
     @callback
     def _smista(self, evento: Event[Any]) -> None:
@@ -420,16 +513,22 @@ class CambiInterni:
         """Consegna subito; se il canale sta già consegnando, dopo la consegna in corso e
         dopo chi aspetta già, nell'ordine (come il bus di Home Assistant). Un errore di chi
         riceve finisce nel registro e non ferma gli altri."""
-        if self._consegnando:
+        if self._consegnando or self._coda:
             self._coda.append((consegna, evento))
             return
         self._consegnando = True
         try:
             self._esegui(consegna, evento)
-            while self._coda:
-                self._esegui(*self._coda.popleft())
+            self._scorri()
         finally:
             self._consegnando = False
+
+    def _scorri(self) -> None:
+        """Consegna chi aspetta, nell'ordine, fino a un segnaposto (il suo evento è ancora
+        nella coda del bus)."""
+        coda = self._coda
+        while coda and not isinstance(coda[0], _Segnaposto):
+            self._esegui(*coda.popleft())  # type: ignore[misc]
 
     @staticmethod
     def _esegui(consegna: Callable[[Event[Any]], None], evento: Event[Any]) -> None:
@@ -462,6 +561,28 @@ class CambiInterni:
             self._esegui_tutti(seguaci, evento, evento.data["entity_id"])
 
 
+class _Segnaposto:
+    """Il posto nel canale di un evento che Home Assistant ha in coda (``CambiInterni.scrivi``)."""
+
+    __slots__ = ("stato",)
+
+    def __init__(self, stato: State) -> None:
+        self.stato = stato
+
+    def __repr__(self) -> str:
+        return f"<segnaposto {self.stato.entity_id}>"
+
+
+def _chiave_attesa(tipo: str, dati: Mapping[str, Any]) -> tuple[Any, ...]:
+    """Come si riconosce l'evento di un segnaposto: il nuovo stato scritto (``state_changed``)
+    o l'entità e l'istante del rapporto (``state_reported``)."""
+    if tipo == EVENT_STATE_CHANGED:
+        return (tipo, id(dati["new_state"]))
+    if tipo == EVENT_STATE_REPORTED:
+        return (tipo, dati["entity_id"], dati["last_reported"])
+    return (tipo,)
+
+
 class _Ascolto:
     """Chi ascolta un evento del bus nel canale (``CambiInterni.ascolta``)."""
 
@@ -487,6 +608,13 @@ def _sempre(_dati: Any) -> bool:
 _CAMBI_INTERNI: HassKey[CambiInterni] = HassKey("vmc_master_cambi_interni")
 # il tipo degli eventi del canale degli annunci (non passano dal bus di Home Assistant)
 _ANNUNCIO = "vmc_master_annuncio"
+
+
+@callback
+def scrivi_stato(entita: Entity) -> None:
+    """Lo stato di un'entità vera dell'integrazione (``async_write_ha_state``), al suo posto
+    anche nel canale del motore (``CambiInterni.scrivi``)."""
+    cambi_interni(entita.hass).scrivi(entita)
 
 
 @callback

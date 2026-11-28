@@ -36,6 +36,7 @@ from homeassistant.core import CALLBACK_TYPE, callback
 from homeassistant.helpers.event import async_call_later
 
 from .entita import nome_visibile
+from .motore.seguire import scrivi_stato
 from .motore.timer import TimerDelMotore, TimerMotore
 from .stato import Cambi, StatoVMC
 from .tabelle import DOMANI, IMPOSTAZIONI
@@ -183,7 +184,7 @@ class SensoreTimer(SensorEntity):
         if contesto is not None:
             # lo stesso contesto della scrittura del timer (chi l'ha avviato o fermato)
             self.async_set_context(contesto)
-        self.async_write_ha_state()
+        scrivi_stato(self)
 
 
 def crea_sensori_timer(

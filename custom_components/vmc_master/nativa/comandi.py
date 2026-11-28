@@ -52,6 +52,7 @@ from homeassistant.helpers.service import entity_service_call
 from homeassistant.util import dt as dt_util
 
 from .entita import nome_visibile
+from .motore.seguire import scrivi_stato
 from .stato import SCONOSCIUTO, Cambi, StatoVMC
 from .tabelle import DOMANI, IMPOSTAZIONI, ORDINE_AIUTANTI
 
@@ -153,7 +154,7 @@ class ComandoVMC(Entity):
     @callback
     def _cambi(self, cambi: Cambi) -> None:
         if self._chiave in cambi:
-            self.async_write_ha_state()
+            scrivi_stato(self)
 
     @callback
     def _scrivi(self, valore: str | tuple[str, Mapping[str, Any]]) -> None:
@@ -164,7 +165,7 @@ class ComandoVMC(Entity):
         if self._chiave not in self._stato.imposta(
             {self._chiave: valore}, self._context
         ):
-            self.async_write_ha_state()
+            scrivi_stato(self)
 
     def _testo(self) -> str | None:
         return self._stato.stato(self._chiave)
