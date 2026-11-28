@@ -30,6 +30,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .letture import LetturaPing
 from .memoria import IN_ORDINE
+from .motore.seguire import scrivi_stato
 from .stato import NON_DISPONIBILE, SCONOSCIUTO, Cambi, StatoVMC
 from .tabelle import SENSORI
 
@@ -77,7 +78,7 @@ class EntitaVMC(Entity):
         if self._chiave in cambi:
             if (contesto := self._stato.contesto_cambi) is not None:
                 self.async_set_context(contesto)
-            self.async_write_ha_state()
+            scrivi_stato(self)
 
     def _valore(self) -> str | None:
         valore = self._stato.stato(self._chiave)
@@ -150,7 +151,7 @@ class SensoreLetturaVMC(SensoreVMC):
     def _letta(self) -> None:
         # durante update_entity scrive Home Assistant, una volta, dopo la lettura
         if not self._in_aggiornamento:
-            self.async_write_ha_state()
+            scrivi_stato(self)
 
     async def async_update(self) -> None:
         """``homeassistant.update_entity``: come l'aggiornamento del sensore di oggi. Il

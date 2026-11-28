@@ -44,7 +44,7 @@
       },
       "rete_vmc": {
         "title": "Connect the unit to the home Wi-Fi",
-        "description": "Unit networks found: {trovate}.\n\n**All four fields are required.**\n\n1. **Unit network**: VMC_ followed by the serial number, as the smartphone sees it. You can also type the name. If it is missing:\n   1. move the server closer to the unit;\n   2. with the filter alarm LED on, reset the filters;\n   3. if the unit was already connected to another network, do the Wi-Fi reset below.\n2. **Unit network password**: the factory one is 12345678.\n3. **Home Wi-Fi network** and its **password**: the network the unit will join. If the server is connected through Wi-Fi to another network, after Submit the password of that network is asked too.\n\n**Wi-Fi reset** (the unit network password goes back to 12345678):\n1. switch the unit off;\n2. cut the power upstream;\n3. restore the power **while holding the Night button**;\n4. keep it pressed until all LEDs have flashed 7 times.",
+        "description": "Unit networks found: {trovate}.\n\n**All four fields are required.**\n\n⚠️ After Submit the server's Wi-Fi switches to the unit network for about a minute: if Home Assistant reaches the home network only through Wi-Fi, it cannot be reached during that minute. If you are away from home, you lose the connection until the server is back on the home network.\n\n1. **Unit network**: VMC_ followed by the serial number, as the smartphone sees it. You can also type the name. If it is missing:\n   1. move the server closer to the unit;\n   2. with the filter alarm LED on, reset the filters;\n   3. if the unit was already connected to another network, do the Wi-Fi reset below.\n2. **Unit network password**: the factory one is 12345678.\n3. **Home Wi-Fi network** and its **password**: the network the unit will join. If the server is connected through Wi-Fi to another network, after Submit the password of that network is asked too.\n\n**Wi-Fi reset** (the unit network password goes back to 12345678):\n1. switch the unit off;\n2. cut the power upstream;\n3. restore the power **while holding the Night button**;\n4. keep it pressed until all LEDs have flashed 7 times.",
         "data": {
           "rete_vmc": "Unit network",
           "password_vmc": "Unit network password",
@@ -250,9 +250,6 @@
     "in_corso": {
       "message": "A procedure is already running. Wait for the result."
     },
-    "interrupted": {
-      "message": "Procedure interrupted. Check the restore status before trying again."
-    },
     "invalid_action": {
       "message": "Invalid operation."
     },
@@ -351,9 +348,6 @@
     },
     "wifi_socket": {
       "message": "The chosen Wi-Fi adapter cannot be used to reach the unit."
-    },
-    "worker_start": {
-      "message": "The procedure could not be started."
     }
   }
 }

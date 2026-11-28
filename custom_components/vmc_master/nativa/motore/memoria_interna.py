@@ -27,15 +27,13 @@ Le regole sono quelle degli aiutanti di oggi (Home Assistant 2026.11):
   così ``states()``, ``is_state()``, ``state_attr()``, ``states.d.o``, ``has_value``,
   ``expand``, ``last_changed``... e le letture annotate (``RenderInfo``) per trigger e
   attese sono quelle di sempre;
-- ogni scrittura si annuncia nello stesso punto del bus in cui Home Assistant manda
-  ``state_changed`` (o ``state_reported``, o ``call_service`` per la chiamata): un
-  evento ``state_reported`` con un marchio, che non arriva agli ascoltatori di tutti
-  gli eventi (registro compreso) e che nessun trigger ``event`` può ascoltare. Chi lo
-  riceve consegna il cambio a chi segue l'entità come un'entità vera (trigger ``state``
-  e ``template``, attese, modelli: le iscrizioni di ``seguire.CambiInterni``, di cui la
-  memoria è una sorgente), poi allo ``StatoVMC`` e a chi ascolta la memoria. Così istanti e ordine restano quelli
-  degli aiutanti, anche quando la scrittura avviene mentre il bus consegna un altro
-  evento (la consegna si accoda come quella di ``state_changed``).
+- ogni scrittura (e ogni chiamata, dove Home Assistant manderebbe ``call_service``) si
+  annuncia sul canale del motore (``seguire.CambiInterni.manda``): subito o, se si sta
+  consegnando un altro annuncio, dopo di lui e nell'ordine. Alla consegna il cambio va
+  a chi segue l'entità come un'entità vera (trigger ``state`` e ``template``, attese,
+  modelli: le iscrizioni di ``seguire.CambiInterni``, di cui la memoria è una
+  sorgente), poi allo ``StatoVMC`` e a chi ascolta la memoria. Gli annunci non passano
+  dal bus di Home Assistant: nessun evento in più per il registro.
 
 All'avvio i valori si ripristinano con le regole degli aiutanti (``ripristina``): con
 ``initial`` non si ripristina nulla (i 5 testi che oggi ripartono vuoti), un numero
@@ -48,8 +46,7 @@ import logging
 import re
 import time
 from collections import ChainMap
-from collections.abc import Callable, Iterable, Iterator, Mapping
-from itertools import chain
+from collections.abc import Callable, Iterable, Mapping
 from typing import TYPE_CHECKING, Any
 
 import probatio
@@ -498,43 +495,14 @@ SERVIZI: dict[tuple[str, str], tuple[Any, str | HassJob[..., Any]]] = {
 # --- le letture dei modelli ------------------------------------------------------------------
 
 
-class _Unione(Mapping[str, State]):
-    """Gli stati di Home Assistant seguiti dai valori interni: quello che il motore dei
-    modelli scorre per ``states`` di un dominio o di tutti (``_state_generator`` scorre
-    ``states._states.values()`` della macchina degli stati che gli si dà). Gli stati di
-    Home Assistant con le funzioni pubbliche della macchina degli stati, nello stesso
-    ordine."""
-
-    __slots__ = ("_interni", "_veri")
-
-    def __init__(self, veri: Any, interni: Mapping[str, State]) -> None:
-        self._veri = veri
-        self._interni = interni
-
-    def __getitem__(self, chiave: str) -> State:
-        if (stato := self._interni.get(chiave)) is not None:
-            return stato
-        if (stato := self._veri.get(chiave)) is not None and stato.entity_id == chiave:
-            return stato  # type: ignore[no-any-return]
-        raise KeyError(chiave)
-
-    def __iter__(self) -> Iterator[str]:
-        return chain(self._veri.async_entity_ids(), self._interni)
-
-    def __len__(self) -> int:
-        return self._veri.async_entity_ids_count() + len(self._interni)  # type: ignore[no-any-return]
-
-    def values(self) -> Any:
-        return [*self._veri.async_all(), *self._interni.values()]
-
-
 class StatiConMemoria:
     """La macchina degli stati come la vedono i modelli del motore: gli stati di Home
     Assistant più i valori interni, che nella macchina degli stati non ci sono.
 
-    Ha le parti che usa il motore dei modelli (``get``, ``async_all``,
-    ``async_entity_ids_count``, ``_states``); il resto è quello della macchina degli
-    stati. Scorrendo un dominio o tutti gli stati i valori interni vengono dopo gli
+    Ha le parti pubbliche che usa il motore dei modelli (``get``, ``async_all``,
+    ``async_entity_ids_count``...); il resto è quello pubblico della macchina degli
+    stati, mai le sue parti private (nessun modello del motore scorre tutti gli stati,
+    l'unico punto in cui il motore dei modelli di Home Assistant ne legge una). Scorrendo un dominio o tutti gli stati i valori interni vengono dopo gli
     altri (oggi sono mescolati nell'ordine di creazione): nessun modello del package
     scorre i domini degli aiutanti o tutti gli stati."""
 
@@ -583,12 +551,10 @@ class StatiConMemoria:
             self._interni_di(domain_filter)
         )
 
-    @property
-    def _states(self) -> Mapping[str, State]:
-        # il nome che il motore dei modelli di Home Assistant legge (``_state_generator``)
-        return _Unione(self._veri, self._interni)
-
     def __getattr__(self, nome: str) -> Any:
+        if nome.startswith("_"):
+            # solo le parti pubbliche della macchina degli stati
+            raise AttributeError(nome)
         return getattr(self._veri, nome)
 
 
@@ -673,7 +639,10 @@ class MemoriaInterna:
         self._togli_sorgente: CALLBACK_TYPE | None = cambi_interni(hass).aggiungi(self)
         self._cambi: list[Cambio] = []
         self._chiamate: list[Chiamata] = []
+        self._rapporti: list[Callable[[Event[Any]], None]] = []
         self._annulla: list[CALLBACK_TYPE] = []
+        # gli annunci si consegnano dal ripristino all'arresto (``ripristina``, ``ferma``)
+        self._annunci_attivi = False
         self._archivio: Store[dict[str, Any]] | None = None
         self._salva_da_solo = False
         self._salvataggio_in_attesa = False
@@ -744,12 +713,7 @@ class MemoriaInterna:
                 None,
                 adesso,
             )
-        if not self._annulla:
-            self._annulla.append(
-                self.hass.bus.async_listen(
-                    EVENT_STATE_REPORTED, self._consegna, event_filter=self._mio
-                )
-            )
+        self._annunci_attivi = True
         if self.stato_vmc is not None:
             self.stato_vmc.imposta(
                 {
@@ -779,8 +743,8 @@ class MemoriaInterna:
         self.ripristina(valori if isinstance(valori, dict) else None)
         self._salva_da_solo = True
         self._annulla.append(
-            self.hass.bus.async_listen_once(
-                EVENT_HOMEASSISTANT_STOP, self._salva_alla_chiusura
+            cambi_interni(self.hass).ascolta(
+                EVENT_HOMEASSISTANT_STOP, self._salva_alla_chiusura, una_volta=True
             )
         )
 
@@ -809,6 +773,7 @@ class MemoriaInterna:
     def ferma(self) -> None:
         """Smette di ascoltare gli annunci e di salvare; nessuno segue più i valori."""
         self._salva_da_solo = False
+        self._annunci_attivi = False
         for annulla in self._annulla:
             annulla()
         self._annulla.clear()
@@ -832,6 +797,13 @@ class MemoriaInterna:
         ``call_service``."""
         self._chiamate.append(funzione)
         return lambda: self._chiamate.remove(funzione)
+
+    @callback
+    def ascolta_rapporti(self, funzione: Callable[[Event[Any]], None]) -> CALLBACK_TYPE:
+        """``funzione`` riceve ogni scrittura senza cambio come l'evento
+        ``state_reported`` che oggi manda l'aiutante, nello stesso punto."""
+        self._rapporti.append(funzione)
+        return lambda: self._rapporti.remove(funzione)
 
     # --- scritture -----------------------------------------------------------------------
 
@@ -867,15 +839,14 @@ class MemoriaInterna:
             validati = self.valida(dominio, servizio, dati)
         _, funzione = SERVIZI[dominio, servizio]
         chiamata = ServiceCall(self.hass, dominio, servizio, validati, contesto)
-        self.hass.bus.async_fire(
-            EVENT_STATE_REPORTED,
+        cambi_interni(self.hass).manda(
+            self._consegna,
             {
-                "entity_id": "",
                 _MARCHIO: _Annuncio(
                     self, "chiamata", dati=(dominio, servizio, dict(dati))
-                ),
+                )
             },
-            context=contesto,
+            contesto,
         )
         await entity_service_call(
             self.hass, self._per_dominio.get(dominio, {}), funzione, chiamata
@@ -915,8 +886,8 @@ class MemoriaInterna:
                 vecchio.last_updated_timestamp,
             )
             self._stati[entity_id] = riportato
-            self.hass.bus.async_fire(
-                EVENT_STATE_REPORTED,
+            cambi_interni(self.hass).manda(
+                self._consegna,
                 {
                     "entity_id": entity_id,
                     "last_reported": adesso,
@@ -924,8 +895,8 @@ class MemoriaInterna:
                     "new_state": riportato,
                     _MARCHIO: _Annuncio(self, "riportato", valore),
                 },
-                context=contesto,
-                time_fired=timestamp,
+                contesto,
+                timestamp,
             )
             return
         if stessi_attributi:
@@ -954,29 +925,22 @@ class MemoriaInterna:
         vecchio.expire()
         self._stati[entity_id] = stato
         self._programma_salvataggio()
-        # l'entity_id vuoto: nessuno che segue i «state_reported» di un'entità lo
-        # prende per un rapporto
-        self.hass.bus.async_fire(
-            EVENT_STATE_REPORTED,
-            {
-                "entity_id": "",
-                _MARCHIO: _Annuncio(self, "cambiato", valore, vecchio, stato),
-            },
-            context=contesto,
-            time_fired=timestamp,
+        cambi_interni(self.hass).manda(
+            self._consegna,
+            {_MARCHIO: _Annuncio(self, "cambiato", valore, vecchio, stato)},
+            contesto,
+            timestamp,
         )
 
     # --- annunci -------------------------------------------------------------------------
 
     @callback
-    def _mio(self, dati: Mapping[str, Any]) -> bool:
-        annuncio = dati.get(_MARCHIO)
-        return annuncio is not None and annuncio.memoria is self
-
-    @callback
     def _consegna(self, evento: Event[Any]) -> None:
-        """Un annuncio arriva quando Home Assistant consegnerebbe ``state_changed``
-        (o ``call_service``): a chi segue l'entità, allo StatoVMC, a chi ascolta."""
+        """Un annuncio dal canale del motore (dove Home Assistant consegnerebbe
+        ``state_changed`` o ``call_service``): a chi segue l'entità, allo StatoVMC, a chi
+        ascolta; dopo l'arresto della memoria più nulla."""
+        if not self._annunci_attivi:
+            return
         annuncio: _Annuncio = evento.data[_MARCHIO]
         if annuncio.tipo == "chiamata":
             assert annuncio.dati is not None
@@ -989,6 +953,21 @@ class MemoriaInterna:
                     dati,
                     evento.context,
                 )
+            return
+        if annuncio.tipo == "riportato":
+            rapporto: Event[Any] = Event(
+                EVENT_STATE_REPORTED,
+                {
+                    chiave: valore
+                    for chiave, valore in evento.data.items()
+                    if chiave != _MARCHIO
+                },
+                EventOrigin.local,
+                evento.time_fired_timestamp,
+                evento.context,
+            )
+            for funzione in list(self._rapporti):
+                funzione(rapporto)
             return
         if annuncio.tipo != "cambiato":
             return

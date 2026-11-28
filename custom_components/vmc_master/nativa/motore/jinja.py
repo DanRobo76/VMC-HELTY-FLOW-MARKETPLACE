@@ -29,6 +29,9 @@ Regole che il traduttore deve conoscere:
 - i filtri e i test che hanno bisogno di ``hass`` (``device_attr``, ``is_state``...) non
   sono qui: a ``f_map``, ``f_select``, ``f_reject``, ``f_selectattr``, ``f_rejectattr`` e
   ``prova`` si può passare, al posto del nome, la funzione Python che li fa.
+
+Le regole e le funzioni riprese da Home Assistant 2026.11 sono Apache-2.0: la licenza è nel
+file ``LICENSE-Apache-2.0.txt`` dell'integrazione.
 """
 
 from __future__ import annotations

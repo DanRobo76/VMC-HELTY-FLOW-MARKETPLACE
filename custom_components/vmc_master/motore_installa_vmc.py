@@ -1,9 +1,8 @@
-#!/usr/bin/env python3
 """Installa_vmc 0.4.0: procedura del manuale Helty (App Air Guard) per Home Assistant OS.
 
 Usa solo la libreria standard di Python. Non importa e non modifica le altre parti del Package.
-La CLI avvia un worker separato, così il limite di 60 s di shell_command non
-interrompe collegamento, ripristino e verifica.
+Nell'integrazione nativa il motore si usa da prima_installazione.py: la riga di comando e
+il worker separato del package (8.6.0) non ci sono.
 
 Comandi Air Guard (porta TCP 5001), gli stessi usati dall'app ufficiale:
   VMNM?            nome della VMC
@@ -14,7 +13,6 @@ Comandi Air Guard (porta TCP 5001), gli stessi usati dall'app ufficiale:
 """
 from __future__ import annotations
 
-import argparse
 import concurrent.futures
 import contextlib
 import copy
@@ -25,10 +23,7 @@ import logging
 import os
 from pathlib import Path
 import re
-import signal
 import socket
-import subprocess
-import sys
 import time
 import urllib.error
 import urllib.parse
@@ -45,7 +40,6 @@ SUFFIX_INFRASTRUCTURE = "0" * 15 + "05001" + "0" * 30 + "10"
 SUFFIX_ACCESS_POINT = "0" * 15 + "05001" + "0" * 30 + "01"
 NAME_PATTERN = r"[A-Za-z0-9_-]{1,12}"
 AP_PASSWORD_PATTERN = r"[A-Za-z0-9$@!%?&]{8,32}"
-ACTIONS = ("diagnose", "configure", "verify", "recover", "rename", "ap_password", "ap_mode", "scan")
 
 
 LOGGER = logging.getLogger(__name__)
@@ -836,141 +830,3 @@ def read_status(root=ROOT):
                         message="La procedura è stata interrotta. Ripetere l'operazione per tentare il recupero; se la rete era già stata inviata, controllare nel router l'indirizzo della VMC.")
             atomic_json(root / "status.json", {k: v for k, v in data.items() if not k.startswith("configured_") and k not in ("vmc_networks", "wifi_networks")})
     return data
-
-
-NORMALIZE = {
-    "configure": lambda payload, root: normalize_request(payload),
-    "verify": normalize_verification,
-    "rename": normalize_rename,
-    "ap_password": lambda payload, root: normalize_ap_password(payload),
-    "ap_mode": normalize_ap_mode,
-}
-
-
-def launch(action, payload, root=ROOT):
-    root = Path(root)
-    root.mkdir(mode=0o700, parents=True, exist_ok=True)
-    lock = open(root / "worker.lock", "a")
-    try:
-        fcntl.flock(lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-    except BlockingIOError:
-        lock.close()
-        return {"accepted": False, "message": "Una procedura è già in corso. Attendere il risultato."}
-    try:
-        if action in NORMALIZE:
-            NORMALIZE[action](payload, root)
-    except Exception:
-        lock.close()
-        raise
-    job = str(uuid.uuid4())
-    path = root / (job + ".json")
-    atomic_json(path, {"action": action, "payload": payload})
-    Status(root).emit("Avvio", 5, "Procedura avviata.", job_id=job, action=action, finished=False)
-    try:
-        subprocess.Popen([sys.executable, str(Path(__file__).resolve()), "worker", "--job", job, "--lock-fd", str(lock.fileno())], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, pass_fds=(lock.fileno(),), start_new_session=True)
-    except Exception:
-        path.unlink(missing_ok=True)
-        lock.close()
-        raise Failure("worker_start", "Non è stato possibile avviare la procedura.") from None
-    lock.close()
-    return {"accepted": True, "job_id": job, "message": "Procedura avviata. Seguire lo stato nella scheda."}
-
-
-def dispatch(engine, action, payload):
-    if action == "diagnose":
-        engine.diagnose()
-    elif action == "recover":
-        engine.recover()
-    elif action == "verify":
-        engine.verify(payload)
-    elif action == "scan":
-        engine.scan()
-    elif action == "rename":
-        engine.rename(payload)
-    elif action == "ap_mode":
-        engine.access_point(payload)
-    elif action in ("configure", "ap_password"):
-        if (engine.root / "restore.json").exists():
-            engine.restore()
-        engine.run(payload) if action == "configure" else engine.change_ap_password(payload)
-    else:
-        raise Failure("invalid_action", "Operazione non valida.")
-
-
-def run_worker(job, lock_fd, root=ROOT, engine=None):
-    if not re.fullmatch(r"[0-9a-f-]{36}", job) or lock_fd < 0:
-        return 2
-    root = Path(root)
-    path = root / (job + ".json")
-    engine = engine or Engine(root)
-
-    def interrupted(_signum, _frame):
-        raise Failure("interrupted", "Procedura interrotta. Controllare lo stato del ripristino prima di riprovare.")
-    signal.signal(signal.SIGTERM, interrupted)
-    signal.signal(signal.SIGALRM, interrupted)
-    signal.alarm(420)
-    try:
-        request = json.loads(path.read_text())
-        action = request["action"]
-        engine.status.data.update(job_id=job, action=action, finished=False)
-        dispatch(engine, action, request["payload"])
-        engine.status.emit(engine.status.data["stage"], engine.status.data["progress"],
-                           engine.status.data["message"], finished=True)
-    except Exception as exc:
-        code = exc.code if isinstance(exc, Failure) else "communication_error"
-        message = exc.message if isinstance(exc, Failure) else "Errore di comunicazione. Verificare la raggiungibilità della VMC e del Supervisor."
-        stage = "Ripristino necessario" if (root / "restore.json").exists() else "Verifica non completata" if engine.status.data.get("network_sent") else "Errore"
-        engine.status.emit(stage, engine.status.data.get("progress", 0), message=message,
-                           error_code=code, success=False, finished=True)
-    finally:
-        signal.alarm(0)
-        path.unlink(missing_ok=True)
-        os.close(lock_fd)
-    return 0
-
-
-def report_input_error(error, root=ROOT, action="configure"):
-    """Un clic con dati non validi non deve sovrascrivere un lavoro in corso."""
-    root = Path(root)
-    root.mkdir(mode=0o700, parents=True, exist_ok=True)
-    with open(root / "worker.lock", "a") as lock:
-        try:
-            fcntl.flock(lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except BlockingIOError:
-            return
-        Status(root).emit("Errore", message=error.message, error_code=error.code, finished=True,
-                          job_id=str(uuid.uuid4()), action=action)
-
-
-def main():
-    parser = argparse.ArgumentParser(description="Installa_vmc")
-    parser.add_argument("command", choices=("start", "status", "worker", "recover-if-needed"))
-    parser.add_argument("--action", choices=ACTIONS, default="diagnose")
-    parser.add_argument("--payload", default="")
-    parser.add_argument("--job", default="")
-    parser.add_argument("--lock-fd", type=int, default=-1)
-    args = parser.parse_args()
-    try:
-        if args.command == "status":
-            result = read_status()
-        elif args.command == "worker":
-            return run_worker(args.job, args.lock_fd)
-        elif args.command == "recover-if-needed":
-            result = launch("recover", {}) if (ROOT / "restore.json").exists() else {"accepted": False, "message": "Nessun ripristino pendente."}
-        else:
-            if len(args.payload) > 8192:
-                raise Failure("invalid_request", "Richiesta troppo lunga.")
-            try:
-                data = json.loads(args.payload) if args.payload else {}
-            except (ValueError, UnicodeError):
-                raise Failure("invalid_request", "Richiesta non valida.") from None
-            result = launch(args.action, data)
-    except Failure as exc:
-        result = {"accepted": False, "message": exc.message, "error_code": exc.code}
-        report_input_error(exc, action=args.action)
-    print(json.dumps(result, ensure_ascii=False))
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())

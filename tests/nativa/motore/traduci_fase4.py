@@ -1,8 +1,8 @@
 """Il codice generato della fase 4: il package tradotto con tutte le opzioni della fase 4.
 
-``motore/generato/`` resta il codice della fase 3 (aiutanti, timer, script e comandi di
-shell di Home Assistant): lo usano i banchi della fase 3 e la variante ``nativa`` del
-simulatore. Il motore dell'integrazione nativa (``nativa/assemblaggio.py``) usa invece
+``tests/nativa/motore/generato/`` resta il codice della fase 3 (aiutanti, timer, script e
+comandi di shell di Home Assistant): lo usano i banchi della fase 3 e la variante ``nativa``
+del simulatore. Il motore dell'integrazione nativa (``nativa/assemblaggio.py``) usa invece
 ``motore/generato_fase4/``, lo stesso package tradotto con:
 
 - la mappa dei nomi (``rinomina.da_fase_1``) per i 172 aiutanti che domani sono entità
@@ -281,8 +281,9 @@ async def traduci_fase4(hass: HomeAssistant) -> dict[str, str]:
     motore, tolti = togli_escluse(g, motore, voci, voci_escluse)
     return {
         "__init__.py": '"""Codice generato dal package (fase 4: entità native)."""\n',
-        **_moduli_modelli(jinja, tolti),
-        **_moduli_motore(g, motore, tolti),
+        # dentro il motore: i suoi moduli si importano con «..»
+        **_moduli_modelli(jinja, tolti, importa_da=".."),
+        **_moduli_motore(g, motore, tolti, importa_da=".."),
         "sensori.py": sensori,
     }
 

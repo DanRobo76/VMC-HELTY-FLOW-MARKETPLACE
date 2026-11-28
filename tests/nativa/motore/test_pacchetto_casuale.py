@@ -106,7 +106,6 @@ from pytest_homeassistant_custom_component.common import async_test_home_assista
 from custom_components.vmc_master.const import NOME_MASTER
 from custom_components.vmc_master.installatore import genera_file
 from custom_components.vmc_master.nativa.client import ErroreVMC
-from custom_components.vmc_master.nativa.motore import generato
 from custom_components.vmc_master.nativa.motore.definizioni import (
     COMANDO_NOME,
     COMANDO_VMC,
@@ -120,6 +119,7 @@ from custom_components.vmc_master.nativa.motore.timer import (
     bus_del_motore,
 )
 
+from . import generato
 from .banco_memoria import (
     AGGIORNA,
     DOMINI_INTERNI,
@@ -131,6 +131,7 @@ from .banco_memoria import (
     servizi_misti,
 )
 from .fase3 import MotoreFase3, osserva_logiche, personalizzato
+from .nel_canale import CoppiaContesto, ordine_esterno, rinumera_ovunque, voce_interna
 from .test_avvio_motore import _ripristina
 from .test_semantica import _carica, _gira
 from .traduci import (
@@ -807,7 +808,9 @@ class Normalizzatore:
         if isinstance(valore, datetime):
             return round((valore - self.inizio).total_seconds(), 6)
         if isinstance(valore, Context):
-            return (self.contesto(valore.id), self.contesto(valore.parent_id))
+            return CoppiaContesto(
+                (self.contesto(valore.id), self.contesto(valore.parent_id))
+            )
         if isinstance(valore, State):
             return (
                 valore.entity_id,
@@ -1724,12 +1727,31 @@ def _stampa_copertura(prova: Prova, dati: dict[str, Any]) -> None:
         print(f"CORSA INTERROTTA a {dati['corsa_interrotta']} s")
 
 
+def confrontabile(esito: dict[str, Any]) -> dict[str, Any]:
+    """Una corsa come si confronta (``nel_canale``): gli stati delle logiche (e gli
+    annunci della memoria interna nella sequenza) non passano dal bus e possono passare
+    prima degli eventi che Home Assistant tiene in coda; il registro e la sequenza con le
+    voci esterne nel loro ordine e quelle interne nel loro, poi i contesti rinumerati in
+    quest'ordine in tutti gli elenchi."""
+    uscita = dict(esito)
+    uscita["registro"] = ordine_esterno(esito["registro"], voce_interna)
+    if "sequenza" in esito:
+        uscita["sequenza"] = ordine_esterno(esito["sequenza"], voce_interna)
+    chiavi = ["registro", *(k for k in uscita if k != "registro")]
+    for chiave, valore in zip(
+        chiavi, rinumera_ovunque(*(uscita[k] for k in chiavi)), strict=True
+    ):
+        uscita[chiave] = valore
+    return uscita
+
+
 def _confronta_corse(
     atteso: dict[str, Any], ottenuto: dict[str, Any], cosa: str
 ) -> None:
     """Home Assistant e motore, nell'ordine: chiamate ai servizi finti, cambi di stato,
     stati di automazioni e script, notifiche, fine delle chiamate del banco, stati finali
     e registro completo."""
+    atteso, ottenuto = confrontabile(atteso), confrontabile(ottenuto)
 
     def cambi(esito: dict[str, Any]) -> list[Any]:
         return [

@@ -54,12 +54,13 @@ from pytest_homeassistant_custom_component.common import (
 )
 
 from custom_components.vmc_master.nativa.client import ErroreVMC
-from custom_components.vmc_master.nativa.motore import generato
 from custom_components.vmc_master.nativa.motore.ha import Motore
 from custom_components.vmc_master.nativa.motore.stati_logiche import stati_logiche
 from custom_components.vmc_master.nativa.pulsanti import PulsanteVMC
 from custom_components.vmc_master.nativa.tabelle import PULSANTI
 
+from . import generato
+from .nel_canale import ordine_esterno, stato_di_logica
 from .test_semantica import EVENTI, T0, _avanza, _carica, _gira, _norma
 from .test_semantica_tempi import ordine_dei_timer  # noqa: F401 (fixture)
 from .traduci import PACKAGE, leggi_comandi, traduci_configurazione
@@ -922,7 +923,11 @@ async def test_come_home_assistant(
         {("home_assistant", k): v for k, v in tolti_ha.items()}
         | {("motore", k): v for k, v in tolti_motore.items()}
     )
-    _confronta(atteso, ottenuto)
+    # gli stati delle logiche (le automazioni del motore) non passano dal bus: possono
+    # passare prima degli eventi che Home Assistant tiene in coda (nel_canale)
+    _confronta(
+        ordine_esterno(atteso, stato_di_logica), ordine_esterno(ottenuto, stato_di_logica)
+    )
 
 
 # --- i casi che il package non usa ---------------------------------------------------------

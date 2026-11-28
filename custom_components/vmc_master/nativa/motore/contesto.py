@@ -157,8 +157,9 @@ class VistaModello:
 
 # --- come Home Assistant interpreta un modello reso ------------------------------------------
 #
-# Da homeassistant/helpers/template/__init__.py di Home Assistant 2026.11.2 (Apache-2.0):
-# ``_parse_result``, ``_copy_literal`` e ``_cached_parse_result``, le stesse righe.
+# Da homeassistant/helpers/template/__init__.py di Home Assistant 2026.11.2 (Apache-2.0,
+# licenza nel file LICENSE-Apache-2.0.txt dell'integrazione): ``_parse_result``,
+# ``_copy_literal`` e ``_cached_parse_result``, le stesse righe.
 
 _IS_NUMERIC = re.compile(r"^[+-]?(?!0\d)\d*(?:\.\d*)?$", re.ASCII)
 _EVAL_CACHE_SIZE = 512

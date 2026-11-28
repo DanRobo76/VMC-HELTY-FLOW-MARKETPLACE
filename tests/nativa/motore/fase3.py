@@ -144,7 +144,10 @@ class MotoreFase3(Motore):
         configurazione: Mapping[str, Any] | None = None,
         **argomenti: Any,
     ) -> None:
-        """Come ``Motore.avvia``, con le entità degli script (``script_come_entita``)."""
+        """Come ``Motore.avvia``, con le entità degli script (``script_come_entita``);
+        senza ``crea``, il codice di ``generato/``."""
+        if crea is None:
+            from .generato.motore import crea
         await super().avvia(
             crea, script_come_entita=script_come_entita(configurazione), **argomenti
         )

@@ -34,10 +34,11 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.setup import async_setup_component
 from pytest_homeassistant_custom_component.common import async_test_home_assistant
 
-from custom_components.vmc_master.nativa.motore import generato
 from custom_components.vmc_master.nativa.motore.stati_logiche import stati_logiche
 
+from . import generato
 from .fase3 import MotoreFase3
+from .nel_canale import ordine_esterno, osserva_nel_canale, stato_di_logica
 from .traduci import traduci_configurazione
 
 T0 = datetime(2026, 11, 25, 10, 0, 0, tzinfo=UTC)
@@ -1931,13 +1932,18 @@ async def _corsa(
                 (_norma(evento.time_fired), evento.event_type, _norma(dict(dati)))
             )
 
-        togli = hass.bus.async_listen(MATCH_ALL, annota)
         if motore:
-            # gli stati delle logiche (le automazioni del motore) non sono nella macchina
-            # degli stati: entrano nel registro nel punto del bus di state_changed
+            # il motore vede gli eventi di Home Assistant nel suo canale: il registro li
+            # annota lì (nell'ordine in cui li vede il motore, come Home Assistant li
+            # consegna alle automazioni); gli stati delle logiche (le automazioni del
+            # motore) non sono nella macchina degli stati: entrano nel registro quando il
+            # canale li consegna
+            togli = osserva_nel_canale(hass, EVENTI, annota)
             smetti = stati_logiche(hass).osserva(
                 callback(lambda e: annota(e) if e.event_type == EVENT_STATE_CHANGED else None)
             )
+        else:
+            togli = hass.bus.async_listen(MATCH_ALL, annota)
         for passo in passi:
             if passo[0] == "servizio":
                 dominio, servizio = passo[1].split(".")
@@ -1991,6 +1997,10 @@ async def test_come_home_assistant(
         voce[1] == EVENT_CALL_SERVICE and voce[2]["domain"] == "prova"
         for voce in atteso
     )
+    # gli stati delle logiche (le automazioni) sono voci interne del motore: tra loro la
+    # stessa sequenza, tutto il resto nello stesso ordine (nel_canale.ordine_esterno)
+    atteso = ordine_esterno(atteso, stato_di_logica)
+    ottenuto = ordine_esterno(ottenuto, stato_di_logica)
     if ottenuto != atteso:
         righe_attese = [repr(v) for v in atteso]
         righe_ottenute = [repr(v) for v in ottenuto]

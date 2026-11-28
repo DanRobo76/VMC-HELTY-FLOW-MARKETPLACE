@@ -179,7 +179,7 @@ Per ogni VMC nel pannello **Opzioni** della scheda:
 <details>
 <summary><strong>Licenza</strong></summary>
 
-<sub>**[GNU General Public License v3.0](https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER/blob/main/LICENSE)**. Copyright © 2023-2026 Ing. Danilo Robotti. È consentito usare, copiare, modificare e distribuire il software, anche per scopi commerciali; chi lo distribuisce, anche modificato, deve renderne disponibile il codice sorgente con la stessa licenza e mantenere la nota di copyright. Il software è fornito senza alcuna garanzia.</sub>
+<sub>**[GNU General Public License v3.0](https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER/blob/main/LICENSE)**. Copyright © 2023-2026 Ing. Danilo Robotti. È consentito usare, copiare, modificare e distribuire il software, anche per scopi commerciali; chi lo distribuisce, anche modificato, deve renderne disponibile il codice sorgente con la stessa licenza e mantenere la nota di copyright. Il software è fornito senza alcuna garanzia. Alcune parti del motore sono riprese da Home Assistant e restano sotto licenza [Apache-2.0](https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER/blob/main/custom_components/vmc_master/LICENSE-Apache-2.0.txt).</sub>
 
 <sub>**Impiego dell'Intelligenza Artificiale:** nello sviluppo del software l'autore si è avvalso anche di strumenti di intelligenza artificiale.</sub>
 </details>
@@ -384,7 +384,7 @@ For each unit in the card's **Opzioni** panel:
 <details>
 <summary><strong>License</strong></summary>
 
-<sub>**[GNU General Public License v3.0](https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER/blob/main/LICENSE)**. Copyright © 2023-2026 Ing. Danilo Robotti. You may use, copy, modify and distribute the software, also for commercial purposes; whoever distributes it, even modified, must make the source code available under the same licence and keep the copyright notice. The software comes with no warranty.</sub>
+<sub>**[GNU General Public License v3.0](https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER/blob/main/LICENSE)**. Copyright © 2023-2026 Ing. Danilo Robotti. You may use, copy, modify and distribute the software, also for commercial purposes; whoever distributes it, even modified, must make the source code available under the same licence and keep the copyright notice. The software comes with no warranty. Some parts of the engine come from Home Assistant and stay under the [Apache-2.0](https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER/blob/main/custom_components/vmc_master/LICENSE-Apache-2.0.txt) licence.</sub>
 
 <sub>**Use of Artificial Intelligence:** in developing the software the author also used artificial intelligence tools.</sub>
 </details>

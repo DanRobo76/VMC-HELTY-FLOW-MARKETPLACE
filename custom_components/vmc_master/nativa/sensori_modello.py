@@ -25,7 +25,8 @@ con altre chiavi non si accetta (``ValueError``): andrebbe portata prima.
 
 Logica portata da Home Assistant 2026.11.2 (Apache-2.0), file
 ``homeassistant/components/template/entity.py``, ``template_entity.py``, ``sensor.py``,
-``binary_sensor.py`` e ``validators.py``, ridotta alle chiavi qui sopra.
+``binary_sensor.py`` e ``validators.py``, ridotta alle chiavi qui sopra. La licenza
+Apache-2.0 è nel file ``LICENSE-Apache-2.0.txt`` dell'integrazione.
 """
 
 from __future__ import annotations
@@ -87,7 +88,7 @@ from homeassistant.helpers.template import (
 from homeassistant.helpers.typing import StateType
 from homeassistant.util.enum import try_parse_enum
 
-from .motore.seguire import traccia_modelli
+from .motore.seguire import scrivi_stato, traccia_modelli
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -484,7 +485,7 @@ class EntitaModello(Entity):
                     aggiornamento.result,
                 )
 
-        self.async_write_ha_state()
+        scrivi_stato(self)
 
     @callback
     def _avvia_modelli(
@@ -592,7 +593,7 @@ class EntitaModello(Entity):
         """Nuovo entity_id: ``this`` dei modelli era il vecchio, si riparte. Lo stato si
         scrive prima: ``this.state`` deve esserci quando i modelli si rendono."""
         super().async_entity_id_changed(old_entity_id)
-        self.async_write_ha_state()
+        scrivi_stato(self)
         if self._seguiti is None:
             # non ancora partito: partirà con il nuovo entity_id
             return
@@ -752,7 +753,7 @@ class BinarioModello(EntitaModello, BinarySensorEntity, RestoreEntity):
         @callback
         def _scrivi_stato(_: Any) -> None:
             self._attr_is_on = stato
-            self.async_write_ha_state()
+            scrivi_stato(self)
 
         # con ritardo: annullato se il risultato cambia
         self._annulla_ritardo = async_call_later(

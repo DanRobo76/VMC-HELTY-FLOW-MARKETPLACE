@@ -78,6 +78,7 @@ from custom_components.vmc_master.nativa.motore.stati_logiche import stati_logic
 from custom_components.vmc_master.trasforma import rinomina
 
 from .fase3 import MotoreFase3, osserva_logiche, personalizzato
+from .nel_canale import ordine_esterno, rinumera_contesti, stato_di_logica
 from .test_avvio_motore import _registro_entita
 from .test_semantica import PASSO, _gira
 from .traduci import _Caricatore, leggi_package
@@ -649,6 +650,22 @@ def test_traduttore_legge_il_package_dell_integrazione(nome: str) -> None:
     assert _rinominato(script, nome) == package["script"]
 
 
+def _posti_dei_contesti(voce: tuple[Any, ...]) -> tuple[int, ...]:
+    if len(voce) > 1 and voce[1] == "finto":
+        return (4,)
+    return (3, 4) if len(voce) == 5 else ()
+
+
+def _confrontabile(esito: dict[str, Any]) -> list[Any]:
+    """Il registro come si confronta: gli stati delle logiche (le automazioni del motore)
+    non passano dal bus e possono passare prima degli eventi che Home Assistant tiene in
+    coda (nel_canale); poi i contesti come numeri in quest'ordine."""
+    registro = ordine_esterno(
+        esito["registro"], stato_di_logica, confine=lambda voce: len(voce) == 1
+    )
+    return rinumera_contesti(registro, posti=_posti_dei_contesti)[0]
+
+
 def _confronta(atteso: list[Any], ottenuto: list[Any], cosa: str) -> None:
     if ottenuto == atteso:
         return
@@ -713,5 +730,5 @@ async def test_tre_vmc_come_home_assistant(freezer: FrozenDateTimeFactory) -> No
         atteso["descrizioni"], ottenuto["descrizioni"], "descrizioni dei servizi"
     )
     _confronta(atteso["iniziali"], ottenuto["iniziali"], "stati iniziali")
-    _confronta(atteso["registro"], ottenuto["registro"], "registri")
+    _confronta(_confrontabile(atteso), _confrontabile(ottenuto), "registri")
     _confronta(atteso["finali"], ottenuto["finali"], "stati finali")

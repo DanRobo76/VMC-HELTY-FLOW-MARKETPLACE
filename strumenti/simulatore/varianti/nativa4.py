@@ -226,37 +226,17 @@ async def avvia_assemblaggio(hass, config):
     _istantanea_con_le_logiche(hass)
     await vmc.avvia(await aggiungi_con_piattaforme(hass))
     comandi_come_oggi(vmc.c.comandi)
-    _ascolta_voci(hass)
     vmc.c.comandi.ascolta(callback(_traccia_comando))
     vmc.annunci_timer.osserva(_traccia_timer)
     vmc.memoria.ascolta_cambi(_traccia_interno)
+    vmc.memoria.ascolta_rapporti(_traccia_rapporto_interno)
     STATO['vmc'] = vmc
     STATO['domani'] = domani()
 
 
 # Le voci C dei comandi entrano nella traccia nel punto in cui Home Assistant consegnerebbe
-# l'evento call_service del comando (le MS dei timer arrivano con AnnunciDeiTimer): un evento
-# lanciato mentre il bus ne consegna un altro aspetta la fine di quella consegna
-# (EventBus.async_fire_internal). Per avere lo stesso punto la voce viaggia su un evento
-# state_reported con un marchio (escluso dagli ascoltatori di tutti gli eventi, entity_id vuoto:
-# nessuno lo prende per il rapporto di un'entità), come fa la memoria interna per i suoi annunci.
-_MARCHIO = 'sim_nativa4_voce'
-
-
-def _in_traccia(hass, voce, contesto):
-    from homeassistant.const import EVENT_STATE_REPORTED
-    hass.bus.async_fire_internal(EVENT_STATE_REPORTED, {'entity_id': '', _MARCHIO: voce}, context=contesto)
-
-
-def _ascolta_voci(hass):
-    from homeassistant.const import EVENT_STATE_REPORTED
-    from homeassistant.core import callback
-
-    @callback
-    def consegna(evento):
-        tracce.TR.ev.append(evento.data[_MARCHIO])
-
-    hass.bus.async_listen(EVENT_STATE_REPORTED, consegna, event_filter=callback(lambda d: _MARCHIO in d))
+# l'evento call_service del comando: ComandiVMC.notifica lo manda nel canale del motore
+# (seguire.CambiInterni), che lo consegna subito o dopo la consegna in corso, come il bus.
 
 
 def _traccia_comando(evento):
@@ -264,7 +244,7 @@ def _traccia_comando(evento):
     d = evento.data
     voce = ['C', vclock._V[0], d['domain'], d['service'], tracce._json(d['service_data'] or {}),
             tracce.forma_contesto(evento.context)]
-    _in_traccia(STATO['vmc'].hass, voce, evento.context)
+    tracce.TR.ev.append(voce)
 
 
 def _annota_i_trigger():
@@ -346,6 +326,12 @@ def _traccia_interno(evento):
                          tracce.forma_contesto(s.context)])
 
 
+def _traccia_rapporto_interno(evento):
+    """La scrittura senza cambio di un valore interno (voce R con l'entity_id di oggi, come lo
+    state_reported dell'aiutante di oggi), nel punto del canale del motore."""
+    tracce.TR.ev.append(['R', vclock._V[0], evento.data['entity_id'], tracce.forma_contesto(evento.context)])
+
+
 def _traccia_timer(evento):
     """Il cambio di un timer del motore (voce MS: come la S del timer di oggi), nel punto
     del bus in cui oggi arriva il suo state_changed, prima di chi segue il timer
@@ -356,34 +342,37 @@ def _traccia_timer(evento):
 
 
 async def prima_dell_avvio(hass) -> None:
-    """La traccia ascolta il bus prima di chi segue le entità, come nel lato A.
+    """La traccia annota gli eventi del bus nel canale del motore, come li vede il motore.
 
-    Il runner registra gli ascoltatori della traccia (tracce.installa) dopo il setup delle
-    integrazioni. Oggi a quel punto nessuno segue ancora un'entità (sensori template e
-    automazioni cominciano all'avvio), così la traccia annota un cambio prima che i trigger
-    e i sensori che lo seguono facciano qualcosa (per esempio un comando alla VMC). La VMC
-    nativa segue già le sue letture durante il setup: il distributore degli eventi di
-    ``async_track_state_change_event`` è registrato prima della traccia, che annoterebbe il
-    comando prima del cambio che l'ha causato. Qui gli ascoltatori della traccia (che
-    annotano soltanto) tornano davanti ai distributori di homeassistant.helpers.event:
-    nessun effetto sul comportamento, solo il punto in cui la traccia annota."""
+    Il runner registra gli ascoltatori della traccia (tracce.installa) sul bus dopo il setup
+    delle integrazioni. Il motore vede gli eventi del bus nel suo canale
+    (seguire.CambiInterni): un evento che arriva mentre il canale consegna un annuncio (un
+    cambio di un valore interno, lo stato di una logica, un comando) passa dopo, come
+    l'evento che oggi Home Assistant accoda mentre il bus consegna lo state_changed di un
+    aiutante. Qui gli ascoltatori della traccia (che annotano soltanto) lasciano il bus e
+    guardano gli stessi eventi nel canale, prima di chi li segue: nessun effetto sul
+    comportamento, solo il punto in cui la traccia annota."""
+    from custom_components.vmc_master.nativa.motore.seguire import cambi_interni
     from homeassistant.const import (
         EVENT_CALL_SERVICE,
         EVENT_STATE_CHANGED,
         EVENT_STATE_REPORTED,
     )
+    from homeassistant.core import callback
+    canale = cambi_interni(hass)
     for tipo in (EVENT_STATE_CHANGED, EVENT_STATE_REPORTED, EVENT_CALL_SERVICE):
         ascoltatori = hass.bus._listeners.get(tipo, [])
         traccia = [a for a in ascoltatori if getattr(a[0].target, '__module__', '') == 'tracce']
-        altri = [a for a in ascoltatori if a not in traccia]
-        primo = next((i for i, a in enumerate(altri) if _distributore(a[0].target)), None)
-        if traccia and primo is not None:
-            ascoltatori[:] = altri[:primo] + traccia + altri[primo:]
+        for voce in traccia:
+            ascoltatori.remove(voce)
+            funzione, filtro = voce[0].target, voce[1]
 
+            @callback
+            def osserva(evento, funzione=funzione, filtro=filtro):
+                if filtro is None or filtro(evento.data):
+                    funzione(evento)
 
-def _distributore(funzione):
-    """Il distributore di un tracker di homeassistant.helpers.event (functools.partial)."""
-    return getattr(getattr(funzione, 'func', None), '__module__', '') == 'homeassistant.helpers.event'
+            canale.osserva(tipo, osserva, prima_di_chi_segue=True)
 
 
 async def avvia(hass) -> None:
