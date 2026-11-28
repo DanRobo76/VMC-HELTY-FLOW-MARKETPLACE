@@ -372,7 +372,7 @@ async def prima_dell_avvio(hass) -> None:
                 if filtro is None or filtro(evento.data):
                     funzione(evento)
 
-            canale.osserva(tipo, osserva)
+            canale.osserva(tipo, osserva, prima_di_chi_segue=True)
 
 
 async def avvia(hass) -> None:

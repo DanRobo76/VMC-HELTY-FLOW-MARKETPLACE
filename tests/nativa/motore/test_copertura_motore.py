@@ -42,6 +42,7 @@ from custom_components.vmc_master.trasforma import rinomina
 from . import generato
 from . import test_semantica as semantica
 from .fase3 import MotoreFase3
+from .nel_canale import ordine_esterno, stato_di_logica
 from .test_semantica import (
     AIUTANTI,
     T0,
@@ -626,6 +627,10 @@ def servizi_di_prova(
 
 
 def _confronta(atteso: list[Any], ottenuto: list[Any], cosa: str) -> None:
+    # gli stati delle logiche (le automazioni del motore) non passano dal bus: possono
+    # passare prima degli eventi che Home Assistant tiene in coda (nel_canale)
+    atteso = ordine_esterno(atteso, stato_di_logica)
+    ottenuto = ordine_esterno(ottenuto, stato_di_logica)
     if ottenuto == atteso:
         return
     diff = "\n".join(

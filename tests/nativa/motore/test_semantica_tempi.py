@@ -42,6 +42,7 @@ from custom_components.vmc_master.nativa.motore.stati_logiche import stati_logic
 
 from . import generato
 from .fase3 import MotoreFase3
+from .nel_canale import ordine_esterno, osserva_nel_canale, stato_di_logica
 from .test_semantica import _carica, _gira, della_pulizia, moduli  # noqa: F401
 from .traduci import traduci_configurazione
 
@@ -1315,13 +1316,6 @@ async def _corsa(
     radice.addHandler(messaggi)
     try:
         async with async_test_home_assistant(initial_state=stato_iniziale) as hass:
-            # i contesti (id casuali) come numeri d'ordine: si confronta chi ha causato
-            # cosa
-            contesti: dict[str | None, int | None] = {None: None}
-
-            def contesto(identificativo: str | None) -> int | None:
-                return contesti.setdefault(identificativo, len(contesti) - 1)
-
             pulizia = False
 
             @callback
@@ -1341,8 +1335,8 @@ async def _corsa(
                         _norma(evento.time_fired, inizio),
                         evento.event_type,
                         _norma(dict(dati), inizio),
-                        contesto(evento.context.id),
-                        contesto(evento.context.parent_id),
+                        evento.context.id,
+                        evento.context.parent_id,
                     )
                 )
 
@@ -1376,16 +1370,19 @@ async def _corsa(
                 await hass.async_block_till_done()
             await _gira(hass)
             _pulisci_timer(hass, chiave)
-            hass.bus.async_listen(MATCH_ALL, annota)
             if motore:
-                # gli stati delle logiche (le automazioni del motore) non sono nella
-                # macchina degli stati: entrano nel registro nel punto del bus di
-                # state_changed
+                # il motore vede gli eventi di Home Assistant nel suo canale: il registro
+                # li annota lì (nel_canale); gli stati delle logiche (le automazioni del
+                # motore) non sono nella macchina degli stati: entrano nel registro quando
+                # il canale li consegna
+                osserva_nel_canale(hass, EVENTI, annota)
                 stati_logiche(hass).osserva(
                     callback(
                         lambda e: annota(e) if e.event_type == EVENT_STATE_CHANGED else None
                     )
                 )
+            else:
+                hass.bus.async_listen(MATCH_ALL, annota)
             if prova["avvio"]:
                 avvio = asyncio.ensure_future(hass.async_start())
                 await _fino_alla_fine(hass, freezer, avvio)
@@ -1440,7 +1437,24 @@ async def _corsa(
             await asyncio.gather(*chiamate, return_exceptions=True)
     finally:
         radice.removeHandler(messaggi)
-    return registro
+    # gli stati delle logiche (le automazioni) sono voci interne del motore: tra loro la
+    # stessa sequenza, tutto il resto nello stesso ordine (nel_canale.ordine_esterno); poi i
+    # contesti (id casuali) come numeri d'ordine: si confronta chi ha causato cosa
+    return _contesti_in_ordine(ordine_esterno(registro, stato_di_logica))
+
+
+def _contesti_in_ordine(registro: list[Any]) -> list[Any]:
+    contesti: dict[str | None, int | None] = {None: None}
+
+    def contesto(identificativo: str | None) -> int | None:
+        return contesti.setdefault(identificativo, len(contesti) - 1)
+
+    return [
+        (*voce[:3], contesto(voce[3]), contesto(voce[4]))
+        if len(voce) == 5 and voce[1] in EVENTI
+        else voce
+        for voce in registro
+    ]
 
 
 async def _chiama(

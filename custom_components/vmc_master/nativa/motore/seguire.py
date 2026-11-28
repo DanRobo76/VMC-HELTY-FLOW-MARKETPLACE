@@ -1,21 +1,24 @@
-"""Chi segue i cambi delle entità e dei valori interni del motore (il proprio tracciamento).
+"""Il canale del motore e chi segue i cambi delle entità e dei valori interni (il proprio
+tracciamento).
 
 Home Assistant consegna ogni cambio di un'entità a chi la segue
 (``async_track_state_change_event``: un elenco per entity_id, nell'ordine delle iscrizioni)
 e su questo costruisce trigger ``state`` e ``template``, attese e sensori template. I valori
-interni del motore (i valori della memoria interna e i timer del motore) non sono nella
-macchina degli stati: i loro cambi li annuncia il motore stesso sul bus, nel punto in cui
-Home Assistant consegnerebbe ``state_changed`` (``MemoriaInterna._consegna``,
-``AnnunciDeiTimer._consegna``), e da lì vanno a ``CambiInterni.consegna``.
+interni del motore (i valori della memoria interna, i timer del motore, gli stati delle
+logiche) non sono nella macchina degli stati e non passano dal bus: i loro cambi li annuncia
+il motore nel suo canale (``CambiInterni.manda``), dove passano anche, nell'ordine del bus,
+gli eventi di Home Assistant che il motore segue.
 
 Qui ci sono:
 
-- ``CambiInterni`` (uno per ``hass``): chi segue i valori interni, per entity_id e
-  nell'ordine delle iscrizioni, con la consegna di Home Assistant
-  (``helpers.event._async_dispatch_entity_id_event``: ``HassJob``, copia dell'elenco,
-  errori nel registro);
-- ``segui_cambi``: al posto di ``async_track_state_change_event``; un'entità vera la segue
-  Home Assistant (la sua funzione pubblica), un valore interno ``CambiInterni``;
+- ``CambiInterni`` (uno per ``hass``): il canale del motore e chi segue i valori interni e
+  le entità, per entity_id e nell'ordine delle iscrizioni, con la consegna di Home
+  Assistant (``helpers.event._async_dispatch_entity_id_event``: ``HassJob``, copia
+  dell'elenco, errori nel registro);
+- ``scrivi_stato``: al posto di ``async_write_ha_state`` per le entità dell'integrazione,
+  perché il loro cambio tenga il suo posto anche nel canale;
+- ``segui_cambi``: al posto di ``async_track_state_change_event``, per le entità e per i
+  valori interni;
 - ``stato_di``: lo stato di un valore interno o di un'entità;
 - ``segui_stesso_stato``, ``traccia_modelli``, ``segui_modello``: ``async_track_same_state``,
   ``async_track_template_result`` (``TrackTemplateResultInfo``) e ``async_track_template``
@@ -129,10 +132,14 @@ class CambiInterni:
         self._tutti: list[HassJob[[Event[Any]], Any]] = []
         # chi ascolta gli altri eventi del bus, per tipo
         self._ascolti: defaultdict[str, list[_Ascolto]] = defaultdict(list)
-        # chi guarda gli eventi del bus nel punto del canale (le prove, il simulatore)
+        # chi guarda gli eventi del bus nel punto del canale (le prove, il simulatore),
+        # prima o dopo chi li segue
         self._osservatori: defaultdict[str, list[Callable[[Event[Any]], None]]] = (
             defaultdict(list)
         )
+        self._osservatori_prima: defaultdict[
+            str, list[Callable[[Event[Any]], None]]
+        ] = defaultdict(list)
         # l'ascoltatore del bus di ogni tipo di evento che passa dal canale
         self._dal_bus: dict[str, CALLBACK_TYPE] = {}
         # chi aspetta il suo turno (e i segnaposto degli eventi che Home Assistant ha in
@@ -285,18 +292,29 @@ class CambiInterni:
         return smetti
 
     @callback
-    def osserva(self, tipo: str, funzione: Callable[[Event[Any]], None]) -> CALLBACK_TYPE:
-        """``funzione(evento)`` per ogni evento ``tipo`` del bus, nel punto del canale e
-        prima di chi lo segue (le prove e il simulatore annotano così l'ordine in cui il
-        motore vede gli eventi)."""
-        self._osservatori[tipo].append(funzione)
+    def osserva(
+        self,
+        tipo: str,
+        funzione: Callable[[Event[Any]], None],
+        *,
+        prima_di_chi_segue: bool = False,
+    ) -> CALLBACK_TYPE:
+        """``funzione(evento)`` per ogni evento ``tipo`` del bus, nel punto del canale: le
+        prove e il simulatore annotano così l'ordine in cui il motore vede gli eventi. Dopo
+        chi segue l'evento, come un ascoltatore di tutti gli eventi di Home Assistant
+        (dopo quelli del suo tipo), o prima (``prima_di_chi_segue``), come un ascoltatore
+        del suo tipo aggiunto prima di tutti."""
+        osservatori = (
+            self._osservatori_prima if prima_di_chi_segue else self._osservatori
+        )
+        osservatori[tipo].append(funzione)
         self._aggancia(tipo)
 
         @callback
         def smetti() -> None:
-            self._osservatori[tipo].remove(funzione)
-            if not self._osservatori[tipo]:
-                del self._osservatori[tipo]
+            osservatori[tipo].remove(funzione)
+            if not osservatori[tipo]:
+                del osservatori[tipo]
             self._sgancia_se_inutile(tipo)
 
         return smetti
@@ -322,7 +340,12 @@ class CambiInterni:
     def _sgancia_se_inutile(self, tipo: str) -> None:
         """Toglie l'ascoltatore del bus quando nessuno vuole più gli eventi ``tipo`` (come
         Home Assistant toglie il distributore di un tracker senza più iscritti)."""
-        if tipo not in self._dal_bus or self._osservatori.get(tipo) or self._ascolti.get(tipo):
+        if (
+            tipo not in self._dal_bus
+            or self._osservatori.get(tipo)
+            or self._osservatori_prima.get(tipo)
+            or self._ascolti.get(tipo)
+        ):
             return
         if tipo == EVENT_STATE_CHANGED and (
             self._seguaci_veri or self._domini or self._tutti
@@ -337,6 +360,7 @@ class CambiInterni:
         if (
             self._tutti
             or self._osservatori.get(EVENT_STATE_CHANGED)
+            or self._osservatori_prima.get(EVENT_STATE_CHANGED)
             or self._ascolti.get(EVENT_STATE_CHANGED)
             or dati["entity_id"] in self._seguaci_veri
             or (self._attese and _chiave_attesa(EVENT_STATE_CHANGED, dati) in self._attese)
@@ -436,14 +460,12 @@ class CambiInterni:
 
     @callback
     def _smista(self, evento: Event[Any]) -> None:
-        """Un evento del bus a chi lo guarda e a chi lo segue: i cambi di un'entità a chi
-        la segue, a chi segue il suo dominio (se compare) e a chi segue tutti i cambi."""
+        """Un evento del bus a chi lo segue (i cambi di un'entità a chi la segue, a chi
+        segue il suo dominio se compare e a chi segue tutti i cambi; gli altri eventi a chi
+        li ascolta), poi a chi lo guarda (come gli ascoltatori di tutti gli eventi di Home
+        Assistant, dopo quelli del suo tipo)."""
         tipo = evento.event_type
-        for funzione in list(self._osservatori.get(tipo, ())):
-            try:
-                funzione(evento)
-            except Exception:
-                _LOGGER.exception("Error running job: %s", funzione)
+        self._guarda(self._osservatori_prima, evento)
         if tipo == EVENT_STATE_CHANGED:
             dati = evento.data
             if seguaci := self._seguaci_veri.get(dati["entity_id"]):
@@ -481,6 +503,17 @@ class CambiInterni:
                 self.hass.async_run_hass_job(ascolto.job, evento)
             except Exception:
                 _LOGGER.exception("Error running job: %s", ascolto.job)
+        self._guarda(self._osservatori, evento)
+
+    @staticmethod
+    def _guarda(
+        osservatori: Mapping[str, list[Callable[[Event[Any]], None]]], evento: Event[Any]
+    ) -> None:
+        for funzione in list(osservatori.get(evento.event_type, ())):
+            try:
+                funzione(evento)
+            except Exception:
+                _LOGGER.exception("Error running job: %s", funzione)
 
     # --- il canale --------------------------------------------------------------------------
 
@@ -658,12 +691,13 @@ def _segui_cambi(
     azione: Seguace,
     job_type: HassJobType | None,
 ) -> CALLBACK_TYPE:
-    """Come ``_async_track_state_change_event`` (gli entity_id come sono): gli entity_id
-    delle entità a Home Assistant, quelli dei valori interni a ``CambiInterni``.
+    """Come ``_async_track_state_change_event`` (gli entity_id come sono), con
+    ``CambiInterni``: i cambi dei valori interni dai loro annunci, quelli delle entità dal
+    bus, nel canale.
 
     Home Assistant iscrive gli entity_id come li riceve, e un cambio ha sempre l'entity_id
     in minuscolo: un entity_id con delle maiuscole non riceve mai nulla. Qui non si iscrive
-    (la funzione pubblica di Home Assistant lo renderebbe minuscolo)."""
+    nemmeno."""
     if not entity_ids:
         return async_noop
     chiavi = [entity_id for entity_id in entity_ids if entity_id == entity_id.lower()]

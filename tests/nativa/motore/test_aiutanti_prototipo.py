@@ -38,6 +38,7 @@ from .aiutanti_nativi import (
     aggiungi,
 )
 from .fase3 import MotoreFase3
+from .nel_canale import ordine_esterno, stato_di_logica
 from .rinomina import NomeAmbiguo, Rinomina, da_fase_1
 from .test_semantica import (
     EVENTI,
@@ -545,7 +546,9 @@ async def _corsa(
             )
         await _gira(hass)
         await hass.async_stop(force=True)
-    return _raggruppa(registro.voci)
+    # gli stati delle logiche (le automazioni del motore) non passano dal bus: possono
+    # passare prima degli eventi che Home Assistant tiene in coda (nel_canale)
+    return _raggruppa(ordine_esterno(registro.voci, stato_di_logica))
 
 
 def _senza_sorgente(testo: str) -> str:
@@ -652,9 +655,10 @@ async def test_piu_entita_scritte_subito_cambiano_l_ordine(
         for numero, (una, altra) in enumerate(zip(atteso, subito, strict=True))
         if una != altra
     ]
-    # otto eventi di fila, tutti allo stesso istante: in Home Assistant prima lo script
-    # dell'automazione svegliata, poi il resto dell'automazione che ha scritto
-    assert diversi == list(range(diversi[0], diversi[0] + 8))
+    # sette eventi di fila (senza gli stati interni delle logiche), tutti allo stesso
+    # istante: in Home Assistant prima lo script dell'automazione svegliata, poi il resto
+    # dell'automazione che ha scritto
+    assert diversi == list(range(diversi[0], diversi[0] + 7))
     assert {atteso[numero][0] for numero in diversi} == {6.0}
     assert atteso[diversi[0]][1:3] == (
         EVENT_CALL_SERVICE,

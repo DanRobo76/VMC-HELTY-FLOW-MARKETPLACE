@@ -50,6 +50,7 @@ from custom_components.vmc_master.nativa.motore.timer import (
 
 from . import generato
 from .fase3 import MotoreFase3
+from .nel_canale import ordine_esterno, stato_di_logica
 from .test_semantica import _carica, _gira, della_pulizia, moduli  # noqa: F401
 from .test_semantica_tempi import (  # noqa: F401
     EVENTI,
@@ -536,8 +537,11 @@ async def _corsa(
         )
         return (numero, genitore)
 
+    # gli stati delle logiche (le automazioni del motore) non passano dal bus: possono
+    # passare prima degli eventi che Home Assistant tiene in coda (nel_canale); i contesti
+    # diventano numeri in quest'ordine
     return (
-        [_norma(v, contesti) for v in registro],
+        [_norma(v, contesti) for v in ordine_esterno(registro, stato_di_logica)],
         [_norma(v, contesti) for v in dei_timer],
     )
 

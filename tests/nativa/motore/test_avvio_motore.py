@@ -56,6 +56,7 @@ from custom_components.vmc_master.nativa.motore.stati_logiche import stati_logic
 
 from . import generato
 from .fase3 import MotoreFase3
+from .nel_canale import ordine_esterno, stato_di_logica
 from .test_semantica import (
     AIUTANTI,
     PASSO,
@@ -901,8 +902,9 @@ async def _corsa(
 def _come_logiche(esito: dict[str, Any], logiche: set[str]) -> None:
     """Senza ciò che di un'automazione ha solo l'entità di Home Assistant e non la logica
     del motore (stesso entity_id): la voce del registro delle entità (e il suo evento) e
-    l'evento ``automation_triggered`` (l'istante in cui parte è nel suo stato). Poi i
-    contesti (id casuali) diventano numeri d'ordine: si confronta chi ha causato cosa."""
+    l'evento ``automation_triggered`` (l'istante in cui parte è nel suo stato). Poi le voci
+    nell'ordine di ``nel_canale.ordine_esterno`` e i contesti (id casuali) come numeri
+    d'ordine: si confronta chi ha causato cosa."""
 
     def dell_entita(voce: tuple[Any, ...]) -> bool:
         return (
@@ -916,10 +918,17 @@ def _come_logiche(esito: dict[str, Any], logiche: set[str]) -> None:
     def contesto(identificativo: str | None) -> int | None:
         return contesti.setdefault(identificativo, len(contesti) - 1)
 
+    # gli stati delle logiche non passano dal bus: possono passare prima degli eventi che
+    # Home Assistant tiene in coda (nel_canale), non prima dei passi della prova; le altre
+    # automazioni (YAML) sono entità di Home Assistant
+    registro = ordine_esterno(
+        [voce for voce in esito["registro"] if not dell_entita(voce)],
+        lambda voce: stato_di_logica(voce) and voce[2]["entity_id"] in logiche,
+        confine=lambda voce: len(voce) == 1,
+    )
     esito["registro"] = [
         (*voce[:3], contesto(voce[3]), contesto(voce[4])) if len(voce) == 5 else voce
-        for voce in esito["registro"]
-        if not dell_entita(voce)
+        for voce in registro
     ]
     esito["entita"] = [voce for voce in esito["entita"] if voce[0] not in logiche]
 

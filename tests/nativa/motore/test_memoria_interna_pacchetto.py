@@ -704,6 +704,7 @@ def _confronta_corse(
     """Home Assistant con gli aiutanti e motore con la memoria; restituisce i conteggi
     di quello che con la memoria non c'è più (con ``VMC_DEBUG_MEMORIA=<cartella>`` le
     due sequenze si scrivono in ``ha.txt`` e ``motore.txt``)."""
+    atteso, ottenuto = casuale.confrontabile(atteso), casuale.confrontabile(ottenuto)
     chiamate_attese, update_cambiati = _senza_interni_in_chiamate(atteso["chiamate"])
     if cartella := os.environ.get("VMC_DEBUG_MEMORIA"):
         for nome, esito in (("ha", atteso), ("motore", ottenuto)):

@@ -43,12 +43,17 @@ from custom_components.vmc_master.nativa.motore.memoria_interna import (
     MemoriaInterna,
     da_stato,
 )
-from custom_components.vmc_master.nativa.motore.seguire import cambi_interni
 from custom_components.vmc_master.nativa.motore.stati_logiche import stati_logiche
 
 from . import generato
 from .banco_memoria import Smistatore, servizi_misti
 from .fase3 import MotoreFase3
+from .nel_canale import (
+    ordine_esterno,
+    osserva_nel_canale,
+    rinumera_ovunque,
+    voce_interna,
+)
 from .test_avvio_motore import _ripristina
 from .test_memoria_interna import IDS, _configurazione, _entity_id
 from .test_pacchetto_casuale import Normalizzatore
@@ -584,13 +589,7 @@ async def _corsa(
         else:
             # il motore vede gli eventi del bus nel suo canale (seguire.CambiInterni):
             # il registro li annota lì, nell'ordine in cui il motore li vede
-            osservati = [cambi_interni(hass).osserva(tipo, annota) for tipo in EVENTI]
-
-            @callback
-            def togli() -> None:
-                for smetti_tipo in osservati:
-                    smetti_tipo()
-
+            togli = osserva_nel_canale(hass, EVENTI, annota)
             togli_rapporti = memoria.ascolta_rapporti(smistatore.rapporto)
             # gli stati delle logiche (le automazioni del motore) non sono nella macchina
             # degli stati: entrano nel registro nel punto del canale di state_changed
@@ -649,13 +648,30 @@ async def _corsa(
     return esito
 
 
+def _confrontabile(esito: dict[str, Any]) -> dict[str, Any]:
+    """Le voci di una corsa come si confrontano (``nel_canale``): le voci esterne nello
+    stesso ordine, quelle interne nel loro ordine (tutte insieme), i contesti rinumerati
+    in quell'ordine."""
+    sequenza, registro, interni, chiamate, rapporti = rinumera_ovunque(
+        ordine_esterno(esito["sequenza"], voce_interna),
+        ordine_esterno(esito["registro"], voce_interna),
+        esito["interni"],
+        esito["chiamate_interne"],
+        esito["rapporti"],
+    )
+    return {
+        **esito,
+        "sequenza": sequenza,
+        "registro": registro,
+        "interni": interni,
+        "chiamate_interne": chiamate,
+        "rapporti": rapporti,
+    }
+
+
 def _differenza(atteso: list[Any], ottenuto: list[Any], cosa: str) -> str | None:
     if atteso == ottenuto:
         return None
-    import os  # DUMPHOOK
-    if os.environ.get("DUMP") and cosa == "registro":
-        with open(os.environ["DUMP"], "w") as f:
-            f.write("=== HA\n" + "\n".join(repr(v)[:230] for v in atteso) + "\n=== MOTORE\n" + "\n".join(repr(v)[:230] for v in ottenuto))
     diff = difflib.unified_diff(
         [repr(v) for v in atteso],
         [repr(v) for v in ottenuto],
@@ -691,6 +707,10 @@ async def test_come_gli_aiutanti(
     assert any(
         v[1] == "call_service" and v[2]["domain"] == "prova" for v in atteso["registro"]
     )
+    # gli eventi che il motore non lancia sul bus (gli stati delle logiche e gli annunci
+    # della memoria) possono passare prima di quelli che Home Assistant tiene in coda
+    # (nel_canale): stesso ordine per tutto il resto e, tra loro, la stessa sequenza
+    atteso, ottenuto = _confrontabile(atteso), _confrontabile(ottenuto)
     for chiave in (
         "registro",
         "interni",
