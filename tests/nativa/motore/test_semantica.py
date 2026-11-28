@@ -34,6 +34,7 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.setup import async_setup_component
 from pytest_homeassistant_custom_component.common import async_test_home_assistant
 
+from custom_components.vmc_master.nativa.motore.seguire import cambi_interni
 from custom_components.vmc_master.nativa.motore.stati_logiche import stati_logiche
 
 from . import generato
@@ -1931,13 +1932,24 @@ async def _corsa(
                 (_norma(evento.time_fired), evento.event_type, _norma(dict(dati)))
             )
 
-        togli = hass.bus.async_listen(MATCH_ALL, annota)
         if motore:
-            # gli stati delle logiche (le automazioni del motore) non sono nella macchina
-            # degli stati: entrano nel registro nel punto del bus di state_changed
+            # il motore vede gli eventi di Home Assistant nel suo canale: il registro li
+            # annota lì (nell'ordine in cui li vede il motore, come Home Assistant li
+            # consegna alle automazioni); gli stati delle logiche (le automazioni del
+            # motore) non sono nella macchina degli stati: entrano nel registro quando il
+            # canale li consegna
+            canale = cambi_interni(hass)
+            osservati = [canale.osserva(tipo, annota) for tipo in sorted(EVENTI)]
+
+            def togli() -> None:
+                for smetti_di_osservare in osservati:
+                    smetti_di_osservare()
+
             smetti = stati_logiche(hass).osserva(
                 callback(lambda e: annota(e) if e.event_type == EVENT_STATE_CHANGED else None)
             )
+        else:
+            togli = hass.bus.async_listen(MATCH_ALL, annota)
         for passo in passi:
             if passo[0] == "servizio":
                 dominio, servizio = passo[1].split(".")
