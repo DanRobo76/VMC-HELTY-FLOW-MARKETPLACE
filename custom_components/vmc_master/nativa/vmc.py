@@ -5,9 +5,9 @@ sensori tcp/ping/rest e i sensori a trigger del package:
 
 - ogni lettura scrive il suo sensore (non disponibile se la VMC non risponde), agli
   istanti della piattaforma di oggi (letture.LetturaPeriodica); StatoVMC segue lo stato
-  del sensore (``async_track_state_change_event``, come i template di oggi seguono il
-  sensore tcp: nello stesso evento, prima delle automazioni che si iscrivono dopo), con il
-  contesto del suo cambio;
+  del sensore (``segui_cambi`` del canale del motore, come i template di oggi seguono il
+  sensore tcp con ``async_track_state_change_event``: nello stesso evento, prima delle
+  automazioni che si iscrivono dopo), con il contesto del suo cambio;
 - quando una lettura cambia verso un valore valido, la sua «ultima lettura valida» si
   aggiorna (trigger di stato); all'avvio di Home Assistant si aggiorna con la regola
   di avvio (trigger homeassistant start), partendo dall'ultimo stato conservato;
@@ -31,7 +31,6 @@ from homeassistant.core import (
     HomeAssistant,
     callback,
 )
-from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.helpers.restore_state import async_get as restore_state
 
 from .client import ClientVMC
@@ -52,6 +51,7 @@ from .memoria import (
     lettura_prima_dell_interruzione,
     memorizzata,
 )
+from .motore.seguire import cambi_interni, segui_cambi
 from .stato import NON_DISPONIBILE, SCONOSCIUTO, StatoVMC
 
 ATTRIBUTO_INTERRUZIONE = "lettura_prima_dell_interruzione"
@@ -135,9 +135,7 @@ class VMCNativa:
             for chiave in (*letture, CHIAVE_VERSIONE)
         }
         self._annulla.append(
-            async_track_state_change_event(
-                self.hass, list(chiavi), callback(partial(self._letta, chiavi))
-            )
+            segui_cambi(self.hass, list(chiavi), callback(partial(self._letta, chiavi)))
         )
         for coordinatore in letture.values():
             await coordinatore.async_refresh()
@@ -147,8 +145,8 @@ class VMCNativa:
         if self.hass.state is CoreState.running:
             self._attiva_trigger()
         else:
-            self._annulla_via = self.hass.bus.async_listen_once(
-                EVENT_HOMEASSISTANT_START, self._al_via
+            self._annulla_via = cambi_interni(self.hass).ascolta(
+                EVENT_HOMEASSISTANT_START, self._al_via, una_volta=True
             )
 
     @callback
@@ -156,8 +154,8 @@ class VMCNativa:
         """Avvio di Home Assistant: come i blocchi a trigger di oggi, che qui agganciano i
         loro trigger (``homeassistant: start`` aspetta la fine dell'avvio)."""
         self._attiva_trigger()
-        self._annulla_via = self.hass.bus.async_listen_once(
-            EVENT_HOMEASSISTANT_STARTED, self._avviato
+        self._annulla_via = cambi_interni(self.hass).ascolta(
+            EVENT_HOMEASSISTANT_STARTED, self._avviato, una_volta=True
         )
 
     async def _avviato(self, _evento: Event) -> None:

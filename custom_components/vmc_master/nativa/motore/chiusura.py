@@ -26,6 +26,8 @@ from homeassistant.helpers.event import async_call_later
 from homeassistant.util.async_ import create_eager_task
 from homeassistant.util.hass_dict import HassKey
 
+from .seguire import cambi_interni
+
 if TYPE_CHECKING:
     from .esecuzione import Sequenza
 
@@ -46,7 +48,9 @@ class RegistroSequenze:
         self.vietate = False
         # sequenza -> partita prima della chiusura
         self._sequenze: dict[int, tuple[Sequenza, bool]] = {}
-        hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, self._alla_chiusura)
+        cambi_interni(hass).ascolta(
+            EVENT_HOMEASSISTANT_STOP, self._alla_chiusura, una_volta=True
+        )
 
     @callback
     def iscrivi(self, sequenza: Sequenza) -> CALLBACK_TYPE:

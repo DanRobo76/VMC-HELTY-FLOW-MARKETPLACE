@@ -34,7 +34,7 @@ from types import ModuleType
 from typing import Any
 
 from homeassistant.components.sensor import SensorEntity
-from homeassistant.const import EVENT_STATE_CHANGED, EVENT_STATE_REPORTED
+from homeassistant.const import EVENT_STATE_CHANGED
 from homeassistant.core import (
     CALLBACK_TYPE,
     Event,
@@ -126,12 +126,10 @@ class AnnunciDeiTimer:
     Un timer del motore non è nella macchina degli stati: con il package ogni sua
     scrittura era un ``state_changed`` che Home Assistant consegnava a chi segue il timer
     (il sensore template che lo legge, i modelli del motore). Qui ogni scrittura si
-    annuncia con un evento ``state_reported`` con un marchio (entity_id vuoto: nessun
-    ascoltatore di un'entità lo prende), che il bus consegna nello stesso punto in cui
-    consegnerebbe ``state_changed`` (anche durante la consegna di un altro evento, in
-    coda); alla consegna il cambio va prima agli ``osservatori`` (chi ascolta il bus
-    prima dei tracker, per esempio la traccia del simulatore) e poi a chi segue il timer
-    (``CambiInterni``). Come la memoria interna per i valori interni.
+    annuncia sul canale del motore (``CambiInterni.manda``: subito, o dopo l'annuncio che
+    si sta consegnando); alla consegna il cambio va prima agli ``osservatori`` (per
+    esempio la traccia del simulatore) e poi a chi segue il timer (``CambiInterni``).
+    Come la memoria interna per i valori interni.
     """
 
     def __init__(self, hass: HomeAssistant, timer: TimerDelMotore) -> None:
@@ -140,14 +138,8 @@ class AnnunciDeiTimer:
             entity_id: t.stato_ha for entity_id, t in timer.timer.items()
         }
         self._osservatori: list[Callable[[Event[Any]], None]] = []
-        self._annulla: list[CALLBACK_TYPE] = [
-            timer.ascolta(self._scritto),
-            hass.bus.async_listen(
-                EVENT_STATE_REPORTED,
-                self._consegna,
-                event_filter=callback(lambda dati: _MARCHIO in dati),
-            ),
-        ]
+        self._attivo = True
+        self._annulla: list[CALLBACK_TYPE] = [timer.ascolta(self._scritto)]
 
     @callback
     def osserva(self, funzione: Callable[[Event[Any]], None]) -> CALLBACK_TYPE:
@@ -163,6 +155,7 @@ class AnnunciDeiTimer:
 
     @callback
     def ferma(self) -> None:
+        self._attivo = False
         for annulla in self._annulla:
             annulla()
         self._annulla.clear()
@@ -173,14 +166,16 @@ class AnnunciDeiTimer:
         assert nuovo is not None
         vecchio = self._vecchi.get(timer.entity_id)
         self._vecchi[timer.entity_id] = nuovo
-        self.hass.bus.async_fire(
-            EVENT_STATE_REPORTED,
-            {"entity_id": "", _MARCHIO: (timer.entity_id, vecchio, nuovo)},
-            context=nuovo.context,
+        cambi_interni(self.hass).manda(
+            self._consegna,
+            {_MARCHIO: (timer.entity_id, vecchio, nuovo)},
+            nuovo.context,
         )
 
     @callback
     def _consegna(self, evento: Event[Any]) -> None:
+        if not self._attivo:
+            return
         entity_id, vecchio, nuovo = evento.data[_MARCHIO]
         cambio: Event[Any] = Event(
             EVENT_STATE_CHANGED,

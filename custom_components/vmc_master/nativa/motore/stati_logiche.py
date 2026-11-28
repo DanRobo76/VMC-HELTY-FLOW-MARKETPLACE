@@ -39,12 +39,10 @@ class StatiLogiche:
 
     Ogni scrittura è come ``StateMachine.async_set_internal``: stesso stato e stessi
     attributi cambiano solo ``last_reported``; altrimenti uno ``State`` nuovo, annunciato
-    sul bus nello stesso punto in cui Home Assistant consegnerebbe ``state_changed`` (un
-    ``state_reported`` con un marchio e l'entity_id vuoto, che non arriva agli ascoltatori
-    di tutti gli eventi né al registro); alla consegna il cambio va prima agli
-    ``osservatori`` e poi a chi segue l'entità (``CambiInterni``). Una scrittura senza
-    cambio arriva solo agli osservatori, come ``state_reported``. Come la memoria interna
-    per i suoi valori."""
+    sul canale del motore (``CambiInterni.manda``: subito, o dopo l'annuncio che si sta
+    consegnando); alla consegna il cambio va prima agli ``osservatori`` e poi a chi segue
+    l'entità (``CambiInterni``). Una scrittura senza cambio arriva solo agli osservatori,
+    come ``state_reported``. Come la memoria interna per i suoi valori."""
 
     def __init__(self, hass: HomeAssistant) -> None:
         self.hass = hass
@@ -53,7 +51,6 @@ class StatiLogiche:
         # primo stato (chi li segue va seguito qui, non da Home Assistant)
         self.nomi: set[str] = set()
         self._osservatori: list[Callable[[Event[Any]], None]] = []
-        self._annulla: CALLBACK_TYPE | None = None
         cambi_interni(hass).aggiungi(self)
 
     # --- la sorgente di CambiInterni -----------------------------------------------------
@@ -78,9 +75,8 @@ class StatiLogiche:
         self.nomi.discard(entity_id)
         if (vecchio := self.stati.pop(entity_id, None)) is None:
             return
-        self.hass.bus.async_fire(
-            EVENT_STATE_REPORTED,
-            {"entity_id": "", _MARCHIO: (entity_id, vecchio, None, False)},
+        cambi_interni(self.hass).manda(
+            self._consegna, {_MARCHIO: (entity_id, vecchio, None, False)}
         )
 
     # --- scritture -----------------------------------------------------------------------
@@ -108,10 +104,6 @@ class StatiLogiche:
         istante: float,
     ) -> None:
         """Come ``StateMachine.async_set_internal`` (senza ``force_update``)."""
-        if self._annulla is None:
-            self._annulla = self.hass.bus.async_listen(
-                EVENT_STATE_REPORTED, self._consegna, event_filter=_marcato
-            )
         vecchio = self.stati.get(entity_id)
         adesso = dt_util.utc_from_timestamp(istante)
         if contesto is None:
@@ -131,11 +123,11 @@ class StatiLogiche:
                     None,
                     vecchio.last_updated_timestamp,
                 )
-                self.hass.bus.async_fire(
-                    EVENT_STATE_REPORTED,
-                    {"entity_id": "", _MARCHIO: (entity_id, vecchio, riportato, True)},
-                    context=contesto,
-                    time_fired=istante,
+                cambi_interni(self.hass).manda(
+                    self._consegna,
+                    {_MARCHIO: (entity_id, vecchio, riportato, True)},
+                    contesto,
+                    istante,
                 )
                 return
             if vecchio.attributes == attributi:
@@ -155,11 +147,11 @@ class StatiLogiche:
             istante,
         )
         self.stati[entity_id] = stato
-        self.hass.bus.async_fire(
-            EVENT_STATE_REPORTED,
-            {"entity_id": "", _MARCHIO: (entity_id, vecchio, stato, False)},
-            context=contesto,
-            time_fired=istante,
+        cambi_interni(self.hass).manda(
+            self._consegna,
+            {_MARCHIO: (entity_id, vecchio, stato, False)},
+            contesto,
+            istante,
         )
 
     @callback
@@ -191,11 +183,6 @@ class StatiLogiche:
         for funzione in list(self._osservatori):
             funzione(cambio)
         cambi_interni(self.hass).consegna(cambio)
-
-
-@callback
-def _marcato(dati: Any) -> bool:
-    return _MARCHIO in dati
 
 
 @callback

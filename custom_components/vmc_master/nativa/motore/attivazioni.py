@@ -91,7 +91,13 @@ from homeassistant.helpers.typing import ConfigType
 from homeassistant.util import dt as dt_util
 from homeassistant.util.async_ import create_eager_task
 
-from .seguire import segui_cambi, segui_stesso_stato, stato_di, traccia_modelli
+from .seguire import (
+    cambi_interni,
+    segui_cambi,
+    segui_stesso_stato,
+    stato_di,
+    traccia_modelli,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -693,8 +699,11 @@ async def aggancia_evento(
         )
 
     event_filter = filter_event if event_data_items or event_data_schema else None
+    # sul bus di Home Assistant gli eventi passano dal canale del motore (seguire)
     removes = [
-        bus.async_listen(event_type, handle_event, event_filter=event_filter)
+        cambi_interni(hass).ascolta(event_type, handle_event, event_filter)
+        if bus is hass.bus
+        else bus.async_listen(event_type, handle_event, event_filter=event_filter)
         for event_type in event_types
     ]
 
@@ -759,7 +768,9 @@ async def aggancia_home_assistant(
 
     # Only fires if armed before EVENT_HOMEASSISTANT_STARTED; if hass is already
     # started, the trigger doesn't fire.
-    unsub = hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STARTED, hass_started)
+    unsub = cambi_interni(hass).ascolta(
+        EVENT_HOMEASSISTANT_STARTED, hass_started, una_volta=True
+    )
 
     @callback
     def remove() -> None:

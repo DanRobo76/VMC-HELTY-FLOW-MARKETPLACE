@@ -44,6 +44,7 @@ from custom_components.vmc_master.nativa.motore.memoria_interna import (
     MemoriaInterna,
     da_stato,
 )
+from custom_components.vmc_master.nativa.motore.seguire import cambi_interni
 from custom_components.vmc_master.nativa.motore.stati_logiche import stati_logiche
 
 from .banco_memoria import Smistatore, servizi_misti
@@ -577,14 +578,25 @@ async def _corsa(
             if evento.event_type in EVENTI:
                 smistatore.evento(evento)
 
-        togli = hass.bus.async_listen(MATCH_ALL, annota)
-        if memoria is not None:
+        if memoria is None:
+            togli = hass.bus.async_listen(MATCH_ALL, annota)
+            togli_rapporti = smistatore.ascolta_rapporti(hass)
+        else:
+            # il motore vede gli eventi del bus nel suo canale (seguire.CambiInterni):
+            # il registro li annota lì, nell'ordine in cui il motore li vede
+            osservati = [cambi_interni(hass).osserva(tipo, annota) for tipo in EVENTI]
+
+            @callback
+            def togli() -> None:
+                for smetti_tipo in osservati:
+                    smetti_tipo()
+
+            togli_rapporti = memoria.ascolta_rapporti(smistatore.rapporto)
             # gli stati delle logiche (le automazioni del motore) non sono nella macchina
-            # degli stati: entrano nel registro nel punto del bus di state_changed
+            # degli stati: entrano nel registro nel punto del canale di state_changed
             smetti = stati_logiche(hass).osserva(
                 callback(lambda e: annota(e) if e.event_type == EVENT_STATE_CHANGED else None)
             )
-        togli_rapporti = smistatore.ascolta_rapporti(hass)
         segnato = smistatore.segna_aggiornamenti(servizi_ha.async_update_entity)
         segna = patch.object(servizi_ha, "async_update_entity", segnato)
         segna.start()
@@ -640,6 +652,10 @@ async def _corsa(
 def _differenza(atteso: list[Any], ottenuto: list[Any], cosa: str) -> str | None:
     if atteso == ottenuto:
         return None
+    import os  # DUMPHOOK
+    if os.environ.get("DUMP") and cosa == "registro":
+        with open(os.environ["DUMP"], "w") as f:
+            f.write("=== HA\n" + "\n".join(repr(v)[:230] for v in atteso) + "\n=== MOTORE\n" + "\n".join(repr(v)[:230] for v in ottenuto))
     diff = difflib.unified_diff(
         [repr(v) for v in atteso],
         [repr(v) for v in ottenuto],

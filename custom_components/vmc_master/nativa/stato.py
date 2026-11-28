@@ -33,15 +33,12 @@ from homeassistant.core import (
     State,
     callback,
 )
-from homeassistant.helpers.event import (
-    async_call_later,
-    async_track_state_change_event,
-    async_track_time_change,
-)
+from homeassistant.helpers.event import async_call_later, async_track_time_change
 from homeassistant.util import dt as dt_util
 
 from .lettore import Lettore
 from .modelli import MODELLI, Calcolo
+from .motore.seguire import segui_cambi
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -359,6 +356,5 @@ class StatoVMC:
         def cambiato(evento: Event[EventStateChangedData]) -> None:
             self.ricalcola(evento.context)
 
-        self._annulla_esterni = async_track_state_change_event(
-            self.hass, letti, cambiato
-        )
+        # come async_track_state_change_event, nel canale del motore
+        self._annulla_esterni = segui_cambi(self.hass, letti, cambiato)

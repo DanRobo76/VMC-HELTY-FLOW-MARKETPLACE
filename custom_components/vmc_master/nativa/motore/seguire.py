@@ -34,15 +34,17 @@ from __future__ import annotations
 import copy
 import logging
 import time
-from collections import defaultdict
-from collections.abc import Callable, Coroutine, Iterable, Sequence
+from collections import defaultdict, deque
+from collections.abc import Callable, Coroutine, Iterable, Mapping, Sequence
 from datetime import datetime, timedelta
 from typing import Any, Protocol
 
 from homeassistant.const import EVENT_STATE_CHANGED, MATCH_ALL
 from homeassistant.core import (
     CALLBACK_TYPE,
+    Context,
     Event,
+    EventOrigin,
     EventStateChangedData,
     HassJob,
     HassJobType,
@@ -50,6 +52,7 @@ from homeassistant.core import (
     State,
     async_noop,
     callback,
+    split_entity_id,
 )
 from homeassistant.exceptions import TemplateError
 from homeassistant.helpers.event import (
@@ -57,8 +60,6 @@ from homeassistant.helpers.event import (
     TrackTemplate,
     TrackTemplateResult,
     async_call_later,
-    async_track_state_added_domain,
-    async_track_state_change_event,
     async_track_utc_time_change,
 )
 from homeassistant.helpers.ratelimit import KeyedRateLimit
@@ -90,21 +91,52 @@ class Sorgente(Protocol):
 
 
 class CambiInterni:
-    """Chi segue i valori interni del motore di ``hass`` (di tutte le VMC).
+    """Il canale del motore di ``hass`` (di tutte le VMC): chi segue i valori interni e le
+    entità, e la consegna dei loro cambi.
 
-    Come i cambi delle entità in Home Assistant (``_KEYED_TRACK_STATE_CHANGE``): un elenco
-    di ``HassJob`` per entity_id, nell'ordine delle iscrizioni; ``consegna`` li esegue come
-    ``_async_dispatch_entity_id_event``. Le sorgenti dei valori interni (``aggiungi``)
-    dicono quali entity_id sono interni: chi si iscrive a un entity_id interno con
-    ``segui_cambi`` finisce qui, gli altri da Home Assistant. Una sorgente si aggiunge
-    prima che qualcuno cominci a seguire i suoi valori."""
+    Home Assistant consegna gli eventi con un solo bus: un evento lanciato mentre il bus ne
+    consegna un altro aspetta la fine di quella consegna e passa dopo quelli già in attesa
+    (``EventBus.async_fire_internal``). I valori interni del motore non sono entità e i loro
+    cambi non passano dal bus: li annuncia il motore su questo canale (``manda``). Perché il
+    motore veda tutto nell'ordine di un solo bus, anche gli eventi del bus che il motore
+    ascolta (i cambi delle entità che segue, i suoi trigger ``event`` e ``homeassistant``)
+    passano da qui: un ascoltatore del bus per tipo di evento li mette nel canale. Il canale
+    consegna subito, oppure, se sta già consegnando, dopo la consegna in corso e dopo quelli
+    già in attesa, nell'ordine.
+
+    Chi segue: come i cambi delle entità in Home Assistant (``_KEYED_TRACK_STATE_CHANGE``),
+    un elenco di ``HassJob`` per entity_id nell'ordine delle iscrizioni, eseguiti come
+    ``_async_dispatch_entity_id_event``. Le sorgenti dei valori interni (``aggiungi``) dicono
+    quali entity_id sono interni: chi si iscrive a un entity_id interno riceve gli annunci
+    della sorgente, gli altri i cambi dell'entità vera. Una sorgente si aggiunge prima che
+    qualcuno cominci a seguire i suoi valori."""
 
     def __init__(self, hass: HomeAssistant) -> None:
         self.hass = hass
         self._sorgenti: list[Sorgente] = []
+        # chi segue un valore interno e chi segue un'entità vera, per entity_id
         self._seguaci: defaultdict[str, list[HassJob[[Event[Any]], Any]]] = defaultdict(
             list
         )
+        self._seguaci_veri: defaultdict[str, list[HassJob[[Event[Any]], Any]]] = (
+            defaultdict(list)
+        )
+        # chi segue le entità aggiunte a un dominio e chi segue tutti i cambi
+        self._domini: defaultdict[str, list[HassJob[[Event[Any]], Any]]] = defaultdict(
+            list
+        )
+        self._tutti: list[HassJob[[Event[Any]], Any]] = []
+        # chi ascolta gli altri eventi del bus, per tipo
+        self._ascolti: defaultdict[str, list[_Ascolto]] = defaultdict(list)
+        # chi guarda gli eventi del bus nel punto del canale (le prove, il simulatore)
+        self._osservatori: defaultdict[str, list[Callable[[Event[Any]], None]]] = (
+            defaultdict(list)
+        )
+        # l'ascoltatore del bus di ogni tipo di evento che passa dal canale
+        self._dal_bus: dict[str, CALLBACK_TYPE] = {}
+        # chi aspetta il suo turno e se il canale sta già consegnando
+        self._coda: deque[tuple[Callable[[Event[Any]], None], Event[Any]]] = deque()
+        self._consegnando = False
 
     # --- sorgenti ---------------------------------------------------------------------------
 
@@ -141,56 +173,311 @@ class CambiInterni:
     @callback
     def segui(
         self,
-        entity_ids: str | Iterable[str],
+        entity_ids: Iterable[str],
         azione: Seguace,
         job_type: HassJobType | None = None,
     ) -> CALLBACK_TYPE:
-        """``azione(evento)`` a ogni cambio di questi valori interni (come
+        """``azione(evento)`` a ogni cambio di questi valori interni ed entità (come
         ``_async_track_event``: gli entity_id come sono, un ``HassJob`` per iscrizione);
         restituisce come smettere."""
-        if not entity_ids:
+        chiavi = list(entity_ids)
+        if not chiavi:
             return async_noop
-        seguaci = self._seguaci
         job = HassJob(
-            azione, f"track {EVENT_STATE_CHANGED} event {entity_ids}", job_type=job_type
+            azione, f"track {EVENT_STATE_CHANGED} event {chiavi}", job_type=job_type
         )
-        chiavi: Iterable[str]
-        if isinstance(entity_ids, str):
-            seguaci[entity_ids].append(job)
-            chiavi = (entity_ids,)
-        else:
-            chiavi = entity_ids
-            for chiave in chiavi:
-                seguaci[chiave].append(job)
+        iscritti: list[tuple[defaultdict[str, list[HassJob[[Event[Any]], Any]]], str]] = []
+        for chiave in chiavi:
+            elenco = self._seguaci if self.contiene(chiave) else self._seguaci_veri
+            elenco[chiave].append(job)
+            iscritti.append((elenco, chiave))
+        if self._seguaci_veri:
+            self._aggancia(EVENT_STATE_CHANGED)
 
         @callback
         def smetti() -> None:
-            for chiave in chiavi:
-                seguaci[chiave].remove(job)
-                if not seguaci[chiave]:
-                    del seguaci[chiave]
+            for elenco, chiave in iscritti:
+                elenco[chiave].remove(job)
+                if not elenco[chiave]:
+                    del elenco[chiave]
+            self._sgancia_se_inutile(EVENT_STATE_CHANGED)
 
         return smetti
 
     @callback
-    def consegna(self, evento: Event[EventStateChangedData]) -> None:
-        """Il cambio di un valore interno a chi lo segue, nell'ordine delle iscrizioni
-        (come ``_async_dispatch_entity_id_event``). Lo chiama chi annuncia il cambio, nel
-        punto del bus in cui Home Assistant consegnerebbe ``state_changed``."""
-        if not (seguaci := self._seguaci.get(evento.data["entity_id"])):
+    def segui_domini(
+        self,
+        domini: Iterable[str],
+        azione: Seguace,
+        job_type: HassJobType | None = None,
+    ) -> CALLBACK_TYPE:
+        """Come ``async_track_state_added_domain`` (i domini già minuscoli): ``azione``
+        quando un'entità vera di questi domini compare."""
+        chiavi = list(domini)
+        if not chiavi:
+            return async_noop
+        job = HassJob(
+            azione, f"track {EVENT_STATE_CHANGED} event {chiavi}", job_type=job_type
+        )
+        for chiave in chiavi:
+            self._domini[chiave].append(job)
+        self._aggancia(EVENT_STATE_CHANGED)
+
+        @callback
+        def smetti() -> None:
+            for chiave in chiavi:
+                self._domini[chiave].remove(job)
+                if not self._domini[chiave]:
+                    del self._domini[chiave]
+            self._sgancia_se_inutile(EVENT_STATE_CHANGED)
+
+        return smetti
+
+    @callback
+    def segui_tutti(self, azione: Seguace) -> CALLBACK_TYPE:
+        """Come ``hass.bus.async_listen(EVENT_STATE_CHANGED, azione)``: ogni cambio di
+        un'entità vera."""
+        job = HassJob(azione, f"listen {EVENT_STATE_CHANGED}")
+        self._tutti.append(job)
+        self._aggancia(EVENT_STATE_CHANGED)
+
+        @callback
+        def smetti() -> None:
+            self._tutti.remove(job)
+            self._sgancia_se_inutile(EVENT_STATE_CHANGED)
+
+        return smetti
+
+    @callback
+    def ascolta(
+        self,
+        tipo: str,
+        azione: Callable[[Event[Any]], Any],
+        filtro: Callable[[Any], bool] | None = None,
+        *,
+        una_volta: bool = False,
+    ) -> CALLBACK_TYPE:
+        """Come ``hass.bus.async_listen(tipo, azione, event_filter=filtro)`` (o
+        ``async_listen_once`` con ``una_volta``): ogni evento ``tipo`` del bus, nel punto
+        del canale."""
+        ascolto = _Ascolto(HassJob(azione, f"listen {tipo}"), filtro, una_volta)
+        self._ascolti[tipo].append(ascolto)
+        self._aggancia(tipo)
+
+        @callback
+        def smetti() -> None:
+            if ascolto in self._ascolti[tipo]:
+                self._ascolti[tipo].remove(ascolto)
+                if not self._ascolti[tipo]:
+                    del self._ascolti[tipo]
+            self._sgancia_se_inutile(tipo)
+
+        ascolto.smetti = smetti
+        return smetti
+
+    @callback
+    def osserva(self, tipo: str, funzione: Callable[[Event[Any]], None]) -> CALLBACK_TYPE:
+        """``funzione(evento)`` per ogni evento ``tipo`` del bus, nel punto del canale e
+        prima di chi lo segue (le prove e il simulatore annotano così l'ordine in cui il
+        motore vede gli eventi)."""
+        self._osservatori[tipo].append(funzione)
+        self._aggancia(tipo)
+
+        @callback
+        def smetti() -> None:
+            self._osservatori[tipo].remove(funzione)
+            if not self._osservatori[tipo]:
+                del self._osservatori[tipo]
+            self._sgancia_se_inutile(tipo)
+
+        return smetti
+
+    # --- dal bus al canale ------------------------------------------------------------------
+
+    @callback
+    def _aggancia(self, tipo: str) -> None:
+        """L'ascoltatore del bus che mette nel canale gli eventi ``tipo``."""
+        if tipo in self._dal_bus:
             return
+        self._dal_bus[tipo] = self.hass.bus.async_listen(
+            tipo,
+            self._dal_bus_al_canale,
+            event_filter=self._cambio_voluto if tipo == EVENT_STATE_CHANGED else None,
+        )
+
+    @callback
+    def _sgancia_se_inutile(self, tipo: str) -> None:
+        """Toglie l'ascoltatore del bus quando nessuno vuole più gli eventi ``tipo`` (come
+        Home Assistant toglie il distributore di un tracker senza più iscritti)."""
+        if tipo not in self._dal_bus or self._osservatori.get(tipo) or self._ascolti.get(tipo):
+            return
+        if tipo == EVENT_STATE_CHANGED and (
+            self._seguaci_veri or self._domini or self._tutti
+        ):
+            return
+        self._dal_bus.pop(tipo)()
+
+    @callback
+    def _cambio_voluto(self, dati: Mapping[str, Any]) -> bool:
+        """Se qualcuno vuole questo ``state_changed`` (come i filtri dei tracker)."""
+        if (
+            self._tutti
+            or self._osservatori.get(EVENT_STATE_CHANGED)
+            or self._ascolti.get(EVENT_STATE_CHANGED)
+            or dati["entity_id"] in self._seguaci_veri
+        ):
+            return True
+        return bool(
+            self._domini
+            and dati["old_state"] is None
+            and (MATCH_ALL in self._domini or dati["new_state"].domain in self._domini)
+        )
+
+    @callback
+    def _dal_bus_al_canale(self, evento: Event[Any]) -> None:
+        self._nel_canale(self._smista, evento)
+
+    @callback
+    def _smista(self, evento: Event[Any]) -> None:
+        """Un evento del bus a chi lo guarda e a chi lo segue: i cambi di un'entità a chi
+        la segue, a chi segue il suo dominio (se compare) e a chi segue tutti i cambi."""
+        tipo = evento.event_type
+        for funzione in list(self._osservatori.get(tipo, ())):
+            try:
+                funzione(evento)
+            except Exception:
+                _LOGGER.exception("Error running job: %s", funzione)
+        if tipo == EVENT_STATE_CHANGED:
+            dati = evento.data
+            if seguaci := self._seguaci_veri.get(dati["entity_id"]):
+                self._esegui_tutti(seguaci, evento, dati["entity_id"])
+            if self._domini and dati["old_state"] is None:
+                dominio = split_entity_id(dati["entity_id"])[0]
+                for job in self._domini.get(dominio, []) + self._domini.get(MATCH_ALL, []):
+                    try:
+                        self.hass.async_run_hass_job(job, evento)
+                    except Exception:
+                        _LOGGER.exception(
+                            "Error while processing event %s for domain %s",
+                            evento,
+                            dominio,
+                        )
+            for job in list(self._tutti):
+                try:
+                    self.hass.async_run_hass_job(job, evento)
+                except Exception:
+                    _LOGGER.exception("Error running job: %s", job)
+        for ascolto in list(self._ascolti.get(tipo, ())):
+            if ascolto.filtro is not None:
+                try:
+                    if not ascolto.filtro(evento.data):
+                        continue
+                except Exception:
+                    _LOGGER.exception("Error in event filter")
+                    continue
+            if ascolto.una_volta:
+                if ascolto.smetti is None:
+                    continue
+                ascolto.smetti()
+                ascolto.smetti = None
+            try:
+                self.hass.async_run_hass_job(ascolto.job, evento)
+            except Exception:
+                _LOGGER.exception("Error running job: %s", ascolto.job)
+
+    # --- il canale --------------------------------------------------------------------------
+
+    @callback
+    def manda(
+        self,
+        consegna: Callable[[Event[Any]], None],
+        dati: dict[str, Any],
+        contesto: Context | None = None,
+        istante: float | None = None,
+    ) -> None:
+        """L'annuncio di una sorgente del motore (un cambio di un valore interno, una
+        chiamata ai valori interni, un comando): ``consegna`` riceve un evento con i
+        ``dati``, il contesto e l'istante dell'annuncio (adesso se manca), nel canale."""
+        self._nel_canale(
+            consegna,
+            Event(
+                _ANNUNCIO,
+                dati,
+                EventOrigin.local,
+                istante if istante is not None else time.time(),
+                contesto,
+            ),
+        )
+
+    @callback
+    def _nel_canale(
+        self, consegna: Callable[[Event[Any]], None], evento: Event[Any]
+    ) -> None:
+        """Consegna subito; se il canale sta già consegnando, dopo la consegna in corso e
+        dopo chi aspetta già, nell'ordine (come il bus di Home Assistant). Un errore di chi
+        riceve finisce nel registro e non ferma gli altri."""
+        if self._consegnando:
+            self._coda.append((consegna, evento))
+            return
+        self._consegnando = True
+        try:
+            self._esegui(consegna, evento)
+            while self._coda:
+                self._esegui(*self._coda.popleft())
+        finally:
+            self._consegnando = False
+
+    @staticmethod
+    def _esegui(consegna: Callable[[Event[Any]], None], evento: Event[Any]) -> None:
+        try:
+            consegna(evento)
+        except Exception:
+            _LOGGER.exception("Error running job: %s", consegna)
+
+    def _esegui_tutti(
+        self,
+        seguaci: list[HassJob[[Event[Any]], Any]],
+        evento: Event[Any],
+        entity_id: str,
+    ) -> None:
+        """Come ``_async_dispatch_entity_id_event``."""
         for job in seguaci.copy():
             try:
                 self.hass.async_run_hass_job(job, evento)
             except Exception:
                 _LOGGER.exception(
-                    "Error while dispatching event for %s to %s",
-                    evento.data["entity_id"],
-                    job,
+                    "Error while dispatching event for %s to %s", entity_id, job
                 )
+
+    @callback
+    def consegna(self, evento: Event[EventStateChangedData]) -> None:
+        """Il cambio di un valore interno a chi lo segue, nell'ordine delle iscrizioni
+        (come ``_async_dispatch_entity_id_event``). Lo chiama la sorgente quando il canale
+        consegna il suo annuncio."""
+        if seguaci := self._seguaci.get(evento.data["entity_id"]):
+            self._esegui_tutti(seguaci, evento, evento.data["entity_id"])
+
+
+class _Ascolto:
+    """Chi ascolta un evento del bus nel canale (``CambiInterni.ascolta``)."""
+
+    __slots__ = ("filtro", "job", "smetti", "una_volta")
+
+    def __init__(
+        self,
+        job: HassJob[[Event[Any]], Any],
+        filtro: Callable[[Any], bool] | None,
+        una_volta: bool,
+    ) -> None:
+        self.job = job
+        self.filtro = filtro
+        self.una_volta = una_volta
+        self.smetti: CALLBACK_TYPE | None = None
 
 
 _CAMBI_INTERNI: HassKey[CambiInterni] = HassKey("vmc_master_cambi_interni")
+# il tipo degli eventi del canale degli annunci (non passano dal bus di Home Assistant)
+_ANNUNCIO = "vmc_master_annuncio"
 
 
 @callback
@@ -242,33 +529,8 @@ def _segui_cambi(
     (la funzione pubblica di Home Assistant lo renderebbe minuscolo)."""
     if not entity_ids:
         return async_noop
-    interni = hass.data.get(_CAMBI_INTERNI)
-    veri: list[str] = []
-    suoi: list[str] = []
-    for entity_id in entity_ids:
-        if entity_id != entity_id.lower():
-            continue
-        if interni is not None and interni.contiene(entity_id):
-            suoi.append(entity_id)
-        else:
-            veri.append(entity_id)
-    togli: list[CALLBACK_TYPE] = []
-    if veri:
-        togli.append(async_track_state_change_event(hass, veri, azione, job_type))
-    if suoi:
-        assert interni is not None
-        togli.append(interni.segui(suoi, azione, job_type))
-    if not togli:
-        return async_noop
-    if len(togli) == 1:
-        return togli[0]
-
-    @callback
-    def togli_tutto() -> None:
-        for una in togli:
-            una()
-
-    return togli_tutto
+    chiavi = [entity_id for entity_id in entity_ids if entity_id == entity_id.lower()]
+    return cambi_interni(hass).segui(chiavi, azione, job_type)
 
 
 def stato_di(hass: HomeAssistant, entity_id: str) -> State | None:
@@ -332,8 +594,8 @@ def segui_stesso_stato(
     async_remove_state_for_listener = async_call_later(hass, period, state_for_listener)
 
     if entity_ids == MATCH_ALL:
-        async_remove_state_for_cancel = hass.bus.async_listen(
-            EVENT_STATE_CHANGED, state_for_cancel_listener
+        async_remove_state_for_cancel = cambi_interni(hass).segui_tutti(
+            state_for_cancel_listener
         )
     else:
         async_remove_state_for_cancel = segui_cambi(
@@ -471,14 +733,16 @@ class _SeguiStatiFiltrati:
         if not domains:
             return
 
-        self._listeners[_DOMAINS_LISTENER] = async_track_state_added_domain(
-            self.hass, domains, self._state_added, HassJobType.Callback
+        self._listeners[_DOMAINS_LISTENER] = cambi_interni(self.hass).segui_domini(
+            [dominio.lower() for dominio in domains],
+            self._state_added,
+            HassJobType.Callback,
         )
 
     @callback
     def _setup_all_listener(self) -> None:
-        self._listeners[_ALL_LISTENER] = self.hass.bus.async_listen(
-            EVENT_STATE_CHANGED, self._action
+        self._listeners[_ALL_LISTENER] = cambi_interni(self.hass).segui_tutti(
+            self._action
         )
 
 

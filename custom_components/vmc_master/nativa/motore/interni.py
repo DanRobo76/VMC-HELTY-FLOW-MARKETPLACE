@@ -29,9 +29,11 @@ nei file non c'è (b46): l'IP si cambia solo dall'ingranaggio della VMC.
 Le automazioni del package che ascoltano le chiamate dei comandi (trigger ``event`` su
 ``call_service`` con ``domain: shell_command``) restano le stesse: ``ComandiVMC`` è il
 loro aggancio diretto. Nel punto in cui ``ServiceRegistry.async_call`` lanciava l'evento
-``call_service``, ``notifica`` chiama i loro ascoltatori con lo stesso evento (tipo, dati,
-contesto), nello stesso ordine e con le stesse regole del bus (``_async_dispatch``) e del
-trigger ``event`` (``handle_event``); l'evento però non passa dal bus.
+``call_service``, ``notifica`` lo manda nel canale del motore (``seguire.CambiInterni``:
+subito, o dopo la consegna in corso, come il bus) e alla consegna chiama i loro
+ascoltatori con lo stesso evento (tipo, dati, contesto), nello stesso ordine e con le
+stesse regole del bus (``_async_dispatch``) e del trigger ``event`` (``handle_event``);
+l'evento però non passa dal bus.
 """
 
 from __future__ import annotations
@@ -70,6 +72,7 @@ from homeassistant.util.async_ import create_eager_task
 
 from ..client import ErroreVMC
 from .definizioni import COMANDO_NESSUNO, COMANDO_NOME, COMANDO_VMC, Comando
+from .seguire import cambi_interni
 
 if TYPE_CHECKING:
     from .contesto import Contesto
@@ -309,14 +312,22 @@ class ComandiVMC:
 
     @callback
     def notifica(self, nome: str, dati: Mapping[str, Any], contesto: Context) -> None:
-        """L'evento ``call_service`` del comando ``nome`` agli ascoltatori (come
-        ``EventBus._async_dispatch``: un solo evento, creato per il primo ascoltatore
-        che lo vuole, gli ascoltatori di quel momento nell'ordine in cui si sono
-        agganciati)."""
+        """L'evento ``call_service`` del comando ``nome`` agli ascoltatori, nel canale del
+        motore (dove il bus di Home Assistant lo consegnerebbe: subito, o dopo la consegna
+        in corso)."""
+        cambi_interni(self.hass).manda(
+            self._notifica, {"nome": nome, "dati": dati}, contesto
+        )
+
+    @callback
+    def _notifica(self, annuncio: Event[Any]) -> None:
+        """Come ``EventBus._async_dispatch``: un solo evento, creato per il primo
+        ascoltatore che lo vuole, gli ascoltatori di quel momento nell'ordine in cui si
+        sono agganciati."""
         dati_evento = {
             ATTR_DOMAIN: DOMINIO_COMANDI,
-            ATTR_SERVICE: nome,
-            ATTR_SERVICE_DATA: dati,
+            ATTR_SERVICE: annuncio.data["nome"],
+            ATTR_SERVICE_DATA: annuncio.data["dati"],
         }
         evento: Event[Any] | None = None
         for job, filtro in list(self._ascoltatori):
@@ -329,7 +340,11 @@ class ComandiVMC:
                     continue
             if evento is None:
                 evento = Event(
-                    EVENT_CALL_SERVICE, dati_evento, EventOrigin.local, None, contesto
+                    EVENT_CALL_SERVICE,
+                    dati_evento,
+                    EventOrigin.local,
+                    annuncio.time_fired_timestamp,
+                    annuncio.context,
                 )
             try:
                 self.hass.async_run_hass_job(job, evento)

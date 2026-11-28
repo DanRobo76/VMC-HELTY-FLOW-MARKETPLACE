@@ -81,7 +81,25 @@ def voci(res, opz, lato='A'):
     if opz.ignora_entita:
         r = re.compile(opz.ignora_entita)
         v = [x for x in v if not (x[0] in ('S', 'R', 'I', 'F', 'MS', 'MR') and r.search(x[2]))]
+    if getattr(opz, 'ordine_esterno', False):
+        v = ordine_esterno(v)
     return v, attr
+
+
+def interna(x):
+    """Una voce del motore che fuori dal motore non si vede: valori interni e timer (MS, MR) e
+    stati delle logiche (S, R di automation.*)."""
+    return x[0] in ('MS', 'MR') or (x[0] in ('S', 'R') and str(x[2]).startswith('automation.'))
+
+
+def ordine_esterno(v):
+    """--ordine-esterno: prima tutte le voci che si vedono fuori dal motore, nel loro ordine,
+    poi le voci interne raggruppate per entita', ognuna nel suo ordine. Il confronto resta
+    voce per voce: stesso ordine di tutto cio' che si vede (comandi, entita', servizi) e stessa
+    sequenza (istanti, stati, contesti) di ogni valore interno; cambia solo il posto delle voci
+    interne tra le altre allo stesso istante."""
+    return [x for _, x in sorted(enumerate(v), key=lambda p: (1, str(p[1][2]), p[0]) if interna(p[1])
+                                 else (0, '', p[0]))]
 
 
 def uguale(a, b, tol):
@@ -266,6 +284,9 @@ def opzioni(argv=None, con_file=True):
     ap.add_argument('--tolleranza', type=float, default=1e-6)
     ap.add_argument('--ignora-tipi', default='', help='tipi di voce da non confrontare, es. R (solo per indagare)')
     ap.add_argument('--ignora-entita', default='', help='regex di entity_id da non confrontare (solo per indagare)')
+    ap.add_argument('--ordine-esterno', action='store_true',
+                    help="voci interne del motore (MS, MR, stati delle logiche) confrontate per entita' "
+                         "(il resto nello stesso ordine)")
     ap.add_argument('--mappa', default=None,
                     help="csv della fase 1 (colonna «Domani»): B e' l'integrazione nativa (variante nativa4)")
     return ap
