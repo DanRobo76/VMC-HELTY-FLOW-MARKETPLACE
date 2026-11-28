@@ -7,6 +7,9 @@
   riprende una parte dice dove si trova.
 - La configurazione di una VMC nuova avvisa che il Wi-Fi del server passa per circa un
   minuto alla rete della VMC (anche nel README).
+- Nell'integrazione solo quello che usa: il codice generato della fase 3 sta nelle prove,
+  il motore della prima installazione non ha la riga di comando e il worker separato del
+  package, e nessun filtro sui logger di Home Assistant.
 """
 
 from __future__ import annotations
@@ -138,3 +141,40 @@ def test_avviso_wifi_nel_readme() -> None:
         " during that minute. If you are away from home, you lose the connection until the"
         " server is back on the home network.\n\n1. "
     ) == 1
+
+
+def test_codice_generato_solo_nelle_prove() -> None:
+    # (una cartella __pycache__ rimasta da prima non conta: non e' nel repository)
+    assert not list((CC / "nativa/motore/generato").rglob("*.py"))
+    assert (RADICE / "tests/nativa/motore/generato/motore.py").is_file()
+    for percorso, albero in _alberi():
+        for nodo in ast.walk(albero):
+            if isinstance(nodo, ast.ImportFrom) and nodo.module:
+                assert nodo.module.split(".")[-1] != "generato", percorso
+                assert ".generato." not in f".{nodo.module}.", percorso
+
+
+def test_motore_installazione_senza_riga_di_comando() -> None:
+    testo = (CC / "motore_installa_vmc.py").read_text(encoding="utf-8")
+    assert not testo.startswith("#!")
+    albero = ast.parse(testo)
+    importati = {
+        alias.name.split(".")[0]
+        for nodo in ast.walk(albero)
+        if isinstance(nodo, ast.Import)
+        for alias in nodo.names
+    }
+    assert not importati & {"argparse", "signal", "subprocess", "sys"}
+    funzioni = {n.name for n in ast.walk(albero) if isinstance(n, ast.FunctionDef)}
+    assert "main" not in funzioni
+    assert '__name__ == "__main__"' not in testo
+
+
+def test_nessun_filtro_sui_logger() -> None:
+    for percorso, albero in _alberi():
+        for nodo in ast.walk(albero):
+            if isinstance(nodo, ast.Attribute):
+                assert nodo.attr not in ("addFilter", "removeFilter"), percorso
+            if isinstance(nodo, ast.ClassDef):
+                basi = {ast.unparse(b) for b in nodo.bases}
+                assert "logging.Filter" not in basi, percorso

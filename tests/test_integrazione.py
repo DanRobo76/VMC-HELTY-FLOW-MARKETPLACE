@@ -572,26 +572,27 @@ def test_link_del_readme() -> None:
 
 def test_readme_marketplace_e_github() -> None:
     """Il Marketplace mostra README.md, GitHub .github/README.md: chi è nel Marketplace
-    ha già aggiunto il repository e non vede i passi per farlo."""
+    è già nella pagina dell'integrazione. b48: VMC Master è nel catalogo del Marketplace,
+    nessun README ha più il passo «Aggiungere il repository» (repository personalizzato)."""
     marketplace = (RADICE / "README.md").read_text(encoding="utf-8")
     github = (RADICE / ".github" / "README.md").read_text(encoding="utf-8")
-    for testo in ("| 📌 **1. Aggiungere il repository** (primo passo) |\n|---|\n",
-                  "| 📌 **1. Add the repository** (first step) |\n|---|\n",
-                  "2. **Installare**: cercare **VMC Master** nel Marketplace e premere **Installa**.",
-                  "2. **Install**: search for **VMC Master** in the Marketplace and press **Install**.",
-                  "6. **Una volta per ogni VMC**, nel pannello **Opzioni** della scheda:",
-                  "6. **Once per unit**, in the card's **Opzioni** panel:",
-                  "**Altre VMC**: ripetere il punto 4.", "**More units**: repeat step 4.",
+    for testo in ("Aggiungere il repository", "Add the repository", "Repository personalizzate",
+                  "Custom repositories", "autorizzando HACS", "authorizing HACS"):
+        assert testo not in github and testo not in marketplace, testo
+    for testo in ("1. **Installare**: cercare **VMC Master** nel Marketplace e premere **Installa**.",
+                  "1. **Install**: search for **VMC Master** in the Marketplace and press **Install**.",
+                  "5. **Una volta per ogni VMC**, nel pannello **Opzioni** della scheda:",
+                  "5. **Once per unit**, in the card's **Opzioni** panel:",
+                  "**Altre VMC**: ripetere il punto 3.", "**More units**: repeat step 3.",
                   "**VMC nuova** (senza l'App Air Guard", "**New unit** (without the Air Guard app",
                   "Dopo l'installazione tutto si regola", "After installation everything is set"):
         assert testo in github and testo not in marketplace, testo
     # versione nativa: configuration.yaml serve solo per le Notifiche Audio (righe tts); b45:
     # prima Installare, poi le Notifiche Audio, dove si suggerisce di verificare se la
-    # stringa tts c'è e di aggiungere le righe solo se mancano (nel Marketplace punto 2, su
-    # GitHub punto 3, dopo il riquadro «Aggiungere il repository» e «Installare»)
+    # stringa tts c'è e di aggiungere le righe solo se mancano (punto 2, dopo «Installare»)
     for testo in ("**Notifiche Audio**: si suggerisce di verificare che `configuration.yaml` contenga la stringa `tts:` (una volta sola):",
                   "**Audio notifications**: it is recommended to check that `configuration.yaml` contains the `tts:` string (once):"):
-        assert f"\n2. {testo}" in marketplace and f"\n3. {testo}" in github, testo
+        assert f"\n2. {testo}" in marketplace and f"\n2. {testo}" in github, testo
     for testo in ("   - se sono già presenti le righe seguenti, chiudere il file senza modificarlo:",
                   "   - in caso di assenza, per le Notifiche Audio aggiungerle in fondo al file e salvare con l'icona del **dischetto**.",
                   "   - if the following lines are already present, close the file without changing it:",
