@@ -39,7 +39,7 @@ from collections.abc import Callable, Coroutine, Iterable, Mapping, Sequence
 from datetime import datetime, timedelta
 from typing import Any, Protocol
 
-from homeassistant.const import EVENT_STATE_CHANGED, MATCH_ALL
+from homeassistant.const import EVENT_STATE_CHANGED, EVENT_STATE_REPORTED, MATCH_ALL
 from homeassistant.core import (
     CALLBACK_TYPE,
     Context,
@@ -299,10 +299,14 @@ class CambiInterni:
         """L'ascoltatore del bus che mette nel canale gli eventi ``tipo``."""
         if tipo in self._dal_bus:
             return
+        filtro: Callable[[Any], bool] | None = None
+        if tipo == EVENT_STATE_CHANGED:
+            filtro = self._cambio_voluto
+        elif tipo == EVENT_STATE_REPORTED:
+            # Home Assistant vuole un filtro per state_reported (solo chi guarda: le prove)
+            filtro = _sempre
         self._dal_bus[tipo] = self.hass.bus.async_listen(
-            tipo,
-            self._dal_bus_al_canale,
-            event_filter=self._cambio_voluto if tipo == EVENT_STATE_CHANGED else None,
+            tipo, self._dal_bus_al_canale, event_filter=filtro
         )
 
     @callback
@@ -473,6 +477,11 @@ class _Ascolto:
         self.filtro = filtro
         self.una_volta = una_volta
         self.smetti: CALLBACK_TYPE | None = None
+
+
+@callback
+def _sempre(_dati: Any) -> bool:
+    return True
 
 
 _CAMBI_INTERNI: HassKey[CambiInterni] = HassKey("vmc_master_cambi_interni")
