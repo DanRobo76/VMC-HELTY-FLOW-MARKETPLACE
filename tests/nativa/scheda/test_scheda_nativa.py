@@ -197,14 +197,14 @@ def test_conteggi_delle_modifiche(traduzione) -> None:
         "riga conto alla rovescia": 39,
         "colore riga conto alla rovescia": 39,
         "comando": 23,
-        "testo": 55,
+        "testo": 67,
         "riga tolta": 27,
         "esclusioni": 20,
         "frammento": 12,
         "chiave tipi": 5,
         "intestazione": 2,
     }
-    assert sum(per_tipo.values()) == 2394
+    assert sum(per_tipo.values()) == 2406
 
 
 # ------------------------------------------------------------------------ i testi
@@ -304,7 +304,7 @@ def test_link_al_repository_nuovo(traduzione) -> None:
         2,
         10,
     ]
-    assert "RELEASE [VER. 9.0.0b46]" in righe_domani[2]
+    assert "RELEASE [VER. 9.0.0b47]" in righe_domani[2]
     assert righe_domani[10].startswith(
         f"# Copyright © 2023-2026 Ing. Danilo Robotti {COMMENTI[0].dopo} "
     )
@@ -721,7 +721,7 @@ def test_righe_cambiate_dai_testi(traduzione) -> None:
         )
     # 104 righe con testi di oggi (55 testi, alcuni su più righe, su più capoversi o sulla
     # stessa riga), in 44 gruppi di righe consecutive
-    assert (len(coperte), len(gruppi)) == (104, 44)
+    assert (len(coperte), len(gruppi)) == (117, 54)
     assert len(righe_con) == len(righe_senza) - 35
 
 

@@ -1,5 +1,5 @@
 riga;colonna;tipo;posto;prima;dopo
-3;107;intestazione;commento;RELEASE [VER. 9.0.0b44];RELEASE [VER. 9.0.0b46]
+3;107;intestazione;commento;RELEASE [VER. 9.0.0b44];RELEASE [VER. 9.0.0b47]
 11;45;intestazione;commento;(https://github.com/DanRobo76/VMC-HELTY-FLOW-MARKETPLACE);(https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER)
 47;21;nome;condizione;timer.vmc_master_countdown_riattivazione_allerte;sensor.vmc_master_countdown_riattivazione_allerte
 48;13;condizione timer;condizione;state: active;state_not: [unknown, unavailable]
@@ -537,10 +537,12 @@ riga;colonna;tipo;posto;prima;dopo
 5443;372;nome;modello markdown;input_select.vmc_master_speed_umidita;select.vmc_master_speed_umidita
 5450;25;nome;modello markdown;input_boolean.vmc_master_umidita_verifica_soglia_valore_spia;binary_sensor.vmc_master_umidita_verifica_soglia_valore_spia
 5450;112;nome;modello markdown;input_select.vmc_master_speed_umidita;select.vmc_master_speed_umidita
+5451;17;testo;modello markdown;VELOCITÀ 1 PER L'ALLERTA UMIDITÀ [NOTA 3]:;VELOCITÀ 1 PER L'ALLERTA UMIDITÀ [NOTA 3, PANNELLO INFORMAZIONI, VOCE 7]:
 5910;285;nome;modello markdown;input_boolean.vmc_master_umidita_verifica_soglia_valore_spia;binary_sensor.vmc_master_umidita_verifica_soglia_valore_spia
 5910;372;nome;modello markdown;input_select.vmc_master_speed_umidita;select.vmc_master_speed_umidita
 5917;25;nome;modello markdown;input_boolean.vmc_master_umidita_verifica_soglia_valore_spia;binary_sensor.vmc_master_umidita_verifica_soglia_valore_spia
 5917;112;nome;modello markdown;input_select.vmc_master_speed_umidita;select.vmc_master_speed_umidita
+5918;17;testo;modello markdown;VELOCITÀ 1 PER L'ALLERTA UMIDITÀ [NOTA 3]:;VELOCITÀ 1 PER L'ALLERTA UMIDITÀ [NOTA 3, PANNELLO INFORMAZIONI, VOCE 7]:
 6542;55;nome;modello markdown;input_boolean.vmc_master_umidita_verifica_soglia_valore_spia;binary_sensor.vmc_master_umidita_verifica_soglia_valore_spia
 6542;142;nome;modello markdown;input_select.vmc_master_speed_umidita;select.vmc_master_speed_umidita
 6567;55;nome;modello markdown;input_boolean.vmc_master_umidita_verifica_soglia_valore_spia;binary_sensor.vmc_master_umidita_verifica_soglia_valore_spia
@@ -1559,6 +1561,7 @@ riga;colonna;tipo;posto;prima;dopo
 10284;25;nome;entity;input_boolean.vmc_master_opzioni_interruttore_sensori_vmc_interni;switch.vmc_master_opzioni_interruttore_sensori_vmc_interni
 10286;25;nome;entity;input_boolean.vmc_master_opzioni_interruttore_offset_sensori;switch.vmc_master_opzioni_interruttore_offset_sensori
 10287;31;nome;entity;input_boolean.vmc_master_opzione_finestra_prossime_letture;switch.vmc_master_opzione_finestra_prossime_letture
+10356;107;testo;modello markdown;Vedere Pannello Informazioni, Nota Entità Scelte non Disponibili.;Vedere Pannello Informazioni, voce 15, Nota Entità Scelte non Disponibili.
 10361;23;nome;condizione;input_boolean.vmc_master_opzioni_interruttore_monitoraggio_sensori_extra;switch.vmc_master_opzioni_interruttore_monitoraggio_sensori_extra
 10413;23;nome;condizione;input_boolean.vmc_master_opzioni_interruttore_sensori_vmc_interni;switch.vmc_master_opzioni_interruttore_sensori_vmc_interni
 10454;23;nome;condizione;input_boolean.vmc_master_opzioni_interruttore_offset_sensori;switch.vmc_master_opzioni_interruttore_offset_sensori
@@ -2106,6 +2109,7 @@ riga;colonna;tipo;posto;prima;dopo
 11684;157;testo;modello markdown;"<a href=""https://github.com/DanRobo76/VMC-HELTY-FLOW"">GitHub</a>";"<a href=""https://github.com/DanRobo76/VMC-HELTY-FLOW-MASTER"">GitHub</a>"
 11707;54;testo;modello markdown;Se il Package ti è utile;Se l'integrazione ti è utile
 11728;61;testo;modello markdown;Sono i dati da cui il Package ricava;Sono i dati da cui l'integrazione ricava
+11735;30;testo;modello markdown;Home Assistant la controlla ogni 10 secondi.;"Home Assistant la controlla ogni 10 secondi: ogni controllo invia 3 ping, uno al secondo, e dura al massimo 4 secondi; basta una risposta perché la VMC risulti ON-Line."
 11742;107;testo;modello markdown;Gli intervalli sono gli scan_interval del file vmc_master.yaml e non si modificano dalla scheda.;Gli intervalli sono fissati dall'integrazione e non si modificano dalla scheda.
 11780;64;testo;modello markdown;si sovrappongono ai comandi dell'automazione VMC Master:;si sovrappongono ai comandi dell'integrazione VMC Master:
 11783;55;testo;modello markdown;le decisioni restano solo all'automazione,;le decisioni restano solo all'integrazione,
@@ -2113,17 +2117,21 @@ riga;colonna;tipo;posto;prima;dopo
 11840;80;testo;modello markdown;bypassando il presente Package.;bypassando l'integrazione.
 11873;41;testo;modello markdown;influenzano il comportamento del Package;influenzano il comportamento dell'integrazione
 11937;83;nome;modello markdown;input_number.vmc_master_umidita_avvio;number.vmc_master_umidita_avvio
+11948;19;testo;modello markdown;• L'avvio e l'arresto non hanno effetto durante le Fasce del Calendario.;"• <b>[Nota 3] Velocità 1 dell'Umidità con la Free Cool./Heat. sospesa</b> (è la Nota 3 dello schema «Logiche di Funzionamento» in fondo alla voce 17). Con l'interruttore della Free Cooling o della Free Heating su ON, nel mese programmato, se la temperatura esterna non è favorevole la Free è sospesa e la VMC resta ferma in attesa. Se in questa attesa è in corso un'allerta Umidità, la VMC va a Velocità 1, qualunque sia la [Set Velocità Umidità di Avvio] (con Velocità 0 resta ferma), e a fine Umidità torna a Velocità 0; con gli Inquinanti va a Velocità 1 fino al loro rientro. Quando la temperatura esterna torna favorevole la VMC riprende da sola la Free Cooling o la Free Heating, dopo 24 secondi (20 secondi con gli Inquinanti). <br><br> • L'avvio e l'arresto non hanno effetto durante le Fasce del Calendario."
 12015;102;testo;modello markdown;Il Package confronta il Δ solo con il Set;L'integrazione confronta il Δ solo con il Set
 12281;91;testo;modello markdown;dello script della Fascia;della procedura della Fascia
 12436;37;testo;modello markdown;Il controllo che il Package esegue;Il controllo che l'integrazione esegue
 12576;19;testo;modello markdown;"Cancella dal database lo storico (grafici e registro) delle entità del Package; entità e impostazioni restano invariate. Prima di procedere mostra un riquadro con il numero e l'elenco delle sole entità registrate nel database e chiede conferma con «Sì» o «No». Le entità registrate e quelle escluse sono indicate nell'unico elenco della sezione «recorder» del file vmc_master.yaml (riga commentata con # = registrata). Il file è scritto dall'integrazione e non va modificato: se viene modificato a mano, all'avvio di Home Assistant la sua copia viene salvata nella cartella vmc_master_backup, il file torna quello dell'integrazione e compare una notifica.";"Cancella dal database lo storico (grafici e registro) delle entità della VMC; entità e impostazioni restano invariate. Prima di procedere mostra un riquadro con il numero e l'elenco delle entità e chiede conferma con «Sì» o «No»."
 12621;19;testo;modello markdown;<b>Quando i sensori della VMC vengono ricaricati</b>: dopo un aggiornamento dell'integrazione, 20-60 secondi dopo l'avvio, oppure con Impostazioni → Strumenti → YAML → Ricarica.;<b>Quando i sensori della VMC vengono ricaricati</b>: dopo un aggiornamento dell'integrazione oppure con «Ricarica» nel menu dell'integrazione (Impostazioni → Dispositivi e servizi).
+12665;48;testo;modello markdown;sono spiegati nella Nota Entità Scelte non Disponibili.;sono spiegati nella Nota Entità Scelte non Disponibili, qui sopra.
 12699;19;testo;modello markdown;<strong>Nota Conferma degli Script</strong>;<strong>Nota Conferma dei Pulsanti</strong>
 12701;19;testo;modello markdown;Ogni script chiede conferma;Ogni pulsante chiede conferma
 12708;19;testo;modello markdown;<strong>Nota Countdown degli Script</strong>;<strong>Nota Countdown dei Pulsanti</strong>
 12710;19;testo;modello markdown;Mentre gira uno script che dura qualche secondo,;Mentre è in corso un'operazione che dura qualche secondo,
 12713;32;testo;modello markdown;se l'automazione finisce prima gli eventi in coda), Profilo Inizializzazione 10 s, Reset Filtro 5 s. Alla fine dello script la riga scompare. Gli altri script durano al massimo pochi secondi;se l'integrazione finisce prima gli eventi in coda), Profilo Inizializzazione 10 s, Reset Filtro 5 s. Alla fine dell'operazione la riga scompare. Le altre operazioni durano al massimo pochi secondi
+12734;25;testo;modello markdown;(vedere la Nota Avvio di Home Assistant).;(vedere la Nota Avvio di Home Assistant, qui sotto).
 12755;19;testo;modello markdown;si è appena avviato (per esempio dopo Cambia IP VMC), prima;si è appena avviato, prima
+12758;19;testo;modello markdown;(vedere la Nota Avvio di Home Assistant).;(vedere la Nota Avvio di Home Assistant, qui sotto).
 12803;19;testo;modello markdown;<strong>Nota Cambia IP VMC (Riavvio di H.A.)</strong>;<strong>Nota Cambia IP VMC</strong>
 12805;19;testo;modello markdown;Il campo cambia l'IP con cui Home Assistant comunica con la VMC sulla porta 5001. Sono ammessi quattro numeri da 0 a 255 separati da punti, senza zeri iniziali. Non sono ammessi 0.x.x.x, 127.x.x.x, 169.254.x.x e gli indirizzi da 224.x.x.x in su. L'IP non deve essere già usato da un'altra VMC. Questo controllo vede solo le VMC già attive: una VMC appena aggiunta, in attesa del riavvio di Home Assistant, non viene vista. In quel caso, dopo il riavvio l'integrazione rimette l'IP di prima e lo segnala. Poi l'integrazione controlla che a quell'IP risponda la VMC con il suo nome. Se il nome della VMC non è ancora stato letto, basta che risponda una VMC. Se un controllo non va bene, non cambia nulla e sotto il campo compare il motivo. Altrimenti l'IP viene aggiornato in tutti i file del Package e dopo 2 secondi Home Assistant si riavvia. Il riavvio parte anche se l'Automazione VMC Master sta eseguendo altri eventi. Il campo non chiede conferma: verificare l'IP prima di scriverlo. Per salvare un IP a cui la VMC non risponde: Impostazioni → Dispositivi e servizi, nella pagina dell'integrazione, icona ingranaggio sulla riga della VMC → «Cambia l'IP della VMC».;L'IP della VMC si cambia da *Impostazioni → Dispositivi e servizi → VMC Master → ⚙️ → Cambia l'IP della VMC*.
 12838;19;testo;modello markdown;correttamente alle automazioni e/o comandi.;correttamente alle logiche automatiche e/o ai comandi.
@@ -2366,6 +2374,7 @@ Riporta i 24 Tempi di Attesa dell'Automazione ai Valori Originali. È compreso n
 13603;29;nome;modello markdown;input_boolean.vmc_master_popup_versione_corrente_vs_repository;binary_sensor.vmc_master_popup_versione_corrente_vs_repository
 13617;24;testo;modello markdown;I Secondi indicati sono fissi e non vanno modificati: il Profilo Inizializzazione li riporta comunque ai valori;I Secondi indicati sono fissi e non si possono modificare.
 13618;21;testo;modello markdown;originali. Mentre l'automazione;Mentre l'integrazione
+13632;337;testo;modello markdown;un'altra Velocità di avvio la VMC va a Velocità 1 [Nota 3];un'altra Velocità di avvio la VMC va a Velocità 1 [Nota 3, voce 7]
 13633;284;testo;modello markdown;l'automazione non la distingue;l'integrazione non la distingue
 13633;1089;testo;modello markdown;"(automazione «VMC Master - Ripartenza della VMC»;";"(logica «Ripartenza della VMC» dell'integrazione;"
 13633;1534;testo;modello markdown;dello script della Fascia;della procedura della Fascia
@@ -2374,8 +2383,11 @@ Riporta i 24 Tempi di Attesa dell'Automazione ai Valori Originali. È compreso n
 13645;111;testo;modello markdown;comando dell'automazione;comando dell'integrazione
 13646;137;testo;modello markdown;comando dell'automazione;comando dell'integrazione
 13648;99;testo;modello markdown;comando dell'automazione;comando dell'integrazione
+13657;735;testo;modello markdown;(con un'allerta Umidità in corso la VMC, a Velocità 1 [Nota 3], si ferma;(con un'allerta Umidità in corso la VMC, a Velocità 1 [Nota 3, voce 7], si ferma
 13666;173;testo;modello markdown;dello script della Fascia;della procedura della Fascia
 13667;425;testo;modello markdown;dello script della Fascia;della procedura della Fascia
+13672;227;testo;modello markdown;finché quell'allerta non è finita (salvo la sospensione Free Cool./Heat.: l'Umidità parte comunque a Velocità 1 [Nota 3];finché quell'allerta non è finita (salvo la sospensione Free Cool./Heat.: l'Umidità parte comunque a Velocità 1 [Nota 3, voce 7]
+13673;492;testo;modello markdown;Se invece si entra prima nel Calendario, oppure è già in corso un'altra allerta, e poi sale l'umidità, l'allerta Umidità non scatta e l'interruttore si spegne normalmente (salvo la sospensione Free Cool./Heat.: l'Umidità parte comunque a Velocità 1 [Nota 3];Se invece si entra prima nel Calendario, oppure è già in corso un'altra allerta, e poi sale l'umidità, l'allerta Umidità non scatta e l'interruttore si spegne normalmente (salvo la sospensione Free Cool./Heat.: l'Umidità parte comunque a Velocità 1 [Nota 3, voce 7]
 13698;83;testo;modello markdown;Il Package lo ricava dal;L'integrazione lo ricava dal
 13707;41;testo;modello markdown;Il Package confronta il Punto di Rugiada Interno;L'integrazione confronta il Punto di Rugiada Interno
 14085;33;testo;modello markdown;che leggono le spie e le allerte dell'automazione. Servono solo all'interfaccia: non comandano la VMC e non registrano storico.;che leggono le spie e le allerte dell'integrazione. Servono solo all'interfaccia: non comandano la VMC.
